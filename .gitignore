@@ -1,0 +1,18 @@
+# Compiled source #
+###################
+*.o
+*.mod
+*.exe
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+
+# Basic output file
+output.nc
