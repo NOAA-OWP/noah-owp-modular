@@ -8,6 +8,7 @@ private
 
 type, public :: options_type
 
+  integer :: opt_snf    ! option for determining precipitation phase
   integer :: opt_run
   integer :: opt_drn
   integer :: opt_inf
@@ -35,6 +36,7 @@ contains
 
     class(options_type) :: this
 
+    this%opt_snf   = huge(1)
     this%opt_run   = huge(1)
     this%opt_drn   = huge(1)
     this%opt_inf   = huge(1)
@@ -47,6 +49,7 @@ contains
     class(options_type) :: this
     type(namelist_type) :: namelist
 
+    this%opt_snf   = namelist%precip_phase_option
     this%opt_run   = namelist%runoff_option
     this%opt_drn   = namelist%drainage_option
     this%opt_inf   = namelist%frozen_soil_option

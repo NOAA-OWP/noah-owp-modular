@@ -34,16 +34,13 @@ program water_driver
 !  local variables
 !---------------------------------------------------------------------
 
-  integer :: itime, iz          ! some loop counters
-  integer :: ntime      = 0     ! number of timesteps to run
-  integer :: rain_steps = 0     ! number of timesteps in rain event
-  integer :: snow_steps = 0     ! number of timesteps in snow event
-  integer :: dry_steps  = 0     ! number of timesteps between rain events
-  integer :: rain_step  = 0     ! number of timesteps in current event
-  integer :: snow_step  = 0     ! number of timesteps in current event
-  integer :: dry_step   = 0     ! number of timesteps in current event
-  logical :: raining            ! .true. if raining
-  logical :: snowing            ! .true. if snowing
+  integer :: itime, iz            ! some loop counters
+  integer :: ntime      = 0       ! number of timesteps to run
+  integer :: precip_steps = 0     ! number of timesteps in rain event
+  integer :: dry_steps  = 0       ! number of timesteps between rain events
+  integer :: precip_step  = 0     ! number of timesteps in current event
+  integer :: dry_step   = 0       ! number of timesteps in current event
+  logical :: precipitating        ! .true. if precipitating
 
 !---------------------------------------------------------------------
 !  initialize
@@ -134,12 +131,10 @@ program water_driver
     energy%FROZEN_GROUND = .false. 
     energy%STC      = 298.0
 ! for other variables
-    ntime      =  nint(namelist%maxtime * 3600.0 / namelist%dt)
-    rain_steps = namelist%rain_duration * 3600.0 / namelist%dt
-    dry_steps  =  namelist%dry_duration * 3600.0 / namelist%dt
-    raining    = namelist%raining
-    snow_steps = namelist%snow_duration * 3600.0 / namelist%dt
-    snowing    = namelist%snowing
+    ntime         =  nint(namelist%maxtime * 3600.0 / namelist%dt)
+    precip_steps  =  namelist%precip_duration * 3600.0 / namelist%dt
+    dry_steps     =  namelist%dry_duration * 3600.0 / namelist%dt
+    precipitating =  namelist%precipitating
 
     domain%IST = 1
     domain%zsnso(-namelist%nsnow+1:0) = 0.0
@@ -164,47 +159,33 @@ program water_driver
   do itime = 1, ntime
    
   !---------------------------------------------------------------------
-  ! calculate the input water
+  ! calculate the input water by simulating a synthetic precip event
   !---------------------------------------------------------------------
-  
-  ! below statements create an artificial rain event
-!    if(raining) then
-!      water%rain    = namelist%rainrate/3600.0    ! input water [m/s]
-!      rain_step = rain_step + 1
-!      if(rain_step == rain_steps) then            ! event length met
-!        rain_step = 0
-!        raining   = .false.
-!      end if
-!    else
-!      water%rain   = 0.0                        ! stop water input [m/s]
-!      dry_step = dry_step + 1
-!      if(dry_step == dry_steps) then              ! between event length met
-!        dry_step = 0
-!        raining  = .true.
-!      end if
-!    end if
-	
-    ! below statements create an artificial snow event
-    if(snowing) then
-      water%snow    = namelist%snowrate/3600.0    ! input water [m/s]
-      snow_step = snow_step + 1
-      if(snow_step == snow_steps) then            ! event length met
-        snow_step = 0
-        snowing   = .false.
+
+    if(precipitating) then
+      forcing%PRCPNONC    = namelist%preciprate/3600.0    ! input water [m/s]
+      precip_step = precip_step + 1
+      if(precip_step == precip_steps) then            ! event length met
+        precip_step = 0
+        precipitating   = .false.
       end if
     else
-      water%snow   = 0.0                        ! stop water input [m/s]
+      forcing%PRCPNONC   = 0.0                        ! stop water input [m/s]
       dry_step = dry_step + 1
       if(dry_step == dry_steps) then              ! between event length met
         dry_step = 0
-        snowing  = .true.
+        precipitating  = .true.
       end if
     end if
 
+  !---------------------------------------------------------------------
+  ! call the main forcing routines 
+  !--------------------------------------------------------------------- 
 
+    call ForcingMain (domain, levels, options, parameters, forcing, energy, water)
 
   !---------------------------------------------------------------------
-  ! call the main water routines (canopy + snow + soil water components
+  ! call the main water routines (canopy + snow + soil water components)
   !--------------------------------------------------------------------- 
 
     call WaterMain (domain, levels, options, parameters, forcing, energy, water)
