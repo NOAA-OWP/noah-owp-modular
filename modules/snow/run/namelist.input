@@ -5,15 +5,16 @@
 /
 
 &forcing
-  rainrate      = 10.0    ! rain rate, when raining [mm/hr]
-  rain_duration = 3       ! duration of rain events [hours]
-  dry_duration  = 3       ! duration of no-rain events [hours]
-  raining       = .true.  ! start with rain
-  snowrate      = 10.0    ! snow rate, when snowing [mm/hr]
-  snow_duration = 3       ! duration of snow events [hours]
-  snowing       = .true.  ! start with snow
-  uwind         = 3.0     ! wind speed m/s
-  vwind         = 3.0     ! wind speed m/s
+  preciprate      = 10.0    ! rain rate, when raining [mm/hr]
+  precip_duration = 3       ! duration of rain events [hours]
+  dry_duration    = 3       ! duration of no-rain events [hours]
+  precipitating   = .true.  ! start with rain
+  uwind           = 3.0     ! wind speed m/s
+  vwind           = 3.0     ! wind speed m/s
+/
+
+&forcing_options
+  precip_phase_option = 2
 /
 
 &structure
