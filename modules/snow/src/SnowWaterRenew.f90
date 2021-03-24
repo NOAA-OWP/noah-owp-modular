@@ -5,6 +5,7 @@ module SnowWaterRenew
   use ParametersType
   use WaterType
   use EnergyType
+  use ForcingType
   use SnowLayerChange
 
   implicit none
@@ -13,7 +14,7 @@ contains
 
 !== begin snowfall =================================================================================
 
-  SUBROUTINE SnowFall (domain, levels, parameters, energy, water)
+  SUBROUTINE SnowFall (domain, levels, parameters, energy, water, forcing)
 ! ----------------------------------------------------------------------
 ! snow depth and density to account for the new snowfall.
 ! new values of snow depth & density returned.
@@ -26,6 +27,8 @@ contains
   type (    domain_type)             :: domain
   type (    energy_type)             :: energy
   type (     water_type)             :: water
+  type (   forcing_type)             :: forcing
+
 
 ! ------------------------ local variables ---------------------------
   INTEGER :: NEWNODE            ! 0-no new layers, 1-creating new layers
@@ -45,7 +48,7 @@ contains
       NEWNODE  =  1
       domain%DZSNSO(0)= water%SNOWH
       water%SNOWH    = 0.
-      energy%STC(0)   = MIN(273.16, energy%SFCTMP)   ! temporary setup
+      energy%STC(0)   = MIN(273.16, forcing%sfctmp)   ! temporary setup
       water%SNICE(0) = water%SNEQV
       water%SNLIQ(0) = 0.
     END IF

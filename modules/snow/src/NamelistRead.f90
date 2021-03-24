@@ -9,13 +9,10 @@ type, public :: namelist_type
   real          :: dt
   integer       :: maxtime
   character*256 :: output_filename
-  real          :: rainrate
-  integer       :: rain_duration
+  real          :: preciprate
+  integer       :: precip_duration
   integer       :: dry_duration
-  logical       :: raining
-  real          :: snowrate
-  integer       :: snow_duration
-  logical       :: snowing
+  logical       :: precipitating
   integer       :: isltyp
   integer       :: nsoil
   integer       :: nsnow
@@ -35,6 +32,7 @@ type, public :: namelist_type
   real    :: initial_sh2o_value              ! constant sh2o value
   real    :: initial_sice_value              ! constant sice value
 
+  integer       :: precip_phase_option
   integer       :: runoff_option
   integer       :: drainage_option
   integer       :: frozen_soil_option
@@ -94,14 +92,11 @@ contains
     real          :: dt
     integer       :: maxtime
     character*256 :: output_filename
-    real          :: rainrate
-    integer       :: rain_duration
+    real          :: preciprate
+    integer       :: precip_duration
     integer       :: dry_duration
-    logical       :: raining
-    real          :: snowrate
-    integer       :: snow_duration
-    logical       :: snowing
-	integer       :: isltyp
+    logical       :: precipitating
+    integer       :: isltyp
     integer       :: nsoil
     integer       :: nsnow
     integer       :: structure_option
@@ -120,6 +115,7 @@ contains
     real    :: initial_sh2o_value              ! constant sh2o value
     real    :: initial_sice_value              ! constant sice value
 
+    integer       :: precip_phase_option
     integer       :: runoff_option
     integer       :: drainage_option
     integer       :: frozen_soil_option
@@ -163,9 +159,8 @@ contains
   real                ::   SSI
 
     namelist / timing          / dt,maxtime,output_filename
-    namelist / forcing         / rainrate,rain_duration,dry_duration,&
-                                 raining,snowrate,snow_duration,snowing,&
-								 uwind,vwind
+    namelist / forcing         / preciprate,precip_duration,dry_duration,&
+                                 precipitating,uwind,vwind
     namelist / structure       / isltyp,nsoil,nsnow,structure_option,soil_depth,&
                                  vegtyp,sfctyp
     namelist / fixed_initial   / zsoil,dzsnso,sice,sh2o
@@ -175,6 +170,7 @@ contains
                                  refsmc,pctsand,pctclay,bvic,AXAJ,BXAJ,XXAJ,&
                                  BBVIC,G,slope,refkdt,refdk,SSI
     namelist / veg_parameters  / CH2OP,NROOT,LAI,SAI,SHDMAX
+    namelist / forcing_options / precip_phase_option
     namelist / soil_options    / runoff_option,drainage_option,frozen_soil_option,&
                                  dynamic_vic_option
  
@@ -185,6 +181,7 @@ contains
     open(30, file="namelist.input", form="formatted")
      read(30, timing)
      read(30, forcing)
+     read(30, forcing_options)
      read(30, structure)
      read(30, uniform_initial)
      read(30, soil_parameters)
@@ -221,13 +218,10 @@ contains
     this%dt               = dt
     this%maxtime          = maxtime
     this%output_filename  = output_filename
-    this%rainrate         = rainrate
-    this%rain_duration    = rain_duration
+    this%preciprate       = preciprate
+    this%precip_duration  = precip_duration
     this%dry_duration     = dry_duration
-    this%raining          = raining
-    this%snowrate         = snowrate
-    this%snow_duration    = snow_duration
-    this%snowing          = snowing
+    this%precipitating    = precipitating
     this%uwind            = uwind
     this%vwind            = vwind
     this%isltyp           = isltyp
@@ -247,10 +241,11 @@ contains
     this%initial_sh2o_value = initial_sh2o_value
     this%initial_sice_value = initial_sice_value
 
-    this%runoff_option      = runoff_option
-    this%drainage_option    = drainage_option
-    this%frozen_soil_option = frozen_soil_option
-    this%dynamic_vic_option = dynamic_vic_option
+    this%precip_phase_option = precip_phase_option
+    this%runoff_option       = runoff_option
+    this%drainage_option     = drainage_option
+    this%frozen_soil_option  = frozen_soil_option
+    this%dynamic_vic_option  = dynamic_vic_option
 
     this%bb      = bb
     this%satdk   = satdk

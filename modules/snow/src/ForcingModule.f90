@@ -10,6 +10,7 @@ module ForcingModule
   use SoilWaterModule
   use CanopyWaterModule
   use SnowWaterModule
+  use AtmProcessing
 
   implicit none
 
