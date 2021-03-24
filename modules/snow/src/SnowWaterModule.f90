@@ -5,6 +5,7 @@ module SnowWaterModule
   use ParametersType
   use WaterType
   use EnergyType
+  use ForcingType
   use SnowWaterRenew
   use SnowLayerChange
 
@@ -14,7 +15,7 @@ contains
 
 !== begin snowwater main module ================================================================================
 
-  SUBROUTINE SnowWater (domain, levels, parameters, energy, water)
+  SUBROUTINE SnowWater (domain, levels, parameters, energy, water, forcing)
 
 ! ----------------------------------------------------------------------
   IMPLICIT NONE
@@ -24,6 +25,7 @@ contains
   type (    domain_type)             :: domain
   type (    energy_type)             :: energy
   type (     water_type)             :: water
+  type (   forcing_type)             :: forcing
 
 ! ------------------------ local variables ---------------------------
   INTEGER :: IZ,i
@@ -35,7 +37,7 @@ contains
    water%PONDING1 = 0.0
    water%PONDING2 = 0.0
 
-   CALL SnowFall (domain, levels, parameters, energy, water)
+   CALL SnowFall (domain, levels, parameters, energy, water, forcing)
 
 ! MB: do each if block separately
    IF(water%ISNOW < 0) &        ! when multi-layer

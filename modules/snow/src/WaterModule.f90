@@ -86,7 +86,7 @@ contains
      ENDIF
      water%QSDEW = water%QDEW - water%QSNFRO
 
-   CALL SnowWater (domain, levels, parameters, energy, water)
+   CALL SnowWater (domain, levels, parameters, energy, water, forcing)
 
    IF(energy%FROZEN_GROUND) THEN
       water%SICE(1) =  water%SICE(1) + (water%QSDEW-water%QSEVA)*domain%DT/(domain%DZSNSO(1)*1000.)

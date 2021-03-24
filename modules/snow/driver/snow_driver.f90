@@ -14,6 +14,7 @@ program water_driver
   use ForcingType
   use EnergyType
   use WaterModule
+  use ForcingModule
 
   implicit none
 
@@ -148,12 +149,9 @@ program water_driver
     forcing%QAIR     = 0.0        !specific humidity (kg/kg) (q2/(1+q2))
     forcing%EAIR     = 0.0        !vapor pressure air (pa)
     forcing%RHOAIR   = 0.0        !density air (kg/m3)
-    forcing%QPRECC   = 0.0        !convective precipitation (mm/s)
-    forcing%QPRECL   = 0.0        !large-scale precipitation (mm/s)
     !REAL, DIMENSION(       1:   2), INTENT(OUT) :: SOLAD  !incoming direct solar radiation (w/m2)
     !REAL, DIMENSION(       1:   2), INTENT(OUT) :: SOLAI  !incoming diffuse solar radiation (w/m2)
     !forcing%SWDOWN   = 0.0        ! downward solar filtered by sun angle [w/m2]
-    forcing%FP       = 0.0        ! fraction of area receiving precipitation  AJN
     forcing%FPICE    = 0.0        ! fraction of ice                AJN
 
 ! for other variables

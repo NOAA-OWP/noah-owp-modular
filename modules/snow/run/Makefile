@@ -25,15 +25,15 @@ OBJS = \
         ../src/SurfaceRunoffModule.o \
         ../src/SoilWaterMovement.o \
         ../src/SubsurfaceRunoffModule.o \
-        ../src/ForcingModule.o \
         ../src/AtmProcessing.o \
+        ../src/ForcingModule.o \
 	../driver/snow_output.o \
 	../driver/snow_driver.o
 
 CMD = snow_refac.exe
 all:	$(CMD)
 
-water_refac.exe: $(OBJS)
+snow_refac.exe: $(OBJS)
 	$(COMPILERF90) -o $(@) -I../driver -I../src $(OBJS) $(NETCDFLIB)
 
 # This command cleans up
