@@ -31,26 +31,16 @@ contains
   type (energy_type)                   :: energy
 
 
-
-	  ! NEED TO CHANGE FROM HERE DOWN
-	  ! KJ 2021-03-18
-
-
-
+	  ! Add local variables as needed
+	  ! KJ 2021-03-24
 ! ------------------------ local variables ---------------------------
-  real    :: dtheta_max = 0.0   ! maximum value of theta change in all levels
-  real    :: totalwat   = 0.0   ! total soil water [mm]
-  real    :: tw0        = 0.0   ! initial total soil water [mm]
-  real    :: acsrf      = 0.0   ! accumulated surface runoff [mm]
-  real    :: acsub      = 0.0   ! accumulated drainage [mm]
-  real    :: acpcp      = 0.0   ! accumulated precipitation [mm]
-  real    :: errwat     = 0.0   ! accumulated error [mm]
-  logical :: done               ! logical check
-  integer :: IZ 
-  real, dimension(1:levels%soil) :: smcold        !previous timestep smc
+
 !---------------------------------------------------------------------
 
-! C
+    ! Call the ATM subroutine to process other variables such as
+    ! air density and precipitation phase
+    call ATM(domain, levels, options, parameters, forcing, energy, water)
+
 
   END SUBROUTINE ForcingMain   
 

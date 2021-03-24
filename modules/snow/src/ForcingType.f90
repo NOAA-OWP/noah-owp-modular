@@ -12,17 +12,17 @@ type, public :: forcing_type
 
   real    :: uwind        ! wind speed in u direction (m s-1)
   real    :: vwind        ! wind speed in v direction (m s-1)
-  real    :: SFCPRS       !pressure (pa)
-  real    :: SFCTMP       !surface air temperature [k]
-  real    :: Q2           !mixing ratio (kg/kg)
+  real    :: SFCPRS       ! surface pressure (pa)
+  real    :: SFCTMP       ! surface air temperature [k]
+  real    :: Q2           ! mixing ratio (kg/kg)
   real    :: PRCPCONV     ! convective precipitation entering  [mm/s]    ! MB/AN : v3.7
   real    :: PRCPNONC     ! non-convective precipitation entering [mm/s] ! MB/AN : v3.7
   real    :: PRCPSHCV     ! shallow convective precip entering  [mm/s]   ! MB/AN : v3.7
   real    :: PRCPSNOW     ! snow entering land model [mm/s]              ! MB/AN : v3.7
   real    :: PRCPGRPL     ! graupel entering land model [mm/s]           ! MB/AN : v3.7
   real    :: PRCPHAIL     ! hail entering land model [mm/s]              ! MB/AN : v3.7
-  real    :: SOLDN        !downward shortwave radiation (w/m2)
-  real    :: COSZ         !cosine solar zenith angle [0-1]
+  !real    :: SOLDN        ! downward shortwave radiation (w/m2)
+  !real    :: COSZ         ! cosine solar zenith angle [0-1]
 
 ! outputs
 
@@ -30,17 +30,10 @@ type, public :: forcing_type
   real    :: QAIR   !specific humidity (kg/kg) (q2/(1+q2))
   real    :: EAIR   !vapor pressure air (pa)
   real    :: RHOAIR !density air (kg/m3)
-  real    :: QPRECC !convective precipitation (mm/s)
-  real    :: QPRECL !large-scale precipitation (mm/s)
-  REAL, DIMENSION(       1:   2), INTENT(OUT) :: SOLAD  !incoming direct solar radiation (w/m2)
-  REAL, DIMENSION(       1:   2), INTENT(OUT) :: SOLAI  !incoming diffuse solar radiation (w/m2)
-  real    :: SWDOWN !downward solar filtered by sun angle [w/m2]
-  real    :: BDFALL  !!bulk density of snowfall (kg/m3) AJN
-  real    :: RAIN    !rainfall (mm/s) AJN
-  real    :: SNOW    !liquid equivalent snowfall (mm/s) AJN
-  real    :: FP      !fraction of area receiving precipitation  AJN
   real    :: FPICE   !fraction of ice                AJN
-  real    :: PRCP    !total precipitation [mm/s]     ! MB/AN : v3.7
+  !REAL, DIMENSION(       1:   2), INTENT(OUT) :: SOLAD  !incoming direct solar radiation (w/m2)
+  !REAL, DIMENSION(       1:   2), INTENT(OUT) :: SOLAI  !incoming diffuse solar radiation (w/m2)
+  !real    :: SWDOWN !downward solar filtered by sun angle [w/m2]
 
   contains
 
@@ -67,8 +60,22 @@ contains
 
     this%uwind     = huge(1.0)
     this%vwind     = huge(1.0)
-	this%PRCP      = huge(1.0)
-
+    this%SFCPRS    = huge(1.0)
+    this%SFCPRS    = huge(1.0)
+    this%SFCTMP    = huge(1.0)
+    this%Q2        = huge(1.0)
+    this%PRCPCONV  = huge(1.0)
+    this%PRCPNONC  = huge(1.0)
+    this%PRCPSHCV  = huge(1.0)
+    this%PRCPSNOW  = huge(1.0)
+    this%PRCPGRPL  = huge(1.0)
+    this%PRCPHAIL  = huge(1.0)
+    this%THAIR     = huge(1.0)
+    this%QAIR      = huge(1.0)
+    this%EAIR      = huge(1.0)
+    this%RHOAIR    = huge(1.0)
+    this%FPICE     = huge(1.0)
+    
   end subroutine InitDefault
 
   subroutine InitTransfer(this, namelist)

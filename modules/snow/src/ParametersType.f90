@@ -52,7 +52,6 @@ type, public :: parameters_type
   real                            :: RW       !gas constant for  water vapor (j/kg/k)
   real                            :: DENH2O   !density of water (kg/m3)
   real                            :: DENICE   !density of ice (kg/m3)
-  real                            :: BDFALL   !bulk density of snowfall (kg/m3)
   real                            :: SSI      !liquid water holding capacity for snowpack (m3/m3)
   real                            :: WSLMAX   !maximum lake water storage (mm)
   real                            :: max_liq_mass_fraction !For snow water retention
@@ -138,7 +137,6 @@ contains
     this%urban_flag = .false.
     this%timean     = 10.5
     this%fsatmx     = 0.38 
-    this%BDFALL     = 120.0
     this%GRAV       = 9.80616
     this%SB         = 5.67E-08
     this%VKC        = 0.40 

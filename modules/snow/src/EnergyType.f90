@@ -9,7 +9,6 @@ private
 type, public :: energy_type
 
   real    :: TV
-  real    :: SFCTMP
   real    :: TG
   real    :: FCEV 
   real    :: FCTR
@@ -55,7 +54,6 @@ contains
 
     this%TV        = huge(1.0)
     this%TG        = huge(1.0)
-    this%SFCTMP    = huge(1.0)
     this%FCEV      = huge(1.0)
     this%FCTR      = huge(1.0)
     this%FROZEN_CANOPY = .false.

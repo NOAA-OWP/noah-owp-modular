@@ -49,5 +49,7 @@ snow_driver.o: snow_output.o \
                         ../src/SurfaceRunoffInfiltration.o \
 			../src/SurfaceRunoffModule.o \
 			../src/SoilWaterMovement.o \
-			../src/SubsurfaceRunoffModule.o
+			../src/SubsurfaceRunoffModule.o \
+			../src/ForcingModule.o \
+			../src/AtmProcessing.o
 
