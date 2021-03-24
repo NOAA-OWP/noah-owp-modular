@@ -77,7 +77,7 @@ contains
 ! --------------------------- canopy ice ------------------------------
 
 ! for canopy ice
-      MAXSNO = 6.6*(0.27+46./parameters%BDFALL) * (parameters%ELAI+parameters%ESAI)
+      MAXSNO = 6.6*(0.27+46./water%bdfall) * (parameters%ELAI+parameters%ESAI)
 
       IF((parameters%ELAI+parameters%ESAI).GT.0.) THEN
          water%QINTS = parameters%FVEG * water%SNOW * water%FP
@@ -115,7 +115,7 @@ contains
 ! rain or snow on the ground
       water%QRAIN   = water%QDRIPR + water%QTHROR
       water%QSNOW   = water%QDRIPS + water%QTHROS
-      water%SNOWHIN = water%QSNOW / parameters%BDFALL
+      water%SNOWHIN = water%QSNOW / water%bdfall
       IF (domain%sfctyp == 2 .AND. energy%TG > parameters%TFRZ) THEN
          water%QSNOW   = 0.
          water%SNOWHIN = 0.
@@ -185,7 +185,7 @@ contains
 ! --------------------------- canopy ice ------------------------------
 
 ! for canopy ice
-      MAXSNO = 6.6*(0.27+46./parameters%BDFALL)*(parameters%ELAI+ parameters%ESAI)
+      MAXSNO = 6.6*(0.27+46./water%bdfall)*(parameters%ELAI+ parameters%ESAI)
       QSUBC = MIN(water%CANICE / domain%DT,QSUBC) 
       water%CANICE= MAX(0.,water%CANICE + (QFROC-QSUBC)*domain%DT)
       IF(water%CANICE.LE.1.E-6) water%CANICE = 0.

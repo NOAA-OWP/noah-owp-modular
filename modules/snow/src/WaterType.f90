@@ -24,6 +24,7 @@ type, public :: water_type
   real                            :: FB_snow     ! canopy fraction buried by snow
   real                            :: rain        ! rainfall (mm/s)
   real                            :: snow        ! snowfall (mm/s)
+  real                            :: bdfall      ! bulk density of new snowfall (kg/m3)
   real                            :: FP          ! fraction of the gridcell that receives precipitation
   real                            :: canliq      ! intercepted liquid water (mm)
   real                            :: canice      ! intercepted ice mass (mm)
@@ -128,6 +129,7 @@ contains
     this%FB_snow  = huge(1.0)
     this%rain     = huge(1.0)
     this%snow     = huge(1.0)
+    this%bdfall   = huge(1.0)
     this%FP       = huge(1.0)
     this%canliq   = huge(1.0)
     this%canice   = huge(1.0)

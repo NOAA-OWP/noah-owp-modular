@@ -25,10 +25,12 @@ OBJS = \
         ../src/SurfaceRunoffModule.o \
         ../src/SoilWaterMovement.o \
         ../src/SubsurfaceRunoffModule.o \
+        ../src/ForcingModule.o \
+        ../src/AtmProcessing.o \
 	../driver/snow_output.o \
 	../driver/snow_driver.o
 
-CMD = water_refac.exe
+CMD = snow_refac.exe
 all:	$(CMD)
 
 water_refac.exe: $(OBJS)
