@@ -12,6 +12,7 @@ type, public :: energy_type
   real    :: TG
   real    :: FCEV 
   real    :: FCTR
+  real    :: IGS                               ! growing season index (0=off, 1=on)
   logical :: FROZEN_CANOPY
   logical :: FROZEN_GROUND
   integer, allocatable, dimension(:) :: IMELT  ! melting state index [0-no melt;1-melt]
@@ -56,6 +57,7 @@ contains
     this%TG        = huge(1.0)
     this%FCEV      = huge(1.0)
     this%FCTR      = huge(1.0)
+    this%IGS       = huge(1.0)
     this%FROZEN_CANOPY = .false.
     this%FROZEN_GROUND = .false.
 

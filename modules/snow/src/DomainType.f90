@@ -11,7 +11,10 @@ type, public :: domain_type
   integer :: iloc
   integer :: jloc
   real    :: dt
+  real    :: lat
+  real    :: lon
   integer :: vegtyp
+  integer :: croptype
   integer :: isltyp
   integer :: sfctyp
   integer :: IST    !surface type 1-soil; 2-lake
@@ -56,13 +59,16 @@ contains
 
     class(domain_type) :: this
 
-    this%iloc   = huge(1)
-    this%jloc   = huge(1)
-    this%dt     = huge(1.0)
-    this%vegtyp = huge(1)
-    this%isltyp = huge(1)
-    this%sfctyp = huge(1)
-    this%IST    = huge(1)
+    this%iloc     = huge(1)
+    this%jloc     = huge(1)
+    this%dt       = huge(1.0)
+    this%lat      = huge(1.0)
+    this%lon      = huge(1.0)
+    this%vegtyp   = huge(1)
+    this%croptype = huge(1)
+    this%isltyp   = huge(1)
+    this%sfctyp.  = huge(1)
+    this%IST      = huge(1)
 
   end subroutine InitDefault
 
@@ -71,12 +77,14 @@ contains
     class(domain_type) :: this
     type(namelist_type) :: namelist
 
-    this%dt      = namelist%dt
-    this%zsoil   = namelist%zsoil
-    this%dzsnso  = namelist%dzsnso
-    this%vegtyp  = namelist%vegtyp
-    this%isltyp  = namelist%isltyp
-    this%sfctyp  = namelist%sfctyp
+    this%dt       = namelist%dt
+    this%lat      = namelist%lon
+    this%zsoil    = namelist%zsoil
+    this%dzsnso   = namelist%dzsnso
+    this%vegtyp   = namelist%vegtyp
+    this%croptype = namelist%croptype
+    this%isltyp   = namelist%isltyp
+    this%sfctyp   = namelist%sfctyp
 
   end subroutine InitTransfer
 

@@ -8,11 +8,12 @@ private
 
 type, public :: options_type
 
-  integer :: opt_snf    ! option for determining precipitation phase
-  integer :: opt_run
-  integer :: opt_drn
-  integer :: opt_inf
+  integer :: opt_snf    ! options for determining precipitation phase
+  integer :: opt_run    ! options for runoff
+  integer :: opt_drn    ! options for drainage 
+  integer :: opt_inf    ! options for frozen soil permeability
   integer :: opt_infdv  ! options for infiltration in dynamic VIC runoff scheme **1 -> Philip scheme, 2 -> Green-Ampt scheme, 3 -> Smith-Parlange scheme
+  integer :: dveg       ! options for dynamic vegetation scheme
 
   contains
 
@@ -41,6 +42,7 @@ contains
     this%opt_drn   = huge(1)
     this%opt_inf   = huge(1)
     this%opt_infdv = huge(1)
+    this%dveg      = huge(1)
 
   end subroutine InitDefault
 
@@ -54,6 +56,7 @@ contains
     this%opt_drn   = namelist%drainage_option
     this%opt_inf   = namelist%frozen_soil_option
     this%opt_infdv = namelist%dynamic_vic_option
+    this%dveg      = namelist%dynamic_veg_option
 
   end subroutine InitTransfer
 

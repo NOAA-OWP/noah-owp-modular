@@ -64,10 +64,6 @@ contains
   ! call the canopy water routines
   !--------------------------------------------------------------------- 
 
-    parameters%ELAI = parameters%LAI * (1.0 - water%FB_snow)
-    parameters%ESAI = parameters%SAI * (1.0 - water%FB_snow)
-
-    call CanopyWaterIntercept (domain, levels, options, parameters, forcing, energy, water) 
     call CanopyHydrology (domain, levels, options, parameters, forcing, energy, water) ! original CANWATER
 
   !---------------------------------------------------------------------

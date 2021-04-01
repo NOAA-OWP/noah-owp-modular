@@ -27,6 +27,7 @@ OBJS = \
         ../src/SubsurfaceRunoffModule.o \
         ../src/AtmProcessing.o \
         ../src/ForcingModule.o \
+        ../src/InterceptionModule.o \
 	../driver/snow_output.o \
 	../driver/snow_driver.o
 

@@ -24,8 +24,9 @@ OBJS = NamelistRead.o \
        SurfaceRunoffModule.o \
        SoilWaterMovement.o \
        SubsurfaceRunoffModule.o \
-	   ForcingModule.o \
-	   AtmProcessing.o
+       ForcingModule.o \
+       AtmProcessing.o \
+       InterceptionModule.o
 
 all:	$(OBJS)
 
@@ -73,4 +74,6 @@ WaterModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyTy
 ForcingModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
                ForcingType.o WaterType.o AtmProcessing.o
 AtmProcessing.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
+               ForcingType.o WaterType.o
+InterceptionModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
                ForcingType.o WaterType.o
