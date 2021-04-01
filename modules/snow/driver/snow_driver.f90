@@ -15,6 +15,7 @@ program water_driver
   use EnergyType
   use WaterModule
   use ForcingModule
+  use InterceptionModule
 
   implicit none
 
@@ -153,6 +154,8 @@ program water_driver
     !REAL, DIMENSION(       1:   2), INTENT(OUT) :: SOLAI  !incoming diffuse solar radiation (w/m2)
     !forcing%SWDOWN   = 0.0        ! downward solar filtered by sun angle [w/m2]
     forcing%FPICE    = 0.0        ! fraction of ice                AJN
+    forcing%JULIAN   = 45.0        ! Setting arbitrary julian day
+    forcing%YEARLEN  = 365         ! Setting year to be normal (i.e. not a leap year)  
 
 ! for other variables
     ntime         =  nint(namelist%maxtime * 3600.0 / namelist%dt)
@@ -207,6 +210,12 @@ program water_driver
   !--------------------------------------------------------------------- 
 
     call ForcingMain (domain, levels, options, parameters, forcing, energy, water)
+    
+  !---------------------------------------------------------------------
+  ! call the main interception routines 
+  !--------------------------------------------------------------------- 
+
+    call InterceptionMain (domain, levels, options, parameters, forcing, energy, water)
 
   !---------------------------------------------------------------------
   ! call the main water routines (canopy + snow + soil water components)

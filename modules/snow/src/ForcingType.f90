@@ -8,7 +8,7 @@ private
 
 type, public :: forcing_type
 
-! inputs
+! meteorological inputs
 
   real    :: uwind        ! wind speed in u direction (m s-1)
   real    :: vwind        ! wind speed in v direction (m s-1)
@@ -34,6 +34,8 @@ type, public :: forcing_type
   !REAL, DIMENSION(       1:   2), INTENT(OUT) :: SOLAD  !incoming direct solar radiation (w/m2)
   !REAL, DIMENSION(       1:   2), INTENT(OUT) :: SOLAI  !incoming diffuse solar radiation (w/m2)
   !real    :: SWDOWN !downward solar filtered by sun angle [w/m2]
+  real    :: JULIAN
+  integer :: YEARLEN
 
   contains
 
@@ -75,6 +77,8 @@ contains
     this%EAIR      = huge(1.0)
     this%RHOAIR    = huge(1.0)
     this%FPICE     = huge(1.0)
+    this%JULIAN    = huge(1.0)
+    this%YEARLEN   = huge(1)
     
   end subroutine InitDefault
 

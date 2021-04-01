@@ -15,7 +15,7 @@ type, public :: parameters_type
   real, allocatable, dimension(:) :: dksat  ! saturated conductivity
   real, allocatable, dimension(:) :: dwsat  ! saturated diffusivity
   real, allocatable, dimension(:) :: psisat ! saturated matric potential
-  real                             :: bvic   ! VIC or DVIC model infiltration parameter
+  real                            :: bvic   ! VIC or DVIC model infiltration parameter
   real                            :: AXAJ   ! Xinanjiang: Tension water distribution inflection parameter [-]
   real                            :: BXAJ   ! Xinanjiang: Tension water distribution shape parameter [-]
   real                            :: XXAJ   ! Xinanjiang: Free water distribution shape parameter [-]
@@ -29,12 +29,30 @@ type, public :: parameters_type
   real                            :: timean
   real                            :: fsatmx
   logical                         :: urban_flag
+  real, dimension(12)             :: LAIM ! monthly LAI
+  real, dimension(12)             :: SAIM ! monthly SAI
   real                            :: LAI
   real                            :: SAI
   real                            :: CH2OP !maximum intercepted h2o per unit lai+sai (mm)
+  integer                         :: NROOT    !vegetation root level
+  real                            :: HVT    ! canopy top height (m)
+  real                            :: HVB    ! canopy bottom height (m)
+  real                            :: TMIN   ! minimum temperature for photosynthesis (k)
+  real                            :: SHDFAC ! fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
+  real                            :: SHDMAX ! annual maximum fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
   real                            :: ELAI
   real                            :: ESAI
   real                            :: FVEG ! vegetation fraction
+  integer                         :: ISURBAN                   ! vegtype code for urban land cover
+  integer                         :: ISWATER                   ! vegtype code for water
+  integer                         :: ISBARREN                  ! vegtype code for barren land cover
+  integer                         :: ISICE                     ! vegtype code for ice/snow land cover
+  integer                         :: ISCROP                    ! vegtype code for crop land cover
+  integer                         :: EBLFOREST                 ! vegtype code for evergreen broadleaf forest
+  integer                         :: NATURAL                   ! vegtype code for cropland/grassland mosaic
+  integer                         :: LOW_DENSITY_RESIDENTIAL   ! vegtype code for low density residential
+  integer                         :: HIGH_DENSITY_RESIDENTIAL  ! vegtype code for high density residential
+  integer                         :: HIGH_INTENSITY_INDUSTRIAL ! vegtype code for high density industrial
   real                            :: GRAV     !acceleration due to gravity (m/s2)
   real                            :: SB       !Stefan-Boltzmann constant (w/m2/k4)
   real                            :: VKC      !von Karman constant
@@ -56,7 +74,6 @@ type, public :: parameters_type
   real                            :: WSLMAX   !maximum lake water storage (mm)
   real                            :: max_liq_mass_fraction !For snow water retention
   real                            :: SNOW_RET_FAC !snowpack water release timescale factor (1/s)
-  integer                         :: NROOT    !vegetation root level
 
   contains
 
@@ -98,6 +115,8 @@ contains
 
     class(parameters_type) :: this
 
+    this%LAI        = huge(1.0)
+    this%SAI        = huge(1.0)
     this%ELAI       = huge(1.0)
     this%ESAI       = huge(1.0)
     this%FVEG       = huge(1.0)
@@ -122,18 +141,31 @@ contains
     this%XXAJ   = namelist%XXAJ  (namelist%isltyp)
     this%BBVIC  = namelist%BBVIC (namelist%isltyp)
     this%G      = namelist%G     (namelist%isltyp)
-    this%LAI    = namelist%LAI   (namelist%vegtyp)
-    this%SAI    = namelist%SAI   (namelist%vegtyp)
+    this%LAIM   = namelist%LAIM_TABLE  (namelist%vegtyp, :)
+    this%SAIM   = namelist%SAIM_TABLE  (namelist%vegtyp, :)
     this%CH2OP  = namelist%CH2OP (namelist%vegtyp)
     this%NROOT  = namelist%NROOT (namelist%vegtyp)
-    this%FVEG   = namelist%SHDMAX / 100.0
-    IF(this%FVEG <= 0.05) this%FVEG = 0.05
+    this%HVT    = namelist%HVT (namelist%vegtyp)
+    this%HVB    = namelist%HVB (namelist%vegtyp)
+    this%TMIN   = namelist%TMIN (namelist%vegtyp)
+    this%SHDFAC = namelist%SHDFAC (namelist%vegtyp)
+    this%SHDMAX = namelist%SHDFAC (namelist%vegtyp)
     this%refkdt = namelist%refkdt
     this%refdk  = namelist%refdk
     this%kdt    = this%refkdt * this%dksat(1) / this%refdk
     this%frzx   = 0.15 * (this%smcmax(1) / this%smcref(1)) * (0.412 / 0.468)
     this%SSI    = namelist%SSI  
     this%slope      = namelist%slope
+    this%ISURBAN                   = namelist%ISURBAN
+    this%ISWATER                   = namelist%ISWATER
+    this%ISBARREN                  = namelist%ISBARREN
+    this%ISICE                     = namelist%ISICE
+    this%ISCROP                    = namelist%ISCROP
+    this%EBLFOREST                 = namelist%EBLFOREST
+    this%NATURAL                   = namelist%NATURAL
+    this%LOW_DENSITY_RESIDENTIAL   = namelist%LOW_DENSITY_RESIDENTIAL
+    this%HIGH_DENSITY_RESIDENTIAL  = namelist%HIGH_DENSITY_RESIDENTIAL
+    this%HIGH_INTENSITY_INDUSTRIAL = namelist%HIGH_INTENSITY_INDUSTRIAL
     this%urban_flag = .false.
     this%timean     = 10.5
     this%fsatmx     = 0.38 
