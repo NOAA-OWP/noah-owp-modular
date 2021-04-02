@@ -56,7 +56,7 @@ contains
     real                                        :: WT1,WT2 !interpolation weights    
     real                                        :: T       !current month (1.00, ..., 12.00)
 ! --------------------------------------------------------------------------------------------------
-
+print*, "Vegtyp = ", domain%vegtyp
 ! Adjust LAI and SAI depending on day of year
     IF (domain%croptype == 0) THEN
       IF ( options%dveg == 1 .or. options%dveg == 3 .or. options%dveg == 4 ) THEN
@@ -103,6 +103,7 @@ contains
     parameters%ESAI = parameters%SAI * (1. - FB)
     IF (parameters%ESAI < 0.05 .and. domain%croptype == 0) parameters%ESAI = 0.0                   ! MB: ESAI CHECK, change to 0.05 v3.6
     IF ((parameters%ELAI < 0.05 .OR. parameters%ESAI == 0.0) .and. domain%croptype == 0) parameters%ELAI = 0.0  ! MB: LAI CHECK
+    print*, "ELAI + ESAI = ", parameters%ELAI + parameters%ESAI
 
     ! set growing season flag
     ! change from orginal code: 

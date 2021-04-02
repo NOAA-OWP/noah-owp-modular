@@ -78,7 +78,8 @@ contains
     type(namelist_type) :: namelist
 
     this%dt       = namelist%dt
-    this%lat      = namelist%lon
+    this%lat      = namelist%lat
+    this%lon      = namelist%lon
     this%zsoil    = namelist%zsoil
     this%dzsnso   = namelist%dzsnso
     this%vegtyp   = namelist%vegtyp
