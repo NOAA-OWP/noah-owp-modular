@@ -303,7 +303,7 @@ contains
     this%structure_option = structure_option
     this%soil_depth       = soil_depth
     this%vegtyp           = vegtyp
-    this%vegtyp           = croptype
+    this%croptype         = croptype
     this%sfctyp           = sfctyp
 
     this%zsoil  = zsoil
