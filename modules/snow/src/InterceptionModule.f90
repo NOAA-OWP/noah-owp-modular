@@ -1,4 +1,4 @@
-module Interception
+module InterceptionModule
 
   use LevelsType
   use DomainType
@@ -17,13 +17,13 @@ contains
   SUBROUTINE InterceptionMain (domain, levels, options, parameters, forcing, energy, water)
     IMPLICIT NONE
 
-    type (    levels_type), intent(in) :: levels
-    type (parameters_type), intent(in) :: parameters
-    type (    domain_type)             :: domain
-    type (    energy_type)             :: energy
-    type (     water_type)             :: water
-    type (   forcing_type)             :: forcing
-    type (   options_type)             :: options
+    type (    levels_type), intent(in)    :: levels
+    type (parameters_type)                :: parameters
+    type (    domain_type)                :: domain
+    type (    energy_type)                :: energy
+    type (     water_type)                :: water
+    type (   forcing_type)                :: forcing
+    type (   options_type)                :: options
       
     ! Adjust LAI and SAI based on seasonality and snow depth
     call PHENOLOGY(domain, levels, options, parameters, forcing, energy, water)
@@ -39,7 +39,7 @@ contains
     IMPLICIT NONE
 
     type (    levels_type), intent(in) :: levels
-    type (parameters_type), intent(in) :: parameters
+    type (parameters_type)             :: parameters
     type (    domain_type)             :: domain
     type (    energy_type)             :: energy
     type (     water_type)             :: water
@@ -95,8 +95,8 @@ contains
     FB = DB / MAX(1.E-06, parameters%HVT - parameters%HVB)
 
     IF(parameters%HVT> 0. .AND. parameters%HVT <= 1.0) THEN          !MB: change to 1.0 and 0.2 to reflect
-      SNOWHC = parameters%HVT * EXP(-SNOWH/0.2)             !      changes to HVT in MPTABLE
-      FB     = MIN(SNOWH,SNOWHC)/SNOWHC
+      SNOWHC = parameters%HVT * EXP(-water%SNOWH/0.2)             !      changes to HVT in MPTABLE
+      FB     = MIN(water%SNOWH, SNOWHC) / SNOWHC
     ENDIF
     ! Compute ELAI and ESAI based on fraction of canopy covered by snow
     parameters%ELAI = parameters%LAI * (1. - FB)
@@ -123,13 +123,13 @@ contains
        IF(parameters%FVEG <= 0.05) parameters%FVEG = 0.05
     ELSE IF (options%dveg == 4 .or. options%dveg == 5 .or. options%dveg == 9) THEN
        parameters%FVEG = parameters%SHDMAX
-       IF(parameters%FVEG <= 0.05) FVEG = parameters%0.05
+       IF(parameters%FVEG <= 0.05) parameters%FVEG = 0.05
     ENDIF
     IF(domain%CROPTYPE > 0) THEN
        parameters%FVEG = parameters%SHDMAX
        IF(parameters%FVEG <= 0.05) parameters%FVEG = 0.05
     ENDIF
-    IF(parameters%urban_flag .OR. VEGTYP == parameters%ISBARREN) parameters%FVEG = 0.0
+    IF(parameters%urban_flag .OR. domain%VEGTYP == parameters%ISBARREN) parameters%FVEG = 0.0
     IF(parameters%ELAI + parameters%ESAI == 0.0) parameters%FVEG = 0.0
 
 
@@ -147,7 +147,7 @@ contains
     type (    domain_type), intent(in) :: domain
     type (    levels_type), intent(in) :: levels
     type (   options_type), intent(in) :: options
-    type (parameters_type), intent(in) :: parameters
+    type (parameters_type)             :: parameters
     type (     water_type)             :: water
     type (   forcing_type), intent(in) :: forcing
     type (    energy_type), intent(in) :: energy
@@ -246,4 +246,4 @@ contains
       
   END SUBROUTINE CanopyWaterIntercept
   
-end module Interception
+end module InterceptionModule

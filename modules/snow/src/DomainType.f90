@@ -67,7 +67,7 @@ contains
     this%vegtyp   = huge(1)
     this%croptype = huge(1)
     this%isltyp   = huge(1)
-    this%sfctyp.  = huge(1)
+    this%sfctyp   = huge(1)
     this%IST      = huge(1)
 
   end subroutine InitDefault
