@@ -232,7 +232,7 @@ contains
     namelist / soil_parameters / bb,satdk,satdw,maxsmc,satpsi,wltsmc, &
                                  refsmc,pctsand,pctclay,bvic,AXAJ,BXAJ,XXAJ,&
                                  BBVIC,G,slope,refkdt,refdk,SSI
-    namelist / veg_parameters  / CH2OP,NROOT,HVT,HVB,TMIN,SHDFAC,SHDMAX&
+    namelist / veg_parameters  / CH2OP,NROOT,HVT,HVB,TMIN,SHDFAC,SHDMAX,&
                                  LAI_JAN,LAI_FEB,LAI_MAR,LAI_APR,LAI_MAY,LAI_JUN,LAI_JUL,LAI_AUG,LAI_SEP,LAI_OCT,LAI_NOV,LAI_DEC,&
                                  SAI_JAN,SAI_FEB,SAI_MAR,SAI_APR,SAI_MAY,SAI_JUN,SAI_JUL,SAI_AUG,SAI_SEP,SAI_OCT,SAI_NOV,SAI_DEC
     namelist / forcing_options / precip_phase_option
