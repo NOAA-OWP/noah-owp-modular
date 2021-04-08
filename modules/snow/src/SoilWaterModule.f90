@@ -34,17 +34,17 @@ contains
   INTEGER                                 :: K,IZ   !do-loop index
   INTEGER                                 :: ITER   !iteration index
   REAl                                    :: DTFINE !fine time step (s)
-  REAL, DIMENSION(1:levels%soil)          :: RHSTT  !right-hand side term of the matrix
-  REAL, DIMENSION(1:levels%soil)          :: AI     !left-hand side term
-  REAL, DIMENSION(1:levels%soil)          :: BI     !left-hand side term
-  REAL, DIMENSION(1:levels%soil)          :: CI     !left-hand side term
+  REAL, DIMENSION(1:levels%nsoil)          :: RHSTT  !right-hand side term of the matrix
+  REAL, DIMENSION(1:levels%nsoil)          :: AI     !left-hand side term
+  REAL, DIMENSION(1:levels%nsoil)          :: BI     !left-hand side term
+  REAL, DIMENSION(1:levels%nsoil)          :: CI     !left-hand side term
   REAL                                    :: FICE   !ice fraction in frozen soil
   REAL                                    :: WPLUS  !saturation excess of the total soil [m]
   REAL                                    :: RSAT   !accumulation of WPLUS (saturation excess) [m]
   REAL                                    :: SH2OMIN!minimum soil liquid water content (m3/m3)
   REAL                                    :: WTSUB  !sum of WCND(K)*DZSNSO(K)
   REAL                                    :: MH2O   !water mass removal (mm)
-  REAL, DIMENSION(1:levels%soil)          :: MLIQ   !
+  REAL, DIMENSION(1:levels%nsoil)          :: MLIQ   !
   REAL                                    :: XS     !
   REAL                                    :: WATMIN !
   REAL                                    :: QDRAIN_SAVE !
@@ -62,7 +62,7 @@ contains
 
 ! for the case when snowmelt water is too large
 
-    DO K = 1,levels%soil
+    DO K = 1,levels%nsoil
        EPORE   = MAX ( 1.E-4 , ( parameters%SMCMAX(K) - water%SICE(K) ) )
        RSAT    = RSAT + MAX(0.,water%SH2O(K)-EPORE)*domain%dzsnso(K)  
        water%SH2O(K) = MIN(EPORE,water%SH2O(K))             
@@ -70,7 +70,7 @@ contains
 
 !impermeable fraction due to frozen soil
 
-    DO K = 1,levels%soil
+    DO K = 1,levels%nsoil
        FICE    = MIN(1.0,water%SICE(K)/parameters%SMCMAX(K))
        water%FCR(K)  = MAX(0.0,EXP(-A*(1.-FICE))- EXP(-A)) /  &
                         (1.0              - EXP(-A))
@@ -81,7 +81,7 @@ contains
     water%SICEMAX = 0.0
     water%FCRMAX  = 0.0
     SH2OMIN = parameters%SMCMAX(1)
-    DO K = 1,levels%soil
+    DO K = 1,levels%nsoil
        IF (water%SICE(K) > water%SICEMAX) water%SICEMAX = water%SICE(K)
        IF (water%FCR(K)  > water%FCRMAX)  water%FCRMAX  = water%FCR(K)
        IF (water%SH2O(K) < SH2OMIN) SH2OMIN = water%SH2O(K)
@@ -144,11 +144,11 @@ contains
 ! removal of soil water due to groundwater flow (option 2)
    IF(options%OPT_DRN == 2) THEN
          WTSUB = 0.
-         DO K = 1, levels%soil
+         DO K = 1, levels%nsoil
            WTSUB = WTSUB + water%WCND(K)*domain%dzsnso(K)
          END DO
 
-         DO K = 1, levels%soil
+         DO K = 1, levels%nsoil
            MH2O    = water%RUNSUB*domain%dt*(water%WCND(K)*domain%dzsnso(K))/WTSUB       ! mm
            water%SH2O(K) = water%SH2O(K) - MH2O/(domain%dzsnso(K)*1000.)
          END DO
@@ -157,12 +157,12 @@ contains
 ! Limit MLIQ to be greater than or equal to watmin.
 ! Get water needed to bring MLIQ equal WATMIN from lower layer.
    IF(options%OPT_DRN /= 1) THEN
-      DO IZ = 1, levels%soil
+      DO IZ = 1, levels%nsoil
          MLIQ(IZ) = water%SH2O(IZ)*domain%dzsnso(IZ)*1000.
       END DO
 
       WATMIN = 0.01           ! mm
-      DO IZ = 1, levels%soil-1
+      DO IZ = 1, levels%nsoil-1
           IF (MLIQ(IZ) .LT. 0.) THEN
              XS = WATMIN-MLIQ(IZ)
           ELSE
@@ -172,7 +172,7 @@ contains
           MLIQ(IZ+1) = MLIQ(IZ+1) - XS
       END DO
 
-        IZ = levels%soil
+        IZ = levels%nsoil
         IF (MLIQ(IZ) .LT. WATMIN) THEN
            XS = WATMIN-MLIQ(IZ)
         ELSE
@@ -182,7 +182,7 @@ contains
         water%RUNSUB   = water%RUNSUB - XS/domain%dt
         IF(options%OPT_DRN == 5) water%DEEPRECH = water%DEEPRECH - XS*1.E-3
 
-      DO IZ = 1, levels%soil
+      DO IZ = 1, levels%nsoil
         water%SH2O(IZ)     = MLIQ(IZ) / (domain%dzsnso(IZ)*1000.)
       END DO
    END IF

@@ -29,19 +29,19 @@ contains
   REAL,                     INTENT(IN)  :: dt
 
 ! output
-    REAL, DIMENSION(1:levels%soil), INTENT(OUT) :: RHSTT
-    REAL, DIMENSION(1:levels%soil), INTENT(OUT) :: AI
-    REAL, DIMENSION(1:levels%soil), INTENT(OUT) :: BI
-    REAL, DIMENSION(1:levels%soil), INTENT(OUT) :: CI
+    REAL, DIMENSION(1:levels%nsoil), INTENT(OUT) :: RHSTT
+    REAL, DIMENSION(1:levels%nsoil), INTENT(OUT) :: AI
+    REAL, DIMENSION(1:levels%nsoil), INTENT(OUT) :: BI
+    REAL, DIMENSION(1:levels%nsoil), INTENT(OUT) :: CI
 
 ! local
     INTEGER                               :: K
-    REAL, DIMENSION(1:levels%soil)              :: DDZ
-    REAL, DIMENSION(1:levels%soil)              :: DENOM
-    REAL, DIMENSION(1:levels%soil)              :: DSMDZ
-    REAL, DIMENSION(1:levels%soil)              :: WFLUX
-    REAL, DIMENSION(1:levels%soil)              :: WDF
-    REAL, DIMENSION(1:levels%soil)              :: SMX
+    REAL, DIMENSION(1:levels%nsoil)              :: DDZ
+    REAL, DIMENSION(1:levels%nsoil)              :: DENOM
+    REAL, DIMENSION(1:levels%nsoil)              :: DSMDZ
+    REAL, DIMENSION(1:levels%nsoil)              :: WFLUX
+    REAL, DIMENSION(1:levels%nsoil)              :: WDF
+    REAL, DIMENSION(1:levels%nsoil)              :: SMX
     REAL                                  :: TEMP1
     REAL                                  :: SMXWTD !soil moisture between bottom of the soil and water table
     REAL                                  :: SMXBOT  !soil moisture below bottom to calculate flux
@@ -50,7 +50,7 @@ contains
 ! ----------------------------------------------------------------------
 
     IF(options%OPT_INF == 1) THEN
-      DO K = 1, levels%soil
+      DO K = 1, levels%nsoil
         CALL WDFCND1 (parameters,WDF(K),water%WCND(K),water%SMC(K),water%FCR(K),K)
         SMX(K) = water%SMC(K)
       END DO
@@ -58,21 +58,21 @@ contains
     END IF
 
     IF(options%OPT_INF == 2) THEN
-      DO K = 1, levels%soil
+      DO K = 1, levels%nsoil
         CALL WDFCND2 (parameters,WDF(K),water%WCND(K),water%SH2O(K),water%SICEMAX,K)
         SMX(K) = water%SH2O(K)
       END DO
-          IF(options%OPT_DRN == 5)SMXWTD=water%SMCWTD*water%SH2O(levels%soil)/water%SMC(levels%soil)  !same liquid fraction as in the bottom layer
+          IF(options%OPT_DRN == 5)SMXWTD=water%SMCWTD*water%SH2O(levels%nsoil)/water%SMC(levels%nsoil)  !same liquid fraction as in the bottom layer
     END IF
 
-    DO K = 1, levels%soil
+    DO K = 1, levels%nsoil
        IF(K == 1) THEN
           DENOM(K) = - domain%zsoil (K)
           TEMP1    = - domain%zsoil (K+1)
           DDZ(K)   = 2.0 / TEMP1
           DSMDZ(K) = 2.0 * (SMX(K) - SMX(K+1)) / TEMP1
           WFLUX(K) = WDF(K) * DSMDZ(K) + water%WCND(K) - water%PDDUM + water%ETRANI(K) + water%QSEVA
-       ELSE IF (K < levels%soil) THEN
+       ELSE IF (K < levels%nsoil) THEN
           DENOM(k) = (domain%zsoil(K-1) - domain%zsoil(K))
           TEMP1    = (domain%zsoil(K-1) - domain%zsoil(K+1))
           DDZ(K)   = 2.0 / TEMP1
@@ -93,7 +93,7 @@ contains
           END IF
           IF(options%OPT_DRN == 5) THEN   !gmm new m-m&f water table dynamics formulation
              TEMP1    = 2.0 * DENOM(K)
-             IF(water%ZWT < domain%zsoil(levels%soil)-DENOM(levels%soil))THEN
+             IF(water%ZWT < domain%zsoil(levels%nsoil)-DENOM(levels%nsoil))THEN
 !gmm interpolate from below, midway to the water table, to the middle of the auxiliary layer below the soil bottom
                 SMXBOT = SMX(K) - (SMX(K)-SMXWTD) *  DENOM(K) * 2./ (DENOM(K)+domain%zsoil(K)-water%ZWT)
              ELSE
@@ -106,12 +106,12 @@ contains
        END IF
     END DO
 
-    DO K = 1, levels%soil
+    DO K = 1, levels%nsoil
        IF(K == 1) THEN
           AI(K)    =   0.0
           BI(K)    =   WDF(K  ) * DDZ(K  ) / DENOM(K)
           CI(K)    = - BI (K)
-       ELSE IF (K < levels%soil) THEN
+       ELSE IF (K < levels%nsoil) THEN
           AI(K)    = - WDF(K-1) * DDZ(K-1) / DENOM(K)
           CI(K)    = - WDF(K  ) * DDZ(K  ) / DENOM(K)
           BI(K)    = - ( AI (K) + CI (K) )
@@ -144,23 +144,23 @@ contains
     REAL, INTENT(IN)                            :: dt
 
 !output
-    REAL, DIMENSION(1:levels%soil), INTENT(INOUT) :: AI
-    REAL, DIMENSION(1:levels%soil), INTENT(INOUT) :: BI
-    REAL, DIMENSION(1:levels%soil), INTENT(INOUT) :: CI
-    REAL, DIMENSION(1:levels%soil), INTENT(INOUT) :: RHSTT
+    REAL, DIMENSION(1:levels%nsoil), INTENT(INOUT) :: AI
+    REAL, DIMENSION(1:levels%nsoil), INTENT(INOUT) :: BI
+    REAL, DIMENSION(1:levels%nsoil), INTENT(INOUT) :: CI
+    REAL, DIMENSION(1:levels%nsoil), INTENT(INOUT) :: RHSTT
     REAL, INTENT(OUT)                       :: WPLUS     !saturation excess water (m)
 
 !local
     INTEGER                                 :: K
-    REAL, DIMENSION(1:levels%soil)                :: RHSTTIN
-    REAL, DIMENSION(1:levels%soil)                :: CIIN
+    REAL, DIMENSION(1:levels%nsoil)                :: RHSTTIN
+    REAL, DIMENSION(1:levels%nsoil)                :: CIIN
     REAL                                    :: STOT
     REAL                                    :: EPORE
     REAL                                    :: WMINUS
 ! ----------------------------------------------------------------------
     WPLUS = 0.0
 
-    DO K = 1,levels%soil
+    DO K = 1,levels%nsoil
        RHSTT (K) =   RHSTT(K) * dt
        AI (K)    =      AI(K) * dt
        BI (K)    = 1. + BI(K) * dt
@@ -169,7 +169,7 @@ contains
 
 ! copy values for input variables before calling rosr12
 
-    DO K = 1,levels%soil
+    DO K = 1,levels%nsoil
        RHSTTIN(k) = RHSTT(K)
        CIIN(k)    = CI(K)
     END DO
@@ -178,27 +178,27 @@ contains
 
     CALL ROSR12 (CI,AI,BI,CIIN,RHSTTIN,RHSTT,1,domain,levels,0)
 
-    DO K = 1,levels%soil
+    DO K = 1,levels%nsoil
         water%SH2O(K) = water%SH2O(K) + CI(K)
     ENDDO
 
 !  excessive water above saturation in a layer is moved to
 !  its unsaturated layer like in a bucket
 
-!gmmwith opt_drn=5 there is soil moisture below levels%soil, to the water table
+!gmmwith opt_drn=5 there is soil moisture below levels%nsoil, to the water table
   IF(options%OPT_DRN == 5) THEN
 !update smcwtd
 
-     IF(water%ZWT < domain%zsoil(levels%soil)-domain%dzsnso(levels%soil))THEN
+     IF(water%ZWT < domain%zsoil(levels%nsoil)-domain%dzsnso(levels%nsoil))THEN
 !accumulate qdrain to update deep water table and soil moisture later
         water%DEEPRECH =  water%DEEPRECH + dt * water%QDRAIN
      ELSE
-        water%SMCWTD = water%SMCWTD + dt * water%QDRAIN  / domain%dzsnso(levels%soil)
-        WPLUS = MAX((water%SMCWTD-parameters%SMCMAX(levels%soil)), 0.0) * domain%dzsnso(levels%soil)
-        WMINUS = MAX((1.E-4-water%SMCWTD), 0.0) * domain%dzsnso(levels%soil)
+        water%SMCWTD = water%SMCWTD + dt * water%QDRAIN  / domain%dzsnso(levels%nsoil)
+        WPLUS = MAX((water%SMCWTD-parameters%SMCMAX(levels%nsoil)), 0.0) * domain%dzsnso(levels%nsoil)
+        WMINUS = MAX((1.E-4-water%SMCWTD), 0.0) * domain%dzsnso(levels%nsoil)
 
-        water%SMCWTD = MAX( MIN(water%SMCWTD,parameters%SMCMAX(levels%soil)) , 1.E-4)
-        water%SH2O(levels%soil) = water%SH2O(levels%soil) + WPLUS/domain%dzsnso(levels%soil)
+        water%SMCWTD = MAX( MIN(water%SMCWTD,parameters%SMCMAX(levels%nsoil)) , 1.E-4)
+        water%SH2O(levels%nsoil) = water%SH2O(levels%nsoil) + WPLUS/domain%dzsnso(levels%nsoil)
 
 !reduce fluxes at the bottom boundaries accordingly
         water%QDRAIN = water%QDRAIN - WPLUS/dt
@@ -207,7 +207,7 @@ contains
 
   ENDIF
 
-    DO K = levels%soil,2,-1
+    DO K = levels%nsoil,2,-1
       EPORE        = MAX ( 1.E-4 , ( parameters%SMCMAX(K) - water%SICE(K) ) )
       WPLUS        = MAX((water%SH2O(K)-EPORE), 0.0) * domain%dzsnso(K)
       water%SH2O(K)  = MIN(EPORE,water%SH2O(K))
@@ -220,16 +220,16 @@ contains
 
    IF(WPLUS > 0.0) THEN
     water%SH2O(2)      = water%SH2O(2) + WPLUS/domain%dzsnso(2)
-    DO K = 2,levels%soil-1
+    DO K = 2,levels%nsoil-1
       EPORE        = MAX ( 1.E-4 , ( parameters%SMCMAX(K) - water%SICE(K) ) )
       WPLUS        = MAX((water%SH2O(K)-EPORE), 0.0) * domain%dzsnso(K)
       water%SH2O(K)      = MIN(EPORE,water%SH2O(K))
       water%SH2O(K+1)    = water%SH2O(K+1) + WPLUS/domain%dzsnso(K+1)
     END DO
 
-    EPORE = MAX ( 1.E-4 , ( parameters%SMCMAX(levels%soil) - water%SICE(levels%soil) ) )
-    WPLUS = MAX((water%SH2O(levels%soil)-EPORE), 0.0) * domain%dzsnso(levels%soil) 
-    water%SH2O(levels%soil) = MIN(EPORE,water%SH2O(levels%soil))
+    EPORE = MAX ( 1.E-4 , ( parameters%SMCMAX(levels%nsoil) - water%SICE(levels%nsoil) ) )
+    WPLUS = MAX((water%SH2O(levels%nsoil)-EPORE), 0.0) * domain%dzsnso(levels%nsoil) 
+    water%SH2O(levels%nsoil) = MIN(EPORE,water%SH2O(levels%nsoil))
    END IF
    
     water%SMC = water%SH2O + water%SICE
@@ -264,13 +264,13 @@ contains
     INTEGER, INTENT(IN)   :: NTOP           
     INTEGER               :: K, KK, nnsnow
 
-    REAL, DIMENSION(nnsnow+1:levels%soil),INTENT(IN):: A, B, D
-    REAL, DIMENSION(nnsnow+1:levels%soil),INTENT(INOUT):: C,P,DELTA
+    REAL, DIMENSION(nnsnow+1:levels%nsoil),INTENT(IN):: A, B, D
+    REAL, DIMENSION(nnsnow+1:levels%nsoil),INTENT(INOUT):: C,P,DELTA
 
 ! ----------------------------------------------------------------------
 ! INITIALIZE EQN COEF C FOR THE LOWEST SOIL LAYER
 ! ----------------------------------------------------------------------
-    C (levels%soil) = 0.0
+    C (levels%nsoil) = 0.0
     P (NTOP) = - C (NTOP) / B (NTOP)
 ! ----------------------------------------------------------------------
 ! SOLVE THE COEFS FOR THE 1ST SOIL LAYER
@@ -279,7 +279,7 @@ contains
 ! ----------------------------------------------------------------------
 ! SOLVE THE COEFS FOR SOIL LAYERS 2 THRU NSOIL
 ! ----------------------------------------------------------------------
-    DO K = NTOP+1,levels%soil
+    DO K = NTOP+1,levels%nsoil
        P (K) = - C (K) * ( 1.0 / (B (K) + A (K) * P (K -1)) )
        DELTA (K) = (D (K) - A (K)* DELTA (K -1))* (1.0/ (B (K) + A (K)&
             * P (K -1)))
@@ -287,12 +287,12 @@ contains
 ! ----------------------------------------------------------------------
 ! SET P TO DELTA FOR LOWEST SOIL LAYER
 ! ----------------------------------------------------------------------
-    P (levels%soil) = DELTA (levels%soil)
+    P (levels%nsoil) = DELTA (levels%nsoil)
 ! ----------------------------------------------------------------------
 ! ADJUST P FOR SOIL LAYERS 2 THRU NSOIL
 ! ----------------------------------------------------------------------
-    DO K = NTOP+1,levels%soil
-       KK = levels%soil - K + (NTOP-1) + 1
+    DO K = NTOP+1,levels%nsoil
+       KK = levels%nsoil - K + (NTOP-1) + 1
        P (KK) = P (KK) * P (KK +1) + DELTA (KK)
     END DO
 ! ----------------------------------------------------------------------

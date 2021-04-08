@@ -28,6 +28,8 @@ OBJS = \
         ../src/AtmProcessing.o \
         ../src/ForcingModule.o \
         ../src/InterceptionModule.o \
+        ../src/EnergyModule.o \
+        ../src/ThermalPropertiesModule.o \
 	../driver/snow_output.o \
 	../driver/snow_driver.o
 

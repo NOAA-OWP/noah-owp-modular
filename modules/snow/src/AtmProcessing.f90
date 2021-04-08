@@ -45,16 +45,16 @@ contains
 !---------------- TO DO 2021-03-22 ---------------------
 !---------------- COMPUTATION OF COSZ FOR ENERGY MODULE -------------
 
-       !IF(COSZ <= 0.) THEN 
-       !   SWDOWN = 0.
-       !ELSE
-       !   SWDOWN = SOLDN
-       !END IF 
+    !IF(COSZ <= 0.) THEN 
+    !   SWDOWN = 0.
+    !ELSE
+    !   SWDOWN = SOLDN
+    !END IF 
 
-       !SOLAD(1) = SWDOWN*0.7*0.5     ! direct  vis
-       !SOLAD(2) = SWDOWN*0.7*0.5     ! direct  nir
-       !SOLAI(1) = SWDOWN*0.3*0.5     ! diffuse vis
-       !SOLAI(2) = SWDOWN*0.3*0.5     ! diffuse nir
+    !SOLAD(1) = SWDOWN*0.7*0.5     ! direct  vis
+    !SOLAD(2) = SWDOWN*0.7*0.5     ! direct  nir
+    !SOLAI(1) = SWDOWN*0.3*0.5     ! diffuse vis
+    !SOLAI(2) = SWDOWN*0.3*0.5     ! diffuse nir
 
 !---------------- END TO DO
 
@@ -108,44 +108,48 @@ contains
       ENDIF
     ENDIF
         
-        ! OPT_SNF == 3: rain-snow air temperature threshold of 0°C
+    ! OPT_SNF == 3: rain-snow air temperature threshold of 0°C
 
-        IF(options%OPT_SNF == 3) THEN
-            IF(forcing%SFCTMP >= parameters%TFRZ) THEN
-                forcing%FPICE = 0.
-            ELSE
-                forcing%FPICE = 1.0
-            ENDIF
-        ENDIF
+    IF(options%OPT_SNF == 3) THEN
+      IF(forcing%SFCTMP >= parameters%TFRZ) THEN
+        forcing%FPICE = 0.
+      ELSE
+        forcing%FPICE = 1.0
+      ENDIF
+    ENDIF
 
-        ! OPT_SNF == 4: precipitation phase from weather model
+    ! OPT_SNF == 4: precipitation phase from weather model
 
-        IF(options%OPT_SNF == 4) THEN
-            prcp_frozen = forcing%PRCPSNOW + forcing%PRCPGRPL + forcing%PRCPHAIL
-            IF(forcing%PRCPNONC > 0. .and. prcp_frozen > 0.) THEN
-                forcing%FPICE = MIN(1.0, prcp_frozen / forcing%PRCPNONC)
-                forcing%FPICE = MAX(0.0, forcing%FPICE)
-            ELSE
-                forcing%FPICE = 0.0
-            ENDIF
-        ENDIF
+    IF(options%OPT_SNF == 4) THEN
+      prcp_frozen = forcing%PRCPSNOW + forcing%PRCPGRPL + forcing%PRCPHAIL
+      IF(forcing%PRCPNONC > 0. .and. prcp_frozen > 0.) THEN
+        forcing%FPICE = MIN(1.0, prcp_frozen / forcing%PRCPNONC)
+        forcing%FPICE = MAX(0.0, forcing%FPICE)
+      ELSE
+        forcing%FPICE = 0.0
+      ENDIF
+    ENDIF
 
-        ! Calculate rain and snow as function of FPICE
-        water%RAIN   = PRCP * (1. - forcing%FPICE)
-        water%SNOW   = PRCP * forcing%FPICE
+    ! Calculate rain and snow as function of FPICE
+    water%RAIN   = PRCP * (1. - forcing%FPICE)
+    water%SNOW   = PRCP * forcing%FPICE
 
-        ! Compute the density of new snow
-        
-        ! Hedstrom NR and JW Pomeroy (1998), Hydrol. Processes, 12, 1611-1625
-        water%BDFALL = MIN(120., 67.92 + 51.25 * EXP((forcing%SFCTMP - parameters%TFRZ)/2.59))       !MB/AN: change to MIN  
-        
-        ! Modify bulk density if other frozen hydrometeors from weather model
-        IF(options%OPT_SNF == 4) THEN
-            water%BDFALL = water%BDFALL * (forcing%PRCPSNOW / PRCP_FROZEN) + &
-                           RHO_GRPL * (forcing%PRCPGRPL / PRCP_FROZEN) + &
-                           RHO_HAIL * (forcing%PRCPHAIL / PRCP_FROZEN)
-        ENDIF
+    ! Compute the density of new snow
 
+    ! Hedstrom NR and JW Pomeroy (1998), Hydrol. Processes, 12, 1611-1625
+    water%BDFALL = MIN(120., 67.92 + 51.25 * EXP((forcing%SFCTMP - parameters%TFRZ)/2.59))       !MB/AN: change to MIN  
+
+    ! Modify bulk density if other frozen hydrometeors from weather model
+    IF(options%OPT_SNF == 4) THEN
+      water%BDFALL = water%BDFALL * (forcing%PRCPSNOW / PRCP_FROZEN) + &
+                     RHO_GRPL * (forcing%PRCPGRPL / PRCP_FROZEN) + &
+                     RHO_HAIL * (forcing%PRCPHAIL / PRCP_FROZEN)
+    ENDIF
+
+    ! Compute wind speed at reference height: ur >= 1
+    ! Moved from main level of ENERGY, KSJ 2021-04-06
+
+    forcing%UR = MAX( SQRT(forcing%uwind**2. + forcing%vwind**2.), 1. )
 
   END SUBROUTINE ATM
   

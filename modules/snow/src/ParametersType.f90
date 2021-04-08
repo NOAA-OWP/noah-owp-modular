@@ -21,9 +21,12 @@ type, public :: parameters_type
   real                            :: XXAJ   ! Xinanjiang: Free water distribution shape parameter [-]
   real                            :: BBVIC  ! DVIC heterogeniety parameter for infiltration 
   real                            :: G      ! Mean Capillary Drive (m) for infiltration models
+  real                            :: QUARTZ ! fraction of soil comprised of quartz [-] (equal to pctsand/100)
   real                            :: kdt    !
   real                            :: refkdt !
   real                            :: refdk  !
+  real                            :: csoil  ! volumetric soil heat capacity [j/m3/K]
+  real                            :: Z0     ! bare soil roughness length (m)
   real                            :: frzx   !
   real                            :: slope  ! drainage parameter
   real                            :: timean
@@ -40,6 +43,8 @@ type, public :: parameters_type
   real                            :: TMIN   ! minimum temperature for photosynthesis (k)
   real                            :: SHDFAC ! fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
   real                            :: SHDMAX ! annual maximum fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
+  real                            :: Z0MVT  ! momentum roughness length (m)
+  real                            :: CWP    ! canopy wind absorption coefficient (formerly CWPVT)
   real                            :: ELAI
   real                            :: ESAI
   real                            :: FVEG ! vegetation fraction
@@ -70,7 +75,12 @@ type, public :: parameters_type
   real                            :: RW       !gas constant for  water vapor (j/kg/k)
   real                            :: DENH2O   !density of water (kg/m3)
   real                            :: DENICE   !density of ice (kg/m3)
+  real                            :: THKW     ! thermal conductivity of water in soil module (W/m/K)
+  real                            :: THKO     ! thermal conductivity of for other soil components in soil module (W/m/K)
+  real                            :: THKQTZ   ! thermal conductivity of quartz in soil module (W/m/K)
   real                            :: SSI      !liquid water holding capacity for snowpack (m3/m3)
+  real                            :: MFSNO    ! fractional snow covered area (FSNO) curve parameter
+  real                            :: Z0SNO    ! snow surface roughness length (m)
   real                            :: WSLMAX   !maximum lake water storage (mm)
   real                            :: max_liq_mass_fraction !For snow water retention
   real                            :: SNOW_RET_FAC !snowpack water release timescale factor (1/s)
@@ -128,19 +138,20 @@ contains
     class(parameters_type) :: this
     type(namelist_type) :: namelist
 
-    this%bexp   = namelist%bb    (namelist%isltyp)
-    this%smcmax = namelist%maxsmc(namelist%isltyp)
-    this%smcwlt = namelist%wltsmc(namelist%isltyp)
-    this%smcref = namelist%refsmc(namelist%isltyp)
-    this%dksat  = namelist%satdk (namelist%isltyp)
-    this%dwsat  = namelist%satdw (namelist%isltyp)
-    this%psisat = namelist%satpsi(namelist%isltyp)
-    this%bvic   = namelist%bvic  (namelist%isltyp)
-    this%AXAJ   = namelist%AXAJ  (namelist%isltyp)
-    this%BXAJ   = namelist%BXAJ  (namelist%isltyp)
-    this%XXAJ   = namelist%XXAJ  (namelist%isltyp)
-    this%BBVIC  = namelist%BBVIC (namelist%isltyp)
-    this%G      = namelist%G     (namelist%isltyp)
+    this%bexp   = namelist%bb     (namelist%isltyp)
+    this%smcmax = namelist%maxsmc (namelist%isltyp)
+    this%smcwlt = namelist%wltsmc (namelist%isltyp)
+    this%smcref = namelist%refsmc (namelist%isltyp)
+    this%dksat  = namelist%satdk  (namelist%isltyp)
+    this%dwsat  = namelist%satdw  (namelist%isltyp)
+    this%psisat = namelist%satpsi (namelist%isltyp)
+    this%bvic   = namelist%bvic   (namelist%isltyp)
+    this%AXAJ   = namelist%AXAJ   (namelist%isltyp)
+    this%BXAJ   = namelist%BXAJ   (namelist%isltyp)
+    this%XXAJ   = namelist%XXAJ   (namelist%isltyp)
+    this%BBVIC  = namelist%BBVIC  (namelist%isltyp)
+    this%G      = namelist%G      (namelist%isltyp)
+    this%QUARTZ = namelist%QUARTZ (namelist%isltyp)
     this%LAIM   = namelist%LAIM_TABLE  (namelist%vegtyp, :)
     this%SAIM   = namelist%SAIM_TABLE  (namelist%vegtyp, :)
     this%CH2OP  = namelist%CH2OP (namelist%vegtyp)
@@ -150,11 +161,17 @@ contains
     this%TMIN   = namelist%TMIN (namelist%vegtyp)
     this%SHDFAC = namelist%SHDFAC (namelist%vegtyp)
     this%SHDMAX = namelist%SHDFAC (namelist%vegtyp)
+    this%Z0MVT  = namelist%Z0MVT (namelist%vegtyp)
+    this%CWP    = namelist%CWP
     this%refkdt = namelist%refkdt
     this%refdk  = namelist%refdk
     this%kdt    = this%refkdt * this%dksat(1) / this%refdk
+    this%csoil  = namelist%csoil
+    this%Z0     = namelist%Z0
     this%frzx   = 0.15 * (this%smcmax(1) / this%smcref(1)) * (0.412 / 0.468)
     this%SSI    = namelist%SSI  
+    this%MFSNO  = namelist%MFSNO  
+    this%Z0SNO  = namelist%Z0SNO  
     this%slope      = namelist%slope
     this%ISURBAN                   = namelist%ISURBAN
     this%ISWATER                   = namelist%ISWATER
@@ -186,6 +203,9 @@ contains
     this%RW         = 461.269 
     this%DENH2O     = 1000.0
     this%DENICE     = 917.0
+    this%THKW       = 0.57
+    this%THKO       = 2.0
+    this%THKQTZ     = 7.7
     this%WSLMAX     = 5000.0 
     this%max_liq_mass_fraction = 0.4
     this%SNOW_RET_FAC = 5.e-5

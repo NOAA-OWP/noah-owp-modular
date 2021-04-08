@@ -16,6 +16,7 @@ program water_driver
   use WaterModule
   use ForcingModule
   use InterceptionModule
+  use EnergyModule
 
   implicit none
 
@@ -112,6 +113,7 @@ program water_driver
     water%ISNOW    = 0
     water%SNOWH    = 0.0
     water%SNEQV    = 0.0
+    water%BDSNO    = 0.0
     water%PONDING  = 0.0
     water%PONDING1 = 0.0
     water%PONDING2 = 0.0
@@ -123,6 +125,7 @@ program water_driver
     water%SNICE    = 0.0
     water%SNLIQ    = 0.0
     water%FICEOLD  = 0.0
+    water%FSNO     = 0.0
 ! for energy-related variable
     energy%TV      = 298.0        ! leaf temperature [K]
     energy%TG      = 298.0        ! ground temperature [K]
@@ -216,6 +219,12 @@ program water_driver
   !--------------------------------------------------------------------- 
 
     call InterceptionMain (domain, levels, options, parameters, forcing, energy, water)
+
+  !---------------------------------------------------------------------
+  ! call the main energy balance routines 
+  !--------------------------------------------------------------------- 
+
+    call EnergyMain (domain, levels, options, parameters, forcing, energy, water)
 
   !---------------------------------------------------------------------
   ! call the main water routines (canopy + snow + soil water components)

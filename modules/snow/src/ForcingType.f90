@@ -26,6 +26,7 @@ type, public :: forcing_type
 
 ! outputs
 
+  real    :: UR     ! wind speed at reference height
   real    :: THAIR  !potential temperature (k)
   real    :: QAIR   !specific humidity (kg/kg) (q2/(1+q2))
   real    :: EAIR   !vapor pressure air (pa)
@@ -72,6 +73,7 @@ contains
     this%PRCPSNOW  = huge(1.0)
     this%PRCPGRPL  = huge(1.0)
     this%PRCPHAIL  = huge(1.0)
+    this%UR        = huge(1.0)
     this%THAIR     = huge(1.0)
     this%QAIR      = huge(1.0)
     this%EAIR      = huge(1.0)

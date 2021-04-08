@@ -52,7 +52,7 @@ contains
    CALL SnowRenew (domain, levels, parameters, energy, water) ! originally named SNOWH2O
 
 !set empty snow layers to zero
-   do iz = -levels%snow+1, water%isnow
+   do iz = -levels%nsnow+1, water%isnow
         water%snice(iz)  = 0.
         water%snliq(iz)  = 0.
         energy%stc(iz)   = 0.
