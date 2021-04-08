@@ -82,9 +82,9 @@ contains
    REAL                        :: QIN       !water flow into the element (mm/s)
    REAL                        :: QOUT      !water flow out of the element (mm/s)
    REAL                        :: WGDIF     !ice mass after minus sublimation
-   REAL, DIMENSION(-levels%snow+1:0) :: VOL_LIQ   !partial volume of liquid water in layer
-   REAL, DIMENSION(-levels%snow+1:0) :: VOL_ICE   !partial volume of ice lens in layer
-   REAL, DIMENSION(-levels%snow+1:0) :: EPORE     !effective porosity = porosity - VOL_ICE
+   REAL, DIMENSION(-levels%nsnow+1:0) :: VOL_LIQ   !partial volume of liquid water in layer
+   REAL, DIMENSION(-levels%nsnow+1:0) :: VOL_ICE   !partial volume of ice lens in layer
+   REAL, DIMENSION(-levels%nsnow+1:0) :: EPORE     !effective porosity = porosity - VOL_ICE
    REAL :: PROPOR, TEMP
 ! ----------------------------------------------------------------------
 

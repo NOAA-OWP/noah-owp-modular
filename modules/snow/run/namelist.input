@@ -16,6 +16,7 @@
   precipitating   = .true.  ! start with precipitation
   uwind           = 3.0     ! wind speed m/s
   vwind           = 3.0     ! wind speed m/s
+  ZREF            = 10.0    ! measurment height for wind speed
 /
 
 &forcing_options
@@ -64,10 +65,18 @@
     XXAJ =     0.05,    0.08,    0.09,    0.25,    0.15,    0.18,    0.20,    0.22,    0.23,    0.25,    0.28,    0.30
    BBVIC =    1.000,   1.010,   1.020,   1.025,   1.000,   1.000,   1.032,   1.035,   1.040,   1.042,   1.045,   1.000
        G =    0.050,   0.070,   0.130,   0.200,   0.170,   0.110,   0.260,   0.350,   0.260,   0.300,   0.380,   0.410
+  QUARTZ =     0.92,    0.82,    0.58,    0.17,     0.5,    0.43,    0.58,    0.10,    0.32,    0.52,     0.6,    0.22
    slope = 0.1
   refkdt = 3.0
-   refdk = 2.e-6
-   SSI   = 0.03
+   refdk = 2.0e-6
+   csoil = 2.0e+6 ! volumetric soil heat capacity [j/m3/K]
+      Z0 = 0.002  ! bare soil roughness length (m)
+/
+
+&snow_parameters
+ SSI   = 0.03  ! liquid water holding capacity of snowpack (m3/m3)
+ MFSNO = 2.5   ! fractional snow covered area (FSNO) curve parameter
+ Z0SNO = 0.002 ! snow surface roughness length (m)
 /
 
 &veg_parameters ! these are the modis parameters from MPTABLE.TBL in HRLDAS
@@ -81,6 +90,8 @@
  TMIN   =   265,    273,    268,    273,    268,    273,    273,    273,    273,    273,    268,    273,      0,    273,      0,      0,      0,    268,    268,    268,
  SHDFAC =  0.70,   0.95,   0.70,   0.80,   0.80,   0.70,   0.70,   0.70,   0.50,   0.80,   0.60,   0.80,   0.10,   0.80,   0.00,   0.01,   0.00,   0.60,   0.60,   0.30,
  SHDMAX =  0.70,   0.95,   0.70,   0.80,   0.80,   0.70,   0.70,   0.70,   0.50,   0.80,   0.60,   0.80,   0.10,   0.80,   0.00,   0.01,   0.00,   0.60,   0.60,   0.30,
+ Z0MVT  =  1.09,   1.10,   0.85,   0.80,   0.80,   0.20,   0.06,   0.60,   0.50,   0.12,   0.30,   0.15,   1.00,   0.14,   0.00,   0.00,   0.00,   0.30,   0.20,   0.03,
+ CWP    =  0.18,
 ! Monthly values, one row for each month:
  SAI_JAN = 0.4,    0.5,    0.3,    0.4,    0.4,    0.3,    0.2,    0.4,    0.3,    0.3,    0.3,    0.3,    0.0,    0.3,    0.0,    0.0,    0.0,    0.2,    0.1,    0.0,
  SAI_FEB = 0.4,    0.5,    0.3,    0.4,    0.4,    0.3,    0.2,    0.4,    0.3,    0.3,    0.3,    0.3,    0.0,    0.3,    0.0,    0.0,    0.0,    0.2,    0.1,    0.0,

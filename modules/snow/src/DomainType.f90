@@ -13,6 +13,7 @@ type, public :: domain_type
   real    :: dt
   real    :: lat
   real    :: lon
+  real    :: ZREF
   integer :: vegtyp
   integer :: croptype
   integer :: isltyp
@@ -64,6 +65,7 @@ contains
     this%dt       = huge(1.0)
     this%lat      = huge(1.0)
     this%lon      = huge(1.0)
+    this%ZREF     = huge(1.0)
     this%vegtyp   = huge(1)
     this%croptype = huge(1)
     this%isltyp   = huge(1)
@@ -80,6 +82,7 @@ contains
     this%dt       = namelist%dt
     this%lat      = namelist%lat
     this%lon      = namelist%lon
+    this%ZREF      = namelist%ZREF
     this%zsoil    = namelist%zsoil
     this%dzsnso   = namelist%dzsnso
     this%vegtyp   = namelist%vegtyp

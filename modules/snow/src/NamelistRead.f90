@@ -11,10 +11,12 @@ type, public :: namelist_type
   character*256 :: output_filename    ! name of the output file
   real          :: lat                ! latitude (°)
   real          :: lon                ! longitude (°)
-  real          :: preciprate
-  integer       :: precip_duration
-  integer       :: dry_duration
-  logical       :: precipitating
+  real          :: preciprate         ! precipitation rate 
+  integer       :: precip_duration    ! duration of precipitation event (# of timesteps)
+  integer       :: dry_duration       ! duration of dry event (# of timesteps)
+  logical       :: precipitating      ! logical flag for when it is precipitating
+  real          :: ZREF               ! measurement height for wind speed (m)
+  
   integer       :: isltyp
   integer       :: nsoil
   integer       :: nsnow
@@ -65,9 +67,12 @@ type, public :: namelist_type
   real, dimension(12) ::   XXAJ   ! Xinanjiang: Free water distribution shape parameter [-]
   real, dimension(12) ::   G      ! Mean Capillary Drive (m) for infiltration models
   real, dimension(12) ::   BBVIC  ! DVIC heterogeniety parameter for infiltration 
+  real, dimension(12) ::   QUARTZ ! fraction of soil comprised of quartz [-] (equal to pctsand/100)
   real                ::   slope  ! free drainage parameter
   real                ::  refkdt  ! infiltration parameter for Schaake scheme
   real                ::   refdk  ! reference diffusivity for Schaake scheme
+  real                ::   csoil  ! volumetric soil heat capacity [j/m3/K]
+  real                ::   Z0     ! bare soil roughness length (m)
 
   !--------------------!
   !  Vegetation parameters   !
@@ -83,6 +88,8 @@ type, public :: namelist_type
   real, dimension(20)     ::   TMIN           ! minimum temperature for photosynthesis (k)
   real, dimension(20)     ::   SHDFAC         ! fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
   real, dimension(20)     ::   SHDMAX         ! annual maximum fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
+  real, dimension(20)     ::   ZOMVT          ! momentum roughness length (m)
+  real                    ::   CWP            ! canopy wind absorption coefficient (formerly CWPVT)
   real, dimension(20,12)  ::   LAIM_TABLE     ! monthly leaf area index, one-sided
   real, dimension(20,12)  ::   SAIM_TABLE     ! monthly stem area index, one-sided
   
@@ -90,7 +97,9 @@ type, public :: namelist_type
   !--------------------!
   !  snow parameters   !
   !--------------------!
-  real                ::   SSI
+  real                ::   SSI     ! liquid water holding capacity of snowpack (m3/m3)
+  real                ::   MFSNO   ! fractional snow covered area (FSNO) curve parameter
+  real                ::   Z0SNO   ! snow surface roughness length (m)
   
   !--------------------!
   !  land parameters   !
@@ -129,6 +138,8 @@ contains
     integer       :: precip_duration
     integer       :: dry_duration
     logical       :: precipitating
+    real          :: ZREF               ! measurement height for wind speed (m)
+    
     integer       :: isltyp
     integer       :: nsoil
     integer       :: nsnow
@@ -179,9 +190,12 @@ contains
     real, dimension(12) ::   XXAJ   !Xinanjiang: Free water distribution shape parameter [-]
     real, dimension(12) ::   G      !Mean Capillary Drive (m) for infiltration models
     real, dimension(12) ::   BBVIC  !DVIC heterogeniety parameter for infiltration 
+    real, dimension(12) ::   QUARTZ ! fraction of soil comprised of quartz [-] (equal to pctsand/100)
     real                ::   slope  ! free drainage parameter
     real                ::  refkdt  ! infiltration parameter for Schaake scheme
     real                ::   refdk  ! reference diffusivity for Schaake scheme
+    real                ::   csoil  ! volumetric soil heat capacity [j/m3/K]
+    real                ::   Z0     ! bare soil roughness length (m)
 
     !--------------------!
     !  Vegetation parameters   !
@@ -198,14 +212,18 @@ contains
     real, dimension(20)     ::   TMIN           ! minimum temperature for photosynthesis (k)
     real, dimension(20)     ::   SHDFAC         ! fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
     real, dimension(20)     ::   SHDMAX         ! annual maximum fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
+    real, dimension(20)     ::   ZOMVT          ! momentum roughness length (m)
+    real                    ::   CWP            ! canopy wind absorption coefficient (formerly CWPVT)
     real, dimension(20,12)  ::   LAIM_TABLE     !monthly leaf area index, one-sided
     real, dimension(20,12)  ::   SAIM_TABLE     !monthly stem area index, one-sided
     
     !--------------------!
     !  snow parameters   !
     !--------------------!
-    real                ::   SSI
-  
+    real                ::   SSI     ! liquid water holding capacity of snowpack (m3/m3)
+    real                ::   MFSNO   ! fractional snow covered area (FSNO) curve parameter
+    real                ::   Z0SNO   ! snow surface roughness length (m)
+    
     !--------------------!
     !  land parameters   !
     !--------------------!
@@ -223,7 +241,7 @@ contains
     namelist / timing          / dt,maxtime,output_filename
     namelist / location        / lat,lon
     namelist / forcing         / preciprate,precip_duration,dry_duration,&
-                                 precipitating,uwind,vwind
+                                 precipitating,uwind,vwind,ZREF
     namelist / structure       / isltyp,nsoil,nsnow,structure_option,soil_depth,&
                                  vegtyp,croptype,sfctyp
     namelist / fixed_initial   / zsoil,dzsnso,sice,sh2o
@@ -231,8 +249,9 @@ contains
                                  initial_sice_value
     namelist / soil_parameters / bb,satdk,satdw,maxsmc,satpsi,wltsmc, &
                                  refsmc,pctsand,pctclay,bvic,AXAJ,BXAJ,XXAJ,&
-                                 BBVIC,G,slope,refkdt,refdk,SSI
-    namelist / veg_parameters  / CH2OP,NROOT,HVT,HVB,TMIN,SHDFAC,SHDMAX,&
+                                 BBVIC,G,QUARTZ,slope,refkdt,refdk,CSOIL,Z0
+    namelist / snow_parameters / SSI,MFSNO,Z0SNO
+    namelist / veg_parameters  / CH2OP,NROOT,HVT,HVB,TMIN,SHDFAC,SHDMAX,Z0MVT,CWP,&
                                  LAI_JAN,LAI_FEB,LAI_MAR,LAI_APR,LAI_MAY,LAI_JUN,LAI_JUL,LAI_AUG,LAI_SEP,LAI_OCT,LAI_NOV,LAI_DEC,&
                                  SAI_JAN,SAI_FEB,SAI_MAR,SAI_APR,SAI_MAY,SAI_JUN,SAI_JUL,SAI_AUG,SAI_SEP,SAI_OCT,SAI_NOV,SAI_DEC
     namelist / forcing_options / precip_phase_option
@@ -254,6 +273,7 @@ contains
      read(30, structure)
      read(30, uniform_initial)
      read(30, soil_parameters)
+     read(30, snow_parameters)
      read(30, veg_parameters)
      read(30, soil_options)
      read(30, veg_options)
@@ -297,6 +317,8 @@ contains
     this%precipitating    = precipitating
     this%uwind            = uwind
     this%vwind            = vwind
+    this%ZREF             = ZREF
+
     this%isltyp           = isltyp
     this%nsoil            = nsoil
     this%nsnow            = nsnow
@@ -337,9 +359,12 @@ contains
     this%XXAJ    = XXAJ
     this%BBVIC   = BBVIC
     this%G       = G
+    this%QUARTZ  = QUARTZ
     this%slope   = slope
     this%refkdt  = refkdt
     this%refdk   = refdk
+    this%csoil   = csoil
+    this%Z0      = Z0
     
     this%LAIM_TABLE(1:20, 1) = LAI_JAN(1:20)
     this%LAIM_TABLE(1:20, 2) = LAI_FEB(1:20)
@@ -374,8 +399,12 @@ contains
     this%TMIN    = TMIN
     this%SHDFAC  = SHDFAC
     this%SHDMAX  = SHDMAX
+    this%Z0MVT   = Z0MVT
+    this%CWP     = CWP
 
     this%SSI     = SSI
+    this%MFSNO   = MFSNO
+    this%Z0SNO   = Z0SNO
     
     this%ISURBAN                   = ISURBAN
     this%ISWATER                   = ISWATER

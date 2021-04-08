@@ -40,7 +40,7 @@ contains
   real    :: errwat     = 0.0   ! accumulated error [mm]
   logical :: done               ! logical check
   integer :: IZ 
-  real, dimension(1:levels%soil) :: smcold        !previous timestep smc
+  real, dimension(1:levels%nsoil) :: smcold        !previous timestep smc
 !---------------------------------------------------------------------
 
 ! determine frozen canopy and/or ground
@@ -146,7 +146,7 @@ contains
     dtheta_max = maxval(abs(water%smc-smcold))
 !    if (dtheta_max .lt. 0.00001) done = .true.
    
-    totalwat = sum(domain%dzsnso(1:levels%soil)*water%smc*1000.0)         ! total soil water [mm]
+    totalwat = sum(domain%dzsnso(1:levels%nsoil)*water%smc*1000.0)         ! total soil water [mm]
     errwat = acpcp - acsrf - acsub - (totalwat - tw0)  ! accum error [mm]
 
   END SUBROUTINE WaterMain   

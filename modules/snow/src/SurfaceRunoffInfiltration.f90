@@ -37,7 +37,7 @@ contains
   REAL                     :: SMCAV
   REAL                     :: INFMAX
   REAL                     :: dt     !time step (sec)
-  REAL, DIMENSION(1:levels%soil) :: DMAX
+  REAL, DIMENSION(1:levels%nsoil) :: DMAX
   INTEGER, PARAMETER       :: CVFRZ = 3
 ! --------------------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ contains
 
        DD = DMAX(1)
 
-       DO K = 2,levels%soil
+       DO K = 2,levels%nsoil
           DICE    = DICE + (domain%zsoil(K-1) - domain%zsoil(K) ) * water%SICE(K)
           DMAX(K) = (domain%zsoil(K-1) - domain%zsoil(K)) * SMCAV
           DMAX(K) = DMAX(K) * (1.0-(water%SH2O(K) + water%SICE(K) - parameters%SMCWLT(K))/SMCAV)
@@ -128,7 +128,7 @@ contains
   water%RUNSRF = 0.0
   water%ASAT  = 0.0
 
-  DO IZ=1,levels%soil-2
+  DO IZ=1,levels%nsoil-2
     TOP_MOIST     = TOP_MOIST + (water%SMC(IZ) * -1 * domain%ZSOIL(IZ)) ! m
     TOP_MAX_MOIST = TOP_MAX_MOIST + (parameters%SMCMAX(IZ)*-1*domain%ZSOIL(IZ)) ! m  
   END DO
@@ -195,7 +195,7 @@ contains
     DT = water%runsrf_dt
     water%RUNSRF  = 0.0
 
-    DO IZ=1,levels%soil-2
+    DO IZ=1,levels%nsoil-2
        IF ((water%SMC(IZ)-parameters%SMCREF(IZ)) .GT. 0.) THEN ! soil moisture greater than field capacity
           SM     = SM + (water%SMC(IZ) - parameters%SMCREF(IZ) )*-1*domain%ZSOIL(IZ) !m
           WM     = WM + (parameters%SMCREF(IZ)*-1*domain%ZSOIL(IZ))            !m  
@@ -285,7 +285,7 @@ contains
   ERROR         = 1.388889E-07*DT ! 0.5 mm per hour time step
   BB = parameters%BBVIC
 
-  DO IZ=1,levels%soil-2
+  DO IZ=1,levels%nsoil-2
     TOP_MOIST     = TOP_MOIST + (water%SMC(IZ)*-1*domain%ZSOIL(IZ))                      ! actual moisture in top layers, [m]
     TOP_MAX_MOIST = TOP_MAX_MOIST + (parameters%SMCMAX(IZ)*-1*domain%ZSOIL(IZ))          ! maximum moisture in top layers, [m]  
   END DO

@@ -45,6 +45,7 @@ type, public :: water_type
   real                            :: QSNSUB      ! snow surface sublimation rate[mm/s]
   real                            :: SNOWH       ! snow height [m]
   real                            :: SNEQV       ! snow water eqv. [mm]
+  real                            :: BDSNO       ! bulk density of snowpack (kg/m3)
   real                            :: QSNBOT      ! melting water out of snow bottom [mm/s]
   real                            :: PONDING
   real                            :: PONDING1
@@ -67,7 +68,12 @@ type, public :: water_type
   real, allocatable, dimension(:) :: FICEOLD     ! ice fraction at last timestep
   real, allocatable, dimension(:) :: SNICE       ! snow layer ice [mm]
   real, allocatable, dimension(:) :: SNLIQ       ! snow layer liquid water [mm] 
-  real, allocatable, dimension(:) :: FICE        ! fraction of ice at current time step 
+  real, allocatable, dimension(:) :: SNICEV      ! snow layer partial volume of ice [m3/m3]
+  real, allocatable, dimension(:) :: SNLIQV      ! snow layer partial volume of liquid water [m3/m3]
+  real, allocatable, dimension(:) :: FICE        ! fraction of ice at current time step
+  real, allocatable, dimension(:) :: EPORE       ! snow layer effective porosity [m3/m3]
+  
+  real                            :: FSNO        ! fraction of grid cell with snow cover
 
   contains
 
@@ -105,7 +111,10 @@ contains
     allocate(this%FICEOLD(-namelist%nsnow+1:0)); this%FICEOLD (:) = huge(1.0)
     allocate(this%SNICE  (-namelist%nsnow+1:0)); this%SNICE   (:) = huge(1.0)
     allocate(this%SNLIQ  (-namelist%nsnow+1:0)); this%SNLIQ   (:) = huge(1.0)
+    allocate(this%SNICEV (-namelist%nsnow+1:0)); this%SNICEV  (:) = huge(1.0)
+    allocate(this%SNLIQV (-namelist%nsnow+1:0)); this%SNLIQV  (:) = huge(1.0)
     allocate(this%FICE   (-namelist%nsnow+1:0)); this%FICE    (:) = huge(1.0)
+    allocate(this%EPORE  (-namelist%nsnow+1:0)); this%EPORE   (:) = huge(1.0)
 
   end subroutine InitAllocate
 
@@ -150,6 +159,7 @@ contains
     this%QSNSUB   = huge(1.0)
     this%SNOWH    = huge(1.0)
     this%SNEQV    = huge(1.0)
+    this%BDSNO    = huge(1.0)
     this%QSNBOT   = huge(1.0)
     this%PONDING  = huge(1.0)
     this%PONDING1 = huge(1.0)
@@ -161,6 +171,8 @@ contains
     this%runsrf_dt= huge(1.0)
     this%ASAT     = huge(1.0)
     this%ISNOW    = huge(1)
+
+    this%FSNO     = huge(1.0)
 
   end subroutine InitDefault
 

@@ -146,16 +146,16 @@ contains
 ! ----------------------------------------------------------------------
 
    WD1 = 0.
-   DO K = 1,levels%soil
+   DO K = 1,levels%nsoil
      WD1 = WD1 + (parameters%SMCMAX(1)-water%SH2O(K)) * domain%dzsnso(K) ! [m]
    ENDDO
 
-   DZFINE = 3.0 * (-domain%zsoil(levels%soil)) / NFINE  
+   DZFINE = 3.0 * (-domain%zsoil(levels%nsoil)) / NFINE  
    do K =1,NFINE
       ZFINE(K) = FLOAT(K) * DZFINE
    ENDDO
 
-   water%ZWT = -3.*domain%zsoil(levels%soil) - 0.001   ! initial value [m]
+   water%ZWT = -3.*domain%zsoil(levels%nsoil) - 0.001   ! initial value [m]
 
    WD2 = 0.
    DO K = 1,NFINE

@@ -177,17 +177,17 @@ contains
     INTEGER                                       :: J     !indices
     INTEGER                                       :: MSNO  !number of layer (top) to MSNO (bot)
     REAL                                          :: DRR   !thickness of the combined [m]
-    REAL, DIMENSION(1:levels%snow)                :: DZ    !snow layer thickness [m]
-    REAL, DIMENSION(1:levels%snow)                :: SWICE !partial volume of ice [m3/m3]
-    REAL, DIMENSION(1:levels%snow)                :: SWLIQ !partial volume of liquid water [m3/m3]
-    REAL, DIMENSION(1:levels%snow)                :: TSNO  !node temperature [k]
+    REAL, DIMENSION(1:levels%nsnow)                :: DZ    !snow layer thickness [m]
+    REAL, DIMENSION(1:levels%nsnow)                :: SWICE !partial volume of ice [m3/m3]
+    REAL, DIMENSION(1:levels%nsnow)                :: SWLIQ !partial volume of liquid water [m3/m3]
+    REAL, DIMENSION(1:levels%nsnow)                :: TSNO  !node temperature [k]
     REAL                                          :: ZWICE !temporary
     REAL                                          :: ZWLIQ !temporary
     REAL                                          :: PROPOR!temporary
     REAL                                          :: DTDZ  !temporary
 ! ----------------------------------------------------------------------
 
-    DO J = 1,levels%snow
+    DO J = 1,levels%nsnow
           IF (J <= ABS(water%ISNOW)) THEN
              DZ(J)    = domain%DZSNSO(J+water%ISNOW)
              SWICE(J) = water%SNICE(J+water%ISNOW)

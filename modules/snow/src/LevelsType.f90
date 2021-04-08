@@ -6,8 +6,8 @@ private
 
 type, public :: levels_type
 
-  integer :: soil
-  integer :: snow
+  integer :: nsoil
+  integer :: nsnow
 
   contains
 
@@ -31,8 +31,8 @@ contains
 
     class(levels_type) :: this
 
-    this%soil  = huge(1)
-    this%snow  = huge(1)
+    this%nsoil  = huge(1)
+    this%nsnow  = huge(1)
 
   end subroutine InitDefault
 
@@ -43,8 +43,8 @@ contains
     class(levels_type) :: this
     type(namelist_type) :: namelist
     
-    this%soil  = namelist%nsoil
-    this%snow  = namelist%nsnow
+    this%nsoil  = namelist%nsoil
+    this%nsnow  = namelist%nsnow
 
   end subroutine InitTransfer
 
