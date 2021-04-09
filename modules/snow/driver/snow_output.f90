@@ -1,4 +1,4 @@
-module WaterOutput
+module SnowOutput
 
   use netcdf
   use WaterType
@@ -170,5 +170,5 @@ contains
 
    end subroutine finalize_output
    
-end module WaterOutput
+end module SnowOutput
 

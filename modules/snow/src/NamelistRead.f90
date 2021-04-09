@@ -88,7 +88,7 @@ type, public :: namelist_type
   real, dimension(20)     ::   TMIN           ! minimum temperature for photosynthesis (k)
   real, dimension(20)     ::   SHDFAC         ! fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
   real, dimension(20)     ::   SHDMAX         ! annual maximum fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
-  real, dimension(20)     ::   ZOMVT          ! momentum roughness length (m)
+  real, dimension(20)     ::   Z0MVT          ! momentum roughness length (m)
   real                    ::   CWP            ! canopy wind absorption coefficient (formerly CWPVT)
   real, dimension(20,12)  ::   LAIM_TABLE     ! monthly leaf area index, one-sided
   real, dimension(20,12)  ::   SAIM_TABLE     ! monthly stem area index, one-sided
@@ -212,7 +212,7 @@ contains
     real, dimension(20)     ::   TMIN           ! minimum temperature for photosynthesis (k)
     real, dimension(20)     ::   SHDFAC         ! fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
     real, dimension(20)     ::   SHDMAX         ! annual maximum fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
-    real, dimension(20)     ::   ZOMVT          ! momentum roughness length (m)
+    real, dimension(20)     ::   Z0MVT          ! momentum roughness length (m)
     real                    ::   CWP            ! canopy wind absorption coefficient (formerly CWPVT)
     real, dimension(20,12)  ::   LAIM_TABLE     !monthly leaf area index, one-sided
     real, dimension(20,12)  ::   SAIM_TABLE     !monthly stem area index, one-sided

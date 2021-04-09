@@ -82,14 +82,14 @@ contains
         domain%DZSNSO(IZ) = -domain%DZSNSO(IZ)
    END DO
    domain%DZSNSO(1) = domain%ZSOIL(1)
-   DO IZ = 2,levels%soil
+   DO IZ = 2,levels%nsoil
         domain%DZSNSO(IZ) = (domain%ZSOIL(IZ) - domain%ZSOIL(IZ-1))
    END DO
    domain%ZSNSO(water%ISNOW+1) = domain%DZSNSO(water%ISNOW+1)
-   DO IZ = water%ISNOW+2 ,levels%soil
+   DO IZ = water%ISNOW+2 ,levels%nsoil
        domain%ZSNSO(IZ) = domain%ZSNSO(IZ-1) + domain%DZSNSO(IZ)
    ENDDO
-   DO IZ = water%ISNOW+1 ,levels%soil
+   DO IZ = water%ISNOW+1 ,levels%nsoil
        domain%DZSNSO(IZ) = -domain%DZSNSO(IZ)
    END DO
 

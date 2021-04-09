@@ -1,4 +1,4 @@
-module ThermalProperties
+module ThermalPropertiesModule
 
   use LevelsType
   use DomainType
@@ -27,34 +27,25 @@ contains
 
     ! ------------------------ local variables ---------------------------
     INTEGER                                      :: IZ      ! do-loop index
-    REAL, DIMENSION(-levels%NSNOW+1:0)           :: CVSNO   ! volumetric specific heat (j/m3/k)
-    REAL, DIMENSION(-levels%NSNOW+1:0)           :: TKSNO   ! snow thermal conductivity (j/m3/k)
-    ! --------------------------------------------------------------------------------------------------
+    ! ----------------------------------------------------------------------
 
     ! compute snow thermal conductivity and heat capacity
 
-    CALL CSNOW
-
-    DO IZ = water%ISNOW+1, 0
-      energy%DF(IZ)    = TKSNO(IZ)
-      energy%HCPCT(IZ) = CVSNO(IZ)
-    END DO
+    CALL CSNOW(domain, levels, options, parameters, forcing, energy, water)
 
     ! compute soil thermal properties
     
-    CALL TDFCND
+    CALL TDFCND(domain, levels, options, parameters, forcing, energy, water)
 
-
-       
+    ! Change for urban caase
     IF ( parameters%urban_flag ) THEN
        DO IZ = 1,levels%NSOIL
          energy%DF(IZ) = 3.24 ! where does this number come from? KSJ 2021-04-08
        END DO
     ENDIF
 
-! compute lake thermal properties 
-! (no consideration of turbulent mixing for this version)
-
+    ! compute lake thermal properties 
+    ! (no consideration of turbulent mixing for this version)
     IF(domain%IST == 2) THEN
       DO IZ = 1, levels%NSOIL 
         IF(energy%STC(IZ) > parameters%TFRZ) THEN
@@ -67,14 +58,12 @@ contains
       END DO
     END IF
 
-! combine a temporary variable used for melting/freezing of snow and frozen soil
-
+    ! combine a temporary variable used for melting/freezing of snow and frozen soil
     DO IZ = water%ISNOW+1,levels%NSOIL
       energy%FACT(IZ) = domain%DT / (energy%HCPCT(IZ) * domain%DZSNSO(IZ))
     END DO
 
-! snow/soil interface
-
+    ! snow/soil interface
     IF(water%ISNOW == 0) THEN
        energy%DF(1) = (energy%DF(1) * domain%DZSNSO(1) + 0.35 * water%SNOWH) / &
                       (water%SNOWH + domain%DZSNSO(1)) 
@@ -102,24 +91,27 @@ contains
     ! ------------------------ local variables ---------------------------
     INTEGER                            :: IZ      ! do-loop index 
     REAL, DIMENSION(-levels%NSNOW+1:0) :: BDSNOI  ! bulk density of snow(kg/m3) per layer
+    REAL, DIMENSION(-levels%NSNOW+1:0) :: CVSNO   ! volumetric specific heat (j/m3/k)
+    REAL, DIMENSION(-levels%NSNOW+1:0) :: TKSNO   ! snow thermal conductivity (j/m3/k)
     ! --------------------------------------------------------------------------------------------------
 
     DO IZ = water%ISNOW+1, 0
-        water%SNICEV(IZ)   = MIN(1.0, water%SNICE(IZ) / (domain%DZSNSO(IZ) * parameters%DENICE) )
-        water%EPORE(IZ)    = 1.0 - water%SNICEV(IZ)
-        water%SNLIQV(IZ)   = MIN(water%EPORE(IZ), water%SNLIQ(IZ) / (domain%DZSNSO(IZ) * parameters%DENH2O))
-    ENDDO
+      ! Compute snowpack properties
+      water%SNICEV(IZ)   = MIN(1.0, water%SNICE(IZ) / (domain%DZSNSO(IZ) * parameters%DENICE) )
+      water%EPORE(IZ)    = 1.0 - water%SNICEV(IZ)
+      water%SNLIQV(IZ)   = MIN(water%EPORE(IZ), water%SNLIQ(IZ) / (domain%DZSNSO(IZ) * parameters%DENH2O))
+      BDSNOI(IZ) = (water%SNICE(IZ) + water%SNLIQ(IZ)) / domain%DZSNSO(IZ)
+      
+      ! volumetric specific heat
+      CVSNO(IZ) = (parameters%CICE * water%SNICEV(IZ)) + (parameters%CWAT * water%SNLIQV(IZ))
 
-    DO IZ = water%ISNOW+1, 0
-        BDSNOI(IZ) = (water%SNICE(IZ) + water%SNLIQ(IZ)) / domain%DZSNSO(IZ)
-        CVSNO(IZ) = (parameters%CICE * water%SNICEV(IZ)) + (parameters%CWAT * water%SNLIQV(IZ))
-    enddo
-
-  ! thermal conductivity of snow
-
-    DO IZ = water%ISNOW+1, 0
-       TKSNO(IZ) = 3.2217E-6 * BDSNOI(IZ)**2.0           ! Stieglitz(yen,1965)
-    ENDDO
+      ! thermal conductivity of snow
+      TKSNO(IZ) = 3.2217E-6 * BDSNOI(IZ)**2.0           ! Stieglitz(yen,1965)
+    
+      ! Assign DF and HCPCT to each snow layer
+      energy%DF(IZ)    = TKSNO(IZ)
+      energy%HCPCT(IZ) = CVSNO(IZ)
+    END DO
 
   END SUBROUTINE CSNOW
   
@@ -197,7 +189,7 @@ contains
       GAMMD = (1. - parameters%SMCMAX(IZ)) * 2700.
       THKDRY = (0.135 * GAMMD + 64.7)/ (2700. - 0.947 * GAMMD) ! where do these values come from? KSJ 2021-04-08
     
-      IF ( (water%SH2O + 0.0005) <  water%SMC(IZ) ) THEN
+      IF ( (water%SH2O(IZ) + 0.0005) <  water%SMC(IZ) ) THEN
         AKE = SATRATIO
       ELSE
         IF (SATRATIO >  0.1 ) THEN
@@ -213,4 +205,4 @@ contains
 
   END SUBROUTINE TDFCND
   
-end module ThermalProperties
+end module ThermalPropertiesModule

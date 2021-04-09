@@ -53,6 +53,6 @@ snow_driver.o: snow_output.o \
                ../src/ForcingModule.o \
                ../src/AtmProcessing.o \
                ../src/InterceptionModule.o \
-               ../src/EnergyModule \
-               ../src/ThermalPropertiesModule.o
+               ../src/ThermalPropertiesModule.o \
+               ../src/EnergyModule.o
 
