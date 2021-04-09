@@ -94,6 +94,11 @@ contains
 
     ! Compute snow and soil thermodynamic properties
     call THERMOPROP(domain, levels, options, parameters, forcing, energy, water)
+    
+    print*, "energy%HCPCT(1) = ", energy%HCPCT(1)
+    print*, "energy%HCPCT(0) = ", energy%HCPCT(0)
+    print*, "energy%HCPCT(-1) = ", energy%HCPCT(-1)
+    
   
 !   ! Solar radiation: absorbed & reflected by the ground and canopy
 !
