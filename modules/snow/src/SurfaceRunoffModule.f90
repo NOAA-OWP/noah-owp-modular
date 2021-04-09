@@ -122,7 +122,7 @@ contains
 
     SMCTOT = 0. !2-m averaged soil moisture (m3/m3)
     DZTOT  = 0. !2-m soil depth (m)
-    DO K = 1,levels%soil
+    DO K = 1,levels%nsoil
        DZTOT   = DZTOT  + domain%dzsnso(K)
        SMCTOT  = SMCTOT + water%SMC(K)/parameters%SMCMAX(K)*domain%dzsnso(K)
        IF(DZTOT >= 2.0) EXIT

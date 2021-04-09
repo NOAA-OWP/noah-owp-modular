@@ -7,9 +7,6 @@ module ForcingModule
   use WaterType
   use ForcingType
   use EnergyType
-  use SoilWaterModule
-  use CanopyWaterModule
-  use SnowWaterModule
   use AtmProcessing
 
   implicit none

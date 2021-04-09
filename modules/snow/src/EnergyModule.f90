@@ -53,7 +53,7 @@ contains
     ! KSJ 2021-04-06
 
     water%FSNO = 0.0
-    IF(SNOWH > 0.0)  THEN
+    IF(water%SNOWH > 0.0)  THEN
       water%BDSNO  = water%SNEQV / water%SNOWH
       FMELT        = (water%BDSNO / 100.)**parameters%MFSNO
       water%FSNO   = TANH( water%SNOWH /(2.5 * parameters%Z0 * FMELT)) ! eq. 4 from Niu and Yang (2007)
@@ -93,7 +93,7 @@ contains
     IF(ZPDG >= ZLVL) ZLVL = ZPDG + domain%ZREF
 
     ! Compute snow and soil thermodynamic properties
-    call THERMOPROP
+    call THERMOPROP(domain, levels, options, parameters, forcing, energy, water)
   
 !   ! Solar radiation: absorbed & reflected by the ground and canopy
 !

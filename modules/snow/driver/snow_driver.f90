@@ -2,9 +2,9 @@
 ! compile: 
 !
 
-program water_driver
+program snow_driver
 
-  use WaterOutput
+  use SnowOutput
   use LevelsType
   use DomainType
   use NamelistRead
@@ -179,8 +179,8 @@ program water_driver
 ! create output file and add initial values
 !---------------------------------------------------------------------
 
-  call initialize_output(namelist%output_filename, ntime+1, levels%soil, levels%snow)
-  call add_to_output(0,levels%soil,levels%snow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)
+  call initialize_output(namelist%output_filename, ntime+1, levels%nsoil, levels%nsnow)
+  call add_to_output(0,levels%nsoil,levels%nsnow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)
 
 !---------------------------------------------------------------------
 ! start the time loop
@@ -236,7 +236,7 @@ program water_driver
   ! add to output file
   !---------------------------------------------------------------------
 
-    call add_to_output(itime,levels%soil,levels%snow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)
+    call add_to_output(itime,levels%nsoil,levels%nsnow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)
    
   end do ! time loop
 
