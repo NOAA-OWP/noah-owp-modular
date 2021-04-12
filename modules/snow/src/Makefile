@@ -28,6 +28,7 @@ OBJS = NamelistRead.o \
        AtmProcessing.o \
        InterceptionModule.o \
        ThermalPropertiesModule.o \
+       PrecipHeatModule.o \
        EnergyModule.o 
 
 all:	$(OBJS)
@@ -81,6 +82,7 @@ InterceptionModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o E
                ForcingType.o WaterType.o
 ThermalPropertiesModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
                ForcingType.o WaterType.o
+PrecipHeatModule.o: ParametersType.o EnergyType.o ForcingType.o WaterType.o
 EnergyModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
-                ForcingType.o WaterType.o ThermalPropertiesModule.o
+                ForcingType.o WaterType.o ThermalPropertiesModule.o PrecipHeatModule.o
 

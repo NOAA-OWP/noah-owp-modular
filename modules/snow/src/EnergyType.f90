@@ -20,6 +20,11 @@ type, public :: energy_type
   real,    allocatable, dimension(:) :: DF     ! snow and soil layer thermal conductivity [w/m/k]
   real,    allocatable, dimension(:) :: HCPCT  ! snow and soil layer heat capacity [j/m3/k]
   real,    allocatable, dimension(:) :: FACT   ! temporary variable used in phase change [s/j/m2/k]
+  real    :: PAHV                              ! precipitation advected heat - vegetation net (W/m2)
+  real    :: PAHG                              ! precipitation advected heat - under canopy net (W/m2)
+  real    :: PAHB                              ! precipitation advected heat - bare ground net (W/m2)
+  
+  
   contains
 
     procedure, public  :: Init
