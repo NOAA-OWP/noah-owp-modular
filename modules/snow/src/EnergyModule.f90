@@ -8,6 +8,7 @@ module EnergyModule
   use ForcingType
   use EnergyType
   use ThermalPropertiesModule
+  use PrecipHeatModule
 
   implicit none
 
@@ -94,17 +95,16 @@ contains
 
     ! Compute snow and soil thermodynamic properties
     call THERMOPROP(domain, levels, options, parameters, forcing, energy, water)
-    
-    print*, "energy%HCPCT(1) = ", energy%HCPCT(1)
-    print*, "energy%HCPCT(0) = ", energy%HCPCT(0)
-    print*, "energy%HCPCT(-1) = ", energy%HCPCT(-1)
-    
+  
+    call PRECIP_HEAT (parameters, forcing, energy, water)
+    print*, "energy%PAHV = ", energy%PAHV
+    print*, "energy%PAHG = ", energy%PAHG
+    print*, "energy%PAHB = ", energy%PAHB
   
 !   ! Solar radiation: absorbed & reflected by the ground and canopy
 !
 !     CALL RADIATION
 !
-!     CALL PRECIP_HEAT !!!!!!!!!!!!!!! MAKE NEW
 !
 !     ! vegetation and ground emissivity
 !

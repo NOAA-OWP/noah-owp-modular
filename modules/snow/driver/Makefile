@@ -54,5 +54,6 @@ snow_driver.o: snow_output.o \
                ../src/AtmProcessing.o \
                ../src/InterceptionModule.o \
                ../src/ThermalPropertiesModule.o \
+               ../src/PrecipHeatModule.o \
                ../src/EnergyModule.o
 

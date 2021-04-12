@@ -1,12 +1,13 @@
-#Changelog for NOAH- MP modularized snow model
+# Changelog for NOAH-MP modularized snow model
 
 Changes are given in both reference to 
 
-##Major changes:
+## Major changes:
 - Removed PGS from PHENOLOGY because we’re not implementing CARBON_CROP
 - Moved CanopyWaterIntercept to InterceptionModule
     - Removed call from WaterModule and added to InterceptionModule
-- Moved precipheat calculations
+- Kept heat advected by precipitation calculations in PRECIP_HEAT (now called by EnergyModule)
+    - Moved interception and throughfall calculations from old PRECIP_HEAT into CanopyWaterIntercept in the InterceptionModule
 - Removed TROOT computation from main level of NOAHMP_SFLX
     - TROOT only used in CARBON, which we are not implementing
     - Can easily be added if wanted
@@ -31,7 +32,7 @@ Changes are given in both reference to
 - Moved assignment of energy%DF and HCPCT to CSNOW from THERMOPROP
     - Changed multiple do- loops to single do- loop in CSNOW
 
-##Major notes (potential to change):
+## Major notes (potential to change):
 - Consider a “point scale” or “small scale” mode that assumes the point or grid cell is homogeneous
     - Sets FP (fraction of grid cell receiving precipitation) to 1
     - Sets FSNO (fractional snow covered area) to 1
@@ -64,7 +65,7 @@ Changes are given in both reference to
 - THERMOPROP uses local variables TKSNO and TVSNO before copying them over to globals DF and HCPCT. Can we just skip middleman and compute DF and HCPCT directly?
 
 
-##Hard- coded parameters that need to be incorporated in a driver or forcing module:
+## Hard-coded parameters that need to be incorporated in a driver or forcing module:
 
 - DomainType
     - CROPTYPE
@@ -101,7 +102,7 @@ Changes are given in both reference to
         - Removed OPT_CROP from FVEG computation because it doesn’t seem to be implemented elsewhere important
 
 
-##BMI notes for future:
+## BMI notes for future:
 
 - Can add update_* functions to each module 
 
