@@ -47,6 +47,7 @@ type, public :: namelist_type
   integer       :: frozen_soil_option
   integer       :: dynamic_vic_option
   integer       :: dynamic_veg_option
+  integer       :: snow_albedo_option
 
   !--------------------!
   !  soil parameters   !
@@ -90,6 +91,18 @@ type, public :: namelist_type
   real, dimension(20)     ::   SHDMAX         ! annual maximum fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
   real, dimension(20)     ::   Z0MVT          ! momentum roughness length (m)
   real                    ::   CWP            ! canopy wind absorption coefficient (formerly CWPVT)
+  real, dimension(20)     ::   RHOL_VIS       ! leaf reflectance in visible
+  real, dimension(20)     ::   RHOL_NIR       ! leaf reflectance in near infrared
+  real, dimension(20)     ::   RHOS_VIS       ! stem reflectance in visible
+  real, dimension(20)     ::   RHOS_NIR       ! stem reflectance in near infrared
+  real, dimension(20)     ::   TAUL_VIS       ! leaf transmittance in visible
+  real, dimension(20)     ::   TAUL_NIR       ! leaf transmittance in near infrared
+  real, dimension(20)     ::   TAUS_VIS       ! stem transmittance in visible
+  real, dimension(20)     ::   TAUS_NIR       ! stem transmittance in near infrared
+  real, dimension(20,2)   ::   RHOL_TABLE     ! leaf reflectance table (1 = vis, 2 = NIR)
+  real, dimension(20,2)   ::   RHOS_TABLE     ! stem reflectance table (1 = vis, 2 = NIR)
+  real, dimension(20,2)   ::   TAUL_TABLE     ! leaf transmittance table (1 = vis, 2 = NIR)
+  real, dimension(20,2)   ::   TAUS_TABLE     ! stem transmittance table (1 = vis, 2 = NIR)
   real, dimension(20,12)  ::   LAIM_TABLE     ! monthly leaf area index, one-sided
   real, dimension(20,12)  ::   SAIM_TABLE     ! monthly stem area index, one-sided
   
@@ -100,7 +113,20 @@ type, public :: namelist_type
   real                ::   SSI     ! liquid water holding capacity of snowpack (m3/m3)
   real                ::   MFSNO   ! fractional snow covered area (FSNO) curve parameter
   real                ::   Z0SNO   ! snow surface roughness length (m)
-  
+  real                ::   SWEMX        ! new SWE required (QSNOW * dt) to fully cover old snow (mm)
+  real                ::   TAU0         ! tau0 from Yang97 eqn. 10a
+  real                ::   GRAIN_GROWTH ! growth from vapor diffusion Yang97 eqn. 10b
+  real                ::   EXTRA_GROWTH ! extra growth near freezing Yang97 eqn. 10c
+  real                ::   DIRT_SOOT    ! dirt and soot term Yang97 eqn. 10d
+  real                ::   BATS_COSZ    ! zenith angle snow albedo adjustment; b in Yang97 eqn. 15
+  real                ::   BATS_VIS_NEW ! new snow visible albedo
+  real                ::   BATS_NIR_NEW ! new snow NIR albedo
+  real                ::   BATS_VIS_AGE ! age factor for diffuse visible snow albedo Yang97 eqn. 17
+  real                ::   BATS_NIR_AGE ! age factor for diffuse NIR snow albedo Yang97 eqn. 18
+  real                ::   BATS_VIS_DIR ! cosz factor for direct visible snow albedo Yang97 eqn. 15
+  real                ::   BATS_NIR_DIR ! cosz factor for direct NIR snow albedo Yang97 eqn. 16
+  real                ::   RSURF_SNOW   ! surface resistence for snow [s/m]
+  real                ::   RSURF_EXP    ! exponent in the shape parameter for soil resistance option 1
   !--------------------!
   !  land parameters   !
   !--------------------!
@@ -170,6 +196,7 @@ contains
     integer       :: frozen_soil_option
     integer       :: dynamic_vic_option
     integer       :: dynamic_veg_option
+    integer       :: snow_albedo_option
 
     !--------------------!
     !  soil parameters   !
@@ -214,6 +241,18 @@ contains
     real, dimension(20)     ::   SHDMAX         ! annual maximum fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
     real, dimension(20)     ::   Z0MVT          ! momentum roughness length (m)
     real                    ::   CWP            ! canopy wind absorption coefficient (formerly CWPVT)
+    real, dimension(20)     ::   RHOL_VIS       ! leaf reflectance in visible
+    real, dimension(20)     ::   RHOL_NIR       ! leaf reflectance in near infrared
+    real, dimension(20)     ::   RHOS_VIS       ! stem reflectance in visible
+    real, dimension(20)     ::   RHOS_NIR       ! stem reflectance in near infrared
+    real, dimension(20)     ::   TAUL_VIS       ! leaf transmittance in visible
+    real, dimension(20)     ::   TAUL_NIR       ! leaf transmittance in near infrared
+    real, dimension(20)     ::   TAUS_VIS       ! stem transmittance in visible
+    real, dimension(20)     ::   TAUS_NIR       ! stem transmittance in near infrared
+    real, dimension(20,2)   ::   RHOL_TABLE     ! leaf reflectance table (1 = vis, 2 = NIR)
+    real, dimension(20,2)   ::   RHOS_TABLE     ! stem reflectance table (1 = vis, 2 = NIR)
+    real, dimension(20,2)   ::   TAUL_TABLE     ! leaf transmittance table (1 = vis, 2 = NIR)
+    real, dimension(20,2)   ::   TAUS_TABLE     ! stem transmittance table (1 = vis, 2 = NIR)
     real, dimension(20,12)  ::   LAIM_TABLE     !monthly leaf area index, one-sided
     real, dimension(20,12)  ::   SAIM_TABLE     !monthly stem area index, one-sided
     
@@ -223,7 +262,21 @@ contains
     real                ::   SSI     ! liquid water holding capacity of snowpack (m3/m3)
     real                ::   MFSNO   ! fractional snow covered area (FSNO) curve parameter
     real                ::   Z0SNO   ! snow surface roughness length (m)
-    
+    real                ::   SWEMX        ! new SWE required (QSNOW * dt) to fully cover old snow (mm)
+    real                ::   TAU0         ! tau0 from Yang97 eqn. 10a
+    real                ::   GRAIN_GROWTH ! growth from vapor diffusion Yang97 eqn. 10b
+    real                ::   EXTRA_GROWTH ! extra growth near freezing Yang97 eqn. 10c
+    real                ::   DIRT_SOOT    ! dirt and soot term Yang97 eqn. 10d
+    real                ::   BATS_COSZ    ! zenith angle snow albedo adjustment; b in Yang97 eqn. 15
+    real                ::   BATS_VIS_NEW ! new snow visible albedo
+    real                ::   BATS_NIR_NEW ! new snow NIR albedo
+    real                ::   BATS_VIS_AGE ! age factor for diffuse visible snow albedo Yang97 eqn. 17
+    real                ::   BATS_NIR_AGE ! age factor for diffuse NIR snow albedo Yang97 eqn. 18
+    real                ::   BATS_VIS_DIR ! cosz factor for direct visible snow albedo Yang97 eqn. 15
+    real                ::   BATS_NIR_DIR ! cosz factor for direct NIR snow albedo Yang97 eqn. 16
+    real                ::   RSURF_SNOW   ! surface resistence for snow [s/m]
+    real                ::   RSURF_EXP    ! exponent in the shape parameter for soil resistance option 1
+
     !--------------------!
     !  land parameters   !
     !--------------------!
@@ -250,14 +303,18 @@ contains
     namelist / soil_parameters / bb,satdk,satdw,maxsmc,satpsi,wltsmc, &
                                  refsmc,pctsand,pctclay,bvic,AXAJ,BXAJ,XXAJ,&
                                  BBVIC,G,QUARTZ,slope,refkdt,refdk,CSOIL,Z0
-    namelist / snow_parameters / SSI,MFSNO,Z0SNO
+    namelist / snow_parameters / SSI,MFSNO,Z0SNO,SWEMX,TAU0,GRAIN_GROWTH,EXTRA_GROWTH,DIRT_SOOT,&
+                                 BATS_COSZ,BATS_VIS_NEW,BATS_NIR_NEW,BATS_VIS_AGE,BATS_NIR_AGE,BATS_VIS_DIR,BATS_NIR_DIR,&
+                                 RSURF_SNOW,RSURF_EXP
     namelist / veg_parameters  / CH2OP,NROOT,HVT,HVB,TMIN,SHDFAC,SHDMAX,Z0MVT,CWP,&
+                                 RHOL_VIS,RHOL_NIR,RHOS_VIS,RHOS_NIR,TAUL_VIS,TAUL_NIR,TAUS_VIS,TAUS_NIR,&
                                  LAI_JAN,LAI_FEB,LAI_MAR,LAI_APR,LAI_MAY,LAI_JUN,LAI_JUL,LAI_AUG,LAI_SEP,LAI_OCT,LAI_NOV,LAI_DEC,&
                                  SAI_JAN,SAI_FEB,SAI_MAR,SAI_APR,SAI_MAY,SAI_JUN,SAI_JUL,SAI_AUG,SAI_SEP,SAI_OCT,SAI_NOV,SAI_DEC
     namelist / forcing_options / precip_phase_option
     namelist / soil_options    / runoff_option,drainage_option,frozen_soil_option,&
                                  dynamic_vic_option
     namelist / veg_options     / dynamic_veg_option
+    namelist / snow_options    / snow_albedo_option
     namelist / land_parameters / ISURBAN,ISWATER,ISBARREN,ISICE,ISCROP,EBLFOREST,NATURAL,LOW_DENSITY_RESIDENTIAL,&
                                  HIGH_DENSITY_RESIDENTIAL,HIGH_INTENSITY_INDUSTRIAL
  
@@ -277,6 +334,7 @@ contains
      read(30, veg_parameters)
      read(30, soil_options)
      read(30, veg_options)
+     read(30, snow_options)
      read(30, land_parameters)
     close(30)
 
@@ -343,6 +401,7 @@ contains
     this%frozen_soil_option  = frozen_soil_option
     this%dynamic_vic_option  = dynamic_vic_option
     this%dynamic_veg_option  = dynamic_veg_option
+    this%snow_albedo_option  = snow_albedo_option
 
     this%bb      = bb
     this%satdk   = satdk
@@ -366,6 +425,15 @@ contains
     this%csoil   = csoil
     this%Z0      = Z0
     
+    this%RHOL_TABLE(1:20, 1) = RHOL_VIS(1:20)
+    this%RHOL_TABLE(1:20, 2) = RHOL_NIR(1:20)
+    this%RHOS_TABLE(1:20, 1) = RHOS_VIS(1:20)
+    this%RHOS_TABLE(1:20, 2) = RHOS_NIR(1:20)
+    this%TAUL_TABLE(1:20, 1) = TAUL_VIS(1:20)
+    this%TAUL_TABLE(1:20, 2) = TAUL_NIR(1:20)
+    this%TAUS_TABLE(1:20, 1) = TAUS_VIS(1:20)
+    this%TAUS_TABLE(1:20, 2) = TAUS_NIR(1:20)
+        
     this%LAIM_TABLE(1:20, 1) = LAI_JAN(1:20)
     this%LAIM_TABLE(1:20, 2) = LAI_FEB(1:20)
     this%LAIM_TABLE(1:20, 3) = LAI_MAR(1:20)
@@ -402,9 +470,24 @@ contains
     this%Z0MVT   = Z0MVT
     this%CWP     = CWP
 
-    this%SSI     = SSI
-    this%MFSNO   = MFSNO
-    this%Z0SNO   = Z0SNO
+    this%SSI          = SSI
+    this%MFSNO        = MFSNO
+    this%Z0SNO        = Z0SNO
+    this%SWEMX        = SWEMX
+    this%TAU0         = TAU0
+    this%GRAIN_GROWTH = GRAIN_GROWTH
+    this%EXTRA_GROWTH = EXTRA_GROWTH
+    this%DIRT_SOOT    = DIRT_SOOT
+    this%BATS_COSZ    = BATS_COSZ
+    this%BATS_VIS_NEW = BATS_VIS_NEW
+    this%BATS_NIR_NEW = BATS_NIR_NEW
+    this%BATS_VIS_AGE = BATS_VIS_AGE
+    this%BATS_NIR_AGE = BATS_NIR_AGE
+    this%BATS_VIS_DIR = BATS_VIS_DIR
+    this%BATS_NIR_DIR = BATS_NIR_DIR
+    this%RSURF_SNOW   = RSURF_SNOW
+    this%RSURF_EXP    = RSURF_EXP
+    
     
     this%ISURBAN                   = ISURBAN
     this%ISWATER                   = ISWATER

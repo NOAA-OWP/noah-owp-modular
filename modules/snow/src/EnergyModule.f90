@@ -9,6 +9,7 @@ module EnergyModule
   use EnergyType
   use ThermalPropertiesModule
   use PrecipHeatModule
+  use ShortwaveRadiationModule
 
   implicit none
 
@@ -31,8 +32,6 @@ contains
 
     ! ------------------------ local variables ---------------------------
     INTEGER                              :: IZ     ! do-loop index
-    REAL                                 :: VAI    ! sum of LAI  + stem area index [m2/m2]
-    LOGICAL                              :: VEG    ! true if vegetated surface
     REAL                                 :: FMELT  ! melting factor for snow cover frac
     REAL                                 :: Z0MG   ! z0 momentum, ground (m)
     REAL                                 :: Z0M    ! z0 momentum (m)
@@ -44,9 +43,12 @@ contains
 
     ! Determine whether grid cell is vegetated or not
 
-    VAI = parameters%ELAI + parameters%ESAI
-    VEG = .FALSE.
-    IF(VAI > 0.0) VEG = .TRUE.
+    parameters%VAI = parameters%ELAI + parameters%ESAI
+    IF(parameters%VAI > 0.0) 
+      parameters%VEG = .TRUE.
+    ELSE
+      parameters%VEG = .FALSE.
+    ENDIF
 
     ! Compute fraction of grid cell with snow cover [Niu and Yang, 2007, JGR]
     ! Note: MFSNO (m in Niu and Yang) is set to 2.5 for all vegtypes in NOAH-MP
@@ -73,7 +75,7 @@ contains
 
     ! Compute roughness length and displacement height
     ZPDG  = water%SNOWH
-    IF(VEG) THEN
+    IF(parameters%VEG) THEN
       Z0M  = parameters%Z0MVT
       ZPD  = 0.65 * parameters%HVT
       IF(water%SNOWH > ZPD) ZPD = water%SNOWH
@@ -95,15 +97,12 @@ contains
 
     ! Compute snow and soil thermodynamic properties
     call THERMOPROP(domain, levels, options, parameters, forcing, energy, water)
-  
-    call PRECIP_HEAT (parameters, forcing, energy, water)
-    print*, "energy%PAHV = ", energy%PAHV
-    print*, "energy%PAHG = ", energy%PAHG
-    print*, "energy%PAHB = ", energy%PAHB
-  
-!   ! Solar radiation: absorbed & reflected by the ground and canopy
-!
-!     CALL RADIATION
+
+    ! Compute the heat advected by precipitation
+    call PRECIP_HEAT(parameters, forcing, energy, water)
+
+    ! Compute net solar radiation
+    call ShortwaveRadiationMain (domain, levels, options, parameters, forcing, energy, water)
 !
 !
 !     ! vegetation and ground emissivity
@@ -201,7 +200,7 @@ contains
 !
 !   ! Surface temperatures of the ground and canopy and energy fluxes
 !
-!     IF (VEG .AND. FVEG > 0) THEN
+!     IF (parameters%VEG .AND. FVEG > 0) THEN
 !       TGV = TG
 !       CMV = CM
 !       CHV = CH
@@ -237,7 +236,7 @@ contains
 !   !energy balance at vege ground: SAG*    FVEG =(IRG+SHG+EVG+GHV)    *FVEG  at   FVEG
 !   !energy balance at bare ground: SAG*(1.-FVEG)=(IRB+SHB+EVB+GHB)*(1.-FVEG) at 1-FVEG
 !
-!     IF (VEG .AND. FVEG > 0) THEN
+!     IF (parameters%VEG .AND. FVEG > 0) THEN
 !       TAUX  = FVEG * TAUXV     + (1.0 - FVEG) * TAUXB
 !       TAUY  = FVEG * TAUYV     + (1.0 - FVEG) * TAUYB
 !       FIRA  = FVEG * IRG       + (1.0 - FVEG) * IRB       + IRC
@@ -284,7 +283,7 @@ contains
 !     IF(FIRE <=0.) THEN
 !        WRITE(6,*) 'emitted longwave <0; skin T may be wrong due to inconsistent'
 !        WRITE(6,*) 'input of SHDFAC with LAI'
-!        WRITE(6,*) ILOC, JLOC, 'SHDFAC=',FVEG,'VAI=',VAI,'TV=',TV,'TG=',TG
+!        WRITE(6,*) ILOC, JLOC, 'SHDFAC=',FVEG,'parameters%VAI=',parameters%VAI,'TV=',TV,'TG=',TG
 !        WRITE(6,*) 'LWDN=',LWDN,'FIRA=',FIRA,'SNOWH=',SNOWH
 !        ! call wrf_error_fatal("STOP in Noah-MP")
 !     END IF
@@ -314,7 +313,7 @@ contains
 !       IF (SNOWH > 0.05 .AND. TG > TFRZ) THEN
 !         TGV = TFRZ
 !         TGB = TFRZ
-!         IF (VEG .AND. FVEG > 0) THEN
+!         IF (parameters%VEG .AND. FVEG > 0) THEN
 !           TG    = FVEG * TGV       + (1.0 - FVEG) * TGB
 !           TS    = FVEG * TV        + (1.0 - FVEG) * TGB
 !         ELSE
