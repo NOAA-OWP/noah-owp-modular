@@ -22,7 +22,6 @@ type, public :: forcing_type
   real    :: PRCPGRPL     ! graupel entering land model [mm/s]           ! MB/AN : v3.7
   real    :: PRCPHAIL     ! hail entering land model [mm/s]              ! MB/AN : v3.7
   !real    :: SOLDN        ! downward shortwave radiation (w/m2)
-  !real    :: COSZ         ! cosine solar zenith angle [0-1]
 
 ! outputs
 

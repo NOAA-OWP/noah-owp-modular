@@ -36,6 +36,7 @@ contains
     !---------------------------------------------------------------------
     ! Call a subroutine that computes date variables such as JULIAN and YEARLEN
     ! also need COSZ and other necessary preprocessing
+    ! Perhaps put them in a UtilitiesModule?
     
     !_________________________END TO DO____________________________________
     

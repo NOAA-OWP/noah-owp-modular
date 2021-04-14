@@ -47,7 +47,13 @@ type, public :: parameters_type
   real                            :: CWP    ! canopy wind absorption coefficient (formerly CWPVT)
   real                            :: ELAI
   real                            :: ESAI
+  real                            :: VAI     ! sum of ELAI + ESAI
+  logical                         :: VEG     ! grid cell is vegetated (true) or not (false)
   real                            :: FVEG ! vegetation fraction
+  real, dimension(2)              :: RHOL ! leaf reflectance (1 = vis, 2 = NIR)
+  real, dimension(2)              :: RHOS ! stem reflectance (1 = vis, 2 = NIR)
+  real, dimension(2)              :: TAUL ! leaf transmittance (1 = vis, 2 = NIR)
+  real, dimension(2)              :: TAUS ! stem transmittance (1 = vis, 2 = NIR)
   integer                         :: ISURBAN                   ! vegtype code for urban land cover
   integer                         :: ISWATER                   ! vegtype code for water
   integer                         :: ISBARREN                  ! vegtype code for barren land cover
@@ -81,9 +87,24 @@ type, public :: parameters_type
   real                            :: SSI      !liquid water holding capacity for snowpack (m3/m3)
   real                            :: MFSNO    ! fractional snow covered area (FSNO) curve parameter
   real                            :: Z0SNO    ! snow surface roughness length (m)
+  real                            :: SWEMX        ! new SWE required (QSNOW * dt) to fully cover old snow (mm)
+  real                            :: TAU0         ! tau0 from Yang97 eqn. 10a
+  real                            :: GRAIN_GROWTH ! growth from vapor diffusion Yang97 eqn. 10b
+  real                            :: EXTRA_GROWTH ! extra growth near freezing Yang97 eqn. 10c
+  real                            :: DIRT_SOOT    ! dirt and soot term Yang97 eqn. 10d
+  real                            :: BATS_COSZ    ! zenith angle snow albedo adjustment; b in Yang97 eqn. 15
+  real                            :: BATS_VIS_NEW ! new snow visible albedo
+  real                            :: BATS_NIR_NEW ! new snow NIR albedo
+  real                            :: BATS_VIS_AGE ! age factor for diffuse visible snow albedo Yang97 eqn. 17
+  real                            :: BATS_NIR_AGE ! age factor for diffuse NIR snow albedo Yang97 eqn. 18
+  real                            :: BATS_VIS_DIR ! cosz factor for direct visible snow albedo Yang97 eqn. 15
+  real                            :: BATS_NIR_DIR ! cosz factor for direct NIR snow albedo Yang97 eqn. 16
+  real                            :: RSURF_SNOW   ! surface resistence for snow [s/m]
+  real                            :: RSURF_EXP    ! exponent in the shape parameter for soil resistance option 1
   real                            :: WSLMAX   !maximum lake water storage (mm)
   real                            :: max_liq_mass_fraction !For snow water retention
   real                            :: SNOW_RET_FAC !snowpack water release timescale factor (1/s)
+  integer                         :: NBAND        ! Number of shortwave bands (2, visible and NIR)
 
   contains
 
@@ -129,6 +150,8 @@ contains
     this%SAI        = huge(1.0)
     this%ELAI       = huge(1.0)
     this%ESAI       = huge(1.0)
+    this%VAI        = huge(1.0)
+    this%VEG        = .true.
     this%FVEG       = huge(1.0)
 
   end subroutine InitDefault
@@ -163,6 +186,10 @@ contains
     this%SHDMAX = namelist%SHDFAC (namelist%vegtyp)
     this%Z0MVT  = namelist%Z0MVT (namelist%vegtyp)
     this%CWP    = namelist%CWP
+    this%RHOL   = namelist%RHOL_TABLE  (namelist%vegtyp, :)
+    this%RHOS   = namelist%RHOS_TABLE  (namelist%vegtyp, :)
+    this%TAUL   = namelist%TAUL_TABLE  (namelist%vegtyp, :)
+    this%TAUS   = namelist%TAUS_TABLE  (namelist%vegtyp, :)
     this%refkdt = namelist%refkdt
     this%refdk  = namelist%refdk
     this%kdt    = this%refkdt * this%dksat(1) / this%refdk
@@ -172,6 +199,20 @@ contains
     this%SSI    = namelist%SSI  
     this%MFSNO  = namelist%MFSNO  
     this%Z0SNO  = namelist%Z0SNO  
+    this%SWEMX        = namelist%SWEMX
+    this%TAU0         = namelist%TAU0
+    this%GRAIN_GROWTH = namelist%GRAIN_GROWTH
+    this%EXTRA_GROWTH = namelist%EXTRA_GROWTH
+    this%DIRT_SOOT    = namelist%DIRT_SOOT
+    this%BATS_COSZ    = namelist%BATS_COSZ
+    this%BATS_VIS_NEW = namelist%BATS_VIS_NEW
+    this%BATS_NIR_NEW = namelist%BATS_NIR_NEW
+    this%BATS_VIS_AGE = namelist%BATS_VIS_AGE
+    this%BATS_NIR_AGE = namelist%BATS_NIR_AGE
+    this%BATS_VIS_DIR = namelist%BATS_VIS_DIR
+    this%BATS_NIR_DIR = namelist%BATS_NIR_DIR
+    this%RSURF_SNOW   = namelist%RSURF_SNOW
+    this%RSURF_EXP    = namelist%RSURF_EXP
     this%slope      = namelist%slope
     this%ISURBAN                   = namelist%ISURBAN
     this%ISWATER                   = namelist%ISWATER
@@ -209,6 +250,7 @@ contains
     this%WSLMAX     = 5000.0 
     this%max_liq_mass_fraction = 0.4
     this%SNOW_RET_FAC = 5.e-5
+    this%NBAND        = 2  ! do not change 
 
   end subroutine InitTransfer
 

@@ -74,9 +74,23 @@
 /
 
 &snow_parameters
- SSI   = 0.03  ! liquid water holding capacity of snowpack (m3/m3)
- MFSNO = 2.5   ! fractional snow covered area (FSNO) curve parameter
- Z0SNO = 0.002 ! snow surface roughness length (m)
+ SSI          = 0.03  ! liquid water holding capacity of snowpack (m3/m3)
+ MFSNO        = 2.5   ! fractional snow covered area (FSNO) curve parameter
+ Z0SNO        = 0.002 ! snow surface roughness length (m)
+ SWEMX        = 1.00  ! new SWE required (QSNOW * dt) to fully cover old snow (mm)
+ TAU0         = 1.e6  ! tau0 from Yang97 eqn. 10a
+ GRAIN_GROWTH = 5000. ! growth from vapor diffusion Yang97 eqn. 10b
+ EXTRA_GROWTH = 10.   ! extra growth near freezing Yang97 eqn. 10c
+ DIRT_SOOT    = 0.3   ! dirt and soot term Yang97 eqn. 10d
+ BATS_COSZ    = 2.0   ! zenith angle snow albedo adjustment; b in Yang97 eqn. 15
+ BATS_VIS_NEW = 0.95  ! new snow visible albedo
+ BATS_NIR_NEW = 0.65  ! new snow NIR albedo
+ BATS_VIS_AGE = 0.2   ! age factor for diffuse visible snow albedo Yang97 eqn. 17
+ BATS_NIR_AGE = 0.5   ! age factor for diffuse NIR snow albedo Yang97 eqn. 18
+ BATS_VIS_DIR = 0.4   ! cosz factor for direct visible snow albedo Yang97 eqn. 15
+ BATS_NIR_DIR = 0.4   ! cosz factor for direct NIR snow albedo Yang97 eqn. 16
+ RSURF_SNOW   = 50.0  ! surface resistence for snow [s/m]
+ RSURF_EXP    = 5.0   ! exponent in the shape parameter for soil resistance option 1
 /
 
 &veg_parameters ! these are the modis parameters from MPTABLE.TBL in HRLDAS
@@ -92,6 +106,27 @@
  SHDMAX =  0.70,   0.95,   0.70,   0.80,   0.80,   0.70,   0.70,   0.70,   0.50,   0.80,   0.60,   0.80,   0.10,   0.80,   0.00,   0.01,   0.00,   0.60,   0.60,   0.30,
  Z0MVT  =  1.09,   1.10,   0.85,   0.80,   0.80,   0.20,   0.06,   0.60,   0.50,   0.12,   0.30,   0.15,   1.00,   0.14,   0.00,   0.00,   0.00,   0.30,   0.20,   0.03,
  CWP    =  0.18,
+
+ ! Row 1:  Vis
+ ! Row 2:  Near IR
+ RHOL_VIS= 0.07,   0.10,   0.07,   0.10,   0.10,   0.07,   0.07,   0.07,   0.10,   0.11,  0.105,   0.11,   0.00,   0.11,   0.00,   0.00,   0.00,   0.10,   0.10,   0.10,
+ RHOL_NIR= 0.35,   0.45,   0.35,   0.45,   0.45,   0.35,   0.35,   0.35,   0.45,   0.58,  0.515,   0.58,   0.00,   0.58,   0.00,   0.00,   0.00,   0.45,   0.45,   0.45,
+
+ ! Row 1:  Vis
+ ! Row 2:  Near IR
+ RHOS_VIS= 0.16,   0.16,   0.16,   0.16,   0.16,   0.16,   0.16,   0.16,   0.16,   0.36,   0.26,   0.36,   0.00,   0.36,   0.00,   0.00,   0.00,   0.16,   0.16,   0.16,
+ RHOS_NIR= 0.39,   0.39,   0.39,   0.39,   0.39,   0.39,   0.39,   0.39,   0.39,   0.58,  0.485,   0.58,   0.00,   0.58,   0.00,   0.00,   0.00,   0.39,   0.39,   0.39,
+
+ ! Row 1:  Vis
+ ! Row 2:  Near IR
+ TAUL_VIS= 0.05,   0.05,   0.05,   0.05,   0.05,   0.05,   0.05,   0.05,   0.05,   0.07,   0.06,   0.07,   0.00,   0.07,   0.00,   0.00,   0.00,   0.05,   0.05,   0.05,
+ TAUL_NIR= 0.10,   0.25,   0.10,   0.25,   0.25,   0.10,   0.10,   0.10,   0.25,   0.25,   0.25,   0.25,   0.00,   0.25,   0.00,   0.00,   0.00,   0.25,   0.25,   0.25,
+
+ ! Row 1:  Vis
+ ! Row 2:  Near IR
+ TAUS_VIS= 0.001,  0.001,  0.001,  0.001,  0.001,  0.001,  0.001,  0.001,  0.001,  0.220, 0.1105,  0.220,  0.000,  0.220,  0.000,  0.000,  0.000,  0.001,  0.001,  0.001,
+ TAUS_NIR= 0.001,  0.001,  0.001,  0.001,  0.001,  0.001,  0.001,  0.001,  0.001,  0.380, 0.1905,  0.380,  0.000,  0.380,  0.000,  0.000,  0.000,  0.001,  0.001,  0.001,
+ 
 ! Monthly values, one row for each month:
  SAI_JAN = 0.4,    0.5,    0.3,    0.4,    0.4,    0.3,    0.2,    0.4,    0.3,    0.3,    0.3,    0.3,    0.0,    0.3,    0.0,    0.0,    0.0,    0.2,    0.1,    0.0,
  SAI_FEB = 0.4,    0.5,    0.3,    0.4,    0.4,    0.3,    0.2,    0.4,    0.3,    0.3,    0.3,    0.3,    0.0,    0.3,    0.0,    0.0,    0.0,    0.2,    0.1,    0.0,
@@ -129,6 +164,10 @@
 
 &veg_options
  dynamic_veg_option                = 1
+/
+
+&snow_options
+ snow_albedo_option                = 2 ! 1 = BATS, 2 = CLASS
 /
 
 &land_parameters

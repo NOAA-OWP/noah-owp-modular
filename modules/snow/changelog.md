@@ -31,6 +31,8 @@ Changes are given in both reference to
     - Then moved to parameters based on 
 - Moved assignment of energy%DF and HCPCT to CSNOW from THERMOPROP
     - Changed multiple do- loops to single do- loop in CSNOW
+- RADIATION is now called ShortwaveRadiationMain (it does not compute longwave, so name was changed accordingly)
+- Removed redundant SWE-tracking variable SNEQVO from SNOW_AGE and now use QSNOW * dt to calculate new snowfall relative to SWEMX (the amount of snowfall needed to refresh albedo)
 
 ## Major notes (potential to change):
 - Consider a “point scale” or “small scale” mode that assumes the point or grid cell is homogeneous
@@ -63,7 +65,9 @@ Changes are given in both reference to
     -   !    TKSNO(IZ) = 2.576E- 6*BDSNOI(IZ)**2. + 0.074    ! Verseghy (1991)
     -   !    TKSNO(IZ) = 2.22*(BDSNOI(IZ)/1000.)**1.88      ! Douvill(Yen, 1981)
 - THERMOPROP uses local variables TKSNO and TVSNO before copying them over to globals DF and HCPCT. Can we just skip middleman and compute DF and HCPCT directly?
-
+- PRECIP_HEAT has a hard-code 1000 in the denominator to convert from mm to m and imposes ±20 W/m2 limits in the code. These should be changed.
+- Most snow-aging routines use new snow depth to determine whether albedo should be refreshed or not. Current implementation of SNOW_AGE uses new SWE. Change?
+- Moved local-definition of NBAND in ALBEDO to global as parameter type
 
 ## Hard-coded parameters that need to be incorporated in a driver or forcing module:
 
