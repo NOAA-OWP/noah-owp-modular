@@ -44,7 +44,7 @@ contains
     ! Determine whether grid cell is vegetated or not
 
     parameters%VAI = parameters%ELAI + parameters%ESAI
-    IF(parameters%VAI > 0.0) 
+    IF(parameters%VAI > 0.0) THEN
       parameters%VEG = .TRUE.
     ELSE
       parameters%VEG = .FALSE.
