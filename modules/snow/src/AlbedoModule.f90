@@ -258,5 +258,185 @@ contains
     END DO
 
   END SUBROUTINE GROUNDALB
+  
+  !== begin TWOSTREAM ==================================================================================
+
+!   SUBROUTINE TWOSTREAM (domain, parameters, energy, water)
+!     IMPLICIT NONE
+!
+!     type (parameters_type), intent(in) :: parameters
+!     type (    domain_type), intent(in) :: domain
+!     type (    energy_type)             :: energy
+!     type (     water_type), intent(in) :: water
+!
+!     ! ------------------------ local variables ---------------------------
+!     REAL                              :: OMEGA   !fraction of intercepted radiation that is scattered
+!     REAL                              :: OMEGAL  !omega for leaves
+!     REAL                              :: BETAI   !upscatter parameter for diffuse radiation
+!     REAL                              :: BETAIL  !betai for leaves
+!     REAL                              :: BETAD   !upscatter parameter for direct beam radiation
+!     REAL                              :: BETADL  !betad for leaves
+!     REAL                              :: EXT     !optical depth of direct beam per unit leaf area
+!     REAL                              :: AVMU    !average diffuse optical depth
+!
+!     REAL                              :: COSZI   !0.001 <= cosz <= 1.000
+!     REAL                              :: ASU     !single scattering albedo
+!     REAL                              :: CHIL    ! -0.4 <= xl <= 0.6
+!
+!     REAL                              :: TMP0,TMP1,TMP2,TMP3,TMP4,TMP5,TMP6,TMP7,TMP8,TMP9
+!     REAL                              :: P1,P2,P3,P4,S1,S2,U1,U2,U3
+!     REAL                              :: B,C,D,D1,D2,F,H,H1,H2,H3,H4,H5,H6,H7,H8,H9,H10
+!     REAL                              :: PHI1,PHI2,SIGMA
+!     REAL                              :: FTDS,FTIS,FRES
+!     REAL                              :: DENFVEG
+!     REAL                              :: VAI_SPREAD
+!     REAL                              :: FREVEG,FREBAR,FTDVEG,FTIVEG,FTDBAR,FTIBAR
+!     REAL                              :: THETAZ
+!     ! ----------------------------------------------------------------------
+!     ! compute within and between gaps
+!     VAI_SPREAD = VAI
+!     IF(VAI == 0.0) THEN
+!       GAP     = 1.0
+!       KOPEN   = 1.0
+!     ELSE
+!       IF(OPT_RAD == 1) THEN
+!         DENFVEG = -LOG(MAX(1.0-FVEG,0.01))/(PAI*parameters%RC**2)
+!         HD      = parameters%HVT - parameters%HVB
+!         BB      = 0.5 * HD
+!         THETAP  = ATAN(BB/parameters%RC * TAN(ACOS(MAX(0.01,COSZ))) )
+!         BGAP    = EXP(-DENFVEG * PAI * parameters%RC**2/COS(THETAP) )
+!         FA      = VAI/(1.33 * PAI * parameters%RC**3.0 *(BB/parameters%RC)*DENFVEG)
+!         NEWVAI  = HD*FA
+!         WGAP    = (1.0-BGAP) * EXP(-0.5*NEWVAI/COSZ)
+!         GAP     = MIN(1.0-FVEG, BGAP+WGAP)
+!         KOPEN   = 0.05
+!       END IF
+!       IF(OPT_RAD == 2) THEN
+!         GAP     = 0.0
+!         KOPEN   = 0.0
+!       END IF
+!       IF(OPT_RAD == 3) THEN
+!         GAP     = 1.0-FVEG
+!         KOPEN   = 1.0-FVEG
+!       END IF
+!     END IF
+!
+!     ! calculate two-stream parameters OMEGA, BETAD, BETAI, AVMU, GDIR, EXT.
+!     ! OMEGA, BETAD, BETAI are adjusted for snow. values for OMEGA*BETAD
+!     ! and OMEGA*BETAI are calculated and then divided by the new OMEGA
+!     ! because the product OMEGA*BETAI, OMEGA*BETAD is used in solution.
+!     ! also, the transmittances and reflectances (TAU, RHO) are linear
+!     ! weights of leaf and stem values.
+!
+!     COSZI  = MAX(0.001, COSZ)
+!     CHIL   = MIN( MAX(parameters%XL, -0.4), 0.6)
+!     IF (ABS(CHIL) .LE. 0.01) CHIL = 0.01
+!     PHI1   = 0.5 - 0.633*CHIL - 0.330*CHIL*CHIL
+!     PHI2   = 0.877 * (1.-2.*PHI1)
+!     GDIR   = PHI1 + PHI2*COSZI
+!     EXT    = GDIR/COSZI
+!     AVMU   = ( 1. - PHI1/PHI2 * LOG((PHI1+PHI2)/PHI1) ) / PHI2
+!     OMEGAL = RHO(IB) + TAU(IB)
+!     TMP0   = GDIR + PHI2*COSZI
+!     TMP1   = PHI1*COSZI
+!     ASU    = 0.5*OMEGAL*GDIR/TMP0 * ( 1.-TMP1/TMP0*LOG((TMP1+TMP0)/TMP1) )
+!     BETADL = (1.+AVMU*EXT)/(OMEGAL*AVMU*EXT)*ASU
+!     BETAIL = 0.5 * ( RHO(IB)+TAU(IB) + (RHO(IB)-TAU(IB))   &
+!            * ((1.+CHIL)/2.)**2 ) / OMEGAL
+!
+!     ! adjust omega, betad, and betai for intercepted snow
+!     IF (T > TFRZ) THEN                                !no snow
+!        TMP0 = OMEGAL
+!        TMP1 = BETADL
+!        TMP2 = BETAIL
+!     ELSE
+!        TMP0 =   (1.-FWET)*OMEGAL        + FWET*parameters%OMEGAS(IB)
+!        TMP1 = ( (1.-FWET)*OMEGAL*BETADL + FWET*parameters%OMEGAS(IB)*parameters%BETADS ) / TMP0
+!        TMP2 = ( (1.-FWET)*OMEGAL*BETAIL + FWET*parameters%OMEGAS(IB)*parameters%BETAIS ) / TMP0
+!     END IF
+!
+!     OMEGA = TMP0
+!     BETAD = TMP1
+!     BETAI = TMP2
+!
+!     ! absorbed, reflected, transmitted fluxes per unit incoming radiation
+!     B = 1. - OMEGA + OMEGA*BETAI
+!     C = OMEGA*BETAI
+!     TMP0 = AVMU*EXT
+!     D = TMP0 * OMEGA*BETAD
+!     F = TMP0 * OMEGA*(1.-BETAD)
+!     TMP1 = B*B - C*C
+!     H = SQRT(TMP1) / AVMU
+!     SIGMA = TMP0*TMP0 - TMP1
+!     if ( ABS (SIGMA) < 1.e-6 ) SIGMA = SIGN(1.e-6,SIGMA)
+!     P1 = B + AVMU*H
+!     P2 = B - AVMU*H
+!     P3 = B + TMP0
+!     P4 = B - TMP0
+!     S1 = EXP(-H*VAI)
+!     S2 = EXP(-EXT*VAI)
+!     IF (IC .EQ. 0) THEN
+!        U1 = B - C/ALBGRD(IB)
+!        U2 = B - C*ALBGRD(IB)
+!        U3 = F + C*ALBGRD(IB)
+!     ELSE
+!        U1 = B - C/ALBGRI(IB)
+!        U2 = B - C*ALBGRI(IB)
+!        U3 = F + C*ALBGRI(IB)
+!     END IF
+!     TMP2 = U1 - AVMU*H
+!     TMP3 = U1 + AVMU*H
+!     D1 = P1*TMP2/S1 - P2*TMP3*S1
+!     TMP4 = U2 + AVMU*H
+!     TMP5 = U2 - AVMU*H
+!     D2 = TMP4/S1 - TMP5*S1
+!     H1 = -D*P4 - C*F
+!     TMP6 = D - H1*P3/SIGMA
+!     TMP7 = ( D - C - H1/SIGMA*(U1+TMP0) ) * S2
+!     H2 = ( TMP6*TMP2/S1 - P2*TMP7 ) / D1
+!     H3 = - ( TMP6*TMP3*S1 - P1*TMP7 ) / D1
+!     H4 = -F*P3 - C*D
+!     TMP8 = H4/SIGMA
+!     TMP9 = ( U3 - TMP8*(U2-TMP0) ) * S2
+!     H5 = - ( TMP8*TMP4/S1 + TMP9 ) / D2
+!     H6 = ( TMP8*TMP5*S1 + TMP9 ) / D2
+!     H7 = (C*TMP2) / (D1*S1)
+!     H8 = (-C*TMP3*S1) / D1
+!     H9 = TMP4 / (D2*S1)
+!     H10 = (-TMP5*S1) / D2
+!
+!     ! downward direct and diffuse fluxes below vegetation
+!     ! Niu and Yang (2004), JGR.
+!     IF (IC .EQ. 0) THEN
+!        FTDS = S2                           *(1.0-GAP) + GAP
+!        FTIS = (H4*S2/SIGMA + H5*S1 + H6/S1)*(1.0-GAP)
+!     ELSE
+!        FTDS = 0.
+!        FTIS = (H9*S1 + H10/S1)*(1.0-KOPEN) + KOPEN
+!     END IF
+!     FTD(IB) = FTDS
+!     FTI(IB) = FTIS
+!
+!
+!     ! flux reflected by the surface (veg. and ground)
+!     IF (IC .EQ. 0) THEN
+!       FRES   = (H1/SIGMA + H2 + H3)*(1.0-GAP  ) + ALBGRD(IB)*GAP
+!       FREVEG = (H1/SIGMA + H2 + H3)*(1.0-GAP  )
+!       FREBAR = ALBGRD(IB)*GAP                   !jref - separate veg. and ground reflection
+!     ELSE
+!       FRES   = (H7 + H8) *(1.0-KOPEN) + ALBGRI(IB)*KOPEN
+!       FREVEG = (H7 + H8) *(1.0-KOPEN) + ALBGRI(IB)*KOPEN
+!       FREBAR = 0                                !jref - separate veg. and ground reflection
+!     END IF
+!
+!     FRE(IB) = FRES
+!     FREV(IB) = FREVEG
+!     FREG(IB) = FREBAR
+!
+!     ! flux absorbed by vegetation
+!     FAB(IB) = 1. - FRE(IB) - (1.-ALBGRD(IB))*FTD(IB) &
+!                             - (1.-ALBGRI(IB))*FTI(IB)
+!
+!   END SUBROUTINE TWOSTREAM
     
 end module AlbedoModule
