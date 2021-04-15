@@ -33,6 +33,13 @@ Changes are given in both reference to
     - Changed multiple do- loops to single do- loop in CSNOW
 - RADIATION is now called ShortwaveRadiationMain (it does not compute longwave, so name was changed accordingly)
 - Removed redundant SWE-tracking variable SNEQVO from SNOW_AGE and now use QSNOW * dt to calculate new snowfall relative to SWEMX (the amount of snowfall needed to refresh albedo)
+- Added SOILCOLOR as a user-settable parameter in namelist.read
+    - SOILCOLOR is hard-coded as 4 in module_sf_noahmpdrv.F in the current release of HRLDAS. SOILCOLOR is used to select the albedo values for dry and saturated soil.
+
+
+## Bug fixes:
+- Albedo for direct shortwave radiation in the NIR (ALBSND(2)) was incorrectly computed using parameters%BATS_VIS_DIR
+    - Changed to parameters%BATS_NIR_DIR
 
 ## Major notes (potential to change):
 - Consider a “point scale” or “small scale” mode that assumes the point or grid cell is homogeneous

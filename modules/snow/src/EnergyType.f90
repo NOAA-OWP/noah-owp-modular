@@ -35,6 +35,9 @@ type, public :: energy_type
   REAL, DIMENSION(1:2) :: ALBGRI  !ground albedo (diffuse)
   REAL, DIMENSION(1:2) :: ALBSND ! snow albedo for direct(1=vis, 2=nir)
   REAL, DIMENSION(1:2) :: ALBSNI ! snow albedo for diffuse
+  real    :: ALB                 ! broadband albedo in CLASS scheme
+  real    :: ALBOLD              ! broadband albedo at previous timestep 
+  
   REAL, DIMENSION(1:2) :: FABD   !flux abs by veg (per unit direct flux)
   REAL, DIMENSION(1:2) :: FABI   !flux abs by veg (per unit diffuse flux)
   REAL, DIMENSION(1:2) :: FTDD   !down direct flux below veg (per unit dir flux)

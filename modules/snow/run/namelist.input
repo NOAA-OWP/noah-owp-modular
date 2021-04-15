@@ -32,6 +32,7 @@
  vegtyp           = 1       ! vegetation type modis
  croptype         = 0       ! crop type (0 = no crops)
  sfctyp           = 1       ! land surface type, 1:soil, 2:lake
+ soilcolor        = 4       ! soil color code
 /
 
 &fixed_initial
@@ -153,6 +154,22 @@
  LAI_OCT = 4.0,    4.5,    0.5,    0.3,    2.2,    0.3,    0.2,    0.4,    0.5,    0.6,    0.3,    0.0,    0.0,    0.3,    0.0,    0.0,    0.0,    1.1,    0.7,    0.0,
  LAI_NOV = 4.0,    4.5,    0.2,    0.0,    2.0,    0.0,    0.0,    0.2,    0.3,    0.5,    0.3,    0.0,    0.0,    0.3,    0.0,    0.0,    0.0,    1.0,    0.6,    0.0,
  LAI_DEC = 4.0,    4.5,    0.0,    0.0,    2.0,    0.0,    0.0,    0.2,    0.3,    0.4,    0.2,    0.0,    0.0,    0.2,    0.0,    0.0,    0.0,    1.0,    0.6,    0.0,
+/
+
+&radiation_parameters
+ !------------------------------------------------------------------------------
+ !                1       2       3       4       5       6       7       8     soil color index for soil albedo
+ !------------------------------------------------------------------------------
+ ALBSAT_VIS =   0.15,   0.11,   0.10,   0.09,   0.08,   0.07,   0.06,   0.05   ! saturated soil albedos
+ ALBSAT_NIR =   0.30,   0.22,   0.20,   0.18,   0.16,   0.14,   0.12,   0.10   ! saturated soil albedos
+ ALBDRY_VIS =   0.27,   0.22,   0.20,   0.18,   0.16,   0.14,   0.12,   0.10   ! dry soil albedos
+ ALBDRY_NIR =   0.54,   0.44,   0.40,   0.36,   0.32,   0.28,   0.24,   0.20   ! dry soil albedos
+ ALBICE     =   0.80,   0.55                                                   ! albedo land ice: 1=vis, 2=nir
+ ALBLAK     =   0.60,   0.40                                                   ! albedo frozen lakes: 1=vis, 2=nir
+ OMEGAS     =   0.8 ,   0.4                                                    ! two-stream parameter omega for snow
+ BETADS     =   0.5                                                            ! two-stream parameter betad for snow
+ BETAIS     =   0.5                                                            ! two-stream parameter betaI for snow
+ EG         =   0.97,   0.98                                                   ! emissivity soil surface 1-soil;2-lake
 /
 
 &soil_options
