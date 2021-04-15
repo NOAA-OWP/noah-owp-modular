@@ -350,7 +350,7 @@ contains
                                  dynamic_vic_option
     namelist / veg_options     / dynamic_veg_option
     namelist / snow_options    / snow_albedo_option
-    namelest / radiation_parameters / ALBSAT_VIS,ALBSAT_NIR,ALBDRY_VIS,ALBDRY_NIR,ALBICE,ALBLAK,OMEGAS,BETADS,BETAIS,EG
+    namelist / radiation_parameters / ALBSAT_VIS,ALBSAT_NIR,ALBDRY_VIS,ALBDRY_NIR,ALBICE,ALBLAK,OMEGAS,BETADS,BETAIS,EG
     namelist / land_parameters / ISURBAN,ISWATER,ISBARREN,ISICE,ISCROP,EBLFOREST,NATURAL,LOW_DENSITY_RESIDENTIAL,&
                                  HIGH_DENSITY_RESIDENTIAL,HIGH_INTENSITY_INDUSTRIAL
  

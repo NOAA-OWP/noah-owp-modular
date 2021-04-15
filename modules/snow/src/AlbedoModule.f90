@@ -252,8 +252,8 @@ contains
       END IF
       
       ! Compute surface as function of bare ground and snow albedo, weighted by FSNO
-      energy%ALBGRD(IB) = ALBSOD * (1. - water%FSNO) + ALBSND(IB) * water%FSNO
-      energy%ALBGRI(IB) = ALBSOI * (1. - water%FSNO) + ALBSNI(IB) * water%FSNO
+      energy%ALBGRD(IB) = ALBSOD * (1. - water%FSNO) + energy%ALBSND(IB) * water%FSNO
+      energy%ALBGRI(IB) = ALBSOI * (1. - water%FSNO) + energy%ALBSNI(IB) * water%FSNO
 
     END DO
 
