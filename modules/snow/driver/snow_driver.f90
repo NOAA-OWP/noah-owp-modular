@@ -135,6 +135,7 @@ program snow_driver
     energy%IMELT = 1 ! freeze
     energy%FROZEN_GROUND = .false. 
     energy%STC      = 298.0
+    energy%COSZ     = 0.7        ! cosine of solar zenith angle
 ! for forcing-related variables
     forcing%uwind    = 0.0        ! wind speed in u direction (m s-1)
     forcing%vwind    = 0.0        ! wind speed in v direction (m s-1)

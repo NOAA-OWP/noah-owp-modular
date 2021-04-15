@@ -103,7 +103,7 @@ contains
 
     ! Compute net solar radiation
     call ShortwaveRadiationMain (domain, levels, options, parameters, forcing, energy, water)
-!
+    
 !
 !     ! vegetation and ground emissivity
 !

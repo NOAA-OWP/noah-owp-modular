@@ -27,30 +27,33 @@ type, public :: energy_type
   real    :: PAHB                              ! precipitation advected heat - bare ground net (W/m2)
   
   ! Albedo
-  real    :: TAUSS                             ! non-dimensional snow age
-  real    :: FAGE                              ! snow age (0 = new snow)
-  REAL, DIMENSION(1:2) :: ALBD   ! surface albedo (direct)
-  REAL, DIMENSION(1:2) :: ALBI   ! surface albedo (diffuse)
-  REAL, DIMENSION(1:2) :: ALBGRD ! ground albedo (direct)
-  REAL, DIMENSION(1:2) :: ALBGRI  !ground albedo (diffuse)
-  REAL, DIMENSION(1:2) :: ALBSND ! snow albedo for direct(1=vis, 2=nir)
-  REAL, DIMENSION(1:2) :: ALBSNI ! snow albedo for diffuse
-  real    :: ALB                 ! broadband albedo in CLASS scheme
-  real    :: ALBOLD              ! broadband albedo at previous timestep 
+  real                 :: TAUSS  ! non-dimensional snow age
+  real                 :: FAGE   ! snow age (0 = new snow)
+  real                 :: ALB    ! broadband albedo in CLASS scheme
+  real                 :: ALBOLD ! broadband albedo at previous timestep 
   
-  REAL, DIMENSION(1:2) :: FABD   !flux abs by veg (per unit direct flux)
-  REAL, DIMENSION(1:2) :: FABI   !flux abs by veg (per unit diffuse flux)
-  REAL, DIMENSION(1:2) :: FTDD   !down direct flux below veg (per unit dir flux)
-  REAL, DIMENSION(1:2) :: FTID   !down diffuse flux below veg (per unit dir flux)
-  REAL, DIMENSION(1:2) :: FTII   !down diffuse flux below veg (per unit dif flux)
-  REAL                 :: FSUN   !sunlit fraction of canopy (-)
+  real, allocatable, dimension(:) :: ALBD   ! surface albedo (direct)
+  real, allocatable, dimension(:) :: ALBI   ! surface albedo (diffuse)
+  real, allocatable, dimension(:) :: ALBGRD ! ground albedo (direct)
+  real, allocatable, dimension(:) :: ALBGRI  !ground albedo (diffuse)
+  real, allocatable, dimension(:) :: ALBSND ! snow albedo for direct(1=vis, 2=nir)
+  real, allocatable, dimension(:) :: ALBSNI ! snow albedo for diffuse
+  
+
   
   ! Shortwave radiation
-  real    :: COSZ         ! cosine solar zenith angle [0-1]
-  real    :: BGAP                              ! between canopy gap fraction for beam (-)
-  real    :: WGAP                              ! within canopy gap fraction for beam (-)
-  REAL, DIMENSION(1:2) :: RHO      !leaf/stem reflectance weighted by fraction LAI and SAI
-  REAL, DIMENSION(1:2) :: TAU      !leaf/stem transmittance weighted by fraction LAI and SAI
+  real                 :: COSZ  ! cosine solar zenith angle [0-1]
+  real                 :: BGAP  ! between canopy gap fraction for beam (-)
+  real                 :: WGAP  ! within canopy gap fraction for beam (-)
+  REAL                 :: FSUN   !sunlit fraction of canopy (-)
+  
+  real, allocatable, dimension(:) :: FABD   !flux abs by veg (per unit direct flux)
+  real, allocatable, dimension(:) :: FABI   !flux abs by veg (per unit diffuse flux)
+  real, allocatable, dimension(:) :: FTDD   !down direct flux below veg (per unit dir flux)
+  real, allocatable, dimension(:) :: FTID   !down diffuse flux below veg (per unit dir flux)
+  real, allocatable, dimension(:) :: FTII   !down diffuse flux below veg (per unit dif flux)
+  real, allocatable, dimension(:) :: RHO      !leaf/stem reflectance weighted by fraction LAI and SAI
+  real, allocatable, dimension(:) :: TAU      !leaf/stem transmittance weighted by fraction LAI and SAI
   
   
   
@@ -85,6 +88,21 @@ contains
     allocate(this%DF    (-namelist%nsnow+1:namelist%nsoil)); this%DF(:)    = huge(1.0)
     allocate(this%HCPCT (-namelist%nsnow+1:namelist%nsoil)); this%HCPCT(:) = huge(1.0)
     allocate(this%FACT  (-namelist%nsnow+1:namelist%nsoil)); this%FACT(:)  = huge(1.0)
+    
+    allocate(this%ALBD (1:2)); this%ALBD(:)      = huge(1.0) 
+    allocate(this%ALBI (1:2)); this%ALBI(:)      = huge(1.0) 
+    allocate(this%ALBGRD (1:2)); this%ALBGRD(:)  = huge(1.0) 
+    allocate(this%ALBGRI (1:2)); this%ALBGRI(:)  = huge(1.0) 
+    allocate(this%ALBSND (1:2)); this%ALBSND(:)  = huge(1.0) 
+    allocate(this%ALBSNI (1:2)); this%ALBSNI(:)  = huge(1.0) 
+    
+    allocate(this%FABD (1:2)); this%FABD(:)      = huge(1.0) 
+    allocate(this%FABI (1:2)); this%FABI(:)      = huge(1.0) 
+    allocate(this%FTDD (1:2)); this%FTDD(:)      = huge(1.0) 
+    allocate(this%FTID (1:2)); this%FTID(:)      = huge(1.0) 
+    allocate(this%FTII (1:2)); this%FTII(:)      = huge(1.0) 
+    allocate(this%RHO (1:2)); this%RHO(:)        = huge(1.0) 
+    allocate(this%TAU (1:2)); this%TAU(:)        = huge(1.0) 
 
   end subroutine InitAllocate
 
@@ -102,9 +120,17 @@ contains
     this%PAHV      = huge(1.0)
     this%PAHG      = huge(1.0)
     this%PAHB      = huge(1.0)
+    
     this%TAUSS     = huge(1.0)
     this%FAGE      = huge(1.0)
+    this%ALB       = huge(1.0)
+    this%ALBOLD    = huge(1.0)
     
+    this%COSZ      = huge(1.0)
+    this%BGAP      = huge(1.0)
+    this%WGAP      = huge(1.0)
+    this%FSUN      = huge(1.0)
+
   end subroutine InitDefault
 
   subroutine InitTransfer(this, namelist)
