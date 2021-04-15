@@ -25,6 +25,7 @@ type, public :: namelist_type
   integer       :: vegtyp
   integer       :: croptype
   integer       :: sfctyp
+  integer       :: soilcolor
   real          :: uwind
   real          :: vwind
 
@@ -127,6 +128,23 @@ type, public :: namelist_type
   real                ::   BATS_NIR_DIR ! cosz factor for direct NIR snow albedo Yang97 eqn. 16
   real                ::   RSURF_SNOW   ! surface resistence for snow [s/m]
   real                ::   RSURF_EXP    ! exponent in the shape parameter for soil resistance option 1
+  
+  !--------------------!
+  ! radiation parameters !
+  !--------------------!
+  real, dimension(8)    ::   ALBSAT_VIS    ! saturated soil VIS albedo per SOILCOLOR
+  real, dimension(8)    ::   ALBSAT_NIR    ! saturated soil NIR albedo per SOILCOLOR
+  real, dimension(8)    ::   ALBDRY_VIS    ! dry soil VIS albedo per SOILCOLOR
+  real, dimension(8)    ::   ALBDRY_NIR    ! dry soil NIR albedo per SOILCOLOR
+  real, dimension(8,2)  ::   ALBSAT_TABLE  ! saturated soil albedo table per SOILCOLOR (1=vis, 2=nir)
+  real, dimension(8,2)  ::   ALBDRY_TABLE  ! dry soil albedo table per SOILCOLOR (1=vis, 2=nir)
+  real, dimension(2)    ::   ALBICE        ! Land ice albedo (1=vis, 2=nir)
+  real, dimension(2)    ::   ALBLAK        ! Lake ice albedo (1=vis, 2=nir)
+  real, dimension(2)    ::   OMEGAS        ! two-stream parameter omega for snow (1=vis, 2=nir)
+  real                  ::   BETADS        ! two-stream parameter betad for snow
+  real                  ::   BETAIS        ! two-stream parameter betaI for snow
+  real, dimension(2)    ::   EG            ! emissivity of land surface (1=soil,2=lake)
+  
   !--------------------!
   !  land parameters   !
   !--------------------!
@@ -174,6 +192,7 @@ contains
     integer       :: vegtyp
     integer       :: croptype
     integer       :: sfctyp
+    integer       :: soilcolor
     real          :: uwind
     real          :: vwind
 
@@ -276,7 +295,23 @@ contains
     real                ::   BATS_NIR_DIR ! cosz factor for direct NIR snow albedo Yang97 eqn. 16
     real                ::   RSURF_SNOW   ! surface resistence for snow [s/m]
     real                ::   RSURF_EXP    ! exponent in the shape parameter for soil resistance option 1
-
+    
+    !--------------------!
+    ! radiation parameters !
+    !--------------------!
+    real, dimension(8)    ::   ALBSAT_VIS    ! saturated soil VIS albedo per SOILCOLOR
+    real, dimension(8)    ::   ALBSAT_NIR    ! saturated soil NIR albedo per SOILCOLOR
+    real, dimension(8)    ::   ALBDRY_VIS    ! dry soil VIS albedo per SOILCOLOR
+    real, dimension(8)    ::   ALBDRY_NIR    ! dry soil NIR albedo per SOILCOLOR
+    real, dimension(8,2)  ::   ALBSAT_TABLE  ! saturated soil albedo table per SOILCOLOR (1=vis, 2=nir)
+    real, dimension(8,2)  ::   ALBDRY_TABLE  ! dry soil albedo table per SOILCOLOR (1=vis, 2=nir)
+    real, dimension(2)    ::   ALBICE        ! Land ice albedo (1=vis, 2=nir)
+    real, dimension(2)    ::   ALBLAK        ! Lake ice albedo (1=vis, 2=nir)
+    real, dimension(2)    ::   OMEGAS        ! two-stream parameter omega for snow (1=vis, 2=nir)
+    real                  ::   BETADS        ! two-stream parameter betad for snow
+    real                  ::   BETAIS        ! two-stream parameter betaI for snow
+    real, dimension(2)    ::   EG            ! emissivity of land surface (1=soil,2=lake)
+    
     !--------------------!
     !  land parameters   !
     !--------------------!
@@ -296,7 +331,7 @@ contains
     namelist / forcing         / preciprate,precip_duration,dry_duration,&
                                  precipitating,uwind,vwind,ZREF
     namelist / structure       / isltyp,nsoil,nsnow,structure_option,soil_depth,&
-                                 vegtyp,croptype,sfctyp
+                                 vegtyp,croptype,sfctyp,soilcolor
     namelist / fixed_initial   / zsoil,dzsnso,sice,sh2o
     namelist / uniform_initial / initial_uniform,initial_sh2o_value,&
                                  initial_sice_value
@@ -315,6 +350,7 @@ contains
                                  dynamic_vic_option
     namelist / veg_options     / dynamic_veg_option
     namelist / snow_options    / snow_albedo_option
+    namelest / radiation_parameters / ALBSAT_VIS,ALBSAT_NIR,ALBDRY_VIS,ALBDRY_NIR,ALBICE,ALBLAK,OMEGAS,BETADS,BETAIS,EG
     namelist / land_parameters / ISURBAN,ISWATER,ISBARREN,ISICE,ISCROP,EBLFOREST,NATURAL,LOW_DENSITY_RESIDENTIAL,&
                                  HIGH_DENSITY_RESIDENTIAL,HIGH_INTENSITY_INDUSTRIAL
  
@@ -335,6 +371,7 @@ contains
      read(30, soil_options)
      read(30, veg_options)
      read(30, snow_options)
+     read(30, radiation_parameters)
      read(30, land_parameters)
     close(30)
 
@@ -385,6 +422,7 @@ contains
     this%vegtyp           = vegtyp
     this%croptype         = croptype
     this%sfctyp           = sfctyp
+    this%soilcolor        = soilcolor
 
     this%zsoil  = zsoil
     this%dzsnso = dzsnso
@@ -488,6 +526,16 @@ contains
     this%RSURF_SNOW   = RSURF_SNOW
     this%RSURF_EXP    = RSURF_EXP
     
+    this%ALBSAT_TABLE(1:8, 1) = ALBSAT_VIS(1:8)
+    this%ALBSAT_TABLE(1:8, 2) = ALBSAT_NIR(1:8)
+    this%ALBDRY_TABLE(1:8, 1) = ALBDRY_VIS(1:8)
+    this%ALBDRY_TABLE(1:8, 2) = ALBDRY_NIR(1:8)
+    this%ALBICE               = ALBICE
+    this%ALBLAK               = ALBLAK
+    this%OMEGAS               = OMEGAS
+    this%BETADS               = BETADS
+    this%BETAIS               = BETAIS
+    this%EG                   = EG
     
     this%ISURBAN                   = ISURBAN
     this%ISWATER                   = ISWATER

@@ -101,6 +101,14 @@ type, public :: parameters_type
   real                            :: BATS_NIR_DIR ! cosz factor for direct NIR snow albedo Yang97 eqn. 16
   real                            :: RSURF_SNOW   ! surface resistence for snow [s/m]
   real                            :: RSURF_EXP    ! exponent in the shape parameter for soil resistance option 1
+  real, dimension(2)              :: ALBSAT        ! saturated soil albedo (1=vis, 2=nir)
+  real, dimension(2)              :: ALBDRY        ! dry soil albedo (1=vis, 2=nir)
+  real, dimension(2)              :: ALBICE        ! Land ice albedo (1=vis, 2=nir)
+  real, dimension(2)              :: ALBLAK        ! Lake ice albedo (1=vis, 2=nir)
+  real, dimension(2)              :: OMEGAS        ! two-stream parameter omega for snow (1=vis, 2=nir)
+  real                            :: BETADS        ! two-stream parameter betad for snow
+  real                            :: BETAIS        ! two-stream parameter betaI for snow
+  real, dimension(2)              :: EG            ! emissivity of land surface (1=soil,2=lake)
   real                            :: WSLMAX   !maximum lake water storage (mm)
   real                            :: max_liq_mass_fraction !For snow water retention
   real                            :: SNOW_RET_FAC !snowpack water release timescale factor (1/s)
@@ -213,7 +221,15 @@ contains
     this%BATS_NIR_DIR = namelist%BATS_NIR_DIR
     this%RSURF_SNOW   = namelist%RSURF_SNOW
     this%RSURF_EXP    = namelist%RSURF_EXP
-    this%slope      = namelist%slope
+    this%ALBSAT       = namelist%ALBSAT_TABLE  (namelist%soilcolor, :)
+    this%ALBDRY       = namelist%ALBDRY_TABLE  (namelist%soilcolor, :)
+    this%ALBICE       = namelist%ALBICE
+    this%ALBLAK       = namelist%ALBLAK
+    this%OMEGAS       = namelist%OMEGAS
+    this%BETADS       = namelist%BETADS
+    this%BETAIS       = namelist%BETAIS
+    this%EG           = namelist%EG
+    this%slope        = namelist%slope
     this%ISURBAN                   = namelist%ISURBAN
     this%ISWATER                   = namelist%ISWATER
     this%ISBARREN                  = namelist%ISBARREN

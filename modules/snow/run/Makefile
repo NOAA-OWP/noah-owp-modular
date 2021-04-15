@@ -29,6 +29,8 @@ OBJS = \
         ../src/ForcingModule.o \
         ../src/InterceptionModule.o \
         ../src/ThermalPropertiesModule.o \
+        ../src/AlbedoModule.o \
+        ../src/ShortwaveRadiationModule.o \
         ../src/PrecipHeatModule.o \
         ../src/EnergyModule.o \
 	../driver/snow_output.o \

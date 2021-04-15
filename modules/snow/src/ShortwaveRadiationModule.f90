@@ -34,24 +34,24 @@ contains
     
     ! surface radiation
 
-    FSHA = 1.-FSUN
-    LAISUN = ELAI*FSUN
-    LAISHA = ELAI*FSHA
-    VAI = ELAI+ ESAI
-    IF (VAI > 0.) THEN
-      VEG = .TRUE.
-    ELSE
-      VEG = .FALSE.
-    END IF
-
-       CALL SURRAD (parameters,MPE    ,FSUN   ,FSHA   ,ELAI   ,VAI    , & !in
-                    LAISUN ,LAISHA ,SOLAD  ,SOLAI  ,FABD   , & !in
-                    FABI   ,FTDD   ,FTID   ,FTII   ,ALBGRD , & !in
-                    ALBGRI ,ALBD   ,ALBI   ,ILOC   ,JLOC   , & !in
-                    PARSUN ,PARSHA ,SAV    ,SAG    ,FSA    , & !out
-                    FSR    ,                                 & !out
-                    FREVI  ,FREVD  ,FREGD  ,FREGI  ,FSRV   , & !inout
-                    FSRG)
+!     FSHA = 1.-FSUN
+!     LAISUN = ELAI*FSUN
+!     LAISHA = ELAI*FSHA
+!     VAI = ELAI+ ESAI
+!     IF (VAI > 0.) THEN
+!       VEG = .TRUE.
+!     ELSE
+!       VEG = .FALSE.
+!     END IF
+!
+!        CALL SURRAD (parameters,MPE    ,FSUN   ,FSHA   ,ELAI   ,VAI    , & !in
+!                     LAISUN ,LAISHA ,SOLAD  ,SOLAI  ,FABD   , & !in
+!                     FABI   ,FTDD   ,FTID   ,FTII   ,ALBGRD , & !in
+!                     ALBGRI ,ALBD   ,ALBI   ,ILOC   ,JLOC   , & !in
+!                     PARSUN ,PARSHA ,SAV    ,SAG    ,FSA    , & !out
+!                     FSR    ,                                 & !out
+!                     FREVI  ,FREVD  ,FREGD  ,FREGI  ,FSRV   , & !inout
+!                     FSRG)
 
 
   END SUBROUTINE ShortwaveRadiationMain
