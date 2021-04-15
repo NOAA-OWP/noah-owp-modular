@@ -49,6 +49,7 @@ type, public :: namelist_type
   integer       :: dynamic_vic_option
   integer       :: dynamic_veg_option
   integer       :: snow_albedo_option
+  integer       :: radiative_transfer_option
 
   !--------------------!
   !  soil parameters   !
@@ -216,6 +217,7 @@ contains
     integer       :: dynamic_vic_option
     integer       :: dynamic_veg_option
     integer       :: snow_albedo_option
+    integer       :: radiative_transfer_option
 
     !--------------------!
     !  soil parameters   !
@@ -330,6 +332,8 @@ contains
     namelist / location        / lat,lon
     namelist / forcing         / preciprate,precip_duration,dry_duration,&
                                  precipitating,uwind,vwind,ZREF
+    namelist / model_options   / precip_phase_option,runoff_option,drainage_option,frozen_soil_option,dynamic_vic_option,&
+                                 dynamic_veg_option,snow_albedo_option,radiative_transfer_option
     namelist / structure       / isltyp,nsoil,nsnow,structure_option,soil_depth,&
                                  vegtyp,croptype,sfctyp,soilcolor
     namelist / fixed_initial   / zsoil,dzsnso,sice,sh2o
@@ -346,11 +350,6 @@ contains
                                  LAI_JAN,LAI_FEB,LAI_MAR,LAI_APR,LAI_MAY,LAI_JUN,LAI_JUL,LAI_AUG,LAI_SEP,LAI_OCT,LAI_NOV,LAI_DEC,&
                                  SAI_JAN,SAI_FEB,SAI_MAR,SAI_APR,SAI_MAY,SAI_JUN,SAI_JUL,SAI_AUG,SAI_SEP,SAI_OCT,SAI_NOV,SAI_DEC
     namelist / radiation_parameters / ALBSAT_VIS,ALBSAT_NIR,ALBDRY_VIS,ALBDRY_NIR,ALBICE,ALBLAK,OMEGAS,BETADS,BETAIS,EG
-    namelist / forcing_options / precip_phase_option
-    namelist / soil_options    / runoff_option,drainage_option,frozen_soil_option,&
-                                 dynamic_vic_option
-    namelist / veg_options     / dynamic_veg_option
-    namelist / snow_options    / snow_albedo_option
     namelist / land_parameters / ISURBAN,ISWATER,ISBARREN,ISICE,ISCROP,EBLFOREST,NATURAL,LOW_DENSITY_RESIDENTIAL,&
                                  HIGH_DENSITY_RESIDENTIAL,HIGH_INTENSITY_INDUSTRIAL
  
@@ -362,16 +361,13 @@ contains
      read(30, timing)
      read(30, location)
      read(30, forcing)
-     read(30, forcing_options)
+     read(30, model_options)
      read(30, structure)
      read(30, uniform_initial)
      read(30, soil_parameters)
      read(30, snow_parameters)
      read(30, veg_parameters)
      read(30, radiation_parameters)
-     read(30, soil_options)
-     read(30, veg_options)
-     read(30, snow_options)
      read(30, land_parameters)
     close(30)
 
@@ -440,6 +436,7 @@ contains
     this%dynamic_vic_option  = dynamic_vic_option
     this%dynamic_veg_option  = dynamic_veg_option
     this%snow_albedo_option  = snow_albedo_option
+    this%radiative_transfer_option  = radiative_transfer_option
 
     this%bb      = bb
     this%satdk   = satdk
