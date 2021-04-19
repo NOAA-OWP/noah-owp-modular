@@ -35,10 +35,22 @@ type, public :: energy_type
   real, allocatable, dimension(:) :: ALBD   ! surface albedo (direct)
   real, allocatable, dimension(:) :: ALBI   ! surface albedo (diffuse)
   real, allocatable, dimension(:) :: ALBGRD ! ground albedo (direct)
-  real, allocatable, dimension(:) :: ALBGRI  !ground albedo (diffuse)
+  real, allocatable, dimension(:) :: ALBGRI ! ground albedo (diffuse)
   real, allocatable, dimension(:) :: ALBSND ! snow albedo for direct(1=vis, 2=nir)
   real, allocatable, dimension(:) :: ALBSNI ! snow albedo for diffuse
   
+  real, allocatable, dimension(:) :: FABD   ! flux abs by veg (per unit direct flux)
+  real, allocatable, dimension(:) :: FABI   ! flux abs by veg (per unit diffuse flux)
+  real, allocatable, dimension(:) :: FTDD   ! down direct flux below veg (per unit dir flux)
+  real, allocatable, dimension(:) :: FTDI   ! down diffuse flux below veg (per unit dif flux)
+  real, allocatable, dimension(:) :: FTID   ! down diffuse flux below veg (per unit dir flux)
+  real, allocatable, dimension(:) :: FTII   ! down diffuse flux below veg (per unit dif flux)
+  real, allocatable, dimension(:) :: FREVD   ! direct flux reflected by veg layer (per unit incoming flux) 
+  real, allocatable, dimension(:) :: FREVI   ! diffuse flux reflected by veg layer (per unit incoming flux) 
+  real, allocatable, dimension(:) :: FREGD   ! direct flux reflected by ground (per unit incoming flux) 
+  real, allocatable, dimension(:) :: FREGI   ! direct flux reflected by ground (per unit incoming flux)
+  real, allocatable, dimension(:) :: RHO      !leaf/stem reflectance weighted by fraction LAI and SAI
+  real, allocatable, dimension(:) :: TAU      !leaf/stem transmittance weighted by fraction LAI and SAI
 
   
   ! Shortwave radiation
@@ -46,17 +58,7 @@ type, public :: energy_type
   real                 :: BGAP  ! between canopy gap fraction for beam (-)
   real                 :: WGAP  ! within canopy gap fraction for beam (-)
   REAL                 :: FSUN   !sunlit fraction of canopy (-)
-  
-  real, allocatable, dimension(:) :: FABD   !flux abs by veg (per unit direct flux)
-  real, allocatable, dimension(:) :: FABI   !flux abs by veg (per unit diffuse flux)
-  real, allocatable, dimension(:) :: FTDD   !down direct flux below veg (per unit dir flux)
-  real, allocatable, dimension(:) :: FTID   !down diffuse flux below veg (per unit dir flux)
-  real, allocatable, dimension(:) :: FTII   !down diffuse flux below veg (per unit dif flux)
-  real, allocatable, dimension(:) :: RHO      !leaf/stem reflectance weighted by fraction LAI and SAI
-  real, allocatable, dimension(:) :: TAU      !leaf/stem transmittance weighted by fraction LAI and SAI
-  
-  
-  
+
   contains
 
     procedure, public  :: Init
@@ -99,8 +101,13 @@ contains
     allocate(this%FABD (1:2)); this%FABD(:)      = huge(1.0) 
     allocate(this%FABI (1:2)); this%FABI(:)      = huge(1.0) 
     allocate(this%FTDD (1:2)); this%FTDD(:)      = huge(1.0) 
+    allocate(this%FTDI (1:2)); this%FTDI(:)      = huge(1.0) 
     allocate(this%FTID (1:2)); this%FTID(:)      = huge(1.0) 
     allocate(this%FTII (1:2)); this%FTII(:)      = huge(1.0) 
+    allocate(this%FREVD (1:2)); this%FREVD(:)    = huge(1.0) 
+    allocate(this%FREVI (1:2)); this%FREVI(:)    = huge(1.0) 
+    allocate(this%FREGD (1:2)); this%FREGD(:)    = huge(1.0) 
+    allocate(this%FREGI (1:2)); this%FREGI(:)    = huge(1.0) 
     allocate(this%RHO (1:2)); this%RHO(:)        = huge(1.0) 
     allocate(this%TAU (1:2)); this%TAU(:)        = huge(1.0) 
 

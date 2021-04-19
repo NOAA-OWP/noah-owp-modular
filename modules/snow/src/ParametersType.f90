@@ -44,6 +44,8 @@ type, public :: parameters_type
   real                            :: SHDFAC ! fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
   real                            :: SHDMAX ! annual maximum fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
   real                            :: Z0MVT  ! momentum roughness length (m)
+  real                            :: RC     ! tree crown radius (m)
+  real                            :: XL     ! leaf/stem orientation index
   real                            :: CWP    ! canopy wind absorption coefficient (formerly CWPVT)
   real                            :: ELAI
   real                            :: ESAI
@@ -193,6 +195,8 @@ contains
     this%SHDFAC = namelist%SHDFAC (namelist%vegtyp)
     this%SHDMAX = namelist%SHDFAC (namelist%vegtyp)
     this%Z0MVT  = namelist%Z0MVT (namelist%vegtyp)
+    this%RC     = namelist%RC (namelist%vegtyp)
+    this%XL     = namelist%XL (namelist%vegtyp)
     this%CWP    = namelist%CWP
     this%RHOL   = namelist%RHOL_TABLE  (namelist%vegtyp, :)
     this%RHOS   = namelist%RHOS_TABLE  (namelist%vegtyp, :)

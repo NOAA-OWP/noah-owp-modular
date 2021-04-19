@@ -32,10 +32,12 @@ Changes are given in both reference to
 - Moved assignment of energy%DF and HCPCT to CSNOW from THERMOPROP
     - Changed multiple do- loops to single do- loop in CSNOW
 - RADIATION is now called ShortwaveRadiationMain (it does not compute longwave, so name was changed accordingly)
+- Moved local-definition of NBAND in ALBEDO to global as parameter type
 - Removed redundant SWE-tracking variable SNEQVO from SNOW_AGE and now use QSNOW * dt to calculate new snowfall relative to SWEMX (the amount of snowfall needed to refresh albedo)
 - Added SOILCOLOR as a user-settable parameter in namelist.read
     - SOILCOLOR is hard-coded as 4 in module_sf_noahmpdrv.F in the current release of HRLDAS. SOILCOLOR is used to select the albedo values for dry and saturated soil.
-
+- The original call to TWOSTREAM in ALBEDO passed TV, which was then redefined to T in the arguments of TWOSTREAM. This is more difficult to do using types (and unintuitive), so I've changed T to energy%TV.
+    - The same was done for FAB, FRE, FTD, FTI, FREV, and FREG (original INTENT(OUT) arguments to TWOSTREAM). The call, depending on whether direct or diffuse shrotwave were being considered used the suffixed versions of these vars (D for direct, I for diffuse). Because this passing format is unclear, we now pass only the types (ENERGY in this case) and give the variables value within IF statements (already in the original code).
 
 ## Bug fixes:
 - Albedo for direct shortwave radiation in the NIR (ALBSND(2)) was incorrectly computed using parameters%BATS_VIS_DIR
@@ -74,7 +76,7 @@ Changes are given in both reference to
 - THERMOPROP uses local variables TKSNO and TVSNO before copying them over to globals DF and HCPCT. Can we just skip middleman and compute DF and HCPCT directly?
 - PRECIP_HEAT has a hard-code 1000 in the denominator to convert from mm to m and imposes ±20 W/m2 limits in the code. These should be changed.
 - Most snow-aging routines use new snow depth to determine whether albedo should be refreshed or not. Current implementation of SNOW_AGE uses new SWE. Change?
-- Moved local-definition of NBAND in ALBEDO to global as parameter type
+- TWOSTREAM uses energy%TV > parameters%TFRZ to determine whether canopy is snow-covered or not. This should be changed different logic (ex. water%CANICE > 0.0).
 
 ## Hard-coded parameters that need to be incorporated in a driver or forcing module:
 

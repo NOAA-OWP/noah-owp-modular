@@ -92,6 +92,8 @@ type, public :: namelist_type
   real, dimension(20)     ::   SHDFAC         ! fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
   real, dimension(20)     ::   SHDMAX         ! annual maximum fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
   real, dimension(20)     ::   Z0MVT          ! momentum roughness length (m)
+  real, dimension(20)     ::   RC             ! tree crown radius (m)
+  real, dimension(20)     ::   XL             ! leaf/stem orientation index
   real                    ::   CWP            ! canopy wind absorption coefficient (formerly CWPVT)
   real, dimension(20)     ::   RHOL_VIS       ! leaf reflectance in visible
   real, dimension(20)     ::   RHOL_NIR       ! leaf reflectance in near infrared
@@ -261,6 +263,8 @@ contains
     real, dimension(20)     ::   SHDFAC         ! fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
     real, dimension(20)     ::   SHDMAX         ! annual maximum fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
     real, dimension(20)     ::   Z0MVT          ! momentum roughness length (m)
+    real, dimension(20)     ::   RC             ! tree crown radius (m)
+    real, dimension(20)     ::   XL             ! leaf/stem orientation index
     real                    ::   CWP            ! canopy wind absorption coefficient (formerly CWPVT)
     real, dimension(20)     ::   RHOL_VIS       ! leaf reflectance in visible
     real, dimension(20)     ::   RHOL_NIR       ! leaf reflectance in near infrared
@@ -345,7 +349,7 @@ contains
     namelist / snow_parameters / SSI,MFSNO,Z0SNO,SWEMX,TAU0,GRAIN_GROWTH,EXTRA_GROWTH,DIRT_SOOT,&
                                  BATS_COSZ,BATS_VIS_NEW,BATS_NIR_NEW,BATS_VIS_AGE,BATS_NIR_AGE,BATS_VIS_DIR,BATS_NIR_DIR,&
                                  RSURF_SNOW,RSURF_EXP
-    namelist / veg_parameters  / CH2OP,NROOT,HVT,HVB,TMIN,SHDFAC,SHDMAX,Z0MVT,CWP,&
+    namelist / veg_parameters  / CH2OP,NROOT,HVT,HVB,TMIN,SHDFAC,SHDMAX,Z0MVT,RC,XL,CWP,&
                                  RHOL_VIS,RHOL_NIR,RHOS_VIS,RHOS_NIR,TAUL_VIS,TAUL_NIR,TAUS_VIS,TAUS_NIR,&
                                  LAI_JAN,LAI_FEB,LAI_MAR,LAI_APR,LAI_MAY,LAI_JUN,LAI_JUL,LAI_AUG,LAI_SEP,LAI_OCT,LAI_NOV,LAI_DEC,&
                                  SAI_JAN,SAI_FEB,SAI_MAR,SAI_APR,SAI_MAY,SAI_JUN,SAI_JUL,SAI_AUG,SAI_SEP,SAI_OCT,SAI_NOV,SAI_DEC
@@ -503,6 +507,8 @@ contains
     this%SHDFAC  = SHDFAC
     this%SHDMAX  = SHDMAX
     this%Z0MVT   = Z0MVT
+    this%RC      = RC
+    this%XL      = XL
     this%CWP     = CWP
 
     this%SSI          = SSI
