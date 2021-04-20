@@ -41,6 +41,7 @@ type, public :: forcing_type
   contains
 
     procedure, public  :: Init         
+    procedure, private :: InitAllocate        
     procedure, private :: InitDefault     
     procedure, public  :: InitTransfer
 
