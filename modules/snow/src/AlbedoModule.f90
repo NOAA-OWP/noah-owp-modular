@@ -31,14 +31,10 @@ contains
 
     REAL                 :: WL       !fraction of LAI+SAI that is LAI
     REAL                 :: WS       !fraction of LAI+SAI that is SAI
-    REAL                 :: MPE      !prevents overflow for division by zero
 
     REAL                 :: GDIR     !average projected leaf/stem area in solar direction
     REAL                 :: EXT      !optical depth direct beam per unit leaf + stem area
     ! ----------------------------------------------------------------------
-    
-    ! Set MPE to prevent overlfow when otherwise you would be dividing by zero
-    MPE = 1.E-06
 
     ! initialize output because solar radiation only done if COSZ > 0
     
@@ -65,10 +61,10 @@ contains
 
     ! weight reflectance/transmittance by LAI and SAI
     DO IB = 1, parameters%NBAND
-      WL  = parameters%ELAI / MAX(parameters%VAI, MPE)
-      WS  = parameters%ESAI / MAX(parameters%VAI, MPE)
-      energy%RHO(IB) = MAX(parameters%RHOL(IB) * WL + parameters%RHOS(IB) * WS, MPE)
-      energy%TAU(IB) = MAX(parameters%TAUL(IB) * WL + parameters%TAUS(IB) * WS, MPE)
+      WL  = parameters%ELAI / MAX(parameters%VAI, parameters%MPE)
+      WS  = parameters%ESAI / MAX(parameters%VAI, parameters%MPE)
+      energy%RHO(IB) = MAX(parameters%RHOL(IB) * WL + parameters%RHOS(IB) * WS, parameters%MPE)
+      energy%TAU(IB) = MAX(parameters%TAUL(IB) * WL + parameters%TAUS(IB) * WS, parameters%MPE)
     END DO
     
     ! Age the snow surface to calculate snow albedo
@@ -98,7 +94,7 @@ contains
 
     ! sunlit fraction of canopy. set FSUN = 0 if FSUN < 0.01.
     EXT = GDIR/energy%COSZ * SQRT(1.-energy%RHO(1)-energy%TAU(1))
-    energy%FSUN = (1.-EXP(-EXT*parameters%VAI)) / MAX(EXT*parameters%VAI,MPE)
+    energy%FSUN = (1.-EXP(-EXT*parameters%VAI)) / MAX(EXT*parameters%VAI,parameters%MPE)
     EXT = energy%FSUN
 
     IF (EXT < 0.01) THEN

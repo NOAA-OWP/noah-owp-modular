@@ -148,15 +148,12 @@ program snow_driver
     forcing%PRCPSNOW = 0.0        ! snow entering land model [mm/s]              ! MB/AN : v3.7
     forcing%PRCPGRPL = 0.0        ! graupel entering land model [mm/s]           ! MB/AN : v3.7
     forcing%PRCPHAIL = 0.0        ! hail entering land model [mm/s]              ! MB/AN : v3.7
-    !forcing%SOLDN    = 0.0        ! downward shortwave radiation (w/m2)
-    !forcing%COSZ     = 0.0        ! cosine solar zenith angle [0-1]
+    forcing%SOLDN    = 500.0        ! downward shortwave radiation (w/m2)
     forcing%THAIR    = 0.0        !potential temperature (k)
     forcing%QAIR     = 0.0        !specific humidity (kg/kg) (q2/(1+q2))
     forcing%EAIR     = 0.0        !vapor pressure air (pa)
     forcing%RHOAIR   = 0.0        !density air (kg/m3)
-    !REAL, DIMENSION(       1:   2), INTENT(OUT) :: SOLAD  !incoming direct solar radiation (w/m2)
-    !REAL, DIMENSION(       1:   2), INTENT(OUT) :: SOLAI  !incoming diffuse solar radiation (w/m2)
-    !forcing%SWDOWN   = 0.0        ! downward solar filtered by sun angle [w/m2]
+    forcing%SWDOWN   = 0.0        ! downward solar filtered by sun angle [w/m2]
     forcing%FPICE    = 0.0        ! fraction of ice                AJN
     forcing%JULIAN   = 45.0        ! Setting arbitrary julian day
     forcing%YEARLEN  = 365         ! Setting year to be normal (i.e. not a leap year)  

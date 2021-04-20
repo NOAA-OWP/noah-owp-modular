@@ -102,8 +102,10 @@ contains
     call PRECIP_HEAT(parameters, forcing, energy, water)
 
     ! Compute net solar radiation
+    ! Subroutine was formerly called RADIATION
+    ! Changed name because it only computes shortwave
+    ! KSJ 2021-04-20
     call ShortwaveRadiationMain (domain, levels, options, parameters, forcing, energy, water)
-    
 !
 !     ! vegetation and ground emissivity
 !
@@ -132,10 +134,10 @@ contains
 !           GX    = 1.-EXP(-5.8*(LOG(PSIWLT/PSI)))
 !         END IF
 !         GX = MIN(1.,MAX(0.,GX))
-!         BTRANI(IZ) = MAX(MPE,DZSNSO(IZ) / (-ZSOIL(parameters%NROOT)) * GX)
+!         BTRANI(IZ) = MAX(parameters%MPE,DZSNSO(IZ) / (-ZSOIL(parameters%NROOT)) * GX)
 !         BTRAN      = BTRAN + BTRANI(IZ)
 !       END DO
-!       BTRAN = MAX(MPE,BTRAN)
+!       BTRAN = MAX(parameters%MPE,BTRAN)
 !       BTRANI(1:parameters%NROOT) = BTRANI(1:parameters%NROOT)/BTRAN
 !     END IF
 !
