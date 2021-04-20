@@ -21,7 +21,7 @@ type, public :: forcing_type
   real    :: PRCPSNOW     ! snow entering land model [mm/s]              ! MB/AN : v3.7
   real    :: PRCPGRPL     ! graupel entering land model [mm/s]           ! MB/AN : v3.7
   real    :: PRCPHAIL     ! hail entering land model [mm/s]              ! MB/AN : v3.7
-  !real    :: SOLDN        ! downward shortwave radiation (w/m2)
+  real    :: SOLDN        ! downward shortwave radiation (w/m2)
 
 ! outputs
 
@@ -31,11 +31,12 @@ type, public :: forcing_type
   real    :: EAIR   !vapor pressure air (pa)
   real    :: RHOAIR !density air (kg/m3)
   real    :: FPICE   !fraction of ice                AJN
-  !REAL, DIMENSION(       1:   2), INTENT(OUT) :: SOLAD  !incoming direct solar radiation (w/m2)
-  !REAL, DIMENSION(       1:   2), INTENT(OUT) :: SOLAI  !incoming diffuse solar radiation (w/m2)
-  !real    :: SWDOWN !downward solar filtered by sun angle [w/m2]
+  real    :: SWDOWN !downward solar filtered by sun angle [w/m2]
   real    :: JULIAN
   integer :: YEARLEN
+
+  real, allocatable, dimension(:) :: SOLAD  !incoming direct solar radiation (w/m2)
+  real, allocatable, dimension(:) :: SOLAI  !incoming diffuse solar radiation (w/m2)
 
   contains
 
@@ -52,9 +53,19 @@ contains
     class(forcing_type) :: this
     type(namelist_type) :: namelist
 
+    call this%InitAllocate()
     call this%InitDefault()
 
   end subroutine Init
+  
+  subroutine InitAllocate(this)
+
+    class(forcing_type) :: this
+
+    allocate(this%SOLAD (1:2)); this%SOLAD(:) = huge(1.0) 
+    allocate(this%SOLAI (1:2)); this%SOLAI(:) = huge(1.0) 
+
+  end subroutine InitAllocate
 
   subroutine InitDefault(this)
 
@@ -72,6 +83,7 @@ contains
     this%PRCPSNOW  = huge(1.0)
     this%PRCPGRPL  = huge(1.0)
     this%PRCPHAIL  = huge(1.0)
+    this%SOLDN     = huge(1.0)
     this%UR        = huge(1.0)
     this%THAIR     = huge(1.0)
     this%QAIR      = huge(1.0)

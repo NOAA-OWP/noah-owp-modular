@@ -38,6 +38,7 @@ Changes are given in both reference to
     - SOILCOLOR is hard-coded as 4 in module_sf_noahmpdrv.F in the current release of HRLDAS. SOILCOLOR is used to select the albedo values for dry and saturated soil.
 - The original call to TWOSTREAM in ALBEDO passed TV, which was then redefined to T in the arguments of TWOSTREAM. This is more difficult to do using types (and unintuitive), so I've changed T to energy%TV.
     - The same was done for FAB, FRE, FTD, FTI, FREV, and FREG (original INTENT(OUT) arguments to TWOSTREAM). The call, depending on whether direct or diffuse shrotwave were being considered used the suffixed versions of these vars (D for direct, I for diffuse). Because this passing format is unclear, we now pass only the types (ENERGY in this case) and give the variables value within IF statements (already in the original code).
+- VAI and VEG are now computed only once in the EnergyModule, and they are part of the ParametersType. In the original code, VAI and VEG were computed multiple times locally even though their values never changed.
 
 ## Bug fixes:
 - Albedo for direct shortwave radiation in the NIR (ALBSND(2)) was incorrectly computed using parameters%BATS_VIS_DIR

@@ -54,11 +54,22 @@ type, public :: energy_type
 
   
   ! Shortwave radiation
-  real                 :: COSZ  ! cosine solar zenith angle [0-1]
-  real                 :: BGAP  ! between canopy gap fraction for beam (-)
-  real                 :: WGAP  ! within canopy gap fraction for beam (-)
-  REAL                 :: FSUN   !sunlit fraction of canopy (-)
-
+  real                 :: COSZ   ! cosine solar zenith angle [0-1]
+  real                 :: BGAP   ! between canopy gap fraction for beam (-)
+  real                 :: WGAP   ! within canopy gap fraction for beam (-)
+  REAL                 :: FSUN   ! sunlit fraction of canopy (-)
+  REAL                 :: FSHA   ! shaded fraction of canopy (-)
+  REAL                 :: LAISUN ! sunlit leaf area (-)
+  REAL                 :: LAISHA ! shaded leaf area (-)
+  REAL                 :: PARSUN  ! average absorbed par for sunlit leaves (w/m2)
+  REAL                 :: PARSHA  ! average absorbed par for shaded leaves (w/m2)
+  REAL                 :: SAV     ! solar radiation absorbed by vegetation (w/m2)
+  REAL                 :: SAG     ! solar radiation absorbed by ground (w/m2)
+  REAL                 :: FSA     ! total absorbed solar radiation (w/m2)
+  REAL                 :: FSR     ! total reflected solar radiation (w/m2)
+  REAL                 :: FSRV    ! reflected solar radiation by vegetation
+  REAL                 :: FSRG    ! reflected solar radiation by ground
+  
   contains
 
     procedure, public  :: Init
@@ -137,6 +148,17 @@ contains
     this%BGAP      = huge(1.0)
     this%WGAP      = huge(1.0)
     this%FSUN      = huge(1.0)
+    this%FSHA      = huge(1.0)
+    this%LAISUN    = huge(1.0)
+    this%LAISHA    = huge(1.0)
+    this%PARSUN    = huge(1.0)
+    this%PARSHA    = huge(1.0)
+    this%SAV       = huge(1.0)
+    this%SAG       = huge(1.0)
+    this%FSA       = huge(1.0)
+    this%FSR       = huge(1.0)
+    this%FSRV      = huge(1.0)
+    this%FSRG      = huge(1.0)
 
   end subroutine InitDefault
 

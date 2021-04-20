@@ -45,16 +45,16 @@ contains
 !---------------- TO DO 2021-03-22 ---------------------
 !---------------- COMPUTATION OF COSZ FOR ENERGY MODULE -------------
 
-    !IF(COSZ <= 0.) THEN 
-    !   SWDOWN = 0.
-    !ELSE
-    !   SWDOWN = SOLDN
-    !END IF 
+    IF(energy%COSZ <= 0.0) THEN
+      forcing%SWDOWN = 0.0
+    ELSE
+      forcing%SWDOWN = forcing%SOLDN
+    END IF
 
-    !SOLAD(1) = SWDOWN*0.7*0.5     ! direct  vis
-    !SOLAD(2) = SWDOWN*0.7*0.5     ! direct  nir
-    !SOLAI(1) = SWDOWN*0.3*0.5     ! diffuse vis
-    !SOLAI(2) = SWDOWN*0.3*0.5     ! diffuse nir
+    forcing%SOLAD(1) = forcing%SWDOWN*0.7*0.5  ! direct  vis
+    forcing%SOLAD(2) = forcing%SWDOWN*0.7*0.5  ! direct  nir
+    forcing%SOLAI(1) = forcing%SWDOWN*0.3*0.5  ! diffuse vis
+    forcing%SOLAI(2) = forcing%SWDOWN*0.3*0.5  ! diffuse nir
 
 !---------------- END TO DO
 

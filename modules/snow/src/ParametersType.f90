@@ -115,6 +115,7 @@ type, public :: parameters_type
   real                            :: max_liq_mass_fraction !For snow water retention
   real                            :: SNOW_RET_FAC !snowpack water release timescale factor (1/s)
   integer                         :: NBAND        ! Number of shortwave bands (2, visible and NIR)
+  real                            :: MPE          ! MPE is nominally small to prevent dividing by zero error
 
   contains
 
@@ -271,6 +272,7 @@ contains
     this%max_liq_mass_fraction = 0.4
     this%SNOW_RET_FAC = 5.e-5
     this%NBAND        = 2  ! do not change 
+    this%MPE          = 1.E-06  ! do not change 
 
   end subroutine InitTransfer
 
