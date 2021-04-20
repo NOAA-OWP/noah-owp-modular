@@ -23,7 +23,7 @@ contains
     type (    energy_type)             :: energy
     type (     water_type)             :: water
     type (   forcing_type)             :: forcing
-    type (   options_type)             :: options
+    type (   options_type), intent(in) :: options
 
     ! ------------------------ local variables ---------------------------
     INTEGER              :: IB       ! do-loop index
@@ -90,10 +90,10 @@ contains
     DO IB = 1, parameters%NBAND
       ! direct shortwave
       IC = 0
-      CALL TWOSTREAM (parameters, energy, water, GDIR, EXT, IB, IC)
+      CALL TWOSTREAM (parameters, energy, water, options, GDIR, EXT, IB, IC)
       ! diffuse shortwave
       IC = 1
-      CALL TWOSTREAM (parameters, energy, water, GDIR, EXT, IB, IC)
+      CALL TWOSTREAM (parameters, energy, water, options, GDIR, EXT, IB, IC)
     END DO
 
     ! sunlit fraction of canopy. set FSUN = 0 if FSUN < 0.01.
@@ -106,7 +106,7 @@ contains
     ELSE
       WL = EXT
     END IF
-    parameters%FSUN = WL
+    energy%FSUN = WL
 
     100 CONTINUE
     
@@ -257,16 +257,20 @@ contains
   
   !== begin TWOSTREAM ==================================================================================
 
-  SUBROUTINE TWOSTREAM (parameters, energy, water, GDIR, EXT, IB, IC)
+  SUBROUTINE TWOSTREAM (parameters, energy, water, options, GDIR, EXT, IB, IC)
     IMPLICIT NONE
 
     type (parameters_type), intent(in) :: parameters
     type (    energy_type)             :: energy
     type (     water_type), intent(in) :: water
-    REAL,                  intent(out) :: GDIR   ! average projected leaf/stem area in solar direction
-    REAL,                  intent(out) :: EXT    ! optical depth direct beam per unit leaf + stem area
+    type (   options_type), intent(in) :: options
+    
     INTEGER,                intent(in) :: IB     ! Index of NBAND (1 = vis, 2 = NIR)
     INTEGER,                intent(in) :: IC     ! Direct = 0; diffuse = 1
+    
+    REAL,                  intent(out) :: GDIR   ! average projected leaf/stem area in solar direction
+    REAL,                  intent(out) :: EXT    ! optical depth direct beam per unit leaf + stem area
+
     
     ! ------------------------ local variables ---------------------------
     REAL                              :: OMEGA   !fraction of intercepted radiation that is scattered
@@ -441,9 +445,9 @@ contains
 
     ! flux reflected by the surface (veg. and ground)
     IF (IC == 0) THEN
-      FRES   = (H1/SIGMA + H2 + H3)*(1.0-GAP  ) + ALBGRD(IB)*GAP
+      FRES   = (H1/SIGMA + H2 + H3)*(1.0-GAP  ) + energy%ALBGRD(IB)*GAP
       FREVEG = (H1/SIGMA + H2 + H3)*(1.0-GAP  )
-      FREBAR = ALBGRD(IB)*GAP                   !jref - separate veg. and ground reflection
+      FREBAR = energy%ALBGRD(IB)*GAP          !jref - separate veg. and ground reflection
       energy%ALBD(IB) = FRES
       energy%FREVD(IB) = FREVEG
       energy%FREGD(IB) = FREBAR
@@ -451,12 +455,12 @@ contains
       energy%FABD(IB) = 1. - energy%ALBD(IB) - (1.-energy%ALBGRD(IB))*energy%FTDD(IB) &
                               - (1.-energy%ALBGRI(IB))*energy%FTID(IB)
     ELSE
-      FRES   = (H7 + H8) *(1.0-KOPEN) + ALBGRI(IB)*KOPEN
-      FREVEG = (H7 + H8) *(1.0-KOPEN) + ALBGRI(IB)*KOPEN
+      FRES   = (H7 + H8) *(1.0-KOPEN) + energy%ALBGRI(IB)*KOPEN
+      FREVEG = (H7 + H8) *(1.0-KOPEN) + energy%ALBGRI(IB)*KOPEN
       FREBAR = 0                                !jref - separate veg. and ground reflection
-      ALBI(IB) = FRES
-      FREVI(IB) = FREVEG
-      FREGI(IB) = FREBAR
+      energy%ALBI(IB) = FRES
+      energy%FREVI(IB) = FREVEG
+      energy%FREGI(IB) = FREBAR
       ! Flux absorbed by radiation
       energy%FABI(IB) = 1. - energy%ALBI(IB) - (1.-energy%ALBGRD(IB))*energy%FTDI(IB) &
                               - (1.-energy%ALBGRI(IB))*energy%FTII(IB)
