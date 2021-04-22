@@ -7,7 +7,7 @@ This directory contains the in-progress work on a modularized version of NOAH-MP
 
 Currently, the model runs using synthetic forcing data as specified in the driver.
 
-# Setup
+# Building the model
 
 Modular NOAH-MP presently requires only one external library: [NetCDF](https://www.unidata.ucar.edu/software/netcdf/). You can install NetCDF using the link or through a package manager such as [Brew](https://brew.sh/). Once NetCDF is installed, you can build the model. The first step is to set up a configuration file. There are currently 4 build options in the `config` directory:
 
@@ -28,9 +28,12 @@ Next, compile the model from the `main` directory:
 
 `make`
 
+# Running the model
+
 After the model is finished compiling and linking, you can change into the `run` directory and run the model:
 
-```cd run/
+```
+cd run/
 ./snow_refac.exe
 ```
 
