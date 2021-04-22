@@ -13,8 +13,8 @@ Modular NOAH-MP presently requires only one external library: [NetCDF](https://w
 
 - `user_build_options.cheyenne`: Cheyenne supercomputer
 - `user_build_options.keith.gfortran`: MacOS Big Sur with gfortran compiler, NetCDF installed via Brew
-- `user_build_options.keith.gfortran`: MacOS with gfortran compiler, NetCDF installed via source (opt/local)
-- `user_build_options.keith.gfortran`: Linux with pgf90 compiler, NetCDF installed via source (usr/local)
+- `user_build_options.mike.gfortran`: MacOS with gfortran compiler, NetCDF installed via source (opt/local)
+- `user_build_options.mike.linux`: Linux with pgf90 compiler, NetCDF installed via source (usr/local)
 
 If your system does not match one of the above options, you'll need to edit one of the files or create your own. If you do the latter, you'll need to add another option to the `configure` Perl script.
 
@@ -24,7 +24,7 @@ Once you have a a `user_build_options` set, go to your terminal and run the foll
 
 Then enter the number matching your `user_build_options`. This copies over the correct set of options to the `user_build_options` file in the `main` directory.
 
-Next, compile the model from the `main` directory:
+Next, compile and link the model from the `main` directory:
 
 `make`
 
