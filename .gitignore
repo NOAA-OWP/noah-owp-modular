@@ -16,3 +16,11 @@ Thumbs.db
 
 # Basic output file
 output.nc
+
+
+# python notebook checkpoint files
+modules/main/src/.ipynb_checkpoints/
+modules/main/driver/.ipynb_checkpoints/
+
+# temp reference codes
+modules/main/ref_codes_tmp/
