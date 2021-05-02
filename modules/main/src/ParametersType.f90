@@ -116,6 +116,9 @@ type, public :: parameters_type
   real                            :: SNOW_RET_FAC !snowpack water release timescale factor (1/s)
   integer                         :: NBAND        ! Number of shortwave bands (2, visible and NIR)
   real                            :: MPE          ! MPE is nominally small to prevent dividing by zero error
+  real                            :: TOPT         ! Optimum transpiration air temperature [K]   
+  real                            :: O2           ! o2 partial pressure, from MPTABLE.TBL
+  real                            :: CO2          ! co2 partial pressure, from MPTABLE.TBL  
 
   contains
 
@@ -272,7 +275,12 @@ contains
     this%max_liq_mass_fraction = 0.4
     this%SNOW_RET_FAC = 5.e-5
     this%NBAND        = 2  ! do not change 
-    this%MPE          = 1.E-06  ! do not change 
+    this%MPE          = 1.E-06  ! do not change ! need to make this a parameter
+    this%TOPT         = 1.E-06  ! Optimum transpiration air temperature [K]   
+    
+    this%CO2       =  395.e-06   ! co2 partial pressure, from CO2_TABLE var (set in MPTABLE.TBL)
+    this%O2        =  0.209      ! o2 partial pressure, from O2_TABLE var (set in MPTABLE.TBL)
+
 
   end subroutine InitTransfer
 

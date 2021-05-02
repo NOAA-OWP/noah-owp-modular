@@ -120,3 +120,6 @@ Changes are given in both reference to
 
 - Can add update_* functions to each module 
 
+## Other Notes:
+
+- added STOMATA forcings (FOLN, O2AIR, CO2AIR) to driver

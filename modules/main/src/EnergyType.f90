@@ -54,13 +54,13 @@ type, public :: energy_type
 
   
   ! Shortwave radiation
-  real                 :: COSZ   ! cosine solar zenith angle [0-1]
-  real                 :: BGAP   ! between canopy gap fraction for beam (-)
-  real                 :: WGAP   ! within canopy gap fraction for beam (-)
-  REAL                 :: FSUN   ! sunlit fraction of canopy (-)
-  REAL                 :: FSHA   ! shaded fraction of canopy (-)
-  REAL                 :: LAISUN ! sunlit leaf area (-)
-  REAL                 :: LAISHA ! shaded leaf area (-)
+  real                 :: COSZ    ! cosine solar zenith angle [0-1]
+  real                 :: BGAP    ! between canopy gap fraction for beam (-)
+  real                 :: WGAP    ! within canopy gap fraction for beam (-)
+  REAL                 :: FSUN    ! sunlit fraction of canopy (-)
+  REAL                 :: FSHA    ! shaded fraction of canopy (-)
+  REAL                 :: LAISUN  ! sunlit leaf area (-)
+  REAL                 :: LAISHA  ! shaded leaf area (-)
   REAL                 :: PARSUN  ! average absorbed par for sunlit leaves (w/m2)
   REAL                 :: PARSHA  ! average absorbed par for shaded leaves (w/m2)
   REAL                 :: SAV     ! solar radiation absorbed by vegetation (w/m2)
@@ -69,6 +69,16 @@ type, public :: energy_type
   REAL                 :: FSR     ! total reflected solar radiation (w/m2)
   REAL                 :: FSRV    ! reflected solar radiation by vegetation
   REAL                 :: FSRG    ! reflected solar radiation by ground
+
+  ! Other, uncategorized
+  REAL                 :: TAH     ! canopy air tmeperature (k)
+  REAL                 :: ZPD     ! zero plane displacement, ground (m)
+  REAL                 :: Z0MG    ! z0 momentum, ground (m)
+  REAL                 :: Z0M     ! roughness length, momentum (m)
+  REAL                 :: ZLVL    ! reference height (m)  
+  REAL                 :: CM      ! momentum drag coefficient  
+  REAL                 :: CH      ! drag coefficient for heat
+  
   
   contains
 
@@ -159,6 +169,14 @@ contains
     this%FSR       = huge(1.0)
     this%FSRV      = huge(1.0)
     this%FSRG      = huge(1.0)
+    
+    this%TAH       = huge(1.0)
+    this%ZPD       = huge(1.0)    
+    this%Z0MG      = huge(1.0)    
+    this%Z0M       = huge(1.0)      
+    this%ZLVL      = huge(1.0)
+    this%CM        = huge(1.0)  
+    this%CH        = huge(1.0)  
 
   end subroutine InitDefault
 
