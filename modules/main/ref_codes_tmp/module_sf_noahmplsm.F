@@ -4939,10 +4939,10 @@ ENDIF   ! CROPTYPE == 0
     REAL                                  :: Q2SAT  !saturation Q2
     REAL                                  :: DQSDT2 !d(Q2SAT)/d(T)
 
-! RSMIN, RSMAX, TOPT, RGL, HS are canopy stress parameters set in REDPRM
-! ----------------------------------------------------------------------
-! initialize canopy resistance multiplier terms.
-! ----------------------------------------------------------------------
+  ! RSMIN, RSMAX, TOPT, RGL, HS are canopy stress parameters set in REDPRM
+  ! ----------------------------------------------------------------------
+  ! initialize canopy resistance multiplier terms.
+  ! ----------------------------------------------------------------------
     RC     = 0.0
     RCS    = 0.0
     RCT    = 0.0

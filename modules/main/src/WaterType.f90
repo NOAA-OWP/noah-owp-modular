@@ -74,6 +74,7 @@ type, public :: water_type
   real, allocatable, dimension(:) :: EPORE       ! snow layer effective porosity [m3/m3]
   
   real                            :: FSNO        ! fraction of grid cell with snow cover
+  real                            :: btran       ! soil water transpiration factor (0 to 1)  
 
   contains
 
@@ -155,6 +156,7 @@ contains
     this%SNOWHIN  = huge(1.0)
     this%ECAN     = huge(1.0)
     this%ETRAN    = huge(1.0)
+    this%BTRAN    = huge(1.0)
     this%QSNFRO   = huge(1.0)
     this%QSNSUB   = huge(1.0)
     this%SNOWH    = huge(1.0)

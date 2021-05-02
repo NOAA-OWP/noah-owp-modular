@@ -1,0 +1,18 @@
+
+02/CO2: 
+  partial pressures at interface (sfc) originate in tables, assigned to parameters 02, CO2
+  O2/CO2 are local variables in the driver, converted to CO2PP/O2PP (forcings) before being used to call main SFLX routine in hrldas driver, 
+  then internally energy as 02AIR, CO2AIR, which call before entering sflx:
+       CO2PP  = CO2_TABLE * P_ML                      ! partial pressure co2 [Pa]
+       O2PP   = O2_TABLE  * P_ML                      ! partial pressure  o2 [Pa]
+       (P_ML can be substituted with 1-d pressure forcing (SFCPRS))
+
+       P_ML   =(P8W3D(I,KTS+1,J)+P8W3D(I,KTS,J))*0.5  ! surface pressure defined at intermediate level [Pa]
+
+       PSFC   = P8W3D(I,1,J)                          ! surface pressure defined a full levels [Pa]
+
+P8W -- xyz input forcing, where z is 2 levels if coming from wrf.  often the avg of the two is calculated, as above for P_ML
+
+     
+TAH -- comes from TAHXY, read from T_PHY (3d variable) in readforc_hrldas, where it just takes the temperature forcing. 
+       it's really the temperature above the canopy but could start with air temp
