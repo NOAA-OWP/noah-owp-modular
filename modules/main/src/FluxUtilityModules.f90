@@ -5,14 +5,13 @@
 
 module FluxUtilityModule
 
-  !use LevelsType
-  !use DomainType
-  !use ParametersType
-  !use WaterType
-  !use EnergyType
-  !use ForcingType
-  !use OptionsType
-
+  use LevelsType
+  use DomainType
+  use ParametersType
+  use WaterType
+  use EnergyType
+  use ForcingType
+  use OptionsType
   implicit none
   
   !REAL, PARAMETER      :: CP = 1004.5, RD = 287.04, SIGMA = 5.67E-8,    &
@@ -26,13 +25,6 @@ contains
                    Z0HG, HCAN, UC, Z0H, FV, VEGTYP, &         ! in
                    TV, MOZG, FHG, &                                     ! inout
                    RAMG, RAHG, RAWG, RB)                                ! out
-  
-  !SUBROUTINE RAGRB(parameters,ITER   ,VAI    ,RHOAIR ,HG     ,TAH    , & !in
-  !                 ZPD    ,Z0MG   ,Z0HG   ,HCAN   ,UC     , & !in
-  !                 Z0H    ,FV     ,CWP    ,VEGTYP ,MPE    , & !in
-  !                 TV     ,MOZG   ,FHG    ,ILOC   ,JLOC   , & !inout
-  !                 RAMG   ,RAHG   ,RAWG   ,RB     )           !out
-
     ! --------------------------------------------------------------------------------------------------
     ! compute under-canopy aerodynamic resistance RAG and leaf boundary layer
     ! resistance RB
@@ -126,141 +118,121 @@ contains
                       RS, PSN)                                      ! out
     IMPLICIT NONE
 
-  !SUBROUTINE STOMATA (parameters,VEGTYP  ,MPE     ,APAR    ,FOLN    ,ILOC    , JLOC, & !in
-  !                    TV      ,EI      ,EA      ,SFCTMP  ,SFCPRS  , & !in
-  !                    O2      ,CO2     ,IGS     ,BTRAN   ,RB      , & !in
-  !                    RS      ,PSN     )                              !out
+    ! --------------------------------------------------------------------------------------------------
+    ! input
+    type (parameters_type), intent(in) :: parameters
+    INTEGER,INTENT(IN)  :: VEGTYP !vegetation physiology type
+    REAL, INTENT(IN)    :: IGS    !growing season index (0=off, 1=on)
+    REAL, INTENT(IN)    :: MPE    !prevents division by zero errors
+    REAL, INTENT(IN)    :: TV     !foliage temperature (k)
+    REAL, INTENT(IN)    :: EI     !vapor pressure inside leaf (sat vapor press at tv) (pa)
+    REAL, INTENT(IN)    :: EA     !vapor pressure of canopy air (pa)
+    REAL, INTENT(IN)    :: APAR   !par absorbed per unit lai (w/m2)
+    REAL, INTENT(IN)    :: O2     !atmospheric o2 concentration (pa) -- partial pressures, from parameters type
+    REAL, INTENT(IN)    :: CO2    !atmospheric co2 concentration (pa)
+    REAL, INTENT(IN)    :: SFCPRS !air pressure at reference height (pa)
+    REAL, INTENT(IN)    :: SFCTMP !air temperature at reference height (k)
+    REAL, INTENT(IN)    :: BTRAN  !soil water transpiration factor (0 to 1)
+    REAL, INTENT(IN)    :: FOLN   !foliage nitrogen concentration (%)
+    REAL, INTENT(IN)    :: RB     !boundary layer resistance (s/m)
+    ! output
+    REAL, INTENT(OUT)   :: RS     !leaf stomatal resistance (s/m)
+    REAL, INTENT(OUT)   :: PSN    !foliage photosynthesis (umol co2 /m2/ s) [always +]
+    ! inout
+    !REAL                :: RLB    !boundary layer resistance (s m2 / umol)
 
-  ! --------------------------------------------------------------------------------------------------
-  ! input
-  type (noahmp_parameters), intent(in) :: parameters
-  !    INTEGER,INTENT(IN)  :: ILOC   !grid index
-  !    INTEGER,INTENT(IN)  :: JLOC   !grid index
-  INTEGER,INTENT(IN)  :: VEGTYP !vegetation physiology type
-  REAL, INTENT(IN)    :: IGS    !growing season index (0=off, 1=on)
-  REAL, INTENT(IN)    :: MPE    !prevents division by zero errors
-  REAL, INTENT(IN)    :: TV     !foliage temperature (k)
-  REAL, INTENT(IN)    :: EI     !vapor pressure inside leaf (sat vapor press at tv) (pa)
-  REAL, INTENT(IN)    :: EA     !vapor pressure of canopy air (pa)
-  REAL, INTENT(IN)    :: APAR   !par absorbed per unit lai (w/m2)
-  REAL, INTENT(IN)    :: O2     !atmospheric o2 concentration (pa) -- partial pressures, from parameters type
-  REAL, INTENT(IN)    :: CO2    !atmospheric co2 concentration (pa)
-  REAL, INTENT(IN)    :: SFCPRS !air pressure at reference height (pa)
-  REAL, INTENT(IN)    :: SFCTMP !air temperature at reference height (k)
-  REAL, INTENT(IN)    :: BTRAN  !soil water transpiration factor (0 to 1)
-  REAL, INTENT(IN)    :: FOLN   !foliage nitrogen concentration (%)
-  REAL, INTENT(IN)    :: RB     !boundary layer resistance (s/m)
+    ! ------------------------ local variables ----------------------------------------------------
+    INTEGER :: ITER     !iteration index
+    INTEGER :: NITER    !number of iterations
+    DATA NITER /3/
+    SAVE NITER
 
-  ! output
-  REAL, INTENT(OUT)   :: RS     !leaf stomatal resistance (s/m)
-  REAL, INTENT(OUT)   :: PSN    !foliage photosynthesis (umol co2 /m2/ s) [always +]
+    REAL :: AB          !used in statement functions
+    REAL :: BC          !used in statement functions
+    REAL :: F1          !generic temperature response (statement function)
+    REAL :: F2          !generic temperature inhibition (statement function)
+    REAL :: TC          !foliage temperature (degree Celsius)
+    REAL :: CS          !co2 concentration at leaf surface (pa)
+    REAL :: KC          !co2 Michaelis-Menten constant (pa)
+    REAL :: KO          !o2 Michaelis-Menten constant (pa)
+    REAL :: A,B,C,Q     !intermediate calculations for RS
+    REAL :: R1,R2       !roots for RS
+    REAL :: FNF         !foliage nitrogen adjustment factor (0 to 1)
+    REAL :: PPF         !absorb photosynthetic photon flux (umol photons/m2/s)
+    REAL :: WC          !Rubisco limited photosynthesis (umol co2/m2/s)
+    REAL :: WJ          !light limited photosynthesis (umol co2/m2/s)
+    REAL :: WE          !export limited photosynthesis (umol co2/m2/s)
+    REAL :: CP          !co2 compensation point (pa)
+    REAL :: CI          !internal co2 (pa)
+    REAL :: AWC         !intermediate calculation for wc
+    REAL :: VCMX        !maximum rate of carbonylation (umol co2/m2/s)
+    REAL :: J           !electron transport (umol co2/m2/s)
+    REAL :: CEA         !constrain ea or else model blows up
+    REAL :: CF          !s m2/umol -> s/m
 
-  ! inout
-  !REAL                :: RLB    !boundary layer resistance (s m2 / umol)
-! ---------------------------------------------------------------------------------------------
+    F1(AB,BC) = AB**((BC-25.)/10.)
+    F2(AB) = 1. + EXP((-2.2E05+710.*(AB+273.16))/(8.314*(AB+273.16)))
+    REAL :: T
+    ! ---------------------------------------------------------------------------------------------
 
-! ------------------------ local variables ----------------------------------------------------
-      INTEGER :: ITER     !iteration index
-      INTEGER :: NITER    !number of iterations
+    ! initialize RS=RSMAX and PSN=0 because will only do calculations
+    ! for APAR > 0, in which case RS <= RSMAX and PSN >= 0
+    CF = SFCPRS/(8.314*SFCTMP)*1.e06
+    RS = 1./parameters%BP * CF
+    PSN = 0.
 
-      DATA NITER /3/
-      SAVE NITER
+    IF (APAR .LE. 0.) RETURN
 
-      REAL :: AB          !used in statement functions
-      REAL :: BC          !used in statement functions
-      REAL :: F1          !generic temperature response (statement function)
-      REAL :: F2          !generic temperature inhibition (statement function)
-      REAL :: TC          !foliage temperature (degree Celsius)
-      REAL :: CS          !co2 concentration at leaf surface (pa)
-      REAL :: KC          !co2 Michaelis-Menten constant (pa)
-      REAL :: KO          !o2 Michaelis-Menten constant (pa)
-      REAL :: A,B,C,Q     !intermediate calculations for RS
-      REAL :: R1,R2       !roots for RS
-      REAL :: FNF         !foliage nitrogen adjustment factor (0 to 1)
-      REAL :: PPF         !absorb photosynthetic photon flux (umol photons/m2/s)
-      REAL :: WC          !Rubisco limited photosynthesis (umol co2/m2/s)
-      REAL :: WJ          !light limited photosynthesis (umol co2/m2/s)
-      REAL :: WE          !export limited photosynthesis (umol co2/m2/s)
-      REAL :: CP          !co2 compensation point (pa)
-      REAL :: CI          !internal co2 (pa)
-      REAL :: AWC         !intermediate calculation for wc
-      REAL :: VCMX        !maximum rate of carbonylation (umol co2/m2/s)
-      REAL :: J           !electron transport (umol co2/m2/s)
-      REAL :: CEA         !constrain ea or else model blows up
-      REAL :: CF          !s m2/umol -> s/m
+    FNF = MIN( FOLN/MAX(parameters%MPE,parameters%FOLNMX), 1.0 )
+    TC  = TV-TFRZ
+    PPF = 4.6*APAR
+    J   = PPF*parameters%QE25
+    KC  = parameters%KC25 * F1(parameters%AKC,TC)
+    KO  = parameters%KO25 * F1(parameters%AKO,TC)
+    AWC = KC * (1.+O2/KO)
+    CP  = 0.5*KC/KO*O2*0.21
+    VCMX = parameters%VCMX25 / F2(TC) * FNF * BTRAN * F1(parameters%AVCMX,TC)
 
-      F1(AB,BC) = AB**((BC-25.)/10.)
-      F2(AB) = 1. + EXP((-2.2E05+710.*(AB+273.16))/(8.314*(AB+273.16)))
-      REAL :: T
-! ---------------------------------------------------------------------------------------------
+    ! first guess ci
+    CI = 0.7*CO2*parameters%C3PSN + 0.4*CO2*(1.-parameters%C3PSN)
 
-! initialize RS=RSMAX and PSN=0 because will only do calculations
-! for APAR > 0, in which case RS <= RSMAX and PSN >= 0
+    ! rb: s/m -> s m**2 / umol
+    RLB = RB/CF
 
-         CF = SFCPRS/(8.314*SFCTMP)*1.e06
-         RS = 1./parameters%BP * CF
-         PSN = 0.
+    ! constrain ea
+    CEA = MAX(0.25*EI*parameters%C3PSN+0.40*EI*(1.-parameters%C3PSN), MIN(EA,EI) )
 
-         IF (APAR .LE. 0.) RETURN
+    ! ci iteration
+    !jref: C3PSN is equal to 1 for all veg types.
+    DO ITER = 1, NITER
+      WJ = MAX(CI-CP,0.)*J/(CI+2.*CP)*parameters%C3PSN  + J*(1.-parameters%C3PSN)
+      WC = MAX(CI-CP,0.)*VCMX/(CI+AWC)*parameters%C3PSN + VCMX*(1.-parameters%C3PSN)
+      WE = 0.5*VCMX*parameters%C3PSN + 4000.*VCMX*CI/SFCPRS*(1.-parameters%C3PSN)
+      PSN = MIN(WJ,WC,WE) * IGS
 
-         FNF = MIN( FOLN/MAX(parameters%MPE,parameters%FOLNMX), 1.0 )
-         TC  = TV-TFRZ
-         PPF = 4.6*APAR
-         J   = PPF*parameters%QE25
-         KC  = parameters%KC25 * F1(parameters%AKC,TC)
-         KO  = parameters%KO25 * F1(parameters%AKO,TC)
-         AWC = KC * (1.+O2/KO)
-         CP  = 0.5*KC/KO*O2*0.21
-         VCMX = parameters%VCMX25 / F2(TC) * FNF * BTRAN * F1(parameters%AVCMX,TC)
+      CS = MAX( CO2-1.37*RLB*SFCPRS*PSN, parameters%MPE )
+      A = parameters%MP*PSN*SFCPRS*CEA / (CS*EI) + parameters%BP
+      B = ( parameters%MP*PSN*SFCPRS/CS + parameters%BP ) * RLB - 1.
+      C = -RLB
+      IF (B .GE. 0.) THEN
+        Q = -0.5*( B + SQRT(B*B-4.*A*C) )
+      ELSE
+        Q = -0.5*( B - SQRT(B*B-4.*A*C) )
+      END IF
+      R1 = Q/A
+      R2 = C/Q
+      RS = MAX(R1,R2)
+      CI = MAX( CS-PSN*SFCPRS*1.65*RS, 0. )
+    END DO 
 
-! first guess ci
-
-         CI = 0.7*CO2*parameters%C3PSN + 0.4*CO2*(1.-parameters%C3PSN)
-
-! rb: s/m -> s m**2 / umol
-
-         RLB = RB/CF
-
-! constrain ea
-
-         CEA = MAX(0.25*EI*parameters%C3PSN+0.40*EI*(1.-parameters%C3PSN), MIN(EA,EI) )
-
-! ci iteration
-!jref: C3PSN is equal to 1 for all veg types.
-       DO ITER = 1, NITER
-            WJ = MAX(CI-CP,0.)*J/(CI+2.*CP)*parameters%C3PSN  + J*(1.-parameters%C3PSN)
-            WC = MAX(CI-CP,0.)*VCMX/(CI+AWC)*parameters%C3PSN + VCMX*(1.-parameters%C3PSN)
-            WE = 0.5*VCMX*parameters%C3PSN + 4000.*VCMX*CI/SFCPRS*(1.-parameters%C3PSN)
-            PSN = MIN(WJ,WC,WE) * IGS
-
-            CS = MAX( CO2-1.37*RLB*SFCPRS*PSN, parameters%MPE )
-            A = parameters%MP*PSN*SFCPRS*CEA / (CS*EI) + parameters%BP
-            B = ( parameters%MP*PSN*SFCPRS/CS + parameters%BP ) * RLB - 1.
-            C = -RLB
-            IF (B .GE. 0.) THEN
-               Q = -0.5*( B + SQRT(B*B-4.*A*C) )
-            ELSE
-               Q = -0.5*( B - SQRT(B*B-4.*A*C) )
-            END IF
-            R1 = Q/A
-            R2 = C/Q
-            RS = MAX(R1,R2)
-            CI = MAX( CS-PSN*SFCPRS*1.65*RS, 0. )
-       END DO 
-
-! rs, rb:  s m**2 / umol -> s/m
-
-         RS = RS*CF
+    ! rs, rb:  s m**2 / umol -> s/m
+    RS = RS*CF
 
   END SUBROUTINE STOMATA
 
   ! == begin canres ===================================================================================
-
   SUBROUTINE CANRES (parameters, PAR, TV, BTRAN ,EAH, SFCPRS, & ! in
                         RS , PSN )                              ! out
-  !SUBROUTINE CANRES (parameters,PAR ,SFCTMP,RCSOIL ,EAH   ,SFCPRS , & !in
-  !                   RC    ,PSN   ,ILOC   ,JLOC  )           !out
-
     ! --------------------------------------------------------------------------------------------------
     ! calculate canopy resistance which depends on incoming solar radiation,
     ! air temperature, atmospheric water vapor pressure deficit at the
@@ -271,7 +243,6 @@ contains
     ! Noilhan (1990, BLM). Chen et al (1996, JGR, Vol 101(D3), 7251-7268), 
     ! eqns 12-14 and table 2 of sec. 3.1.2
     ! --------------------------------------------------------------------------------------------------
-
     IMPLICIT NONE
 
     ! inputs
@@ -331,11 +302,11 @@ contains
   END SUBROUTINE CANRES
 
 
-
   ! == begin calhum ===================================================================================
-
   SUBROUTINE CALHUM (TV, SFCPRS, Q2SAT, DQSDT2)
-  !SUBROUTINE CALHUM(parameters,SFCTMP, SFCPRS, Q2SAT, DQSDT2)  orig
+    ! --------------------------------------------------------------------------------------------------
+    ! calculate saturated mixing ratio and its derivative with temperature
+    ! --------------------------------------------------------------------------------------------------
     IMPLICIT NONE
 
     !  type (noahmp_parameters), intent(in) :: parameters   (not used)
@@ -370,32 +341,18 @@ contains
   END SUBROUTINE CALHUM
   
   
-  
-  
   ! == begin sfcdif1 ==================================================================================
-
-  !SUBROUTINE SFCDIF1(parameters,ITER   ,SFCTMP ,RHOAIR ,H      ,QAIR   , & !in
-  !     &             ZLVL   ,ZPD    ,Z0M    ,Z0H    ,UR     , & !in
-  !     &             MPE    ,ILOC   ,JLOC   ,                 & !in
-  !     &             MOZ    ,MOZSGN ,FM     ,FH     ,FM2,FH2, & !inout
-  !     &             CM     ,CH     ,FV     ,CH2     )          !out
-  
   SUBROUTINE SFCDIF1(parameters,ITER   ,SFCTMP ,RHOAIR ,H      ,QAIR   , & !in
        &             ZLVL   ,ZPD    ,Z0M    ,Z0H    ,UR     , & !in
-       &                            & !in
        &             MOZ    ,MOZSGN ,FM     ,FH     ,FM2,FH2, & !inout
        &             CM     ,CH     ,FV     ,CH2     )          !out
-
-  
     ! -------------------------------------------------------------------------------------------------
     ! computing surface drag coefficient CM for momentum and CH for heat
     ! -------------------------------------------------------------------------------------------------
     IMPLICIT NONE
 
     ! inputs
-    !type (noahmp_parameters), intent(in) :: parameters
-    !INTEGER,              INTENT(IN) :: ILOC   !grid index
-    !INTEGER,              INTENT(IN) :: JLOC   !grid index
+    type (parameters_type), intent(in) :: parameters
     INTEGER,              INTENT(IN) :: ITER   !iteration index
     REAL,                 INTENT(IN) :: SFCTMP !temperature at reference height (k)
     REAL,                 INTENT(IN) :: RHOAIR !density air (kg/m**3)
@@ -440,7 +397,6 @@ contains
     ! -------------------------------------------------------------------------------------------------
 
     ! Monin-Obukhov stability parameter moz for next iteration
-
     MOZOLD = MOZ
   
     IF(ZLVL <= ZPD) THEN
@@ -467,8 +423,7 @@ contains
        MOZ2  = MIN( (2.0 + Z0H)/MOL, 1.)
     ENDIF
 
-! accumulate number of times moz changes sign.
-
+    ! accumulate number of times moz changes sign.
     IF (MOZOLD*MOZ .LT. 0.) MOZSGN = MOZSGN+1
     IF (MOZSGN .GE. 2) THEN
        MOZ = 0.
@@ -479,7 +434,7 @@ contains
        FH2 = 0.
     ENDIF
 
-! evaluate stability-dependent variables using moz from prior iteration
+    ! evaluate stability-dependent variables using moz from prior iteration
     IF (MOZ .LT. 0.) THEN
        TMP1 = (1. - 16.*MOZ)**0.25
        TMP2 = LOG((1.+TMP1*TMP1)/2.)
@@ -487,7 +442,7 @@ contains
        FMNEW = 2.*TMP3 + TMP2 - 2.*ATAN(TMP1) + 1.5707963
        FHNEW = 2*TMP2
 
-! 2-meter
+       ! 2-meter
        TMP12 = (1. - 16.*MOZ2)**0.25
        TMP22 = LOG((1.+TMP12*TMP12)/2.)
        TMP32 = LOG((1.+TMP12)/2.)
@@ -500,9 +455,8 @@ contains
        FH2NEW = FM2NEW
     ENDIF
 
-! except for first iteration, weight stability factors for previous
-! iteration to help avoid flip-flops from one iteration to the next
-
+    ! except for first iteration, weight stability factors for previous
+    ! iteration to help avoid flip-flops from one iteration to the next
     IF (ITER == 1) THEN
        FM = FMNEW
        FH = FHNEW
@@ -515,8 +469,7 @@ contains
        FH2 = 0.5 * (FH2+FH2NEW)
     ENDIF
 
-! exchange coefficients
-
+    ! exchange coefficients
     FH = MIN(FH,0.9*TMPCH)
     FM = MIN(FM,0.9*TMPCM)
     FH2 = MIN(FH2,0.9*TMPCH2)
@@ -534,25 +487,17 @@ contains
     CH  = VKC*VKC/(CMFM*CHFH)
     CH2  = VKC*VKC/(CM2FM2*CH2FH2)
         
-! friction velocity
-
+    ! friction velocity
     FV = UR * SQRT(CM)
     CH2  = VKC*FV/CH2FH2
 
   END SUBROUTINE SFCDIF1
 
-  ! == begin sfcdif2 ==================================================================================
-    
-  !SUBROUTINE SFCDIF2(parameters,ITER   ,Z0     ,THZ0   ,THLM   ,SFCSPD , & !in
-  !                   ZLM    ,ILOC   ,JLOC   ,         & !in
-  !                   AKMS   ,AKHS   ,RLMO   ,WSTAR2 ,         & !in
-  !                   USTAR  )                                   !out
 
-  SUBROUTINE SFCDIF2(parameters,ITER   ,Z0     ,THZ0   ,THLM   ,SFCSPD , & !in
-                     ZLM    ,ILOC   ,JLOC   ,         & !in
-                     AKMS   ,AKHS   ,RLMO   ,WSTAR2 ,         & !in
-                     USTAR  )
-  
+  ! == begin sfcdif2 ==================================================================================
+  SUBROUTINE SFCDIF2(parameters, ITER, Z0, THZ0, THLM, SFCSPD, ZLM, & ! in
+                     AKMS, AKHS, RLMO, WSTAR2,                      & ! inout
+                     USTAR  )                                         ! out
     ! -------------------------------------------------------------------------------------------------
     ! SUBROUTINE SFCDIF (renamed SFCDIF_off to avoid clash with Eta PBL)
     ! -------------------------------------------------------------------------------------------------
@@ -560,11 +505,9 @@ contains
     ! SEE CHEN ET AL (1997, BLM)
     ! -------------------------------------------------------------------------------------------------
     IMPLICIT NONE
-    !  type (noahmp_parameters), intent(in) :: parameters
     
     ! in, inout, out
-    INTEGER, INTENT(IN) :: ILOC
-    INTEGER, INTENT(IN) :: JLOC
+    type (parameters_type), intent(in) :: parameters
     INTEGER, INTENT(IN) :: ITER
     REAL,    INTENT(IN) :: ZLM, Z0, THZ0, THLM, SFCSPD
     REAL, intent(INOUT) :: AKMS
@@ -579,10 +522,8 @@ contains
     REAL     ZILFC, ZU, ZT, RDZ, CXCH
     REAL     DTHV, DU2, BTGH, ZSLU, ZSLT, RLOGU, RLOGT
     REAL     ZETALT, ZETALU, ZETAU, ZETAT, XLU4, XLT4, XU4, XT4
-
     REAL     XLU, XLT, XU, XT, PSMZ, SIMM, PSHZ, SIMH, USTARK, RLMN,  &
          &         RLMA
-
     INTEGER  ILECH, ITR
 
     INTEGER, PARAMETER :: ITRMX  = 5
