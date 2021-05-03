@@ -25,6 +25,8 @@ type, public :: forcing_type
   real    :: P_ML         ! surf press estimated at model level [Pa], can avg multi-level nwp
   real    :: O2PP         ! atmospheric co2 concentration partial pressure (pa)
   real    :: CO2PP        ! atmospheric o2 concentration partial pressure (pa) 
+  real    :: UU           ! wind speed in eastward dir (m/s)  
+  real    :: VV           ! wind speed in northward dir (m/s)  
 
   ! outputs
   real    :: UR     ! wind speed at reference height
@@ -87,6 +89,9 @@ contains
     this%PRCPGRPL  = huge(1.0)
     this%PRCPHAIL  = huge(1.0)
     this%SOLDN     = huge(1.0)
+    this%UU        = huge(1.0)
+    this%VV        = huge(1.0)    
+
     this%UR        = huge(1.0)
     this%THAIR     = huge(1.0)
     this%QAIR      = huge(1.0)
