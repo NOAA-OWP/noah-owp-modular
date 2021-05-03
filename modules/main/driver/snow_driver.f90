@@ -44,6 +44,7 @@ program snow_driver
   integer :: precip_step  = 0     ! number of timesteps in current event
   integer :: dry_step   = 0       ! number of timesteps in current event
   logical :: precipitating        ! .true. if precipitating
+  real    :: QV_CURR              ! water vapor mixing ratio (kg/kg)
 
 !---------------------------------------------------------------------
 !  initialize
@@ -163,9 +164,7 @@ program snow_driver
   forcing%JULIAN   = 45.0       ! Setting arbitrary julian day
   forcing%YEARLEN  = 365        ! Setting year to be normal (i.e. not a leap year)  
   forcing%FOLN     = 1.0        ! foliage nitrogen concentration (%); for now, set to nitrogen saturation
-  forcing%P_ML     = forcing%SFCPRS              ! surf press estimated at model level [Pa], can avg multi-level nwp
-  forcing%O2PP     = parameters%O2 * P_ML        ! atmospheric co2 concentration partial pressure (pa)
-  forcing%CO2PP    = parameters%CO2 * P_ML       ! atmospheric o2 concentration partial pressure (pa) 
+  
 
   ! other variables
   ntime         =  nint(namelist%maxtime * 3600.0 / namelist%dt)
@@ -188,12 +187,25 @@ program snow_driver
   ! create output file and add initial values
   !---------------------------------------------------------------------
   call initialize_output(namelist%output_filename, ntime+1, levels%nsoil, levels%nsnow)
-  call add_to_output(0,levels%nsoil,levels%nsnow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)
+  call add_to_output(0,levels%nsoil,levels%nsnow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)  
 
   !---------------------------------------------------------------------
   ! start the time loop
   !---------------------------------------------------------------------
   do itime = 1, ntime
+  
+    !---------------------------------------------------------------------
+    ! there is a need for a derived variables routine here
+    !---------------------------------------------------------------------
+    ! it would handle the following plus a lot of other conversions, reassignments, settings
+    forcing%P_ML     = forcing%SFCPRS              ! surf press estimated at model level [Pa], can avg multi-level nwp
+    forcing%O2PP     = parameters%O2 * P_ML        ! atmospheric co2 concentration partial pressure (Pa)
+    forcing%CO2PP    = parameters%CO2 * P_ML       ! atmospheric o2 concentration partial pressure (Pa) 
+     
+    energy%TAH = forcing%SFCTMP                         ! assign canopy temp with forcing air temp (K) 
+    QV_CURR    = forcing%Q2 / (1 - forcing%Q2)          ! mixing ratio, assuming input forcing Q2 is specific hum.
+    energy%EAH = forcing%SFCPRS*QV_CURR/(0.622+QV_CURR) ! Initial guess only. (Pa)
+  
    
     !---------------------------------------------------------------------
     ! calculate the input water by simulating a synthetic precip event

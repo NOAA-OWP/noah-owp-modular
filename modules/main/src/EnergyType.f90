@@ -71,14 +71,50 @@ type, public :: energy_type
   REAL                 :: FSRG    ! reflected solar radiation by ground
 
   ! Other, uncategorized
-  REAL                 :: TAH     ! canopy air tmeperature (k)
+  REAL                 :: TAH     ! canopy air tmeperature (K)
+  REAL                 :: EAH     ! water vapor pressure (Pa)  
   REAL                 :: ZPD     ! zero plane displacement, ground (m)
   REAL                 :: Z0MG    ! z0 momentum, ground (m)
   REAL                 :: Z0M     ! roughness length, momentum (m)
   REAL                 :: ZLVL    ! reference height (m)  
   REAL                 :: CM      ! momentum drag coefficient  
   REAL                 :: CH      ! drag coefficient for heat
-  
+  REAL                 :: TGB     ! ground temperature (K)
+  REAL                 :: QSFC    ! mixing ratio at lowest model layer (g/g)
+  REAL                 :: EMV     ! vegetation emissivity (-)
+  REAL                 :: EMG     ! ground emissivity (-)
+  REAL                 :: LWDN    ! atmospheric longwave radiation (w/m2)
+  REAL                 :: GAMMAV  ! psychrometric constant (Pa/K)
+  REAL                 :: GAMMAG  ! psychrometric constant (Pa/K)  
+  REAL                 :: GAMMA   ! psychrometric constant (Pa/K)  
+  REAL                 :: EVC     ! evaporation heat flux (w/m2)  [+= to atm]  
+  REAL                 :: IRC     ! net longwave radiation (w/m2) [+= to atm]
+  REAL                 :: SHC     ! sensible heat flux (w/m2)     [+= to atm]
+  REAL                 :: IRG     ! net longwave radiation (w/m2) [+= to atm]
+  REAL                 :: SHG     ! sensible heat flux (w/m2)     [+= to atm]
+  REAL                 :: EVG     ! evaporation heat flux (w/m2)  [+= to atm]
+  REAL                 :: TR      ! transpiration heat flux (w/m2)[+= to atm]
+  REAL                 :: GH      ! ground heat (w/m2) [+ = to soil]
+  REAL                 :: GHB     ! ground heat flux (w/m2)  [+ to soil]  
+  REAL                 :: T2MV    ! 2 m height air temperature (k)
+  REAL                 :: CHLEAF  ! leaf exchange coefficient
+  REAL                 :: CHUC    ! under canopy exchange coefficient
+  REAL                 :: Q2V     ! check
+  REAL                 :: LATHEAV ! latent heat of vaporization/subli (j/kg) (varies if froz)
+  REAL                 :: LATHEAG ! latent heat of vaporization/subli (j/kg) (varies if froz)
+  REAL                 :: LATHEA  ! latent heat of vaporization/subli (j/kg) (bare ground version)
+  REAL                 :: RSURF   ! ground surface resistance (s/m)
+  REAL                 :: RHSUR   ! relative humidity in surface soil/snow air space (-)  
+  REAL                 :: TAUXV   ! wind stress: e-w (n/m2) vegetation
+  REAL                 :: TAUYV   ! wind stress: n-s (n/m2) vegetation
+  REAL                 :: TAUXB   ! wind stress: e-w (n/m2) bare ground
+  REAL                 :: TAUYB   ! wind stress: n-s (n/m2) bare ground
+  REAL                 :: CAH2    ! sensible heat conductance for diagnostics
+  REAL                 :: EHB2    ! sensible heat conductance for diagnostics (bare ground)
+  REAL                 :: T2MB    ! 2 m height air temperature (K)  
+  REAL                 :: Q2B     ! bare ground heat conductance
+  REAL                 :: SHB     ! sensible heat flux (w/m2) [+ to atm] 
+  REAL                 :: EVB     ! latent heat flux (w/m2)   [+ to atm]
   
   contains
 
@@ -171,13 +207,53 @@ contains
     this%FSRG      = huge(1.0)
     
     this%TAH       = huge(1.0)
+    this%EAH       = huge(1.0)
     this%ZPD       = huge(1.0)    
     this%Z0MG      = huge(1.0)    
     this%Z0M       = huge(1.0)      
     this%ZLVL      = huge(1.0)
     this%CM        = huge(1.0)  
     this%CH        = huge(1.0)  
-
+    this%TGB       = huge(1.0)    
+    this%QSFC      = huge(1.0)  
+    this%EMV       = huge(1.0)  
+    this%EMG       = huge(1.0)  
+    this%LWDN      = huge(1.0)  
+    this%GAMMAV    = huge(1.0)  
+    this%GAMMAG    = huge(1.0)  
+    this%GAMMA     = huge(1.0)  
+    
+    this%EVC       = huge(1.0)  
+    this%IRC       = huge(1.0)  
+    this%SHC       = huge(1.0)  
+    this%IRG       = huge(1.0)  
+    this%SHG       = huge(1.0)  
+    this%EVG       = huge(1.0)  
+    this%TR        = huge(1.0)  
+    this%GH        = huge(1.0) 
+    this%GHB       = huge(1.0)     
+    this%T2MV      = huge(1.0)  
+    this%CHLEAF    = huge(1.0)  
+    this%CHUC      = huge(1.0)  
+    this%Q2V       = huge(1.0)  
+    this%LATHEAV   = huge(1.0)      
+    this%LATHEAG   = huge(1.0)  
+    this%LATHEA    = huge(1.0)     
+    this%RSURF     = huge(1.0)    
+    this%RHSUR     = huge(1.0)    
+    this%TAUXV     = huge(1.0) 
+    this%TAUYV     = huge(1.0) 
+    this%TAUXB     = huge(1.0) 
+    this%TAUYB     = huge(1.0) 
+    this%CAH2      = huge(1.0) 
+    this%EHB2      = huge(1.0)
+    this%T2MB      = huge(1.0)
+    this%Q2B       = huge(1.0)
+    this%SHB       = huge(1.0)
+    this%EVB       = huge(1.0)
+    
+    
+    
   end subroutine InitDefault
 
   subroutine InitTransfer(this, namelist)

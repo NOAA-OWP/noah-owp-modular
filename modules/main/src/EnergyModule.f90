@@ -206,7 +206,28 @@ contains
 !       TGV = TG
 !       CMV = CM
 !       CHV = CH
-!       CALL VEGE_FLUX
+!    CALL VEGE_FLUX (parameters,NSNOW   ,NSOIL   ,ISNOW   ,VEGTYP  ,VEG     , & !in
+!                    DT      ,SAV     ,SAG     ,LWDN    ,UR      , & !in
+!                    UU      ,VV      ,SFCTMP  ,THAIR   ,QAIR    , & !in
+!                    EAIR    ,RHOAIR  ,SNOWH   ,VAI     ,GAMMAV   ,GAMMAG   , & !in
+!                    FWET    ,LAISUN  ,LAISHA  ,CWP     ,DZSNSO  , & !in
+!                    ZLVL    ,ZPD     ,Z0M     ,FVEG    , & !in
+!                    Z0MG    ,EMV     ,EMG     ,CANLIQ  ,FSNO, & !in
+!                    CANICE  ,STC     ,DF      ,RSSUN   ,RSSHA   , & !in
+!                    RSURF   ,LATHEAV ,LATHEAG ,PARSUN  ,PARSHA  ,IGS     , & !in
+!                    FOLN    ,CO2AIR  ,O2AIR   ,BTRAN   ,SFCPRS  , & !in
+!                   RHSUR   ,ILOC    ,JLOC    ,Q2      ,PAHV  ,PAHG  , & !in
+!                    EAH     ,TAH     ,TV      ,TGV     ,CMV     , & !inout
+!                    CHV     ,DX      ,DZ8W    ,                   & !inout
+!                    TAUXV   ,TAUYV   ,IRG     ,IRC     ,SHG     , & !out
+!                    SHC     ,EVG     ,EVC     ,TR      ,GHV     , & !out
+!                    T2MV    ,PSNSUN  ,PSNSHA  ,                   & !out
+!jref:start
+!                    QC      ,QSFC    ,PSFC    , & !in
+!                    Q2V     ,CHV2, CHLEAF, CHUC, &
+!                    SH2O,JULIAN, SWDOWN, PRCP, FB, FSR, GECROS1D)      ! Gecros 
+
+
 !     ELSE
 !       TAUXV     = 0.
 !       TAUYV     = 0.

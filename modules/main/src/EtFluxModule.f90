@@ -159,10 +159,6 @@ contains
 !  REAL,                           INTENT(OUT) :: CHLEAF !leaf exchange coefficient
 !  REAL,                           INTENT(OUT) :: CHUC   !under canopy exchange coefficient
 !  REAL,                           INTENT(OUT) :: Q2V
-!  REAL :: CAH    !sensible heat conductance, canopy air to ZLVL air (m/s)
-!  REAL :: U10V    !10 m wind speed in eastward dir (m/s) 
-!  REAL :: V10V    !10 m wind speed in eastward dir (m/s) 
-!  REAL :: WSPD
 !  REAL, INTENT(OUT) :: RSSUN        ! sunlit leaf stomatal resistance (s/m)
 !  REAL, INTENT(OUT) :: RSSHA        ! shaded leaf stomatal resistance (s/m)
 !  REAL, INTENT(OUT) :: CAH2         ! sensible heat conductance for diagnostics
@@ -244,15 +240,17 @@ contains
 
     INTEGER :: K         !index
     INTEGER :: ITER      !iteration index
-
+    
+    REAL :: CAH    !sensible heat conductance, canopy air to ZLVL air (m/s)
+    
     !jref - NITERC test from 5 to 20  
     INTEGER, PARAMETER :: NITERC = 20   !number of iterations for surface temperature
     !jref - NITERG test from 3-5
-    INTEGER, PARAMETER :: NITERG = 5   !number of iterations for ground temperature
-    INTEGER            :: MOZSGN    !number of times MOZ changes sign
-    !REAL              :: MPE       ! prevents overflow error if division by zero  AW: now included in parameters
+    INTEGER, PARAMETER :: NITERG = 5   ! number of iterations for ground temperature
+    INTEGER            :: MOZSGN       ! number of times MOZ changes sign
+    !REAL              :: MPE          ! prevents overflow error if division by zero  AW: now included in parameters
 
-    INTEGER :: LITER     !Last iteration
+    INTEGER :: LITER     ! Last iteration
 
     REAL, INTENT(IN)                    :: JULIAN, SWDOWN, PRCP, FB
     REAL, INTENT(INOUT)                 :: FSR
@@ -271,16 +269,28 @@ contains
     associate(&
       ! used in resistance calculations
       SFCTMP   => forcing%SFCTMP     ,&   ! intent(in)    : real  air temperature at reference height (K)  
-      TAH      => forcing%SFCTMP     ,&   ! intent(in)    : real  canopy temperature (K)  
+      TAH      => energy%TAH         ,&   ! intent(in)    : real  canopy temperature (K)  
+      EAH      => energy%EAH         ,&   ! intent(in)    : real  canopy air vapor pressure (Pa) 
       TV       => energy%TV          ,&   ! intent(in)    : real  vegetation temperature (K)  
-      RHOAIR   => forcing%RHOAIR      &   ! intent(in)    : real  density air (kg/m3)
+      RHOAIR   => forcing%RHOAIR     ,&   ! intent(in)    : real  density air (kg/m3)
+      PSFC     => forcing%SFCPRS     ,&   ! intent(in)    : pressure at lowest model layer (Pa)  
+      Z0M      => energy%Z0M         ,&   ! intent(in)    : real  vegetation temperature (K)  
+      ZLVL     => energy%ZLVL        ,&   ! intent(in)    : reference height (m) 
+      QSFC     => energy%QSFC        ,&   ! intent(inout  : mixing ratio at lowest model layer (g/g)  
+      EMV      => energy%EMV         ,&   ! intent(in)    : vegetation emissivity
+      EMG      => energy%EMG         ,&   ! intent(in)    : ground emissivity
+      LWDN     => energy%LWDN        ,&   ! intent(inout) : atmospheric longwave radiation (w/m2)
+      FVEG     => parameters%FVEG    ,&   ! intent(in)    : greeness vegetation fraction (-)
+      CPAIR    => parameters%CPAIR   ,&   ! intent(in)    : heat capacity dry air at const pres (j/kg/k)
+   
+      UR       => forcing%UR          &   ! intent(in)    : roughness length, momentum (m)  
     )  
     ! ---- end associate block --------------------------------------------------------------------
 
-    TDC(T)   = MIN( 50., MAX(-50.,(T-TFRZ)) )
+    TDC(T)   = MIN( 50., MAX(-50.,(T-parameters%TFRZ)) )     ! function declaration
 
-    !MPE = 1E-6    set in parameters
-    LITER = 0
+    !MPE = 1E-6    AW set in parameters
+    LITER = 0      ! last iteration
     FV = 0.1
 
     ! ---------------------------------------------------------------------------------------------
@@ -292,12 +302,12 @@ contains
     QFX = 0.
 
     ! limit LAI
-    VAIE    = MIN(6.,VAI   )
-    LAISUNE = MIN(6.,LAISUN)
-    LAISHAE = MIN(6.,LAISHA)
+    VAIE    = MIN(6., parameters%VAI)
+    LAISUNE = MIN(6., energy%LAISUN)
+    LAISHAE = MIN(6., energy%LAISHA)
 
     ! saturation vapor pressure at ground temperature
-    T = TDC(TG)
+    T = TDC(energy%TG)
     CALL ESAT(T, ESATW, ESATI, DSATW, DSATI)
     IF (T .GT. 0.) THEN
       ESTG = ESATW
@@ -306,62 +316,68 @@ contains
     END IF
 
     !jref - consistent surface specific humidity for sfcdif3 and sfcdif4
-    QSFC = 0.622*EAIR/(PSFC-0.378*EAIR)  
+    QSFC = 0.622*forcing%EAIR/(PSFC-0.378*forcing%EAIR)  
 
     ! canopy height
     HCAN = parameters%HVT
     UC = UR*LOG(HCAN/Z0M)/LOG(ZLVL/Z0M)
-    UC = UR*LOG((HCAN-ZPD+Z0M)/Z0M)/LOG(ZLVL/Z0M)   ! MB: add ZPD v3.7
-    IF((HCAN-ZPD) <= 0.) THEN
+    UC = UR*LOG((HCAN-energy%ZPD+Z0M)/Z0M)/LOG(ZLVL/Z0M)   ! MB: add ZPD v3.7
+    IF((HCAN-energy%ZPD) <= 0.) THEN
       WRITE(message,*) "CRITICAL PROBLEM: HCAN <= ZPD"
-      call wrf_message ( message )
-      WRITE(message,*) 'i,j point=',ILOC, JLOC
-      call wrf_message ( message )
-      WRITE(message,*) 'HCAN  =',HCAN
-      call wrf_message ( message )
-      WRITE(message,*) 'ZPD   =',ZPD
-      call wrf_message ( message )
-      write (message, *) 'SNOWH =',SNOWH
-      call wrf_message ( message )
-      call wrf_error_fatal ( "CRITICAL PROBLEM IN MODULE_SF_NOAHMPLSM:VEGEFLUX" )
+      !call wrf_message ( message )
+      WRITE(message,*) 'i,j point=',domain%ILOC, domain%JLOC
+      !call wrf_message ( message )
+      WRITE(message,*) 'HCAN  =', HCAN
+      !call wrf_message ( message )
+      WRITE(message,*) 'ZPD   =', energy%ZPD
+      !call wrf_message ( message )
+      write (message, *) 'SNOWH =', water%SNOWH
+      !call wrf_message ( message )
+      !call wrf_error_fatal ( "CRITICAL PROBLEM IN MODULE_SF_NOAHMPLSM:VEGEFLUX" )
+      WRITE(*,*) "CRITICAL PROBLEM: HCAN <= ZPD"
+      WRITE(*,*) 'i,j point=', domain%ILOC, domain%JLOC
+      WRITE(*,*) 'HCAN  = ', HCAN
+      WRITE(*,*) 'ZPD   = ', energy%ZPD
+      write(*,*) 'SNOWH = ', water%SNOWH      
+      write(*,*) "CRITICAL PROBLEM IN MODULE_SF_NOAHMPLSM:VEGEFLUX"
     END IF
 
     ! prepare for longwave rad.
-    AIR = -EMV*(1.+(1.-EMV)*(1.-EMG))*LWDN - EMV*EMG*SB*TG**4  
-    CIR = (2.-EMV*(1.-EMG))*EMV*SB
+    AIR = -EMV*(1.+(1.-EMV)*(1.-EMG))*LWDN - EMV*EMG*parameters%SB*energy%TG**4  
+    CIR = (2.-EMV*(1.-EMG))*EMV*parameters%SB
 
     ! ---------------------------------------------------------------------------------------------
     loop1: DO ITER = 1, NITERC    !  begin stability iteration
 
       IF(ITER == 1) THEN
         Z0H  = Z0M  
-        Z0HG = Z0MG
+        Z0HG = energy%Z0MG
       ELSE
         Z0H  = Z0M    !* EXP(-CZIL*0.4*258.2*SQRT(FV*Z0M))
-        Z0HG = Z0MG   !* EXP(-CZIL*0.4*258.2*SQRT(FV*Z0MG))
+        Z0HG = energy%Z0MG   !* EXP(-CZIL*0.4*258.2*SQRT(FV*Z0MG))
       END IF
 
       ! aerodyn resistances between heights zlvl and d+z0v
-      IF(OPT_SFC == 1) THEN
+      IF(options%OPT_SFC == 1) THEN
         CALL SFCDIF1(parameters, ITER, SFCTMP, RHOAIR, H, forcing%QAIR,     &  ! in
-                     energy%ZLVL, energy%ZPD, energy%Z0M, Z0H, forcing%UR,  &  ! in
+                     ZLVL, energy%ZPD, Z0M, Z0H, UR,  &  ! in
                      MOZ, MOZSGN, FM, FH, FM2, FH2,                         &  ! inout
                      energy%CM, energy%CH, FV, CH2)                            ! out
         ! note, local vars:  ITER H ZOH MOZ MOZSGN FM FH FM2 FH2 FV CH2
       ENDIF
      
-      IF(OPT_SFC == 2) THEN
-        CALL SFCDIF2(parameters, ITER, energy%Z0M, TAH, forcing%THAIR, forcing%UR,  & ! in
-                     energy%ZLVL, energy%CM, energy%CH, MOZ, WSTAR,                 & ! in
-                     FV )                                                     ! out
+      IF(options%OPT_SFC == 2) THEN
+        CALL SFCDIF2(parameters, ITER, Z0M, TAH, forcing%THAIR, UR,  & ! in
+                     ZLVL, energy%CM, energy%CH, MOZ, WSTAR,                 & ! in
+                     FV )                                                             ! out
         ! Undo the multiplication by windspeed that SFCDIF2 
         ! applies to exchange coefficients CH and CM:
-        CH = CH / UR
-        CM = CM / UR
+        energy%CH = energy%CH / UR
+        energy%CM = energy%CM / UR
       ENDIF
 
-      RAMC = MAX(1.,1./(CM*UR))
-      RAHC = MAX(1.,1./(CH*UR))
+      RAMC = MAX(1.,1./(energy%CM*UR))
+      RAHC = MAX(1.,1./(energy%CH*UR))
       RAWC = RAHC
 
       ! calculate aerodynamic resistance between heights z0g and d+z0v, RAG, and leaf
@@ -373,9 +389,9 @@ contains
       !           Z0H    ,FV     ,CWP    ,VEGTYP ,MPE    , & !in
       !           TV     ,MOZG   ,FHG    ,ILOC   ,JLOC   , & !inout
       !           RAMG   ,RAHG   ,RAWG   ,RB     )           !out
-      CALL RAGRB(parameters, ITER, VAIE, forcing%RHOAIR, HG, TAH, energy%ZPD, &  ! in
-                 energy%Z0MG, Z0HG, HCAN, UC, Z0H, FV, domain%VEGTYP, &          ! in
-                 energy%TV, MOZG, FHG, &                                         ! inout
+      CALL RAGRB(parameters, ITER, VAIE, RHOAIR, HG, TAH, energy%ZPD, &  ! in
+                 energy%Z0MG, Z0HG, HCAN, UC, Z0H, FV, domain%VEGTYP,         &  ! in
+                 TV, MOZG, FHG,                                        &  ! inout
                  RAMG, RAHG, RAWG, RB)                                           ! out                  
       ! note, local vars:  ITER VAIE HG ZOHG HCAN UC Z0H FV MOZH FHG RAMG, RAHG, RAWG, RB
        
@@ -392,7 +408,7 @@ contains
 
       ! calculate stomatal resistance and photosynthesis (two options available)
       IF(ITER == 1) THEN
-        IF (OPT_CRS == 1) then  ! Ball-Berry
+        IF (options%OPT_CRS == 1) then  ! Ball-Berry
            ! orig
            !CALL STOMATA (parameters,VEGTYP,MPE   ,PARSUN ,FOLN  ,ILOC  , JLOC , & !in       
            !              TV    ,ESTV  ,EAH    ,SFCTMP,SFCPRS, & !in
@@ -403,19 +419,19 @@ contains
            !              O2AIR ,CO2AIR,IGS    ,BTRAN ,RB    , & !in
            !              RSSHA ,PSNSHA)                         !out 
            ! sun
-          CALL STOMATA (parameters, domain%VEGTYP, energy%PARSUN, forcing%FOLN, energy%TV, &     ! in
-                        ESTV, energy%EAH, forcing%SFCTMP, forcing%SFCPRS, forcing%O2PP, & ! in
-                        forcing%CO2PP, energy%IGS, water%BTRAN, RB, &                     ! in
-                        energy%RSSUN , energy%PSNSUN)                                     ! out
+          CALL STOMATA (parameters, domain%VEGTYP, energy%PARSUN, forcing%FOLN, TV, &  ! in
+                        ESTV, EAH, SFCTMP, forcing%SFCPRS, forcing%O2PP,            &  ! in
+                        forcing%CO2PP, energy%IGS, water%BTRAN, RB,                 &  ! in
+                        energy%RSSUN , energy%PSNSUN)                                  ! out
           ! shade
-          CALL STOMATA (parameters, domain%VEGTYP, energy%PARSHA, forcing%FOLN, energy%TV, &     ! in
-                        ESTV, energy%EAH, forcing%SFCTMP, forcing%SFCPRS, forcing%O2PP, & ! in
-                        forcing%CO2PP, energy%IGS, water%BTRAN, RB, &                     ! in
-                        energy%RSSHA , energy%PSNSHA)            
+          CALL STOMATA (parameters, domain%VEGTYP, energy%PARSHA, forcing%FOLN, TV, &  ! in
+                        ESTV, EAH, SFCTMP, forcing%SFCPRS, forcing%O2PP,            &  ! in
+                        forcing%CO2PP, energy%IGS, water%BTRAN, RB,                 &  ! in
+                        energy%RSSHA , energy%PSNSHA)                                  ! out           
         END IF
 
         ! calculate sunlit and shaded resistances and leaf photosynthesis
-        IF (OPT_CRS == 2) then  ! Jarvis
+        IF (options%OPT_CRS == 2) then  ! Jarvis
           ! sun
           !CALL  CANRES (parameters,PARSUN,TV    ,BTRAN ,EAH    ,SFCPRS, & !in
           !             RSSUN ,PSNSUN,ILOC  ,JLOC   )          !out
@@ -423,11 +439,11 @@ contains
           !CALL  CANRES (parameters,PARSHA,TV    ,BTRAN ,EAH    ,SFCPRS, & !in
           !             RSSHA ,PSNSHA,ILOC  ,JLOC   )          !out
           ! sun
-          CALL  CANRES (parameters, energy%PARSUN, energy%TV, water%BTRAN ,energy%EAH, forcing%SFCPRS, &  ! in
-                        energy%RSSUN, energy%PSNSUN )                                                     ! out
+          CALL  CANRES (parameters, energy%PARSUN, TV, water%BTRAN, EAH, forcing%SFCPRS, &  ! in
+                        energy%RSSUN, energy%PSNSUN )                                       ! out
           ! shade
-          CALL  CANRES (parameters, energy%PARSHA, energy%TV, water%BTRAN, energy%EAH, forcing%SFCPRS, &  ! in
-                        energy%RSSHA, energy%PSNSHA )                                                     ! out                   
+          CALL  CANRES (parameters, energy%PARSHA, TV, water%BTRAN, EAH, forcing%SFCPRS, &  ! in
+                        energy%RSSHA, energy%PSNSHA )                                       ! out                   
         END IF
         
         ! Call GECROS
@@ -440,48 +456,51 @@ contains
       CVH  = 2.*VAIE/RB
       CGH  = 1./RAHG
       COND = CAH + CVH + CGH
-      ATA  = (SFCTMP*CAH + TG*CGH) / COND
+      ATA  = (SFCTMP*CAH + energy%TG*CGH) / COND
       BTA  = CVH/COND
       CSH  = (1.-BTA)*RHOAIR*CPAIR*CVH
 
       ! prepare for latent heat flux above veg.
       CAW  = 1./RAWC
-      CEW  = FWET*VAIE/RB
+      CEW  = water%FWET*VAIE/RB
 
-      IF (OPT_CROP /= 2) THEN
-        CTW  = (1.-FWET)*(LAISUNE/(RB+RSSUN) + LAISHAE/(RB+RSSHA))
+      IF (options%OPT_CROP /= 2) THEN
+        CTW  = (1.-water%FWET)*(LAISUNE/(RB+energy%RSSUN) + LAISHAE/(RB+RSSHA))
       ELSE
         !RSSUN and RSSHA are in resistance per unit LAI in the Jarvis and Ball-Berry!. RSSUN and RSSHA of Gecros are in s/m
-        CTW  = (1.-FWET)*(1./(RB/(FRSU*GLAIE)+RSSUN) + 1./(RB/((1.-FRSU)*GLAIE)+RSSHA)) !transpiration conductance leaf to canopy air
+        CTW  = (1.-water%FWET)*(1./(RB/(FRSU*GLAIE)+energy%RSSUN) + 1./(RB/((1.-FRSU)*GLAIE)+energy%RSSHA)) !transpiration conductance leaf to canopy air
       ENDIF
-      CGW  = 1./(RAWG+RSURF)
+      
+      ! comment needed
+      CGW  = 1./(RAWG+energy%RSURF)
       COND = CAW + CEW + CTW + CGW
-      AEA  = (EAIR*CAW + ESTG*CGW) / COND
+      AEA  = (forcing%EAIR*CAW + ESTG*CGW) / COND
       BEA  = (CEW+CTW)/COND
-      CEV  = (1.-BEA)*CEW*RHOAIR*CPAIR/GAMMAV   ! Barlage: change to vegetation v3.6
-      CTR  = (1.-BEA)*CTW*RHOAIR*CPAIR/GAMMAV
+      CEV  = (1.-BEA)*CEW*RHOAIR*CPAIR/energy%GAMMAV   ! Barlage: change to vegetation v3.6
+      CTR  = (1.-BEA)*CTW*RHOAIR*CPAIR/energy%GAMMAV
 
       ! evaluate surface fluxes with current temperature and solve for dts
       TAH = ATA + BTA*TV               ! canopy air T.
       EAH = AEA + BEA*ESTV             ! canopy air e
 
-      IRC = FVEG*(AIR + CIR*TV**4)
-      SHC = FVEG*RHOAIR*CPAIR*CVH * (  TV-TAH)
-      EVC = FVEG*RHOAIR*CPAIR*CEW * (ESTV-EAH) / GAMMAV ! Barlage: change to v in v3.6
-      TR  = FVEG*RHOAIR*CPAIR*CTW * (ESTV-EAH) / GAMMAV
-      IF (TV > TFRZ) THEN
-        EVC = MIN(CANLIQ*LATHEAV/DT,EVC)    ! Barlage: add if block for canice in v3.6
+      energy%IRC = FVEG*(AIR + CIR*TV**4)
+      energy%SHC = FVEG*RHOAIR*CPAIR*CVH * (  TV-TAH)
+      energy%EVC = FVEG*RHOAIR*CPAIR*CEW * (ESTV-EAH) / energy%GAMMAV ! Barlage: change to v in v3.6
+      energy%TR  = FVEG*RHOAIR*CPAIR*CTW * (ESTV-EAH) / energy%GAMMAV
+      
+      IF (TV > parameters%TFRZ) THEN
+        energy%EVC = MIN(water%CANLIQ*energy%LATHEAV/domain%DT, energy%EVC)    ! Barlage: add if block for canice in v3.6
       ELSE
-        EVC = MIN(CANICE*LATHEAV/DT,EVC)
+        energy%EVC = MIN(water%CANICE*energy%LATHEAV/domain%DT, energy%EVC)
       END IF
 
-      B   = SAV-IRC-SHC-EVC-TR+PAHV                          !additional w/m2
+      B   = energy%SAV-energy%IRC-energy%SHC-energy%EVC-energy%TR+energy%PAHV                          !additional w/m2
       A   = FVEG*(4.*CIR*TV**3 + CSH + (CEV+CTR)*DESTV) !volumetric heat capacity
       DTV = B/A
-      IRC = IRC + FVEG*4.*CIR*TV**3*DTV
-      SHC = SHC + FVEG*CSH*DTV
-      EVC = EVC + FVEG*CEV*DESTV*DTV
-      TR  = TR  + FVEG*CTR*DESTV*DTV                               
+      energy%IRC = energy%IRC + FVEG*4.*CIR*TV**3*DTV
+      energy%SHC = energy%SHC + FVEG*CSH*DTV
+      energy%EVC = energy%EVC + FVEG*CEV*DESTV*DTV
+      energy%TR  = energy%TR  + FVEG*CTR*DESTV*DTV                               
 
       ! update vegetation surface temperature
       TV  = TV + DTV
@@ -489,7 +508,7 @@ contains
 
       ! for computing M-O length in the next iteration
       H  = RHOAIR*CPAIR*(TAH - SFCTMP) /RAHC        
-      HG = RHOAIR*CPAIR*(TG  - TAH)   /RAHG
+      HG = RHOAIR*CPAIR*(energy%TG  - TAH)   /RAHG
 
       ! consistent specific humidity from canopy air vapor pressure
       QSFC = (0.622*EAH)/(SFCPRS-0.378*EAH)
@@ -502,18 +521,19 @@ contains
       ENDIF
 
     END DO loop1 ! end stability iteration
+    ! ---------------------------------------------------------------------------
 
     ! under-canopy fluxes and tg
-    AIR = - EMG*(1.-EMV)*LWDN - EMG*EMV*SB*TV**4
-    CIR = EMG*SB
+    AIR = - EMG*(1.-EMV)*LWDN - EMG*EMV*parameters%SB*TV**4
+    CIR = EMG*parameters%SB
     CSH = RHOAIR*CPAIR/RAHG
-    CEV = RHOAIR*CPAIR / (GAMMAG*(RAWG+RSURF))  ! Barlage: change to ground v3.6
-    CGH = 2.*DF(ISNOW+1)/DZSNSO(ISNOW+1)
+    CEV = RHOAIR*CPAIR / (energy%GAMMAG*(RAWG+energy%RSURF))  ! Barlage: change to ground v3.6
+    CGH = 2. * energy%DF(water%ISNOW+1)/domain%DZSNSO(water%ISNOW+1)
 
     ! ========= LOOP 2 ========================
     loop2: DO ITER = 1, NITERG
 
-      T = TDC(TG)
+      T = TDC(energy%TG)
       CALL ESAT(T, ESATW, ESATI, DSATW, DSATI)
       IF (T .GT. 0.) THEN
         ESTG  = ESATW
@@ -523,40 +543,41 @@ contains
         DESTG = DSATI
       END IF
 
-      IRG = CIR*TG**4 + AIR
-      SHG = CSH * (TG         - TAH         )
-      EVG = CEV * (ESTG*RHSUR - EAH         )
-      GH  = CGH * (TG         - STC(ISNOW+1))
+      energy%IRG = CIR * energy%TG**4 + AIR
+      energy%SHG = CSH * (energy%TG         - TAH         )
+      energy%EVG = CEV * (ESTG*energy%RHSUR - EAH         )
+      energy%GH  = CGH * (energy%TG         - energy%STC(water%ISNOW+1))
 
-      B = SAG-IRG-SHG-EVG-GH+PAHG
-      A = 4.*CIR*TG**3+CSH+CEV*DESTG+CGH
+      B = energy%SAG-energy%IRG-energy%SHG-energy%EVG-energy%GH+PAHG
+      A = 4.*CIR*energy%TG**3+CSH+CEV*DESTG+CGH
       DTG = B/A
 
-      IRG = IRG + 4.*CIR*TG**3*DTG
-      SHG = SHG + CSH*DTG
-      EVG = EVG + CEV*DESTG*DTG
-      GH  = GH  + CGH*DTG
-      TG  = TG  + DTG
+      energy%IRG = energy%IRG + 4.*CIR*energy%TG**3*DTG
+      energy%SHG = energy%SHG + CSH*DTG
+      energy%EVG = energy%EVG + CEV*DESTG*DTG
+      energy%GH  = energy%GH  + CGH*DTG
+      energy%TG  = energy%TG  + DTG
 
     END DO loop2
+    ! ---------------------------------------------------------------------------
      
     !TAH = (CAH*SFCTMP + CVH*TV + CGH*TG)/(CAH + CVH + CGH)
 
     ! if snow on ground and TG > TFRZ: reset TG = TFRZ. reevaluate ground fluxes.
-    IF(OPT_STC == 1 .OR. OPT_STC == 3) THEN
-    IF (SNOWH > 0.05 .AND. TG > TFRZ) THEN
-      IF(OPT_STC == 1) TG  = TFRZ
-      IF(OPT_STC == 3) TG  = (1.-FSNO)*TG + FSNO*TFRZ   ! MB: allow TG>0C during melt v3.7
-      IRG = CIR*TG**4 - EMG*(1.-EMV)*LWDN - EMG*EMV*SB*TV**4
-      SHG = CSH * (TG         - TAH)
-      EVG = CEV * (ESTG*RHSUR - EAH)
-      GH  = SAG+PAHG - (IRG+SHG+EVG)
-    END IF
+    IF(options%OPT_STC == 1 .OR. options%OPT_STC == 3) THEN
+      IF (water%SNOWH > 0.05 .AND. energy%TG > parameter%TFRZ) THEN
+        IF(options%OPT_STC == 1) energy%TG = parameter%TFRZ
+        IF(options%OPT_STC == 3) energy%TG = (1.-water%FSNO)*energy%TG + water%FSNO*parameter%TFRZ   ! MB: allow TG>0C during melt v3.7
+        energy%IRG = CIR*energy%TG**4 - EMG*(1.-EMV)*LWDN - EMG*EMV*parameters%SB*TV**4
+        energy%SHG = CSH * (energy%TG  - TAH)
+        energy%EVG = CEV * (ESTG*RHSUR - EAH)
+        energy%GH  = energy%SAG+PAHG - (energy%IRG+energy%SHG+energy%EVG)
+      END IF
     END IF
 
     ! wind stresses
-    TAUXV = -RHOAIR*CM*UR*UU
-    TAUYV = -RHOAIR*CM*UR*VV
+    energy%TAUXV = -RHOAIR*energy%CM*UR*forcing%UU
+    energy%TAUYV = -RHOAIR*energy%CM*UR*forcing%VV
 
     ! consistent vegetation air temperature and vapor pressure since TG is not consistent with the TAH/EAH
     ! calculation.
@@ -566,31 +587,31 @@ contains
     !     QFX = (QSFC-QAIR)*RHOAIR*CAW !*CPAIR/GAMMAG
 
     ! 2m temperature over vegetation ( corrected for low CQ2V values )
-    IF (OPT_SFC == 1 .OR. OPT_SFC == 2) THEN
+    IF (options%OPT_SFC == 1 .OR. options%OPT_SFC == 2) THEN
       !      CAH2 = FV*1./VKC*LOG((2.+Z0H)/Z0H)
-      CAH2 = FV*VKC/LOG((2.+Z0H)/Z0H)
-      CAH2 = FV*VKC/(LOG((2.+Z0H)/Z0H)-FH2)
-      CQ2V = CAH2
-      IF (CAH2 .LT. 1.E-5 ) THEN
-        T2MV = TAH
-        !         Q2V  = (EAH*0.622/(SFCPRS - 0.378*EAH))
-        Q2V  = QSFC
+      energy%CAH2 = FV * parameters%VKC/LOG((2.+Z0H)/Z0H)
+      energy%CAH2 = FV * parameters%VKC/(LOG((2.+Z0H)/Z0H)-FH2)
+      CQ2V = energy%CAH2
+      IF (energy%CAH2 .LT. 1.E-5 ) THEN
+        energy%T2MV = TAH
+        ! Q2V  = (EAH*0.622/(SFCPRS - 0.378*EAH))
+        energy%Q2V  = QSFC
       ELSE
-        T2MV = TAH - (SHG+SHC/FVEG)/(RHOAIR*CPAIR) * 1./CAH2
-        !         Q2V = (EAH*0.622/(SFCPRS - 0.378*EAH))- QFX/(RHOAIR*FV)* 1./VKC * LOG((2.+Z0H)/Z0H)
-         Q2V = QSFC - ((EVC+TR)/FVEG+EVG)/(LATHEAV*RHOAIR) * 1./CQ2V
+        energy%T2MV = TAH - (energy%SHG+energy%SHC/FVEG)/(RHOAIR*CPAIR) * 1./energy%CAH2
+        !Q2V = (EAH*0.622/(SFCPRS - 0.378*EAH))- QFX/(RHOAIR*FV)* 1./VKC * LOG((2.+Z0H)/Z0H)
+        energy%Q2V = QSFC - ((energy%EVC+energy%TR)/FVEG + energy%EVG) / (energy%LATHEAV*RHOAIR) * 1./CQ2V
       ENDIF
     ENDIF
 
     ! update CH for output
-    CH = CAH
-    CHLEAF = CVH
-    CHUC = 1./RAHG
+    energy%CH     = CAH
+    energy%CHLEAF = CVH
+    energy%CHUC   = 1./RAHG
   
   END SUBROUTINE VegeFluxMain
 
 
-! AW need work on following subroutine
+  ! AW need work on following subroutine
 
   ! == begin BareFluxMain ==================================================================================
 
@@ -758,13 +779,32 @@ contains
     REAL :: T, TDC     !Kelvin to degree Celsius with limit -50 to +50
     ! -----------------------------------------------------------------
     
-    TDC(T)   = MIN( 50., MAX(-50.,(T-TFRZ)) )
+    TDC(T)   = MIN( 50., MAX(-50.,(T-parameters%TFRZ)) )  ! struct ref needed?
+    
+    ! associate variables to keep variable names intact in the code below  
+    associate(&
+      ! used in resistance calculations
+      SFCTMP   => forcing%SFCTMP     ,&   ! intent(in)    : real  air temperature at reference height (K)  
+      TGB      => energy%TGB         ,&   ! intent(in)    : real  ground temperature (K)  
+      RHOAIR   => forcing%RHOAIR     ,&   ! intent(in)    : real  density air (kg/m3)
+      PSFC     => forcing%SFCPRS     ,&   ! intent(in)    : real pressure at lowest model layer (Pa)  
+      Z0M      => energy%Z0M         ,&   ! intent(in)    : real  vegetation temperature (K)  
+      ZLVL     => energy%ZLVL        ,&   ! intent(in)    : real reference height (m) 
+      QSFC     => energy%QSFC        ,&   ! intent(inout  : real mixing ratio at lowest model layer (g/g)  
+      EMG      => energy%EMG         ,&   ! intent(in)    : real ground emissivity
+      LWDN     => energy%LWDN        ,&   ! intent(inout) : real atmospheric longwave radiation (w/m2)
+      CPAIR    => parameters%CPAIR   ,&   ! intent(in)    : real heat capacity dry air at const pres (j/kg/k)
+   
+      UR       => forcing%UR          &   ! intent(in)    : real roughness length, momentum (m)  
+    )  
+    ! ---- end associate block --------------------------------------------------------------------
+    
 
     ! -----------------------------------------------------------------
     ! initialization variables that do not depend on stability iteration
     ! -----------------------------------------------------------------
-    MPE = 1E-6
-    DTG = 0.
+    !MPE = 1E-6
+    DTG    = 0.
     MOZ    = 0.
     MOZSGN = 0
     MOZOLD = 0.
@@ -773,8 +813,8 @@ contains
     QFX    = 0.
     FV     = 0.1
 
-    CIR = EMG*SB
-    CGH = 2.*DF(ISNOW+1)/DZSNSO(ISNOW+1)
+    CIR = EMG*parameters%SB
+    CGH = 2. * energy%DF(water%ISNOW+1)/domain%DZSNSO(water%ISNOW+1)
 
     ! -----------------------------------------------------------------
     loop3: DO ITER = 1, NITERB  ! begin stability iteration
@@ -785,35 +825,34 @@ contains
         Z0H = Z0M !* EXP(-CZIL*0.4*258.2*SQRT(FV*Z0M))
       END IF
 
-      IF(OPT_SFC == 1) THEN
-        CALL SFCDIF1(parameters,ITER   ,SFCTMP ,RHOAIR ,H      ,QAIR   , & !in
-                     ZLVL   ,ZPD    ,Z0M    ,Z0H    ,UR     , & !in
-                     MPE    ,ILOC   ,JLOC   ,                 & !in
-                     MOZ    ,MOZSGN ,FM     ,FH     ,FM2,FH2, & !inout
-                     CM     ,CH     ,FV     ,CH2     )          !out
-      ENDIF
+      ! aerodyn resistances 
+      IF(options%OPT_SFC == 1) THEN
+        CALL SFCDIF1(parameters, ITER, SFCTMP, RHOAIR, H, forcing%QAIR,     &  ! in
+                     energy%ZLVL, energy%ZPD, energy%Z0M, Z0H, UR,  &  ! in
+                     MOZ, MOZSGN, FM, FH, FM2, FH2,                         &  ! inout
+                     energy%CM, energy%CH, FV, CH2)                            ! out
+        ENDIF
 
-      IF(OPT_SFC == 2) THEN
-        CALL SFCDIF2(parameters,ITER   ,Z0M    ,TGB    ,THAIR  ,UR     , & !in
-                     ZLVL   ,ILOC   ,JLOC   ,         & !in
-                     CM     ,CH     ,MOZ    ,WSTAR  ,         & !in
-                     FV     )                                   !out
+      IF(options%OPT_SFC == 2) THEN
+        CALL SFCDIF2(parameters, ITER, energy%Z0M, TGB, forcing%THAIR,    & ! in and in/out
+                     UR, energy%ZLVL, energy%CM, energy%CH, MOZ, WSTAR,  & ! in
+                     FV )       
         ! Undo the multiplication by windspeed that SFCDIF2 
         ! applies to exchange coefficients CH and CM:
-        CH = CH / UR
-        CM = CM / UR
-        IF(SNOWH > 0.) THEN
-          CM = MIN(0.01,CM)   ! CM & CH are too large, causing
-          CH = MIN(0.01,CH)   ! computational instability
+        energy%CH = energy%CH / UR
+        energy%CM = energy%CM / UR
+        IF(water%SNOWH > 0.) THEN
+          energy%CM = MIN(0.01,energy%CM)   ! CM & CH are too large, causing
+          energy%CH = MIN(0.01,energy%CH)   ! computational instability
         END IF
 
       ENDIF
 
-      RAMB = MAX(1.,1./(CM*UR))
-      RAHB = MAX(1.,1./(CH*UR))
+      RAMB = MAX(1.,1./(energy%CM*UR))
+      RAHB = MAX(1.,1./(energy%CH*UR))
       RAWB = RAHB
 
-      ! variables for diagnostics         
+      ! variables for diagnostics          
       EMB = 1./RAMB
       EHB = 1./RAHB
 
@@ -829,22 +868,22 @@ contains
       END IF
 
       CSH = RHOAIR*CPAIR/RAHB
-      CEV = RHOAIR*CPAIR/GAMMA/(RSURF+RAWB)
+      CEV = RHOAIR*CPAIR/energy%GAMMA/(energy%RSURF+RAWB)
 
       ! surface fluxes and dtg
       IRB = CIR * TGB**4 - EMG*LWDN
-      SHB = CSH * (TGB        - SFCTMP      )
-      EVB = CEV * (ESTG*RHSUR - EAIR        )
-      GHB = CGH * (TGB        - STC(ISNOW+1))
+      SHB = CSH * (TGB - SFCTMP)
+      EVB = CEV * (ESTG*energy%RHSUR - forcing%EAIR)
+      GHB = CGH * (TGB - energy%STC(water%ISNOW+1))
 
-      B   = SAG-IRB-SHB-EVB-GHB+PAHB
+      B   = energy%SAG-energy%IRB-energy%SHB-energy%EVB-energy%GHB+PAHB
       A   = 4.*CIR*TGB**3 + CSH + CEV*DESTG + CGH
       DTG = B/A
 
-      IRB = IRB + 4.*CIR*TGB**3*DTG
-      SHB = SHB + CSH*DTG
-      EVB = EVB + CEV*DESTG*DTG
-      GHB = GHB + CGH*DTG
+      energy%IRB = energy%IRB + 4.*CIR*TGB**3*DTG
+      energy%SHB = energy%SHB + CSH*DTG
+      energy%EVB = energy%EVB + CEV*DESTG*DTG
+      energy%GHB = energy%GHB + CGH*DTG
 
       ! update ground surface temperature
       TGB = TGB + DTG
@@ -859,45 +898,45 @@ contains
       ELSE
         ESTG  = ESATI
       END IF
-      QSFC = 0.622*(ESTG*RHSUR)/(PSFC-0.378*(ESTG*RHSUR))
-      QFX  = (QSFC-QAIR)*CEV*GAMMA/CPAIR
+      QSFC = 0.622*(ESTG*energy%RHSUR)/(PSFC-0.378*(ESTG*energy%RHSUR))
+      QFX  = (QSFC-forcing%QAIR)*CEV*energy%GAMMA/CPAIR
 
     END DO loop3 ! end stability iteration
     ! -----------------------------------------------------------------
 
     ! if snow on ground and TG > TFRZ: reset TG = TFRZ. reevaluate ground fluxes.
-    IF(OPT_STC == 1 .OR. OPT_STC == 3) THEN
-      IF (SNOWH > 0.05 .AND. TGB > TFRZ) THEN
-        IF(OPT_STC == 1) TGB = TFRZ
-        IF(OPT_STC == 3) TGB = (1.-FSNO)*TGB + FSNO*TFRZ  ! MB: allow TG>0C during melt v3.7
-        IRB = CIR * TGB**4 - EMG*LWDN
-        SHB = CSH * (TGB        - SFCTMP)
-        EVB = CEV * (ESTG*RHSUR - EAIR )          !ESTG reevaluate ?
-        GHB = SAG+PAHB - (IRB+SHB+EVB)
+    IF(options%OPT_STC == 1 .OR. options%OPT_STC == 3) THEN
+      IF (water%SNOWH > 0.05 .AND. TGB > parameters%TFRZ) THEN
+        IF(options%OPT_STC == 1) TGB = parameters%TFRZ
+        IF(options%OPT_STC == 3) TGB = (1.-water%FSNO)*TGB + water%FSNO*parameters%TFRZ  ! MB: allow TG>0C during melt v3.7
+        energy%IRB = CIR * TGB**4 - EMG*LWDN
+        energy%SHB = CSH * (TGB        - SFCTMP)
+        energy%EVB = CEV * (ESTG*energy%RHSUR - forcing%EAIR )          !ESTG reevaluate ?
+        energy%GHB = energy%SAG+PAHB - (energy%IRB+energy%SHB+energy%EVB)
       END IF
     END IF
 
     ! wind stresses
-    TAUXB = -RHOAIR*CM*UR*UU
-    TAUYB = -RHOAIR*CM*UR*VV
+    energy%TAUXB = -RHOAIR*energy%CM*UR*forcing%UU
+    energy%TAUYB = -RHOAIR*energy%CM*UR*forcing%VV
 
     ! 2m air temperature
-    IF(OPT_SFC == 1 .OR. OPT_SFC ==2) THEN
-      EHB2  = FV*VKC/LOG((2.+Z0H)/Z0H)
-      EHB2  = FV*VKC/(LOG((2.+Z0H)/Z0H)-FH2)
-      CQ2B  = EHB2
-      IF (EHB2.lt.1.E-5 ) THEN
-        T2MB  = TGB
-        Q2B   = QSFC
+    IF(options%OPT_SFC == 1 .OR. options%OPT_SFC ==2) THEN
+      energy%EHB2  = FV* parameters%VKC/LOG((2.+Z0H)/Z0H)
+      energy%EHB2  = FV* parameters%VKC/(LOG((2.+Z0H)/Z0H)-FH2)
+      CQ2B  = energy%EHB2
+      IF (energy%EHB2.lt.1.E-5 ) THEN
+        energy%T2MB  = TGB
+        energy%Q2B   = QSFC
       ELSE
-        T2MB  = TGB - SHB/(RHOAIR*CPAIR) * 1./EHB2
-        Q2B   = QSFC - EVB/(LATHEA*RHOAIR)*(1./CQ2B + RSURF)
+        energy%T2MB  = TGB - energy%SHB/(RHOAIR*CPAIR) * 1./energy%EHB2
+        energy%Q2B   = QSFC - energy%EVB/(energy%LATHEA*RHOAIR)*(1./CQ2B + energy%RSURF)
       ENDIF
-      IF (parameters%urban_flag) Q2B = QSFC
+      IF (parameters%urban_flag) energy%Q2B = QSFC
     END IF
 
     ! update CH 
-    CH = EHB
+    energy%CH = EHB
 
   END SUBROUTINE BareFluxMain
 
