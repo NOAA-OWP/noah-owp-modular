@@ -3,10 +3,10 @@
 !   opt_crop==2 is not supported [gecros]
 
 ! contains
-!  VegeFluxMain, BareFluxMain
+!   VegeFluxMain, BareFluxMain
 
-! relies on routines in FluxUtilityModule:
-! RAGRB, STOMATA, CANRES, CALHUM, ESAT, SFCDIF1, SFCDIF2
+! calls subroutines in FluxUtilityModule:
+!   RAGRB, STOMATA, CANRES, CALHUM, ESAT, SFCDIF1, SFCDIF2
 
 module EtFluxModule
 
@@ -17,45 +17,12 @@ module EtFluxModule
   use EnergyType
   use ForcingType
   use OptionsType
-
   implicit none
 
 contains
   
   !== begin VegeFluxMain ==================================================================================
-
   SUBROUTINE VegeFluxMain (domain, levels, options, parameters, forcing, energy, water)
-    IMPLICIT NONE
-
-    type (    levels_type), intent(in)    :: levels
-    type (parameters_type), intent(in)    :: parameters
-    type (    domain_type)                :: domain
-    type (    energy_type)                :: energy
-    type (     water_type)                :: water
-    type (   forcing_type)                :: forcing
-    type (   options_type), intent(in)    :: options
-    
-
-  !SUBROUTINE VEGE_FLUX(parameters,NSNOW   ,NSOIL   ,ISNOW   ,VEGTYP  ,VEG     , & !in
-  !                     DT      ,SAV     ,SAG     ,LWDN    ,UR      , & !in
-  !                     UU      ,VV      ,SFCTMP  ,THAIR   ,QAIR    , & !in
-  !                     EAIR    ,RHOAIR  ,SNOWH   ,VAI     ,GAMMAV   ,GAMMAG,  & !in
-  !                     FWET    ,LAISUN  ,LAISHA  ,CWP     ,DZSNSO  , & !in
-  !                     ZLVL    ,ZPD     ,Z0M     ,FVEG    , & !in
-  !                     Z0MG    ,EMV     ,EMG     ,CANLIQ  ,FSNO,          & !in
-  !                     CANICE  ,STC     ,DF      ,RSSUN   ,RSSHA   , & !in
-  !                     RSURF   ,LATHEAV ,LATHEAG  ,PARSUN  ,PARSHA  ,IGS     , & !in
-  !                     FOLN    ,CO2AIR  ,O2AIR   ,BTRAN   ,SFCPRS  , & !in
-  !                     RHSUR   ,ILOC    ,JLOC    ,Q2      ,PAHV    ,PAHG     , & !in
-  !                     EAH     ,TAH     ,TV      ,TG      ,CM      , & !inout
-  !                     CH      ,DX      ,DZ8W    ,                   & !
-  !                     TAUXV   ,TAUYV   ,IRG     ,IRC     ,SHG     , & !out
-  !                     SHC     ,EVG     ,EVC     ,TR      ,GH      , & !out
-  !                     T2MV    ,PSNSUN  ,PSNSHA  ,                   & !out
-  !                     QC      ,QSFC    ,PSFC    ,                   & !in
-  !                     Q2V     ,CAH2    ,CHLEAF  ,CHUC,              & !inout 
-  !                     SH2O,JULIAN, SWDOWN, PRCP, FB, FSR, GECROS1D)      ! Gecros 
-
     ! --------------------------------------------------------------------------------------------------
     ! use newton-raphson iteration to solve for vegetation (tv) and
     ! ground (tg) temperatures that balance the surface energy budgets
@@ -64,105 +31,16 @@ contains
     ! -SAV + IRC[TV] + SHC[TV] + EVC[TV] + TR[TV] = 0
     ! -SAG + IRG[TG] + SHG[TG] + EVG[TG] + GH[TG] = 0
     ! --------------------------------------------------------------------------------------------------
-  ! input
-!  type (noahmp_parameters), intent(in) :: parameters
-
-!  INTEGER,                         INTENT(IN) :: ILOC   !grid index
-!  INTEGER,                         INTENT(IN) :: JLOC   !grid index
-!  LOGICAL,                         INTENT(IN) :: VEG    !true if vegetated surface
-!  INTEGER,                         INTENT(IN) :: NSNOW  !maximum no. of snow layers        
-!  INTEGER,                         INTENT(IN) :: NSOIL  !number of soil layers
-!  INTEGER,                         INTENT(IN) :: ISNOW  !actual no. of snow layers
-!  INTEGER,                         INTENT(IN) :: VEGTYP !vegetation physiology type
-!  REAL,                            INTENT(IN) :: FVEG   !greeness vegetation fraction (-)
-!  REAL,                            INTENT(INOUT) :: SAV    !solar rad absorbed by veg (w/m2)
-!  REAL,                            INTENT(INOUT) :: SAG    !solar rad absorbed by ground (w/m2)
-!  REAL,                            INTENT(IN) :: LWDN   !atmospheric longwave radiation (w/m2)
-!  REAL,                            INTENT(IN) :: UR     !wind speed at height zlvl (m/s)
-!  REAL,                            INTENT(IN) :: UU     !wind speed in eastward dir (m/s)
-!  REAL,                            INTENT(IN) :: VV     !wind speed in northward dir (m/s)
-!  REAL,                            INTENT(IN) :: SFCTMP !air temperature at reference height (k)
-!  REAL,                            INTENT(IN) :: THAIR  !potential temp at reference height (k)
-!  REAL,                            INTENT(IN) :: EAIR   !vapor pressure air at zlvl (pa)
-!  REAL,                            INTENT(IN) :: QAIR   !specific humidity at zlvl (kg/kg)
-!  REAL,                            INTENT(IN) :: RHOAIR !density air (kg/m**3)
-!  REAL,                            INTENT(IN) :: DT     !time step (s)
-!  REAL,                            INTENT(IN) :: FSNO     !snow fraction
-!  REAL,                            INTENT(IN) :: SNOWH  !actual snow depth [m]
-!  REAL,                            INTENT(IN) :: FWET   !wetted fraction of canopy
-!  REAL,                            INTENT(IN) :: CWP    !canopy wind parameter
-
-!  REAL,                            INTENT(IN) :: VAI    !total leaf area index + stem area index
-!  REAL,                            INTENT(IN) :: LAISUN !sunlit leaf area index, one-sided (m2/m2)
-!  REAL,                            INTENT(IN) :: LAISHA !shaded leaf area index, one-sided (m2/m2)
-!  REAL,                            INTENT(IN) :: ZLVL   !reference height (m)
-!  REAL,                            INTENT(IN) :: ZPD    !zero plane displacement (m)
-!  REAL,                            INTENT(IN) :: Z0M    !roughness length, momentum (m)
-!  REAL,                            INTENT(IN) :: Z0MG   !roughness length, momentum, ground (m)
-!  REAL,                            INTENT(IN) :: EMV    !vegetation emissivity
-!  REAL,                            INTENT(IN) :: EMG    !ground emissivity
-
-!  REAL, DIMENSION(-NSNOW+1:NSOIL), INTENT(IN) :: STC    !soil/snow temperature (k)
-!  REAL, DIMENSION(-NSNOW+1:NSOIL), INTENT(IN) :: DF     !thermal conductivity of snow/soil (w/m/k)
-!  REAL, DIMENSION(-NSNOW+1:NSOIL), INTENT(IN) :: DZSNSO !thinkness of snow/soil layers (m)
-!  REAL,                            INTENT(IN) :: CANLIQ !intercepted liquid water (mm)
-!  REAL,                            INTENT(IN) :: CANICE !intercepted ice mass (mm)
-!  REAL,                            INTENT(IN) :: RSURF  !ground surface resistance (s/m)
-!  REAL,                            INTENT(IN) :: GAMMA  !psychrometric constant (pa/K)
-!  REAL,                            INTENT(IN) :: LATHEA !latent heat of vaporization/subli (j/kg)
-!  REAL,                            INTENT(IN) :: GAMMAV  !psychrometric constant (pa/K)
-!  REAL,                            INTENT(IN) :: LATHEAV !latent heat of vaporization/subli (j/kg)
-!  REAL,                            INTENT(IN) :: GAMMAG  !psychrometric constant (pa/K)
-!  REAL,                            INTENT(IN) :: LATHEAG !latent heat of vaporization/subli (j/kg)
-!  REAL,                            INTENT(IN) :: PARSUN !par absorbed per unit sunlit lai (w/m2)
-!  REAL,                            INTENT(IN) :: PARSHA !par absorbed per unit shaded lai (w/m2)
-!  REAL,                            INTENT(IN) :: FOLN   !foliage nitrogen (%)
-!  REAL,                            INTENT(IN) :: CO2AIR !atmospheric co2 concentration (pa)
-!  REAL,                            INTENT(IN) :: O2AIR  !atmospheric o2 concentration (pa)
-!  REAL,                            INTENT(IN) :: IGS    !growing season index (0=off, 1=on)
-!  REAL,                            INTENT(IN) :: SFCPRS !pressure (pa)
-!  REAL,                            INTENT(IN) :: BTRAN  !soil water transpiration factor (0 to 1)
-!  REAL,                            INTENT(IN) :: RHSUR  !raltive humidity in surface soil/snow air space (-)
-
-!  REAL                           , INTENT(IN) :: QC     !cloud water mixing ratio
-!  REAL                           , INTENT(IN) :: PSFC   !pressure at lowest model layer
-!  REAL                           , INTENT(IN) :: DX     !grid spacing
-!  REAL                           , INTENT(IN) :: Q2     !mixing ratio (kg/kg)
-!  REAL                           , INTENT(IN) :: DZ8W   !thickness of lowest layer
-!  REAL                           , INTENT(INOUT) :: QSFC   !mixing ratio at lowest model layer
-!  REAL, INTENT(IN)   :: PAHV  !precipitation advected heat - canopy net IN (W/m2)
-!  REAL, INTENT(IN)   :: PAHG  !precipitation advected heat - ground net IN (W/m2)
-
-! input/output
-!  REAL,                         INTENT(INOUT) :: EAH    !canopy air vapor pressure (pa)
-!  REAL,                         INTENT(INOUT) :: TAH    !canopy air temperature (k)
-!  REAL,                         INTENT(INOUT) :: TV     !vegetation temperature (k)
-!  REAL,                         INTENT(INOUT) :: TG     !ground temperature (k)
-!  REAL,                         INTENT(INOUT) :: CM     !momentum drag coefficient
-!  REAL,                         INTENT(INOUT) :: CH     !sensible heat exchange coefficient
-
-! output
-! -FSA + FIRA + FSH + (FCEV + FCTR + FGEV) + FCST + SSOIL = 0
-!  REAL,                           INTENT(OUT) :: TAUXV  !wind stress: e-w (n/m2)
-!  REAL,                           INTENT(OUT) :: TAUYV  !wind stress: n-s (n/m2)
-!  REAL,                           INTENT(OUT) :: IRC    !net longwave radiation (w/m2) [+= to atm]
-!  REAL,                           INTENT(OUT) :: SHC    !sensible heat flux (w/m2)     [+= to atm]
-!  REAL,                           INTENT(OUT) :: EVC    !evaporation heat flux (w/m2)  [+= to atm]
-!  REAL,                           INTENT(OUT) :: IRG    !net longwave radiation (w/m2) [+= to atm]
-!  REAL,                           INTENT(OUT) :: SHG    !sensible heat flux (w/m2)     [+= to atm]
-!  REAL,                           INTENT(OUT) :: EVG    !evaporation heat flux (w/m2)  [+= to atm]
-!  REAL,                           INTENT(OUT) :: TR     !transpiration heat flux (w/m2)[+= to atm]
-!  REAL,                           INTENT(OUT) :: GH     !ground heat (w/m2) [+ = to soil]
-!  REAL,                           INTENT(OUT) :: T2MV   !2 m height air temperature (k)
-!  REAL,                           INTENT(OUT) :: PSNSUN !sunlit leaf photosynthesis (umolco2/m2/s)
-!  REAL,                           INTENT(OUT) :: PSNSHA !shaded leaf photosynthesis (umolco2/m2/s)
-!  REAL,                           INTENT(OUT) :: CHLEAF !leaf exchange coefficient
-!  REAL,                           INTENT(OUT) :: CHUC   !under canopy exchange coefficient
-!  REAL,                           INTENT(OUT) :: Q2V
-!  REAL, INTENT(OUT) :: RSSUN        ! sunlit leaf stomatal resistance (s/m)
-!  REAL, INTENT(OUT) :: RSSHA        ! shaded leaf stomatal resistance (s/m)
-!  REAL, INTENT(OUT) :: CAH2         ! sensible heat conductance for diagnostics
-
+    IMPLICIT NONE
+    
+    ! ------------------------ in, inout, out variables ----------------------------------------------------
+    type (    levels_type), intent(in)    :: levels
+    type (parameters_type), intent(in)    :: parameters
+    type (    domain_type), intent(in)    :: domain
+    type (   forcing_type), intent(in)    :: forcing
+    type (   options_type), intent(in)    :: options
+    type (    energy_type)                :: energy
+    type (     water_type)                :: water
 
     ! ------------------------ local variables ----------------------------------------------------
     REAL :: CW           ! water vapor exchange coefficient
@@ -382,13 +260,6 @@ contains
 
       ! calculate aerodynamic resistance between heights z0g and d+z0v, RAG, and leaf
       ! boundary layer resistance, RB
-       
-      ! orig
-      !CALL RAGRB(parameters,ITER   ,VAIE   ,RHOAIR ,HG     ,TAH    , & !in
-      !           ZPD    ,Z0MG   ,Z0HG   ,HCAN   ,UC     , & !in
-      !           Z0H    ,FV     ,CWP    ,VEGTYP ,MPE    , & !in
-      !           TV     ,MOZG   ,FHG    ,ILOC   ,JLOC   , & !inout
-      !           RAMG   ,RAHG   ,RAWG   ,RB     )           !out
       CALL RAGRB(parameters, ITER, VAIE, RHOAIR, HG, TAH, energy%ZPD, &  ! in
                  energy%Z0MG, Z0HG, HCAN, UC, Z0H, FV, domain%VEGTYP,         &  ! in
                  TV, MOZG, FHG,                                        &  ! inout
@@ -409,16 +280,6 @@ contains
       ! calculate stomatal resistance and photosynthesis (two options available)
       IF(ITER == 1) THEN
         IF (options%OPT_CRS == 1) then  ! Ball-Berry
-           ! orig
-           !CALL STOMATA (parameters,VEGTYP,MPE   ,PARSUN ,FOLN  ,ILOC  , JLOC , & !in       
-           !              TV    ,ESTV  ,EAH    ,SFCTMP,SFCPRS, & !in
-           !              O2AIR ,CO2AIR,IGS    ,BTRAN ,RB    , & !in
-           !              RSSUN ,PSNSUN)                         !out
-           !CALL STOMATA (parameters,VEGTYP,MPE   ,PARSHA ,FOLN  ,ILOC  , JLOC , & !in
-           !              TV    ,ESTV  ,EAH    ,SFCTMP,SFCPRS, & !in
-           !              O2AIR ,CO2AIR,IGS    ,BTRAN ,RB    , & !in
-           !              RSSHA ,PSNSHA)                         !out 
-           ! sun
           CALL STOMATA (parameters, domain%VEGTYP, energy%PARSUN, forcing%FOLN, TV, &  ! in
                         ESTV, EAH, SFCTMP, forcing%SFCPRS, forcing%O2PP,            &  ! in
                         forcing%CO2PP, energy%IGS, water%BTRAN, RB,                 &  ! in
@@ -432,13 +293,6 @@ contains
 
         ! calculate sunlit and shaded resistances and leaf photosynthesis
         IF (options%OPT_CRS == 2) then  ! Jarvis
-          ! sun
-          !CALL  CANRES (parameters,PARSUN,TV    ,BTRAN ,EAH    ,SFCPRS, & !in
-          !             RSSUN ,PSNSUN,ILOC  ,JLOC   )          !out
-          ! shade
-          !CALL  CANRES (parameters,PARSHA,TV    ,BTRAN ,EAH    ,SFCPRS, & !in
-          !             RSSHA ,PSNSHA,ILOC  ,JLOC   )          !out
-          ! sun
           CALL  CANRES (parameters, energy%PARSUN, TV, water%BTRAN, EAH, forcing%SFCPRS, &  ! in
                         energy%RSSUN, energy%PSNSUN )                                       ! out
           ! shade
@@ -611,103 +465,24 @@ contains
   END SUBROUTINE VegeFluxMain
 
 
-  ! AW need work on following subroutine
-
   ! == begin BareFluxMain ==================================================================================
-
   SUBROUTINE BareFluxMain (domain, levels, options, parameters, forcing, energy, water)
-    IMPLICIT NONE
-
-    type (    levels_type), intent(in)    :: levels
-    type (parameters_type)                :: parameters
-    type (    domain_type)                :: domain
-    type (    energy_type)                :: energy
-    type (     water_type)                :: water
-    type (   forcing_type)                :: forcing
-    type (   options_type)                :: options
-    
-!  SUBROUTINE BARE_FLUX (parameters,NSNOW   ,NSOIL   ,ISNOW   ,DT      ,SAG     , & !in
-!                        LWDN    ,UR      ,UU      ,VV      ,SFCTMP  , & !in
-!                        THAIR   ,QAIR    ,EAIR    ,RHOAIR  ,SNOWH   , & !in
-!                        DZSNSO  ,ZLVL    ,ZPD     ,Z0M     ,FSNO    , & !in
-!                        EMG     ,STC     ,DF      ,RSURF   ,LATHEA  , & !in
-!                        GAMMA   ,RHSUR   ,ILOC    ,JLOC    ,Q2      ,PAHB  , & !in
-!                        TGB     ,CM      ,CH      ,          & !inout
-!                        TAUXB   ,TAUYB   ,IRB     ,SHB     ,EVB     , & !out
-!                        GHB     ,T2MB    ,DX      ,DZ8W    ,IVGTYP  , & !out
-!                        QC      ,QSFC    ,PSFC    ,                   & !in
-!                        SFCPRS  ,Q2B     ,EHB2    )                     !in    
-
     ! --------------------------------------------------------------------------------------------------
     ! use newton-raphson iteration to solve ground (tg) temperature
     ! that balances the surface energy budgets for bare soil fraction.
     !    bare soil:
     !      -SAB + IRB[TG] + SHB[TG] + EVB[TG] + GHB[TG] = 0
     ! ----------------------------------------------------------------------
-    
-  ! input
-  !  type (noahmp_parameters), intent(in) :: parameters
-!  integer                        , INTENT(IN) :: ILOC   !grid index
-!  integer                        , INTENT(IN) :: JLOC   !grid index
-!  INTEGER,                         INTENT(IN) :: NSNOW  !maximum no. of snow layers
-!  INTEGER,                         INTENT(IN) :: NSOIL  !number of soil layers
-!  INTEGER,                         INTENT(IN) :: ISNOW  !actual no. of snow layers
-!  REAL,                            INTENT(IN) :: DT     !time step (s)
-!  REAL,                            INTENT(IN) :: SAG    !solar radiation absorbed by ground (w/m2)
-!  REAL,                            INTENT(IN) :: LWDN   !atmospheric longwave radiation (w/m2)
-!  REAL,                            INTENT(IN) :: UR     !wind speed at height zlvl (m/s)
-!  REAL,                            INTENT(IN) :: UU     !wind speed in eastward dir (m/s)
-!  REAL,                            INTENT(IN) :: VV     !wind speed in northward dir (m/s)
-!  REAL,                            INTENT(IN) :: SFCTMP !air temperature at reference height (k)
-!  REAL,                            INTENT(IN) :: THAIR  !potential temperature at height zlvl (k)
-!  REAL,                            INTENT(IN) :: QAIR   !specific humidity at height zlvl (kg/kg)
-!  REAL,                            INTENT(IN) :: EAIR   !vapor pressure air at height (pa)
-!  REAL,                            INTENT(IN) :: RHOAIR !density air (kg/m3)
-!  REAL,                            INTENT(IN) :: SNOWH  !actual snow depth [m]
-!  REAL, DIMENSION(-NSNOW+1:NSOIL), INTENT(IN) :: DZSNSO !thickness of snow/soil layers (m)
-!  REAL,                            INTENT(IN) :: ZLVL   !reference height (m)
-!  REAL,                            INTENT(IN) :: ZPD    !zero plane displacement (m)
-!  REAL,                            INTENT(IN) :: Z0M    !roughness length, momentum, ground (m)
-!  REAL,                            INTENT(IN) :: EMG    !ground emissivity
-!  REAL, DIMENSION(-NSNOW+1:NSOIL), INTENT(IN) :: STC    !soil/snow temperature (k)
-!  REAL, DIMENSION(-NSNOW+1:NSOIL), INTENT(IN) :: DF     !thermal conductivity of snow/soil (w/m/k)
-!  REAL,                            INTENT(IN) :: RSURF  !ground surface resistance (s/m)
-!  REAL,                            INTENT(IN) :: LATHEA !latent heat of vaporization/subli (j/kg)
-!  REAL,                            INTENT(IN) :: GAMMA  !psychrometric constant (pa/k)
-!  REAL,                            INTENT(IN) :: RHSUR  !raltive humidity in surface soil/snow air space (-)
-!  REAL,                            INTENT(IN) :: FSNO     !snow fraction
+    IMPLICIT NONE
 
-!  INTEGER                        , INTENT(IN) :: IVGTYP
-!  REAL                           , INTENT(IN) :: QC     !cloud water mixing ratio
-!  REAL                           , INTENT(INOUT) :: QSFC   !mixing ratio at lowest model layer
-!  REAL                           , INTENT(IN) :: PSFC   !pressure at lowest model layer
-!  REAL                           , INTENT(IN) :: SFCPRS !pressure at lowest model layer
-!  REAL                           , INTENT(IN) :: DX     !horisontal grid spacing
-!  REAL                           , INTENT(IN) :: Q2     !mixing ratio (kg/kg)
-!  REAL                           , INTENT(IN) :: DZ8W   !thickness of lowest layer
-!  REAL, INTENT(IN)   :: PAHB  !precipitation advected heat - ground net IN (W/m2)
-
-! input/output
-!  REAL,                         INTENT(INOUT) :: TGB    !ground temperature (k)
-!  REAL,                         INTENT(INOUT) :: CM     !momentum drag coefficient
-!  REAL,                         INTENT(INOUT) :: CH     !sensible heat exchange coefficient
-
-! output
-!     -SAB + IRB[TG] + SHB[TG] + EVB[TG] + GHB[TG] = 0
-!  REAL,                           INTENT(OUT) :: TAUXB  !wind stress: e-w (n/m2)
-!  REAL,                           INTENT(OUT) :: TAUYB  !wind stress: n-s (n/m2)
-!  REAL,                           INTENT(OUT) :: IRB    !net longwave rad (w/m2)   [+ to atm]
-!  REAL,                           INTENT(OUT) :: SHB    !sensible heat flux (w/m2) [+ to atm]
-!  REAL,                           INTENT(OUT) :: EVB    !latent heat flux (w/m2)   [+ to atm]
-!  REAL,                           INTENT(OUT) :: GHB    !ground heat flux (w/m2)  [+ to soil]
-!  REAL,                           INTENT(OUT) :: T2MB   !2 m height air temperature (k)
-!  REAL,                           INTENT(OUT) :: Q2B    !bare ground heat conductance
-!  REAL :: EHB    !bare ground heat conductance
-!  REAL :: U10B    !10 m wind speed in eastward dir (m/s)
-!  REAL :: V10B    !10 m wind speed in eastward dir (m/s)
-!  REAL :: WSPD
-!    REAL,INTENT(OUT) :: EHB2       !sensible heat conductance for diagnostics
-
+    ! ------------------------ in, inout, out variables ----------------------------------------------------
+    type (    levels_type), intent(in)    :: levels
+    type (parameters_type), intent(in)    :: parameters
+    type (    domain_type), intent(in)    :: domain
+    type (   forcing_type), intent(in)    :: forcing
+    type (   options_type), intent(in)    :: options
+    type (    energy_type)                :: energy
+    type (     water_type)                :: water
 
     ! ------------------------ local variables ---------------------------
     REAL :: EHB     !bare ground heat conductance
@@ -781,7 +556,7 @@ contains
     
     TDC(T)   = MIN( 50., MAX(-50.,(T-parameters%TFRZ)) )  ! struct ref needed?
     
-    ! associate variables to keep variable names intact in the code below  
+    ! ---- associate variables to keep variable names intact in the code below  
     associate(&
       ! used in resistance calculations
       SFCTMP   => forcing%SFCTMP     ,&   ! intent(in)    : real  air temperature at reference height (K)  
@@ -796,10 +571,8 @@ contains
       CPAIR    => parameters%CPAIR   ,&   ! intent(in)    : real heat capacity dry air at const pres (j/kg/k)
    
       UR       => forcing%UR          &   ! intent(in)    : real roughness length, momentum (m)  
-    )  
-    ! ---- end associate block --------------------------------------------------------------------
+    ) ! ---- end associate block --------------------------------------------------------------------
     
-
     ! -----------------------------------------------------------------
     ! initialization variables that do not depend on stability iteration
     ! -----------------------------------------------------------------
