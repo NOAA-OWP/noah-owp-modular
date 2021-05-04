@@ -48,8 +48,11 @@ contains
     REAL                                 :: D_RSURF  ! Reduced vapor diffusivity in soil for computing RSURF (SZ09)
     REAL                                 :: RHSUR    ! relative humidity in surface soil/snow air space (-)  
     REAL                                 :: CMV      ! momentum drag coefficient
+    REAL                                 :: CMB      ! momentum drag coefficient
     REAL                                 :: PSNSUN   ! sunlit photosynthesis (umolco2/m2/s)
     REAL                                 :: PSNSHA   ! shaded photosynthesis (umolco2/m2/s)
+    REAL                                 :: FIRE     ! emitted IR (w/m2)
+    
     
     
     
@@ -218,7 +221,8 @@ contains
     END IF
     energy%GAMMAG = CPAIR*SFCPRS/(0.622*energy%LATHEAG)
 
-    !IF (SFCTMP .GT. parameters%TFRZ) THEN  <- orig commented out
+    ! next block commented out in orig code
+    !IF (SFCTMP .GT. parameters%TFRZ) THEN
     !  energy%LATHEA = parameters%HVAP
     !ELSE
     !  energy%LATHEA = parameters%HSUB
@@ -231,6 +235,7 @@ contains
       CMV        = energy%CM
       energy%CHV = energy%CH
 
+      ! Calculate canopy energy fluxes
       CALL VegeFluxMain (domain, levels, options, parameters, forcing, energy, water) 
 
     ELSE
@@ -261,80 +266,81 @@ contains
 
     CALL BareFluxMain (domain, levels, options, parameters, forcing, energy, water)
 
-   !energy balance at vege canopy: SAV          =(IRC+SHC+EVC+TR)     *FVEG  at   FVEG
-   !energy balance at vege ground: SAG*    FVEG =(IRG+SHG+EVG+GHV)    *FVEG  at   FVEG
-   !energy balance at bare ground: SAG*(1.-FVEG)=(IRB+SHB+EVB+GHB)*(1.-FVEG) at 1-FVEG
+    !energy balance at vege canopy: SAV          =(IRC+SHC+EVC+TR)     *FVEG  at   FVEG
+    !energy balance at vege ground: SAG*    FVEG =(IRG+SHG+EVG+GHV)    *FVEG  at   FVEG
+    !energy balance at bare ground: SAG*(1.-FVEG)=(IRB+SHB+EVB+GHB)*(1.-FVEG) at 1-FVEG
 
-!     IF (parameters%VEG .AND. FVEG > 0) THEN
-!       TAUX  = FVEG * TAUXV     + (1.0 - FVEG) * TAUXB
-!       TAUY  = FVEG * TAUYV     + (1.0 - FVEG) * TAUYB
-!       FIRA  = FVEG * IRG       + (1.0 - FVEG) * IRB       + IRC
-!       FSH   = FVEG * SHG       + (1.0 - FVEG) * SHB       + SHC
-!       FGEV  = FVEG * EVG       + (1.0 - FVEG) * EVB
-!       SSOIL = FVEG * GHV       + (1.0 - FVEG) * GHB
-!       FCEV  = EVC
-!       FCTR  = TR
-!       PAH   = FVEG * PAHG      + (1.0 - FVEG) * PAHB   + PAHV
-!       TG    = FVEG * TGV       + (1.0 - FVEG) * TGB
-!       T2M   = FVEG * T2MV      + (1.0 - FVEG) * T2MB
-!       TS    = FVEG * TV        + (1.0 - FVEG) * TGB
-!       CM    = FVEG * CMV       + (1.0 - FVEG) * CMB      ! better way to average?
-!       CH    = FVEG * CHV       + (1.0 - FVEG) * CHB
-!       Q1    = FVEG * (EAH*0.622/(SFCPRS - 0.378*EAH)) + (1.0 - FVEG)*QSFC
-!       Q2E   = FVEG * Q2V       + (1.0 - FVEG) * Q2B
-!       Z0WRF = Z0M
-!     ELSE
-!       TAUX  = TAUXB
-!       TAUY  = TAUYB
-!       FIRA  = IRB
-!       FSH   = SHB
-!       FGEV  = EVB
-!       SSOIL = GHB
-!       TG    = TGB
-!       T2M   = T2MB
-!       FCEV  = 0.
-!       FCTR  = 0.
-!       PAH   = PAHB
-!       TS    = TG
-!       CM    = CMB
-!       CH    = CHB
-!       Q1    = QSFC
-!       Q2E   = Q2B
-!       RSSUN = 0.0
-!       RSSHA = 0.0
-!       TGV   = TGB
-!       CHV   = CHB
-!       Z0WRF = Z0MG
-!     END IF
-!
-!     FIRE = LWDN + FIRA
-!
-!     IF(FIRE <=0.) THEN
-!        WRITE(6,*) 'emitted longwave <0; skin T may be wrong due to inconsistent'
-!        WRITE(6,*) 'input of SHDFAC with LAI'
-!        WRITE(6,*) ILOC, JLOC, 'SHDFAC=',FVEG,'parameters%VAI=',parameters%VAI,'TV=',TV,'TG=',TG
-!        WRITE(6,*) 'LWDN=',LWDN,'FIRA=',FIRA,'water%SNOWH=',water%SNOWH
-!        ! call wrf_error_fatal("STOP in Noah-MP")
-!     END IF
-!
-!     ! Compute a net emissivity
-!     EMISSI = FVEG * ( EMG*(1-EMV) + EMV + EMV*(1-EMV)*(1-EMG) ) + &
-!          (1-FVEG) * EMG
-!
-!     ! When we're computing a TRAD, subtract from the emitted IR the
-!     ! reflected portion of the incoming LWDN, so we're just
-!     ! considering the IR originating in the canopy/ground system.
-!
-!     TRAD = ( ( FIRE - (1-EMISSI)*LWDN ) / (EMISSI*SB) ) ** 0.25
-!
-!     ! Old TRAD calculation not taking into account Emissivity:
-!     ! TRAD = (FIRE/SB)**0.25
-!
-!     APAR = PARSUN*LAISUN + PARSHA*LAISHA
-!     PSN  = PSNSUN*LAISUN + PSNSHA*LAISHA
-!
-!     ! 3L snow & 4L soil temperatures
-!
+    IF (parameters%VEG .AND. FVEG > 0) THEN
+      energy%TAUX  = FVEG * energy%TAUXV     + (1.0 - FVEG) * energy%TAUXB
+      energy%TAUY  = FVEG * energy%TAUYV     + (1.0 - FVEG) * energy%TAUYB
+      energy%FIRA  = FVEG * energy%IRG       + (1.0 - FVEG) * energy%IRB       + energy%IRC
+      energy%FSH   = FVEG * energy%SHG       + (1.0 - FVEG) * energy%SHB       + energy%SHC
+      energy%FGEV  = FVEG * energy%EVG       + (1.0 - FVEG) * energy%EVB
+      energy%SSOIL = FVEG * energy%GHV       + (1.0 - FVEG) * energy%GHB
+      energy%FCEV  = energy%EVC
+      energy%FCTR  = energy%TR
+      energy%PAH   = FVEG * energy%PAHG      + (1.0 - FVEG) * energy%PAHB   + energy%PAHV
+      TG    = FVEG * energy%TGV       + (1.0 - FVEG) * energy%TGB
+      energy%T2M   = FVEG * energy%T2MV      + (1.0 - FVEG) * energy%T2MB
+      energy%TS    = FVEG * energy%TV        + (1.0 - FVEG) * energy%TGB
+      energy%CM    = FVEG * CMV       + (1.0 - FVEG) * CMB      ! better way to average?
+      energy%CH    = FVEG * energy%CHV       + (1.0 - FVEG) * energy%CHB
+      energy%Q1    = FVEG * (EAH*0.622/(energy%SFCPRS - 0.378*EAH)) + (1.0 - FVEG)*energy%QSFC
+      energy%Q2E   = FVEG * energy%Q2V       + (1.0 - FVEG) * energy%Q2B
+      energy%Z0WRF = Z0M
+    ELSE
+      energy%TAUX  = energy%TAUXB
+      energy%TAUY  = energy%TAUYB
+      energy%FIRA  = energy%IRB
+      energy%FSH   = energy%SHB
+      energy%FGEV  = energy%EVB
+      energy%SSOIL = energy%GHB
+      TG           = energy%TGB
+      energy%T2M   = energy%T2MB
+      energy%FCEV  = 0.
+      energy%FCTR  = 0.
+      energy%PAH   = energy%PAHB
+      energy%TS    = TG
+      energy%CM    = CMB
+      energy%CH    = energy%CHB
+      energy%Q1    = energy%QSFC
+      energy%Q2E   = energy%Q2B
+      energy%RSSUN = 0.0
+      energy%RSSHA = 0.0
+      energy%TGV   = energy%TGB
+      energy%CHV   = energy%CHB
+      energy%Z0WRF = Z0MG
+    END IF
+
+    FIRE = LWDN + energy%FIRA
+    IF(FIRE <=0.) THEN
+      !WRITE(6,*) 'emitted longwave <0; skin T may be wrong due to inconsistent'
+      !WRITE(6,*) 'input of SHDFAC with LAI'
+      !WRITE(6,*) domain%ILOC, domain%JLOC, 'SHDFAC=',FVEG,'parameters%VAI=',parameters%VAI,'TV=',TV,'TG=',TG
+      !WRITE(6,*) 'LWDN=',LWDN,'energy%FIRA=',energy%FIRA,'water%SNOWH=',water%SNOWH
+      ! call wrf_error_fatal("STOP in Noah-MP")
+      WRITE(*,*) 'emitted longwave <0; skin T may be wrong due to inconsistent'
+      WRITE(*,*) 'input of SHDFAC with LAI'
+      WRITE(*,*) domain%ILOC, domain%JLOC, 'SHDFAC=',FVEG,'parameters%VAI=',parameters%VAI,'TV=',TV,'TG=',TG
+      WRITE(*,*) 'LWDN=',LWDN,'energy%FIRA=',energy%FIRA,'water%SNOWH=',water%SNOWH
+      WRITE(*,*) 'Exiting ...'
+      STOP
+    END IF
+
+    ! Compute a net emissivity
+    energy%EMISSI = FVEG * ( EMG*(1-EMV) + EMV + EMV*(1-EMV)*(1-EMG) ) + (1-FVEG) * EMG
+
+    ! When we're computing a TRAD, subtract from the emitted IR the
+    ! reflected portion of the incoming LWDN, so we're just
+    ! considering the IR originating in the canopy/ground system.
+    
+    energy%TRAD = ( ( FIRE - (1-energy%EMISSI)*LWDN ) / (energy%EMISSI*parameters%SB) ) ** 0.25
+    !energy%TRAD = (FIRE/SB)**0.25          Old TRAD calculation not taking into account Emissivity
+
+    energy%APAR = energy%PARSUN*energy%LAISUN + energy%PARSHA*energy%LAISHA
+    energy%PSN  = energy%PSNSUN*energy%LAISUN + energy%PSNSHA*energy%LAISHA
+
+    ! 3L snow & 4L soil temperatures
 !     CALL TSNOSOI
 !
 !     ! adjusting snow surface temperature
