@@ -142,6 +142,7 @@ program snow_driver
   energy%FROZEN_GROUND = .false. 
   energy%STC      = 298.0
   energy%COSZ     = 0.7        ! cosine of solar zenith angle
+  energy%ICE      = 0          ! 1 if sea ice, -1 if glacier, 0 if no land ice (seasonal snow)
   ! forcing-related variables
   forcing%uwind    = 0.0        ! wind speed in u direction (m s-1)
   forcing%vwind    = 0.0        ! wind speed in v direction (m s-1)

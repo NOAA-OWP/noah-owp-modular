@@ -119,6 +119,8 @@ type, public :: parameters_type
   real                            :: TOPT         ! Optimum transpiration air temperature [K]   
   real                            :: O2           ! o2 partial pressure, from MPTABLE.TBL
   real                            :: CO2          ! co2 partial pressure, from MPTABLE.TBL  
+  
+  REAL                            :: PSIWLT       ! matric potential for wilting point (m)  (orig a fixed param.)
 
   contains
 
@@ -210,7 +212,7 @@ contains
     this%refdk  = namelist%refdk
     this%kdt    = this%refkdt * this%dksat(1) / this%refdk
     this%csoil  = namelist%csoil
-    this%Z0     = namelist%Z0
+    this%Z0     = namelist%Z0     ! orig = 0.002 in energy() as a fixed parameter
     this%frzx   = 0.15 * (this%smcmax(1) / this%smcref(1)) * (0.412 / 0.468)
     this%SSI    = namelist%SSI  
     this%MFSNO  = namelist%MFSNO  
@@ -280,6 +282,7 @@ contains
     
     this%CO2       =  395.e-06   ! co2 partial pressure, from CO2_TABLE var (set in MPTABLE.TBL)
     this%O2        =  0.209      ! o2 partial pressure, from O2_TABLE var (set in MPTABLE.TBL)
+    this%PSIWLT    = -150.0      ! originally a fixed parameter set in ENERGY()
 
 
   end subroutine InitTransfer

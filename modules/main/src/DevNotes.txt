@@ -49,3 +49,7 @@ The water vapor mixing ratio, w, is typically at most about 40 g kg–1 or 0.04 
 Thus, water vapor mixing ratio and specific humidity are the same to within a few percent. But specific humidity is less than the water vapor mixing ratio if the humidity is 
 more than zero.
 
+# ======= ICE =======
+set in driver -- 1 if sea ice (do nothing), -1 if land ice point (calls noahmp_glacier), 0 if neither sea ice or land ice (call SFLX)
+  use 0 
+

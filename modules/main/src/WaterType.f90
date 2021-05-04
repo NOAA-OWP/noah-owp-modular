@@ -62,7 +62,7 @@ type, public :: water_type
   real, allocatable, dimension(:) :: sice        ! total soil ice content [m3/m3]
   real, allocatable, dimension(:) :: sh2o        ! total soil liquid content [m3/m3]
   real, allocatable, dimension(:) :: etrani      ! transpiration rate (mm/s) [+]
-  real, allocatable, dimension(:) :: btrani      ! Soil water transpiration factor (0 - 1)
+  real, allocatable, dimension(:) :: BTRANI      ! Soil water transpiration factor (0 - 1)
   real, allocatable, dimension(:) :: wcnd        ! hydraulic conductivity (m/s)
   real, allocatable, dimension(:) :: fcr         ! impermeable fraction due to frozen soil 
   real, allocatable, dimension(:) :: FICEOLD     ! ice fraction at last timestep
@@ -74,7 +74,7 @@ type, public :: water_type
   real, allocatable, dimension(:) :: EPORE       ! snow layer effective porosity [m3/m3]
   
   real                            :: FSNO        ! fraction of grid cell with snow cover
-  real                            :: btran       ! soil water transpiration factor (0 to 1)  
+  real                            :: BTRAN       ! soil water transpiration factor (0 to 1)  
 
   contains
 
