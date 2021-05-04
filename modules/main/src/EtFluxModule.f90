@@ -490,9 +490,9 @@ contains
     REAL :: V10B    !10 m wind speed in eastward dir (m/s)
     REAL :: WSPD
 
-    REAL :: TAUX       !wind stress: e-w (n/m2)
-    REAL :: TAUY       !wind stress: n-s (n/m2)
-    REAL :: FIRA       !total net longwave rad (w/m2)      [+ to atm]
+    !REAL :: TAUX       !wind stress: e-w (n/m2)
+    !REAL :: TAUY       !wind stress: n-s (n/m2)
+    !REAL :: FIRA       !total net longwave rad (w/m2)      [+ to atm]
     REAL :: FSH        !total sensible heat flux (w/m2)    [+ to atm]
     REAL :: FGEV       !ground evaporation heat flux (w/m2)[+ to atm]
     REAL :: SSOIL      !soil heat flux (w/m2)             [+ to soil]

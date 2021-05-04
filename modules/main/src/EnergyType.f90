@@ -25,6 +25,8 @@ type, public :: energy_type
   real    :: PAHV                              ! precipitation advected heat - vegetation net (W/m2)
   real    :: PAHG                              ! precipitation advected heat - under canopy net (W/m2)
   real    :: PAHB                              ! precipitation advected heat - bare ground net (W/m2)
+  REAL,                               INTENT(OUT)   :: PAH    !precipitation advected heat - total (W/m2)
+  
   
   ! Albedo
   real                 :: TAUSS  ! non-dimensional snow age
@@ -70,6 +72,8 @@ type, public :: energy_type
   REAL                 :: FSRV    ! reflected solar radiation by vegetation
   REAL                 :: FSRG    ! reflected solar radiation by ground
 
+
+
   ! Other, uncategorized
   REAL                 :: TAH     ! canopy air tmeperature (K)
   REAL                 :: EAH     ! water vapor pressure (Pa)  
@@ -89,10 +93,12 @@ type, public :: energy_type
   REAL                 :: GAMMA   ! psychrometric constant (Pa/K)  
   REAL                 :: EVC     ! evaporation heat flux (w/m2)  [+= to atm]  
   REAL                 :: IRC     ! net longwave radiation (w/m2) [+= to atm]
-  REAL                 :: SHC     ! sensible heat flux (w/m2)     [+= to atm]
   REAL                 :: IRG     ! net longwave radiation (w/m2) [+= to atm]
+  REAL                 :: SHC     ! sensible heat flux (w/m2)     [+= to atm]
   REAL                 :: SHG     ! sensible heat flux (w/m2)     [+= to atm]
+  REAL                 :: SHB     ! sensible heat flux (w/m2) [+ to atm] 
   REAL                 :: EVG     ! evaporation heat flux (w/m2)  [+= to atm]
+  REAL                 :: EVB     ! latent heat flux (w/m2)   [+ to atm]
   REAL                 :: TR      ! transpiration heat flux (w/m2)[+= to atm]
   REAL                 :: GH      ! ground heat (w/m2) [+ = to soil]
   REAL                 :: GHB     ! ground heat flux (w/m2)  [+ to soil] 
@@ -112,17 +118,33 @@ type, public :: energy_type
   REAL                 :: TAUYV   ! wind stress: n-s (n/m2) vegetation
   REAL                 :: TAUXB   ! wind stress: e-w (n/m2) bare ground
   REAL                 :: TAUYB   ! wind stress: n-s (n/m2) bare ground
+  REAL                 :: TAUX    ! wind stress: e-w (n/m2)
+  REAL                 :: TAUY    ! wind stress: n-s (n/m2)  
   REAL                 :: CAH2    ! sensible heat conductance for diagnostics
   REAL                 :: EHB2    ! sensible heat conductance for diagnostics (bare ground)
   REAL                 :: T2MB    ! 2 m height air temperature (K)  
   REAL                 :: Q2B     ! bare ground heat conductance
-  REAL                 :: SHB     ! sensible heat flux (w/m2) [+ to atm] 
-  REAL                 :: EVB     ! latent heat flux (w/m2)   [+ to atm]
   REAL                 :: TGV     ! ground surface temp. [k]
   REAL                 :: CHV     ! sensible heat exchange coefficient
   REAL                 :: RSSUN   ! sunlit leaf stomatal resistance (s/m)
   REAL                 :: RSSHA   ! shaded leaf stomatal resistance (s/m)
   REAL                 :: RB      ! leaf boundary layer resistance (s/m)
+  REAL                 :: FIRA    ! total net LW. rad (w/m2)   [+ to atm]
+  REAL                 :: FSH     ! total sensible heat (w/m2) [+ to atm]
+  REAL                 :: FGEV    ! ground evaporation (w/m2)  [+ to atm]
+  REAL                 :: TRAD    ! radiative temperature (k)
+  REAL                 :: IRB     ! net longwave rad. [w/m2] [+ to atm]
+  REAL                 :: SSOIL   ! ground heat flux (w/m2)   [+ to soil]
+  REAL                 :: T2M     ! 2-meter air temperature (k)
+  REAL                 :: TS      ! surface temperature (k)
+  REAL                 :: CHB     ! sensible heat exchange coefficient
+  REAL                 :: Q1
+  REAL                 :: Q2E
+  REAL                 :: Z0WRF   ! combined z0 sent to coupled model
+  REAL                 :: EMISSI  ! net surface emissivity  
+  REAL                 :: PSN     ! total photosyn. (umolco2/m2/s) [+]
+  REAL                 :: APAR    ! total photosyn. active energy (w/m2)
+  
   
 
   integer              :: ICE     ! 1 if sea ice, -1 if glacier, 0 if no land ice (seasonal snow)
@@ -260,6 +282,8 @@ contains
     this%TAUYV     = huge(1.0) 
     this%TAUXB     = huge(1.0) 
     this%TAUYB     = huge(1.0) 
+    this%TAUX      = huge(1.0) 
+    this%TAUY      = huge(1.0) 
     this%CAH2      = huge(1.0) 
     this%EHB2      = huge(1.0)
     this%T2MB      = huge(1.0)
@@ -271,7 +295,27 @@ contains
     this%RSSUN     = huge(1.0)     
     this%RSSHA     = huge(1.0)
     this%RB        = huge(1.0)
+
+    this%FIRA      = huge(1.0)
+    this%FSH       = huge(1.0)
+    this%FGEV      = huge(1.0)
+    this%TRAD      = huge(1.0)
+    this%IRB       = huge(1.0)
+    this%SSOIL     = huge(1.0)
+    this%T2M       = huge(1.0)
+    this%TS        = huge(1.0)
+    this%CHB       = huge(1.0)
+    this%Q1        = huge(1.0)
+    this%Q2E       = huge(1.0)
+    this%Z0WRF     = huge(1.0)
+    this%EMISSI    = huge(1.0)
+    this%PSN       = huge(1.0)
+    this%APAR      = huge(1.0)
+
+    
     this%ICE       = huge(1.0)    
+    
+    
     
   end subroutine InitDefault
 
