@@ -95,10 +95,13 @@ type, public :: energy_type
   REAL                 :: EVG     ! evaporation heat flux (w/m2)  [+= to atm]
   REAL                 :: TR      ! transpiration heat flux (w/m2)[+= to atm]
   REAL                 :: GH      ! ground heat (w/m2) [+ = to soil]
-  REAL                 :: GHB     ! ground heat flux (w/m2)  [+ to soil]  
+  REAL                 :: GHB     ! ground heat flux (w/m2)  [+ to soil] 
+  REAL                 :: GHV     ! ground heat flux [w/m2]  [+ to soil]
   REAL                 :: T2MV    ! 2 m height air temperature (k)
   REAL                 :: CHLEAF  ! leaf exchange coefficient
   REAL                 :: CHUC    ! under canopy exchange coefficient
+  REAL                 :: CHV2    ! sensible heat exch. coeff. over vegetated fraction (m/s)  
+  REAL                 :: CHB2    ! sensible heat exch. coeff. bare-ground (m/s)
   REAL                 :: Q2V     ! check
   REAL                 :: LATHEAV ! latent heat of vaporization/subli (j/kg) (varies if froz)
   REAL                 :: LATHEAG ! latent heat of vaporization/subli (j/kg) (varies if froz)
@@ -115,6 +118,15 @@ type, public :: energy_type
   REAL                 :: Q2B     ! bare ground heat conductance
   REAL                 :: SHB     ! sensible heat flux (w/m2) [+ to atm] 
   REAL                 :: EVB     ! latent heat flux (w/m2)   [+ to atm]
+  REAL                 :: TGV     ! ground surface temp. [k]
+  REAL                 :: CHV     ! sensible heat exchange coefficient
+  REAL                 :: RSSUN   ! sunlit leaf stomatal resistance (s/m)
+  REAL                 :: RSSHA   ! shaded leaf stomatal resistance (s/m)
+  REAL                 :: RB      ! leaf boundary layer resistance (s/m)
+  
+
+  integer              :: ICE     ! 1 if sea ice, -1 if glacier, 0 if no land ice (seasonal snow)
+  
   
   contains
 
@@ -231,10 +243,13 @@ contains
     this%EVG       = huge(1.0)  
     this%TR        = huge(1.0)  
     this%GH        = huge(1.0) 
-    this%GHB       = huge(1.0)     
+    this%GHB       = huge(1.0)   
+    this%GHV       = huge(1.0)     
     this%T2MV      = huge(1.0)  
     this%CHLEAF    = huge(1.0)  
     this%CHUC      = huge(1.0)  
+    this%CHV2      = huge(1.0)
+    this%CHB2      = huge(1.0)
     this%Q2V       = huge(1.0)  
     this%LATHEAV   = huge(1.0)      
     this%LATHEAG   = huge(1.0)  
@@ -251,8 +266,12 @@ contains
     this%Q2B       = huge(1.0)
     this%SHB       = huge(1.0)
     this%EVB       = huge(1.0)
-    
-    
+    this%TGB       = huge(1.0)
+    this%CHV       = huge(1.0)
+    this%RSSUN     = huge(1.0)     
+    this%RSSHA     = huge(1.0)
+    this%RB        = huge(1.0)
+    this%ICE       = huge(1.0)    
     
   end subroutine InitDefault
 

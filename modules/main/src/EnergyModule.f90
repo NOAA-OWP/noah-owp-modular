@@ -10,18 +10,20 @@ module EnergyModule
   use ThermalPropertiesModule
   use PrecipHeatModule
   use ShortwaveRadiationModule
-
+  use EtFluxModule
+  use FluxUtilityModule
   implicit none
 
 contains
 
-!== begin energy subroutine ================================================================================
-
+  !== begin energy subroutine ================================================================================
   SUBROUTINE EnergyMain (domain, levels, options, parameters, forcing, energy, water)
-!---------------------------------------------------------------------
-! Main module for all water components
-!---------------------------------------------------------------------
+    !---------------------------------------------------------------------
+    ! Main module for all energy components
+    !---------------------------------------------------------------------
+    IMPLICIT NONE
 
+    ! ------------------------ in, inout, out variables ----------------------------------------------------
     type (levels_type),     intent(in)   :: levels
     type (domain_type)                   :: domain
     type (parameters_type)               :: parameters
@@ -31,18 +33,46 @@ contains
     type (energy_type)                   :: energy
 
     ! ------------------------ local variables ---------------------------
-    INTEGER                              :: IZ     ! do-loop index
-    REAL                                 :: FMELT  ! melting factor for snow cover frac
-    REAL                                 :: Z0MG   ! z0 momentum, ground (m)
-    REAL                                 :: Z0M    ! z0 momentum (m)
-    REAL                                 :: ZPDG   ! zero plane displacement, ground (m)
-    REAL                                 :: ZPD    ! zero plane displacement (m)
-    REAL                                 :: ZLVL   ! reference height (m)
+    INTEGER                              :: IZ       ! do-loop index
+    REAL                                 :: FMELT    ! melting factor for snow cover frac
+    REAL                                 :: Z0MG     ! z0 momentum, ground (m)
+    REAL                                 :: Z0M      ! z0 momentum (m)
+    REAL                                 :: ZPDG     ! zero plane displacement, ground (m)
+    REAL                                 :: ZPD      ! zero plane displacement (m)
+    REAL                                 :: ZLVL     ! reference height (m)
+    REAL                                 :: GX       ! temporary variable -- prev. undeclared in ENERGY())
+    REAL                                 :: PSI      ! surface layer soil matrix potential (m)
+    REAL                                 :: BEVAP    ! soil water evaporation factor (0-1)
+    REAL                                 :: RSURF    ! ground surface resistance (s/m)
+    REAL                                 :: L_RSURF  ! Dry-layer thickness for computing RSURF (Sakaguchi and Zeng, 2009)
+    REAL                                 :: D_RSURF  ! Reduced vapor diffusivity in soil for computing RSURF (SZ09)
+    REAL                                 :: RHSUR    ! relative humidity in surface soil/snow air space (-)  
+    REAL                                 :: CMV      ! momentum drag coefficient
+    REAL                                 :: PSNSUN   ! sunlit photosynthesis (umolco2/m2/s)
+    REAL                                 :: PSNSHA   ! shaded photosynthesis (umolco2/m2/s)
     
-    !---------------------------------------------------------------------
+    
+    
+    ! ---------------------------------------------------------------------
+
+    ! associate common variables to keep variable names intact in the code below  
+    associate(&
+      ! examples
+      SFCTMP   => forcing%SFCTMP     ,&   ! intent(in)    : real  air temperature at reference height (K)  
+      EAH      => energy%EAH         ,&   ! intent(in)    : real  canopy air vapor pressure (Pa) 
+      TV       => energy%TV          ,&   ! intent(in)    : real  vegetation temperature (K)  
+      TG       => energy%TG          ,&   ! real, intent(inout) : ground temperature (K)  
+      ZLVL     => energy%ZLVL        ,&   ! intent(in)    : reference height (m) 
+      EMV      => energy%EMV         ,&   ! intent(in)    : vegetation emissivity
+      EMG      => energy%EMG         ,&   ! intent(in)    : ground emissivity
+      LWDN     => energy%LWDN        ,&   ! intent(inout) : atmospheric longwave radiation (w/m2)
+      FVEG     => parameters%FVEG    ,&   ! intent(in)    : greeness vegetation fraction (-)
+      CPAIR    => parameters%CPAIR   ,&   ! intent(in)    : heat capacity dry air at const pres (j/kg/k)
+      FSNO     => water%FSNO         ,&   ! REAL, INTENT(OUT)   : fraction of grid cell with snow cover
+    )  
+    ! ---- end associate block --------------------------------------------------------------------
 
     ! Determine whether grid cell is vegetated or not
-
     parameters%VAI = parameters%ELAI + parameters%ESAI
     IF(parameters%VAI > 0.0) THEN
       parameters%VEG = .TRUE.
@@ -54,23 +84,22 @@ contains
     ! Note: MFSNO (m in Niu and Yang) is set to 2.5 for all vegtypes in NOAH-MP
     ! Reference paper indicates MFSNO varies in space (values of 1.0, 1.6, 1.8)
     ! KSJ 2021-04-06
-
-    water%FSNO = 0.0
+    FSNO = 0.0
     IF(water%SNOWH > 0.0)  THEN
       water%BDSNO  = water%SNEQV / water%SNOWH
       FMELT        = (water%BDSNO / 100.)**parameters%MFSNO
-      water%FSNO   = TANH( water%SNOWH /(2.5 * parameters%Z0 * FMELT)) ! eq. 4 from Niu and Yang (2007)
+      FSNO   = TANH( water%SNOWH /(2.5 * parameters%Z0 * FMELT)) ! eq. 4 from Niu and Yang (2007)
     ENDIF
 
     ! Compute ground roughness length
     IF(domain%IST == 2) THEN
-      IF(energy%TG <= parameters%TFRZ) THEN
-        Z0MG = (0.01 * (1.0 - water%FSNO)) + (water%FSNO * parameters%Z0SNO)
+      IF(TG <= parameters%TFRZ) THEN
+        Z0MG = (0.01 * (1.0 - FSNO)) + (FSNO * parameters%Z0SNO)
       ELSE
         Z0MG = 0.01  
       END IF
     ELSE
-      Z0MG = (parameters%Z0 * (1.0 - water%FSNO)) + (water%FSNO * parameters%Z0SNO)
+      Z0MG = (parameters%Z0 * (1.0 - FSNO)) + (FSNO * parameters%Z0SNO)
     END IF
 
     ! Compute roughness length and displacement height
@@ -103,162 +132,139 @@ contains
 
     ! Compute net solar radiation
     ! Subroutine was formerly called RADIATION
-    ! Changed name because it only computes shortwave
-    ! KSJ 2021-04-20
+    ! Changed name because it only computes shortwave -- KSJ 2021-04-20
     call ShortwaveRadiationMain (domain, levels, options, parameters, forcing, energy, water)
-!
-!     ! vegetation and ground emissivity
-!
-!     EMV = 1. - EXP(-(ELAI+ESAI)/1.0)
-!     IF (ICE == 1) THEN
-!       EMG = 0.98*(1.-FSNO) + 1.0*FSNO
-!     ELSE
-!       EMG = parameters%EG(IST)*(1.-FSNO) + 1.0*FSNO
-!     END IF
-!
-!     ! soil moisture factor controlling stomatal resistance
-!
-!     BTRAN = 0.
-!
-!     IF(IST ==1 ) THEN
-!       DO IZ = 1, parameters%NROOT
-!         IF(OPT_BTR == 1) then                  ! Noah
-!           GX    = (SH2O(IZ)-parameters%SMCWLT(IZ)) / (parameters%SMCREF(IZ)-parameters%SMCWLT(IZ))
-!         END IF
-!         IF(OPT_BTR == 2) then                  ! CLM
-!           PSI   = MAX(PSIWLT,-parameters%PSISAT(IZ)*(MAX(0.01,SH2O(IZ))/parameters%SMCMAX(IZ))**(-parameters%BEXP(IZ)) )
-!           GX    = (1.-PSI/PSIWLT)/(1.+parameters%PSISAT(IZ)/PSIWLT)
-!         END IF
-!         IF(OPT_BTR == 3) then                  ! SSiB
-!           PSI   = MAX(PSIWLT,-parameters%PSISAT(IZ)*(MAX(0.01,SH2O(IZ))/parameters%SMCMAX(IZ))**(-parameters%BEXP(IZ)) )
-!           GX    = 1.-EXP(-5.8*(LOG(PSIWLT/PSI)))
-!         END IF
-!         GX = MIN(1.,MAX(0.,GX))
-!         BTRANI(IZ) = MAX(parameters%MPE,DZSNSO(IZ) / (-ZSOIL(parameters%NROOT)) * GX)
-!         BTRAN      = BTRAN + BTRANI(IZ)
-!       END DO
-!       BTRAN = MAX(parameters%MPE,BTRAN)
-!       BTRANI(1:parameters%NROOT) = BTRANI(1:parameters%NROOT)/BTRAN
-!     END IF
-!
-!   ! soil surface resistance for ground evap.
-!
-!     BEVAP = MAX(0.0,SH2O(1)/parameters%SMCMAX(1))
-!     IF(IST == 2) THEN
-!       RSURF = 1.          ! avoid being divided by 0
-!       RHSUR = 1.0
-!     ELSE
-!       IF(OPT_RSF == 1 .OR. OPT_RSF == 4) THEN
-!         ! RSURF based on Sakaguchi and Zeng, 2009
-!         ! taking the "residual water content" to be the wilting point,
-!         ! and correcting the exponent on the D term (typo in SZ09 ?)
-!         L_RSURF = (-ZSOIL(1)) * ( exp ( (1.0 - MIN(1.0,SH2O(1)/parameters%SMCMAX(1))) ** parameters%RSURF_EXP ) - 1.0 ) / ( 2.71828 - 1.0 )
-!         D_RSURF = 2.2E-5 * parameters%SMCMAX(1) * parameters%SMCMAX(1) * ( 1.0 - parameters%SMCWLT(1) / parameters%SMCMAX(1) ) ** (2.0+3.0/parameters%BEXP(1))
-!         RSURF = L_RSURF / D_RSURF
-!       ELSEIF(OPT_RSF == 2) THEN
-!         RSURF = FSNO * 1. + (1.-FSNO)* EXP(8.25-4.225*BEVAP) !Sellers (1992) ! Older RSURF computations
-!       ELSEIF(OPT_RSF == 3) THEN
-!         RSURF = FSNO * 1. + (1.-FSNO)* EXP(8.25-6.0  *BEVAP) !adjusted to decrease RSURF for wet soil
-!     ENDIF
-!     IF(OPT_RSF == 4) THEN  ! AD: FSNO weighted; snow RSURF set in MPTABLE v3.8
-!       RSURF = 1. / (FSNO * (1./parameters%RSURF_SNOW) + (1.-FSNO) * (1./max(RSURF, 0.001)))
-!     ENDIF
-!     IF(SH2O(1) < 0.01 .and. SNOWH == 0.) RSURF = 1.E6
-!       PSI   = -parameters%PSISAT(1)*(MAX(0.01,SH2O(1))/parameters%SMCMAX(1))**(-parameters%BEXP(1))
-!       RHSUR = FSNO + (1.-FSNO) * EXP(PSI*GRAV/(RW*TG))
-!     END IF
-!
-!     ! urban - jref
-!     IF (parameters%urban_flag .and. SNOWH == 0. ) THEN
-!       RSURF = 1.E6
-!     ENDIF
-!
-!   ! set psychrometric constant
-!
-!     IF (TV .GT. TFRZ) THEN           ! Barlage: add distinction between ground and
-!       LATHEAV = HVAP                ! vegetation in v3.6
-!       frozen_canopy = .false.
-!     ELSE
-!       LATHEAV = HSUB
-!       frozen_canopy = .true.
-!     END IF
-!     GAMMAV = CPAIR*SFCPRS/(0.622*LATHEAV)
-!
-!     IF (TG .GT. TFRZ) THEN
-!       LATHEAG = HVAP
-!       frozen_ground = .false.
-!     ELSE
-!       LATHEAG = HSUB
-!       frozen_ground = .true.
-!     END IF
-!     GAMMAG = CPAIR*SFCPRS/(0.622*LATHEAG)
-!
-!   !     IF (SFCTMP .GT. TFRZ) THEN
-!   !        LATHEA = HVAP
-!   !     ELSE
-!   !        LATHEA = HSUB
-!   !     END IF
-!   !     GAMMA = CPAIR*SFCPRS/(0.622*LATHEA)
-!
-!   ! Surface temperatures of the ground and canopy and energy fluxes
-!
-!     IF (parameters%VEG .AND. FVEG > 0) THEN
-!       TGV = TG
-!       CMV = CM
-!       CHV = CH
-!    CALL VEGE_FLUX (parameters,NSNOW   ,NSOIL   ,ISNOW   ,VEGTYP  ,VEG     , & !in
-!                    DT      ,SAV     ,SAG     ,LWDN    ,UR      , & !in
-!                    UU      ,VV      ,SFCTMP  ,THAIR   ,QAIR    , & !in
-!                    EAIR    ,RHOAIR  ,SNOWH   ,VAI     ,GAMMAV   ,GAMMAG   , & !in
-!                    FWET    ,LAISUN  ,LAISHA  ,CWP     ,DZSNSO  , & !in
-!                    ZLVL    ,ZPD     ,Z0M     ,FVEG    , & !in
-!                    Z0MG    ,EMV     ,EMG     ,CANLIQ  ,FSNO, & !in
-!                    CANICE  ,STC     ,DF      ,RSSUN   ,RSSHA   , & !in
-!                    RSURF   ,LATHEAV ,LATHEAG ,PARSUN  ,PARSHA  ,IGS     , & !in
-!                    FOLN    ,CO2AIR  ,O2AIR   ,BTRAN   ,SFCPRS  , & !in
-!                   RHSUR   ,ILOC    ,JLOC    ,Q2      ,PAHV  ,PAHG  , & !in
-!                    EAH     ,TAH     ,TV      ,TGV     ,CMV     , & !inout
-!                    CHV     ,DX      ,DZ8W    ,                   & !inout
-!                    TAUXV   ,TAUYV   ,IRG     ,IRC     ,SHG     , & !out
-!                    SHC     ,EVG     ,EVC     ,TR      ,GHV     , & !out
-!                    T2MV    ,PSNSUN  ,PSNSHA  ,                   & !out
-!jref:start
-!                    QC      ,QSFC    ,PSFC    , & !in
-!                    Q2V     ,CHV2, CHLEAF, CHUC, &
-!                    SH2O,JULIAN, SWDOWN, PRCP, FB, FSR, GECROS1D)      ! Gecros 
 
+    ! vegetation and ground emissivity
+    EMV = 1. - EXP(-(parameters%ELAI + parameters%ESAI)/1.0)
+    IF (energy%ICE == 1) THEN
+      EMG = 0.98*(1.-FSNO) + 1.0*FSNO
+    ELSE
+      EMG = parameters%EG(domain%IST)*(1.-FSNO) + 1.0*FSNO
+    END IF
 
-!     ELSE
-!       TAUXV     = 0.
-!       TAUYV     = 0.
-!       IRC       = 0.
-!       SHC       = 0.
-!       IRG       = 0.
-!       SHG       = 0.
-!       EVG       = 0.
-!       EVC       = 0.
-!       TR        = 0.
-!       GHV       = 0.
-!       PSNSUN    = 0.
-!       PSNSHA    = 0.
-!       T2MV      = 0.
-!       Q2V       = 0.
-!       CHV       = 0.
-!       CHLEAF    = 0.
-!       CHUC      = 0.
-!       CHV2      = 0.
-!       RB        = 0.
-!     END IF
-!
-!     TGB = TG
-!     CMB = CM
-!     CHB = CH
-!     CALL BARE_FLUX
-!
-!   !energy balance at vege canopy: SAV          =(IRC+SHC+EVC+TR)     *FVEG  at   FVEG
-!   !energy balance at vege ground: SAG*    FVEG =(IRG+SHG+EVG+GHV)    *FVEG  at   FVEG
-!   !energy balance at bare ground: SAG*(1.-FVEG)=(IRB+SHB+EVB+GHB)*(1.-FVEG) at 1-FVEG
-!
+    ! calculate soil moisture stress factor controlling stomatal resistance
+    water%BTRAN = 0.
+
+    IF(domain%IST ==1 ) THEN
+      DO IZ = 1, parameters%NROOT
+        IF(options%OPT_BTR == 1) then                  ! Noah
+          GX    = (water%SH2O(IZ)-parameters%SMCWLT(IZ)) / (parameters%SMCREF(IZ)-parameters%SMCWLT(IZ))
+        END IF
+        IF(options%OPT_BTR == 2) then                  ! CLM
+          PSI   = MAX(parameters%PSIWLT,-parameters%PSISAT(IZ)*(MAX(0.01,water%SH2O(IZ))/parameters%SMCMAX(IZ))**(-parameters%BEXP(IZ)) )
+          GX    = (1.-PSI/parameters%PSIWLT)/(1.+parameters%PSISAT(IZ)/parameters%PSIWLT)
+        END IF
+        IF(options%OPT_BTR == 3) then                  ! SSiB
+          PSI   = MAX(parameters%PSIWLT,-parameters%PSISAT(IZ)*(MAX(0.01,water%SH2O(IZ))/parameters%SMCMAX(IZ))**(-parameters%BEXP(IZ)) )
+          GX    = 1.-EXP(-5.8*(LOG(parameters%PSIWLT/PSI)))
+        END IF
+        GX = MIN(1.,MAX(0.,GX))
+        water%BTRANI(IZ) = MAX(parameters%MPE,domain%DZSNSO(IZ) / (-domain%ZSOIL(parameters%NROOT)) * GX)
+        water%BTRAN      = water%BTRAN + water%BTRANI(IZ)
+      END DO
+      water%BTRAN = MAX(parameters%MPE, water%BTRAN)
+      water%BTRANI(1:parameters%NROOT) = water%BTRANI(1:parameters%NROOT)/water%BTRAN
+    END IF
+
+    ! calculate soil surface resistance for ground evap.
+    BEVAP = MAX(0.0, water%SH2O(1)/parameters%SMCMAX(1) )
+    IF(domain%IST == 2) THEN
+      RSURF = 1.0         ! avoid being divided by 0
+      RHSUR = 1.0
+    ELSE
+      IF(options%OPT_RSF == 1 .OR. options%OPT_RSF == 4) THEN
+        ! RSURF based on Sakaguchi and Zeng, 2009
+        ! taking the "residual water content" to be the wilting point,
+        ! and correcting the exponent on the D term (typo in SZ09 ?)
+        L_RSURF = (-domain%ZSOIL(1)) * ( exp ( (1.0 - MIN(1.0,water%SH2O(1)/parameters%SMCMAX(1))) ** parameters%RSURF_EXP ) - 1.0 ) / ( 2.71828 - 1.0 )
+        D_RSURF = 2.2E-5 * parameters%SMCMAX(1) * parameters%SMCMAX(1) * ( 1.0 - parameters%SMCWLT(1) / parameters%SMCMAX(1) ) ** &
+                    (2.0+3.0/parameters%BEXP(1))
+        RSURF = L_RSURF / D_RSURF
+      ELSEIF(options%OPT_RSF == 2) THEN
+        RSURF = FSNO * 1. + (1.-FSNO) * EXP(8.25-4.225 * BEVAP)       ! Sellers (1992) ! Older RSURF computations
+      ELSEIF(options%OPT_RSF == 3) THEN
+        RSURF = FSNO * 1. + (1.-FSNO) * EXP(8.25-6.0   * BEVAP)       ! adjusted to decrease RSURF for wet soil
+    ENDIF
+    IF(options%OPT_RSF == 4) THEN                                     ! AD: FSNO weighted; snow RSURF set in MPTABLE v3.8
+      RSURF = 1. / (FSNO * (1./parameters%RSURF_SNOW) + (1.-FSNO) * (1./max(RSURF, 0.001)))
+    ENDIF
+    IF(water%SH2O(1) < 0.01 .and. water%SNOWH == 0.) RSURF = 1.E6
+      PSI   = -parameters%PSISAT(1) * (MAX(0.01, water%SH2O(1))/parameters%SMCMAX(1))**(-parameters%BEXP(1))
+      RHSUR = FSNO + (1.-FSNO) * EXP(PSI * parameters%GRAV/(parameters%RW * TG))
+    END IF
+
+    ! urban - jref
+    IF (parameters%urban_flag .and. water%SNOWH == 0. ) THEN
+      RSURF = 1.E6
+    ENDIF
+
+    ! set psychrometric constant
+    IF (TV .GT. parameters%TFRZ) THEN           ! Barlage: add distinction between ground and
+      energy%LATHEAV = parameters%HVAP          !          vegetation in v3.6
+      energy%frozen_canopy = .false.
+    ELSE
+      energy%LATHEAV = parameters%HSUB
+      energy%frozen_canopy = .true.
+    END IF
+    energy%GAMMAV = CPAIR*SFCPRS/(0.622*energy%LATHEAV)
+
+    IF (TG .GT. parameters%TFRZ) THEN
+     energy%LATHEAG = parameters%HVAP
+     energy%frozen_ground = .false.
+    ELSE
+      energy%LATHEAG = parameters%HSUB
+      energy%frozen_ground = .true.
+    END IF
+    energy%GAMMAG = CPAIR*SFCPRS/(0.622*energy%LATHEAG)
+
+    !IF (SFCTMP .GT. parameters%TFRZ) THEN  <- orig commented out
+    !  energy%LATHEA = parameters%HVAP
+    !ELSE
+    !  energy%LATHEA = parameters%HSUB
+    !END IF
+    !energy%GAMMA = CPAIR*SFCPRS/(0.622*energy%LATHEA)
+
+    ! Calculate surface temperatures of the ground and canopy and energy fluxes
+    IF (parameters%VEG .AND. FVEG > 0) THEN
+      energy%TGV = TG
+      CMV        = energy%CM
+      energy%CHV = energy%CH
+
+      CALL VegeFluxMain (domain, levels, options, parameters, forcing, energy, water) 
+
+    ELSE
+      energy%TAUXV     = 0.
+      energy%TAUYV     = 0.
+      energy%IRC       = 0.
+      energy%SHC       = 0.
+      energy%IRG       = 0.
+      energy%SHG       = 0.
+      EVG              = 0.
+      EVC              = 0.
+      energy%TR        = 0.
+      energy%GHV       = 0.
+      PSNSUN           = 0.
+      PSNSHA           = 0.
+      energy%T2MV      = 0.
+      energy%Q2V       = 0.
+      energy%CHV       = 0.
+      energy%CHLEAF    = 0.
+      energy%CHUC      = 0.
+      energy%CHV2      = 0.
+      energy%RB        = 0.
+    END IF
+
+    TGB = TG
+    CMB = energy%CM
+    CHB = energy%CH
+
+    CALL BareFluxMain (domain, levels, options, parameters, forcing, energy, water)
+
+   !energy balance at vege canopy: SAV          =(IRC+SHC+EVC+TR)     *FVEG  at   FVEG
+   !energy balance at vege ground: SAG*    FVEG =(IRG+SHG+EVG+GHV)    *FVEG  at   FVEG
+   !energy balance at bare ground: SAG*(1.-FVEG)=(IRB+SHB+EVB+GHB)*(1.-FVEG) at 1-FVEG
+
 !     IF (parameters%VEG .AND. FVEG > 0) THEN
 !       TAUX  = FVEG * TAUXV     + (1.0 - FVEG) * TAUXB
 !       TAUY  = FVEG * TAUYV     + (1.0 - FVEG) * TAUYB
@@ -307,7 +313,7 @@ contains
 !        WRITE(6,*) 'emitted longwave <0; skin T may be wrong due to inconsistent'
 !        WRITE(6,*) 'input of SHDFAC with LAI'
 !        WRITE(6,*) ILOC, JLOC, 'SHDFAC=',FVEG,'parameters%VAI=',parameters%VAI,'TV=',TV,'TG=',TG
-!        WRITE(6,*) 'LWDN=',LWDN,'FIRA=',FIRA,'SNOWH=',SNOWH
+!        WRITE(6,*) 'LWDN=',LWDN,'FIRA=',FIRA,'water%SNOWH=',water%SNOWH
 !        ! call wrf_error_fatal("STOP in Noah-MP")
 !     END IF
 !
@@ -332,10 +338,10 @@ contains
 !     CALL TSNOSOI
 !
 !     ! adjusting snow surface temperature
-!     IF(OPT_STC == 2) THEN
-!       IF (SNOWH > 0.05 .AND. TG > TFRZ) THEN
-!         TGV = TFRZ
-!         TGB = TFRZ
+!     IF(options%OPT_STC == 2) THEN
+!       IF (water%SNOWH > 0.05 .AND. TG > parameters%TFRZ) THEN
+!         TGV = parameters%TFRZ
+!         TGB = parameters%TFRZ
 !         IF (parameters%VEG .AND. FVEG > 0) THEN
 !           TG    = FVEG * TGV       + (1.0 - FVEG) * TGB
 !           TS    = FVEG * TV        + (1.0 - FVEG) * TGB
