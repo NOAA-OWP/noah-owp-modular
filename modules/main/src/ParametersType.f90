@@ -121,6 +121,7 @@ type, public :: parameters_type
   real                            :: CO2          ! co2 partial pressure, from MPTABLE.TBL  
   
   REAL                            :: PSIWLT       ! matric potential for wilting point (m)  (orig a fixed param.)
+  REAL                            :: TBOT         ! bottom condition for soil temp. (k) 
 
   contains
 
@@ -283,7 +284,7 @@ contains
     this%CO2       =  395.e-06   ! co2 partial pressure, from CO2_TABLE var (set in MPTABLE.TBL)
     this%O2        =  0.209      ! o2 partial pressure, from O2_TABLE var (set in MPTABLE.TBL)
     this%PSIWLT    = -150.0      ! originally a fixed parameter set in ENERGY()
-
+    this%TBOT      = 263.0       ! (K) can be updated depending on option OPT_TBOT
 
   end subroutine InitTransfer
 
