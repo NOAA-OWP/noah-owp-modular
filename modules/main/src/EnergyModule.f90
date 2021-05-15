@@ -11,7 +11,7 @@ module EnergyModule
   use PrecipHeatModule
   use ShortwaveRadiationModule
   use EtFluxModule
-  use FluxUtilityModule
+  use SnowSoilTempModule
   implicit none
 
 contains
@@ -163,7 +163,7 @@ contains
           GX    = 1.-EXP(-5.8*(LOG(parameters%PSIWLT/PSI)))
         END IF
         GX = MIN(1.,MAX(0.,GX))
-        water%BTRANI(IZ) = MAX(parameters%MPE,domain%DZSNSO(IZ) / (-domain%ZSOIL(parameters%NROOT)) * GX)
+        water%BTRANI(IZ) = MAX(parameters%MPE, domain%DZSNSO(IZ) / (-domain%ZSOIL(parameters%NROOT)) * GX)
         water%BTRAN      = water%BTRAN + water%BTRANI(IZ)
       END DO
       water%BTRAN = MAX(parameters%MPE, water%BTRAN)
@@ -333,35 +333,41 @@ contains
     ! When we're computing a TRAD, subtract from the emitted IR the
     ! reflected portion of the incoming LWDN, so we're just
     ! considering the IR originating in the canopy/ground system.
-    
     energy%TRAD = ( ( FIRE - (1-energy%EMISSI)*LWDN ) / (energy%EMISSI*parameters%SB) ) ** 0.25
     !energy%TRAD = (FIRE/SB)**0.25          Old TRAD calculation not taking into account Emissivity
 
     energy%APAR = energy%PARSUN*energy%LAISUN + energy%PARSHA*energy%LAISHA
     energy%PSN  = energy%PSNSUN*energy%LAISUN + energy%PSNSHA*energy%LAISHA
+    
+    ! calculate 3L snow & 4L soil temperatures
+    CALL TSNOSOI (parameters, levels, domain, energy%ICE, water%ISNOW   , & ! in
+                  energy%SSOIL, energy%DF, energy%HCPCT, & !in
+                  energy%SAG, water%SSNOWH, TG, & !in
+                  energy%STC     )                                          ! inout
+    
+    ! AW:  need to decide what to do with STC if no subsurface will be simulated
+    !      ie, should soil layers be 0C if there is snow and TGB if not? 
+                  
+    ! adjusting snow surface temperature
+    IF(options%OPT_STC == 2) THEN
+      IF (water%SNOWH > 0.05 .AND. TG > parameters%TFRZ) THEN
+        energy%TGV = parameters%TFRZ
+        energy%TGB = parameters%TFRZ
+        IF (parameters%VEG .AND. FVEG > 0) THEN
+          TG           = FVEG * energy%T    + (1.0 - FVEG) * energy%TGB
+          energy%TS    = FVEG * TV          + (1.0 - FVEG) * energy%TGB
+        ELSE
+          TG           = energy%TGB
+          energy%TS    = energy%TGB
+        END IF
+      END IF
+    END IF
 
-    ! 3L snow & 4L soil temperatures
-!     CALL TSNOSOI
-!
-!     ! adjusting snow surface temperature
-!     IF(options%OPT_STC == 2) THEN
-!       IF (water%SNOWH > 0.05 .AND. TG > parameters%TFRZ) THEN
-!         TGV = parameters%TFRZ
-!         TGB = parameters%TFRZ
-!         IF (parameters%VEG .AND. FVEG > 0) THEN
-!           TG    = FVEG * TGV       + (1.0 - FVEG) * TGB
-!           TS    = FVEG * TV        + (1.0 - FVEG) * TGB
-!         ELSE
-!           TG    = TGB
-!           TS    = TGB
-!         END IF
-!       END IF
-!     END IF
-!
-!     ! Energy released or consumed by snow & frozen soil
-!
-!     CALL PHASECHANGE
-
+    ! Energy released or consumed by snow & frozen soil
+    CALL PHASECHANGE (parameters, domain, energy, water, levelslevels%NSNOW, levels%NSOIL)
+                      
   END SUBROUTINE EnergyMain   
 
-end module EnergyModule
+
+
+END module EnergyModule

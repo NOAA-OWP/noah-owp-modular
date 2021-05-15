@@ -144,6 +144,8 @@ type, public :: energy_type
   REAL                 :: EMISSI  ! net surface emissivity  
   REAL                 :: PSN     ! total photosyn. (umolco2/m2/s) [+]
   REAL                 :: APAR    ! total photosyn. active energy (w/m2)
+  REAL                 :: QMELT   ! snowmelt [mm/s]
+  
   
   
 
@@ -311,6 +313,7 @@ contains
     this%EMISSI    = huge(1.0)
     this%PSN       = huge(1.0)
     this%APAR      = huge(1.0)
+    this%QMELT     = huge(1.0)
 
     
     this%ICE       = huge(1.0)    
