@@ -25,8 +25,7 @@ type, public :: energy_type
   real    :: PAHV                              ! precipitation advected heat - vegetation net (W/m2)
   real    :: PAHG                              ! precipitation advected heat - under canopy net (W/m2)
   real    :: PAHB                              ! precipitation advected heat - bare ground net (W/m2)
-  REAL,                               INTENT(OUT)   :: PAH    !precipitation advected heat - total (W/m2)
-  
+  REAL    :: PAH                               ! precipitation advected heat - total (W/m2)
   
   ! Albedo
   real                 :: TAUSS  ! non-dimensional snow age
@@ -47,12 +46,12 @@ type, public :: energy_type
   real, allocatable, dimension(:) :: FTDI   ! down diffuse flux below veg (per unit dif flux)
   real, allocatable, dimension(:) :: FTID   ! down diffuse flux below veg (per unit dir flux)
   real, allocatable, dimension(:) :: FTII   ! down diffuse flux below veg (per unit dif flux)
-  real, allocatable, dimension(:) :: FREVD   ! direct flux reflected by veg layer (per unit incoming flux) 
-  real, allocatable, dimension(:) :: FREVI   ! diffuse flux reflected by veg layer (per unit incoming flux) 
-  real, allocatable, dimension(:) :: FREGD   ! direct flux reflected by ground (per unit incoming flux) 
-  real, allocatable, dimension(:) :: FREGI   ! direct flux reflected by ground (per unit incoming flux)
-  real, allocatable, dimension(:) :: RHO      !leaf/stem reflectance weighted by fraction LAI and SAI
-  real, allocatable, dimension(:) :: TAU      !leaf/stem transmittance weighted by fraction LAI and SAI
+  real, allocatable, dimension(:) :: FREVD  ! direct flux reflected by veg layer (per unit incoming flux) 
+  real, allocatable, dimension(:) :: FREVI  ! diffuse flux reflected by veg layer (per unit incoming flux) 
+  real, allocatable, dimension(:) :: FREGD  ! direct flux reflected by ground (per unit incoming flux) 
+  real, allocatable, dimension(:) :: FREGI  ! direct flux reflected by ground (per unit incoming flux)
+  real, allocatable, dimension(:) :: RHO    ! leaf/stem reflectance weighted by fraction LAI and SAI
+  real, allocatable, dimension(:) :: TAU    ! leaf/stem transmittance weighted by fraction LAI and SAI
 
   
   ! Shortwave radiation
@@ -143,6 +142,8 @@ type, public :: energy_type
   REAL                 :: Z0WRF   ! combined z0 sent to coupled model
   REAL                 :: EMISSI  ! net surface emissivity  
   REAL                 :: PSN     ! total photosyn. (umolco2/m2/s) [+]
+  REAL                 :: PSNSUN  ! sunlit photosynthesis (umolco2/m2/s)  
+  REAL                 :: PSNSHA  ! shaded photosynthesis (umolco2/m2/s)    
   REAL                 :: APAR    ! total photosyn. active energy (w/m2)
   REAL                 :: QMELT   ! snowmelt [mm/s]
   
@@ -220,6 +221,7 @@ contains
     this%PAHV      = huge(1.0)
     this%PAHG      = huge(1.0)
     this%PAHB      = huge(1.0)
+    this%PAH       = huge(1.0)
     
     this%TAUSS     = huge(1.0)
     this%FAGE      = huge(1.0)
@@ -312,6 +314,8 @@ contains
     this%Z0WRF     = huge(1.0)
     this%EMISSI    = huge(1.0)
     this%PSN       = huge(1.0)
+    this%PSNSUN    = huge(1.0)
+    this%PSNSHA    = huge(1.0)    
     this%APAR      = huge(1.0)
     this%QMELT     = huge(1.0)
 

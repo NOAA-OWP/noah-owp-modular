@@ -57,5 +57,7 @@ snow_driver.o: snow_output.o \
                ../src/AlbedoModule.o \
                ../src/ShortwaveRadiationModule.o \
                ../src/PrecipHeatModule.o \
+               ../src/EtFluxModule.o \
+               ../src/SnowSoilTempModule.o \
                ../src/EnergyModule.o
 

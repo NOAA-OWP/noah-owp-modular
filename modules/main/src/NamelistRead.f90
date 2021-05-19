@@ -50,6 +50,11 @@ type, public :: namelist_type
   integer       :: dynamic_veg_option
   integer       :: snow_albedo_option
   integer       :: radiative_transfer_option
+  integer       :: sfc_drag_coeff_option
+  integer       :: crop_model_option
+  integer       :: canopy_stom_resist_option
+  integer       :: snowsoil_temp_time_option    
+
 
   !--------------------!
   !  soil parameters   !
@@ -220,6 +225,10 @@ contains
     integer       :: dynamic_veg_option
     integer       :: snow_albedo_option
     integer       :: radiative_transfer_option
+    integer       :: sfc_drag_coeff_option
+    integer       :: crop_model_option
+    integer       :: canopy_stom_resist_option
+    integer       :: snowsoil_temp_time_option    
 
     !--------------------!
     !  soil parameters   !

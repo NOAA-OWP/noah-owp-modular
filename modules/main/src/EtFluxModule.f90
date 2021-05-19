@@ -22,8 +22,8 @@ module EtFluxModule
   !                        CPH2O = 4.218E+3,CPICE = 2.106E+3,            &
   !                        LSUBF = 3.335E+5
   
-  public  ::  VEGE_FLUX   ! main routines
-  public  ::  BARE_FLUX  
+  public  ::  VEGEFLUXMAIN   ! major routine, orig VEGE_FLUX
+  public  ::  BAREFLUXMAIN   ! major routine, orig BARE_FLUX
   private ::    SFCDIF1   ! subs called by vege & bare flux routines                
   private ::    SFCDIF2                
   private ::    STOMATA                  
@@ -54,7 +54,7 @@ contains
     type (   options_type), intent(in)    :: options
     type (    energy_type)                :: energy
     type (     water_type)                :: water
-
+    
     ! ------------------------ local variables ----------------------------------------------------
     REAL :: CW           ! water vapor exchange coefficient
     REAL :: FV           ! friction velocity (m/s)
@@ -139,26 +139,20 @@ contains
     !jref - NITERG test from 3-5
     INTEGER, PARAMETER :: NITERG = 5   ! number of iterations for ground temperature
     INTEGER            :: MOZSGN       ! number of times MOZ changes sign
-    !REAL              :: MPE          ! prevents overflow error if division by zero  AW: now included in parameters
 
     INTEGER :: LITER     ! Last iteration
-
-    REAL, INTENT(IN)                    :: JULIAN, SWDOWN, PRCP, FB
-    REAL, INTENT(INOUT)                 :: FSR
-    REAL,DIMENSION(1:60), INTENT(INOUT) :: GECROS1D 
-    REAL, DIMENSION(1:NSOIL), INTENT(IN) :: SH2O    !soil liquid water
-  
-    REAL :: ROOTD, WUL, WLL, Thickness, TLAIE, GLAIE, TLAI, GLAI, FRSU
+    REAL    :: ROOTD, WUL, WLL, Thickness, TLAIE, GLAIE, TLAI, GLAI, FRSU
     INTEGER :: NROOT, J
 
-    REAL :: T, TDC       !Kelvin to degree Celsius with limit -50 to +50
+    REAL    :: T  !, TDC        ! Kelvin to degree Celsius with limit -50 to +50
 
     character(len=80) ::  message
     ! ---------------------------------------------------------------------------------------------
   
+    !TDC(T)   = MIN( 50., MAX(-50.,(T-parameters%TFRZ)) )     ! function declaration
+      
     ! associate variables to keep variable names intact in the code below  
     associate(&
-      ! used in resistance calculations
       SFCTMP   => forcing%SFCTMP     ,&   ! intent(in)    : real  air temperature at reference height (K)  
       TAH      => energy%TAH         ,&   ! intent(in)    : real  canopy temperature (K)  
       EAH      => energy%EAH         ,&   ! intent(in)    : real  canopy air vapor pressure (Pa) 
@@ -173,13 +167,10 @@ contains
       LWDN     => energy%LWDN        ,&   ! intent(inout) : atmospheric longwave radiation (w/m2)
       FVEG     => parameters%FVEG    ,&   ! intent(in)    : greeness vegetation fraction (-)
       CPAIR    => parameters%CPAIR   ,&   ! intent(in)    : heat capacity dry air at const pres (j/kg/k)
-   
       UR       => forcing%UR          &   ! intent(in)    : roughness length, momentum (m)  
-    )   ! ---- end associate block --------------------------------------------------------------------
+    ) 
+    ! ---- end associate block --------------------------------------------------------------------
 
-    TDC(T)   = MIN( 50., MAX(-50.,(T-parameters%TFRZ)) )     ! function declaration
-
-    !MPE = 1E-6    AW set in parameters
     LITER = 0      ! last iteration
     FV = 0.1
 
@@ -197,7 +188,7 @@ contains
     LAISHAE = MIN(6., energy%LAISHA)
 
     ! saturation vapor pressure at ground temperature
-    T = TDC(energy%TG)
+    T = TDC(energy%TG, parameters%TFRZ)
     CALL ESAT(T, ESATW, ESATI, DSATW, DSATI)
     IF (T .GT. 0.) THEN
       ESTG = ESATW
@@ -279,7 +270,7 @@ contains
       ! note, local vars:  ITER VAIE HG ZOHG HCAN UC Z0H FV MOZH FHG RAMG, RAHG, RAWG, RB
        
       ! es and d(es)/dt evaluated at tv
-      T = TDC(TV)
+      T = TDC(TV, parameters%TFRZ)
       CALL ESAT(T, ESATW, ESATI, DSATW, DSATI)
       IF (T .GT. 0.) THEN
         ESTV  = ESATW
@@ -399,7 +390,7 @@ contains
     ! ========= LOOP 2 ========================
     loop2: DO ITER = 1, NITERG
 
-      T = TDC(energy%TG)
+      T = TDC(energy%TG, parameters%TFRZ)
       CALL ESAT(T, ESATW, ESATI, DSATW, DSATI)
       IF (T .GT. 0.) THEN
         ESTG  = ESATW
@@ -431,10 +422,10 @@ contains
 
     ! if snow on ground and TG > TFRZ: reset TG = TFRZ. reevaluate ground fluxes.
     IF(options%OPT_STC == 1 .OR. options%OPT_STC == 3) THEN
-      IF (water%SNOWH > 0.05 .AND. energy%TG > parameter%TFRZ) THEN
-        IF(options%OPT_STC == 1) energy%TG = parameter%TFRZ
-        IF(options%OPT_STC == 3) energy%TG = (1.-water%FSNO)*energy%TG + water%FSNO*parameter%TFRZ   ! MB: allow TG>0C during melt v3.7
-        energy%IRG = CIR*energy%TG**4 - EMG*(1.-EMV)*LWDN - EMG*EMV*parameters%SB*TV**4
+      IF (water%SNOWH > 0.05 .AND. energy%TG > parameters%TFRZ) THEN
+        IF(options%OPT_STC == 1) energy%TG = parameters%TFRZ
+        IF(options%OPT_STC == 3) energy%TG = (1.-water%FSNO)*energy%TG + water%FSNO*parameters%TFRZ   ! MB: allow TG>0C during melt v3.7
+        energy%IRG = CIR * (energy%TG)**4 - EMG*(1.-EMV)*LWDN - EMG*EMV*parameters%SB*TV**4
         energy%SHG = CSH * (energy%TG  - TAH)
         energy%EVG = CEV * (ESTG*RHSUR - EAH)
         energy%GH  = energy%SAG+PAHG - (energy%IRG+energy%SHG+energy%EVG)
@@ -563,10 +554,10 @@ contains
     REAL    :: MPE     !prevents overflow error if division by zero
     DATA NITERB /5/
     SAVE NITERB
-    REAL :: T, TDC     !Kelvin to degree Celsius with limit -50 to +50
+    REAL :: T  !, TDC     !Kelvin to degree Celsius with limit -50 to +50
     ! -----------------------------------------------------------------
     
-    TDC(T)   = MIN( 50., MAX(-50.,(T-parameters%TFRZ)) )  ! struct ref needed?
+    !TDC(T)   = MIN( 50., MAX(-50.,(T-parameters%TFRZ)) )  ! struct ref needed?
     
     ! ---- associate variables to keep variable names intact in the code below  
     associate(&
@@ -642,7 +633,7 @@ contains
       EHB = 1./RAHB
 
       ! es and d(es)/dt evaluated at tg
-      T = TDC(TGB)
+      T = TDC(TGB, parameters%TFRZ)
       CALL ESAT(T, ESATW, ESATI, DSATW, DSATI)
       IF (T .GT. 0.) THEN
          ESTG  = ESATW
@@ -676,7 +667,7 @@ contains
       ! for M-O length
       H = CSH * (TGB - SFCTMP)
 
-      T = TDC(TGB)
+      T = TDC(TGB, parameters%TFRZ)
       CALL ESAT(T, ESATW, ESATI, DSATW, DSATI)
       IF (T .GT. 0.) THEN
         ESTG  = ESATW
@@ -760,9 +751,9 @@ contains
     REAL,              INTENT(INOUT)    :: FHG        ! stability correction
     ! outputs
     REAL,                INTENT(OUT)    :: RAMG       ! aerodynamic resistance for momentum (s/m)
-    REAL                 INTENT(OUT)    :: RAHG       ! aerodynamic resistance for sensible heat (s/m)
-    REAL                 INTENT(OUT)    :: RAWG       ! aerodynamic resistance for water vapor (s/m)
-    REAL                 INTENT(OUT)    :: RB         ! bulk leaf boundary layer resistance (s/m)
+    REAL,                INTENT(OUT)    :: RAHG       ! aerodynamic resistance for sensible heat (s/m)
+    REAL,                INTENT(OUT)    :: RAWG       ! aerodynamic resistance for water vapor (s/m)
+    REAL,                INTENT(OUT)    :: RB         ! bulk leaf boundary layer resistance (s/m)
 
     ! local
     REAL :: KH                   ! turbulent transfer coefficient, sensible heat, (m2/s)
@@ -777,7 +768,7 @@ contains
     MOZG = 0.; MOLG = 0.
 
     IF(ITER > 1) THEN
-      TMP1 = VKC * (GRAV/TAH) * HG/(RHOAIR*CPAIR)
+      TMP1 = VKC * (parameters%GRAV/TAH) * HG/(RHOAIR*parameters%CPAIR)
       IF (ABS(TMP1) .LE. parameters%MPE) TMP1 = parameters%MPE
       MOLG = -1. * FV**3 / TMP1
       MOZG = MIN( (ZPD-Z0MG)/MOLG, 1.)
@@ -829,7 +820,6 @@ contains
     type (parameters_type), intent(in) :: parameters
     INTEGER,INTENT(IN)  :: VEGTYP !vegetation physiology type
     REAL, INTENT(IN)    :: IGS    !growing season index (0=off, 1=on)
-    REAL, INTENT(IN)    :: MPE    !prevents division by zero errors
     REAL, INTENT(IN)    :: TV     !foliage temperature (k)
     REAL, INTENT(IN)    :: EI     !vapor pressure inside leaf (sat vapor press at tv) (pa)
     REAL, INTENT(IN)    :: EA     !vapor pressure of canopy air (pa)
@@ -957,7 +947,7 @@ contains
     REAL,                     INTENT(IN)  :: TV     ! canopy air temperature
     REAL,                     INTENT(IN)  :: SFCPRS ! surface pressure (pa)
     REAL,                     INTENT(IN)  :: EAH    ! water vapor pressure (pa)
-    REAL,                     INTENT(IN)  :: RCSOIL ! soil moisture stress factor
+    REAL,                     INTENT(IN)  :: BTRAN ! soil moisture stress factor (orig RCSOIL in this subr.)
 
     ! outputs
     REAL,                     INTENT(OUT) :: RS     ! canopy resistance per unit LAI
@@ -1002,7 +992,7 @@ contains
     RCQ = MAX (RCQ,0.01)
 
     ! determine canopy resistance due to all factors
-    RC  = parameters%RSMIN / (RCS * RCT * RCQ * RS)
+    RS  = parameters%RSMIN / (RCS * RCT * RCQ * BTRAN)   ! note BTRAN was originally RCSOIL
     PSN = -999.99       ! PSN not applied for dynamic carbon
 
   END SUBROUTINE CANRES
@@ -1069,7 +1059,6 @@ contains
     REAL,                 INTENT(IN) :: Z0H    !roughness length, sensible heat, ground (m)
     REAL,                 INTENT(IN) :: Z0M    !roughness length, momentum, ground (m)
     REAL,                 INTENT(IN) :: UR     !wind speed (m/s)
-    REAL,                 INTENT(IN) :: MPE    !prevents overflow error if division by zero
     ! in & out
     INTEGER,           INTENT(INOUT) :: MOZSGN !number of times moz changes sign
     REAL,              INTENT(INOUT) :: MOZ    !Monin-Obukhov stability (z/L)
@@ -1122,7 +1111,7 @@ contains
        MOZ2 = 0.0
     ELSE
        TVIR = (1. + 0.61*QAIR) * SFCTMP
-       TMP1 = VKC * (GRAV/TVIR) * H/(RHOAIR*CPAIR)
+       TMP1 = VKC * (parameters%GRAV/TVIR) * H/(RHOAIR*CPAIR)
        IF (ABS(TMP1) .LE. parameters%MPE) TMP1 = parameters%MPE
        MOL  = -1. * FV**3 / TMP1
        MOZ  = MIN( (ZLVL-ZPD)/MOL, 1.)
@@ -1228,8 +1217,8 @@ contains
     REAL     ZILFC, ZU, ZT, RDZ, CXCH
     REAL     DTHV, DU2, BTGH, ZSLU, ZSLT, RLOGU, RLOGT
     REAL     ZETALT, ZETALU, ZETAU, ZETAT, XLU4, XLT4, XU4, XT4
-    REAL     XLU, XLT, XU, XT, PSMZ, SIMM, PSHZ, SIMH, USTARK, RLMN,  &
-         &         RLMA
+    REAL     XLU, XLT, XU, XT, PSMZ, SIMM, PSHZ, SIMH, USTARK, RLMN, RLMA
+    REAL     BTG, ELFC    ! BTG orig a const. parameter
     INTEGER  ILECH, ITR
 
     INTEGER, PARAMETER :: ITRMX  = 5
@@ -1238,8 +1227,8 @@ contains
     REAL,    PARAMETER :: VKRM   = 0.40
     REAL,    PARAMETER :: EXCM   = 0.001
     REAL,    PARAMETER :: BETA   = 1.0 / 270.0
-    REAL,    PARAMETER :: BTG    = BETA * GRAV
-    REAL,    PARAMETER :: ELFC   = VKRM * BTG
+    !REAL,    PARAMETER :: BTG    = BETA * GRAV  ! can't assign of GRAV not a constant
+    !REAL,    PARAMETER :: ELFC   = VKRM * BTG
     REAL,    PARAMETER :: WOLD   = 0.15
     REAL,    PARAMETER :: WNEW   = 1.0 - WOLD
     REAL,    PARAMETER :: PIHF   = 3.14159265 / 2.
@@ -1256,6 +1245,10 @@ contains
     REAL,    PARAMETER :: FHNEU  = 0.8
     REAL,    PARAMETER :: RFC    = 0.191
     REAL,    PARAMETER :: RFAC   = RIC / ( FHNEU * RFC * RFC )
+    
+    BTG  = BETA * parameters%GRAV  ! BTG orig. a const. parameter
+    ELFC = VKRM * BTG              ! ELFC orig. a const. parameter
+  
 
     ! ----------------------------------------------------------------------
     ! NOTE: THE TWO CODE BLOCKS BELOW DEFINE FUNCTIONS
@@ -1451,6 +1444,12 @@ contains
 
   END SUBROUTINE ESAT 
   
-
+  ! function pulled out of vege_flux and bare_flux
+  function TDC(T, TFRZ)
+    real, intent(in)     :: T, TFRZ
+    real                 :: TDC
+    TDC = MIN( 50., MAX(-50.,(T - TFRZ)) )
+    return
+  end function TDC
   
 end module EtFluxModule

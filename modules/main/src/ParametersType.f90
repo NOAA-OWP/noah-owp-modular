@@ -66,7 +66,6 @@ type, public :: parameters_type
   integer                         :: LOW_DENSITY_RESIDENTIAL   ! vegtype code for low density residential
   integer                         :: HIGH_DENSITY_RESIDENTIAL  ! vegtype code for high density residential
   integer                         :: HIGH_INTENSITY_INDUSTRIAL ! vegtype code for high density industrial
-  real                            :: GRAV     !acceleration due to gravity (m/s2)
   real                            :: SB       !Stefan-Boltzmann constant (w/m2/k4)
   real                            :: VKC      !von Karman constant
   real                            :: TFRZ     !freezing/melting point (k)
@@ -122,6 +121,9 @@ type, public :: parameters_type
   
   REAL                            :: PSIWLT       ! matric potential for wilting point (m)  (orig a fixed param.)
   REAL                            :: TBOT         ! bottom condition for soil temp. (k) 
+  
+  real                            :: GRAV         ! acceleration due to gravity (m/s2)
+  
 
   contains
 

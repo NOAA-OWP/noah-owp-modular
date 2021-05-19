@@ -407,7 +407,7 @@ contains
       DO J = 1, NSOIL
         IF (OPT_FRZ == 1) THEN
           IF(STC(J) < TFRZ) THEN
-            SMP = parameters%HFUS * (TFRZ-STC(J))/(GRAV*STC(J))             ! (m)
+            SMP = parameters%HFUS * (TFRZ-STC(J))/(parameters%GRAV*STC(J))             ! (m)
             SUPERCOOL(J) = parameters%SMCMAX(J) * (SMP/parameters%PSISAT(J))**(-1./parameters%BEXP(J))
             SUPERCOOL(J) = SUPERCOOL(J) * domain%DZSNSO(J)*1000.            ! (mm)
           END IF
@@ -596,7 +596,7 @@ contains
         IF (.NOT.( (NLOG < 10) .AND. (KCOUNT == 0)))   goto 1002
         
         NLOG = NLOG +1
-        DF = ALOG ( ( parameters%PSISAT(ISOIL) * GRAV / parameters%HFUS ) * ( ( 1. + CK * SWL )**2.) * &
+        DF = ALOG ( ( parameters%PSISAT(ISOIL) * parameters%GRAV / parameters%HFUS ) * ( ( 1. + CK * SWL )**2.) * &
           ( parameters%SMCMAX(ISOIL) / (SMC - SWL) )** BX) - ALOG ( - (               &
           TKELV - parameters%TFRZ)/ TKELV)
         DENOM = 2. * CK / ( 1. + CK * SWL ) + BX / ( SMC - SWL )
@@ -631,7 +631,7 @@ contains
       IF (KCOUNT == 0) THEN
         write(message, '("Flerchinger used in NEW version. Iterations=", I6)') NLOG
         #call wrf_message(trim(message))
-        FK = ( ( (parameters%HFUS / (GRAV * ( - parameters%PSISAT(ISOIL))))*                    &
+        FK = ( ( (parameters%HFUS / (parameters%GRAV * ( - parameters%PSISAT(ISOIL))))*                    &
              ( (TKELV - parameters%TFRZ)/ TKELV))** ( -1/ BX))* parameters%SMCMAX(ISOIL)
         IF (FK < 0.02) FK = 0.02
         FREE = MIN (FK, SMC)
