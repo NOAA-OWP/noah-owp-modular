@@ -20,7 +20,7 @@
 /
 
 &model_options
-  precip_phase_option = 2
+  precip_phase_option               = 2
   snow_albedo_option                = 2 ! 1 = BATS, 2 = CLASS
   dynamic_veg_option                = 1
   runoff_option                     = 8
@@ -28,6 +28,10 @@
   frozen_soil_option                = 1
   dynamic_vic_option                = 1
   radiative_transfer_option         = 3
+  sfc_drag_coeff_option             = 1
+  canopy_stom_resist_option         = 1
+  crop_model_option                 = 0
+  snowsoil_temp_time_option         = 3
 /
 
 &structure

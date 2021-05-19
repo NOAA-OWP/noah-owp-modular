@@ -1,7 +1,7 @@
 !WRF:MODEL_LAYER:CONSTANTS
 ! AW: copied from SUMMA code 
 
- MODULE module_model_constants
+ MODULE ConstantsModule
 
    !  2. Following are constants for use in defining real number bounds.
 
@@ -158,4 +158,5 @@
  CONTAINS
    SUBROUTINE init_module_model_constants
    END SUBROUTINE init_module_model_constants
- END MODULE module_model_constants
+   
+ END MODULE ConstantsModule

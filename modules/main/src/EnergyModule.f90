@@ -295,7 +295,7 @@ contains
       energy%FSH   = energy%SHB
       energy%FGEV  = energy%EVB
       energy%SSOIL = energy%GHB
-      TG           = energy%TGB
+      TG           = energy%TGB      ! could use more associated variables to unclutter the code
       energy%T2M   = energy%T2MB
       energy%FCEV  = 0.
       energy%FCTR  = 0.
