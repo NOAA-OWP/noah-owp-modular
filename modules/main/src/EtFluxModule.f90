@@ -6,6 +6,7 @@
 
 !   and subroutines in FluxUtilityModule:
 !     RAGRB, STOMATA, CANRES, CALHUM, ESAT, SFCDIF1, SFCDIF2
+!     in addition to rewritten old statement functions (at end)
 
 module EtFluxModule
 
@@ -24,13 +25,13 @@ module EtFluxModule
   
   public  ::  VEGEFLUXMAIN   ! major routine, orig VEGE_FLUX
   public  ::  BAREFLUXMAIN   ! major routine, orig BARE_FLUX
-  private ::    SFCDIF1   ! subs called by vege & bare flux routines                
+  private ::    SFCDIF1      ! subs called by vege & bare flux routines                
   private ::    SFCDIF2                
   private ::    STOMATA                  
   private ::    CANRES                  
   private ::    ESAT
   private ::    RAGRB
-
+  private ::    TDC, F1, PSLMU, PSMLS, PSLHU, PSLHS, PSPMU, PSPMS, PSPHU, PSPHS  ! statement functions
 
 contains
   
@@ -167,9 +168,8 @@ contains
       LWDN     => energy%LWDN        ,&   ! intent(inout) : atmospheric longwave radiation (w/m2)
       FVEG     => parameters%FVEG    ,&   ! intent(in)    : greeness vegetation fraction (-)
       CPAIR    => parameters%CPAIR   ,&   ! intent(in)    : heat capacity dry air at const pres (j/kg/k)
-      UR       => forcing%UR          &   ! intent(in)    : roughness length, momentum (m)  
-    ) 
-    ! ---- end associate block --------------------------------------------------------------------
+      UR       => forcing%UR         )    ! intent(in)    : roughness length, momentum (m)  
+      ! ---- end associate block --------------------------------------------------------------------
 
     LITER = 0      ! last iteration
     FV = 0.1
@@ -197,7 +197,7 @@ contains
     END IF
 
     !jref - consistent surface specific humidity for sfcdif3 and sfcdif4
-    QSFC = 0.622*forcing%EAIR/(PSFC-0.378*forcing%EAIR)  
+    QSFC = 0.622 * forcing%EAIR / (PSFC - 0.378 * forcing%EAIR)  
 
     ! canopy height
     HCAN = parameters%HVT
@@ -234,23 +234,23 @@ contains
         Z0H  = Z0M  
         Z0HG = energy%Z0MG
       ELSE
-        Z0H  = Z0M    !* EXP(-CZIL*0.4*258.2*SQRT(FV*Z0M))
+        Z0H  = Z0M           !* EXP(-CZIL*0.4*258.2*SQRT(FV*Z0M))
         Z0HG = energy%Z0MG   !* EXP(-CZIL*0.4*258.2*SQRT(FV*Z0MG))
       END IF
 
       ! aerodyn resistances between heights zlvl and d+z0v
       IF(options%OPT_SFC == 1) THEN
         CALL SFCDIF1(parameters, ITER, SFCTMP, RHOAIR, H, forcing%QAIR,     &  ! in
-                     ZLVL, energy%ZPD, Z0M, Z0H, UR,  &  ! in
+                     ZLVL, energy%ZPD, Z0M, Z0H, UR,                        &  ! in
                      MOZ, MOZSGN, FM, FH, FM2, FH2,                         &  ! inout
                      energy%CM, energy%CH, FV, CH2)                            ! out
         ! note, local vars:  ITER H ZOH MOZ MOZSGN FM FH FM2 FH2 FV CH2
       ENDIF
      
       IF(options%OPT_SFC == 2) THEN
-        CALL SFCDIF2(parameters, ITER, Z0M, TAH, forcing%THAIR, UR,  & ! in
-                     ZLVL, energy%CM, energy%CH, MOZ, WSTAR,                 & ! in
-                     FV )                                                             ! out
+        CALL SFCDIF2(parameters, ITER, Z0M, TAH, forcing%THAIR, UR,         & ! in
+                     ZLVL, energy%CM, energy%CH, MOZ, WSTAR,                & ! in
+                     FV )                                                     ! out
         ! Undo the multiplication by windspeed that SFCDIF2 
         ! applies to exchange coefficients CH and CM:
         energy%CH = energy%CH / UR
@@ -263,10 +263,10 @@ contains
 
       ! calculate aerodynamic resistance between heights z0g and d+z0v, RAG, and leaf
       ! boundary layer resistance, RB
-      CALL RAGRB(parameters, ITER, VAIE, RHOAIR, HG, TAH, energy%ZPD, &  ! in
-                 energy%Z0MG, Z0HG, HCAN, UC, Z0H, FV, domain%VEGTYP,         &  ! in
-                 TV, MOZG, FHG,                                        &  ! inout
-                 RAMG, RAHG, RAWG, RB)                                           ! out                  
+      CALL RAGRB(parameters, ITER, VAIE, RHOAIR, HG, TAH, energy%ZPD,     &  ! in
+                 energy%Z0MG, Z0HG, HCAN, UC, Z0H, FV, domain%VEGTYP,     &  ! in
+                 TV, MOZG, FHG,                                           &  ! inout
+                 RAMG, RAHG, RAWG, RB)                                       ! out                  
       ! note, local vars:  ITER VAIE HG ZOHG HCAN UC Z0H FV MOZH FHG RAMG, RAHG, RAWG, RB
        
       ! es and d(es)/dt evaluated at tv
@@ -324,14 +324,14 @@ contains
       IF (options%OPT_CROP /= 2) THEN
         CTW  = (1.-water%FWET)*(LAISUNE/(RB+energy%RSSUN) + LAISHAE/(RB+RSSHA))
       ELSE
-        !RSSUN and RSSHA are in resistance per unit LAI in the Jarvis and Ball-Berry!. RSSUN and RSSHA of Gecros are in s/m
-        CTW  = (1.-water%FWET)*(1./(RB/(FRSU*GLAIE)+energy%RSSUN) + 1./(RB/((1.-FRSU)*GLAIE)+energy%RSSHA)) !transpiration conductance leaf to canopy air
+        ! RSSUN and RSSHA are in resistance per unit LAI in the Jarvis and Ball-Berry!. RSSUN and RSSHA of Gecros are in s/m
+        CTW  = (1.-water%FWET)*(1./(RB/(FRSU*GLAIE)+energy%RSSUN) + 1./(RB/((1.-FRSU)*GLAIE)+energy%RSSHA)) ! transpiration conductance leaf to canopy air
       ENDIF
       
       ! comment needed
       CGW  = 1./(RAWG+energy%RSURF)
       COND = CAW + CEW + CTW + CGW
-      AEA  = (forcing%EAIR*CAW + ESTG*CGW) / COND
+      AEA  = (forcing%EAIR * CAW + ESTG * CGW) / COND
       BEA  = (CEW+CTW)/COND
       CEV  = (1.-BEA)*CEW*RHOAIR*CPAIR/energy%GAMMAV   ! Barlage: change to vegetation v3.6
       CTR  = (1.-BEA)*CTW*RHOAIR*CPAIR/energy%GAMMAV
@@ -364,11 +364,11 @@ contains
       !TAH = ATA + BTA*TV               ! canopy air T; update here for consistency
 
       ! for computing M-O length in the next iteration
-      H  = RHOAIR*CPAIR*(TAH - SFCTMP) /RAHC        
-      HG = RHOAIR*CPAIR*(energy%TG  - TAH)   /RAHG
+      H  = RHOAIR * CPAIR * (TAH - SFCTMP) /RAHC        
+      HG = RHOAIR * CPAIR * (energy%TG  - TAH)   /RAHG
 
       ! consistent specific humidity from canopy air vapor pressure
-      QSFC = (0.622*EAH)/(SFCPRS-0.378*EAH)
+      QSFC = (0.622 * EAH) / (forcing%SFCPRS - 0.378 * EAH)
 
       IF (LITER == 1) THEN
         exit loop1 
@@ -845,8 +845,6 @@ contains
 
     REAL :: AB          !used in statement functions
     REAL :: BC          !used in statement functions
-    REAL :: F1          !generic temperature response (statement function)
-    REAL :: F2          !generic temperature inhibition (statement function)
     REAL :: TC          !foliage temperature (degree Celsius)
     REAL :: CS          !co2 concentration at leaf surface (pa)
     REAL :: KC          !co2 Michaelis-Menten constant (pa)
@@ -865,9 +863,6 @@ contains
     REAL :: J           !electron transport (umol co2/m2/s)
     REAL :: CEA         !constrain ea or else model blows up
     REAL :: CF          !s m2/umol -> s/m
-
-    F1(AB,BC) = AB**((BC-25.)/10.)
-    F2(AB) = 1. + EXP((-2.2E05+710.*(AB+273.16))/(8.314*(AB+273.16)))
     REAL :: T
     ! ---------------------------------------------------------------------------------------------
 
@@ -883,11 +878,11 @@ contains
     TC  = TV-TFRZ
     PPF = 4.6*APAR
     J   = PPF*parameters%QE25
-    KC  = parameters%KC25 * F1(parameters%AKC,TC)
-    KO  = parameters%KO25 * F1(parameters%AKO,TC)
+    KC  = parameters%KC25 * F1(parameters%AKC, TC)
+    KO  = parameters%KO25 * F1(parameters%AKO, TC)
     AWC = KC * (1.+O2/KO)
     CP  = 0.5*KC/KO*O2*0.21
-    VCMX = parameters%VCMX25 / F2(TC) * FNF * BTRAN * F1(parameters%AVCMX,TC)
+    VCMX = parameters%VCMX25 / F2(TC) * FNF * BTRAN * F1(parameters%AVCMX, TC)
 
     ! first guess ci
     CI = 0.7*CO2*parameters%C3PSN + 0.4*CO2*(1.-parameters%C3PSN)
@@ -1249,22 +1244,9 @@ contains
     BTG  = BETA * parameters%GRAV  ! BTG orig. a const. parameter
     ELFC = VKRM * BTG              ! ELFC orig. a const. parameter
   
-
     ! ----------------------------------------------------------------------
-    ! NOTE: THE TWO CODE BLOCKS BELOW DEFINE FUNCTIONS
+    ! NOTE: a lot of f77 statement functions moved to end of module
     ! ----------------------------------------------------------------------
-    ! LECH'S SURFACE FUNCTIONS
-    PSLMU (ZZ)= -0.96* log (1.0-4.5* ZZ)
-    PSLMS (ZZ)= ZZ * RRIC -2.076* (1. -1./ (ZZ +1.))
-    PSLHU (ZZ)= -0.96* log (1.0-4.5* ZZ)
-    PSLHS (ZZ)= ZZ * RFAC -2.076* (1. -1./ (ZZ +1.))
-    ! PAULSON'S SURFACE FUNCTIONS
-    PSPMU (XX)= -2.* log ( (XX +1.)*0.5) - log ( (XX * XX +1.)*0.5)   &
-         &        +2.* ATAN (XX)                                            &
-         &- PIHF
-    PSPMS (YY)= 5.* YY
-    PSPHU (XX)= -2.* log ( (XX * XX +1.)*0.5)
-    PSPHS (YY)= 5.* YY
 
     ! THIS ROUTINE SFCDIF CAN HANDLE BOTH OVER OPEN WATER (SEA, OCEAN) AND
     ! OVER SOLID SURFACE (LAND, SEA-ICE).
@@ -1444,12 +1426,81 @@ contains
 
   END SUBROUTINE ESAT 
   
-  ! function pulled out of vege_flux and bare_flux
+  ! f77-style statement function pulled out of vege_flux and bare_flux
   function TDC(T, TFRZ)
     real, intent(in)     :: T, TFRZ
     real                 :: TDC
     TDC = MIN( 50., MAX(-50.,(T - TFRZ)) )
     return
   end function TDC
+  
+  ! generic temperature response (statement function)
+  function F1(AB,BC)
+    real, intent(in)     :: AB, BC
+    real                 :: F1
+    F1 = AB**((BC-25.)/10.)
+  end function 
+  
+  ! generic temperature inhibition (statement function)
+  function F2(AB)
+    real, intent(in)     :: AB
+    real                 :: F2   
+    F2 = 1. + EXP((-2.2E05+710.*(AB+273.16))/(8.314*(AB+273.16)))
+    return
+  end function 
+  
+  ! ----------------------------------------------------------------------
+  ! DEFINE FUNCTIONS FOR SFCDIF2
+  ! ----------------------------------------------------------------------
+  ! LECH'S SURFACE FUNCTIONS
+  function PSLMU (ZZ)
+    real, intent(in)     :: ZZ
+    real                 :: PSLMU
+    PSLMU = -0.96* log (1.0-4.5* ZZ)
+    return
+  end function
+  function PSLMS (ZZ)
+    real, intent(in)     :: ZZ
+    real                 :: PSLMS
+    PSLMS = ZZ * RRIC -2.076* (1. -1./ (ZZ +1.))
+    return
+  end function
+  function PSLHU (ZZ)
+    real, intent(in)     :: ZZ
+    real                 :: PSLHU
+    PSLHU = -0.96* log (1.0-4.5* ZZ)
+    return
+  end function
+  function PSLHS (ZZ)
+    real, intent(in)     :: ZZ
+    real                 :: PSLHS
+    PSLHS = ZZ * RFAC -2.076* (1. -1./ (ZZ +1.))
+    return
+  end function
+  ! PAULSON'S SURFACE FUNCTIONS
+  function PSPMU (XX)
+    real, intent(in)     :: XX
+    real                 :: PSPMU
+    PSPMU = -2.* log ( (XX +1.)*0.5) - log ( (XX * XX +1.)*0.5)+2.* ATAN (XX)  - PIHF     
+    return
+  end function
+  function PSPMS (YY)
+    real, intent(in)     :: YY
+    real                 :: PSPMS
+    PSPMS = 5.* YY
+    return
+  end function
+  function PSPHU (XX)
+    real, intent(in)     :: XX
+    real                 :: PSPHU
+    PSPHU = -2.* log ( (XX * XX +1.)*0.5)
+    return
+  end function
+  function PSPHS (YY)
+    real, intent(in)     :: YY
+    real                 :: PSPHS
+    PSPHS = 5.* YY
+    return
+  end function
   
 end module EtFluxModule

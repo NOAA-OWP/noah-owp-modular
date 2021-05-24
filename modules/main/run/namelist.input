@@ -38,6 +38,7 @@
  isltyp           = 1       ! soil texture class
  nsoil            = 4       ! number of soil levels
  nsnow            = 3       ! number of snow levels
+ nveg             = 27      ! number of vegetation types
  structure_option = 1       ! 1: use preset zsoil; 2: uniform levels
  soil_depth       = 2.0     ! total soil thickness [m] for structure_option > 1
  vegtyp           = 1       ! vegetation type modis

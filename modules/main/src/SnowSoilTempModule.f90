@@ -23,9 +23,9 @@ contains
   
   ! == begin tsnosoi ==================================================================================
   SUBROUTINE TSNOSOI (parameters, levels, domain, options, ICE, ISNOW,   & ! in
-                      SSOIL, DF, HCPCT,                         & ! in
-                      SAG, SNOWH, TG,                           & ! in
-                      STC     )                                   ! inout
+                      SSOIL, DF, HCPCT,                                  & ! in
+                      SAG, SNOWH, TG,                                    & ! in
+                      STC     )                                            ! inout
     ! --------------------------------------------------------------------------------------------------
     ! Compute snow (up to 3L) and soil (4L) temperature. Note that snow temperatures
     ! during melting season may exceed melting point (TFRZ) but later in PHASECHANGE

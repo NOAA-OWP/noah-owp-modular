@@ -8,6 +8,7 @@ type, public :: levels_type
 
   integer :: nsoil
   integer :: nsnow
+  integer :: nveg    
 
   contains
 
@@ -33,6 +34,7 @@ contains
 
     this%nsoil  = huge(1)
     this%nsnow  = huge(1)
+    this%nveg   = huge(1)    
 
   end subroutine InitDefault
 
@@ -45,6 +47,7 @@ contains
     
     this%nsoil  = namelist%nsoil
     this%nsnow  = namelist%nsnow
+    this%nsnow  = namelist%nveg    
 
   end subroutine InitTransfer
 
