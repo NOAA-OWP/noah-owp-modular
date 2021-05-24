@@ -20,6 +20,7 @@ type, public :: namelist_type
   integer       :: isltyp
   integer       :: nsoil
   integer       :: nsnow
+  integer       :: nveg               ! number of vegetation types  
   integer       :: structure_option
   real          :: soil_depth
   integer       :: vegtyp
@@ -195,6 +196,7 @@ contains
     integer       :: isltyp
     integer       :: nsoil
     integer       :: nsnow
+    integer       :: nveg    
     integer       :: structure_option
     real          :: soil_depth
     integer       :: vegtyp
@@ -259,7 +261,6 @@ contains
     !--------------------!
     !  Vegetation parameters   !
     !--------------------!
-    
     real, dimension(20)     ::   LAI_JAN,LAI_FEB,LAI_MAR,LAI_APR,LAI_MAY,LAI_JUN, &
                                      LAI_JUL,LAI_AUG,LAI_SEP,LAI_OCT,LAI_NOV,LAI_DEC
     real, dimension(20)     ::   SAI_JAN,SAI_FEB,SAI_MAR,SAI_APR,SAI_MAY,SAI_JUN, &
@@ -360,8 +361,10 @@ contains
                                  RSURF_SNOW,RSURF_EXP
     namelist / veg_parameters  / CH2OP,NROOT,HVT,HVB,TMIN,SHDFAC,SHDMAX,Z0MVT,RC,XL,CWP,&
                                  RHOL_VIS,RHOL_NIR,RHOS_VIS,RHOS_NIR,TAUL_VIS,TAUL_NIR,TAUS_VIS,TAUS_NIR,&
-                                 LAI_JAN,LAI_FEB,LAI_MAR,LAI_APR,LAI_MAY,LAI_JUN,LAI_JUL,LAI_AUG,LAI_SEP,LAI_OCT,LAI_NOV,LAI_DEC,&
-                                 SAI_JAN,SAI_FEB,SAI_MAR,SAI_APR,SAI_MAY,SAI_JUN,SAI_JUL,SAI_AUG,SAI_SEP,SAI_OCT,SAI_NOV,SAI_DEC
+                                 LAI_JAN,LAI_FEB,LAI_MAR,LAI_APR,LAI_MAY,LAI_JUN,&
+                                 LAI_JUL,LAI_AUG,LAI_SEP,LAI_OCT,LAI_NOV,LAI_DEC,&
+                                 SAI_JAN,SAI_FEB,SAI_MAR,SAI_APR,SAI_MAY,SAI_JUN,&
+                                 SAI_JUL,SAI_AUG,SAI_SEP,SAI_OCT,SAI_NOV,SAI_DEC
     namelist / radiation_parameters / ALBSAT_VIS,ALBSAT_NIR,ALBDRY_VIS,ALBDRY_NIR,ALBICE,ALBLAK,OMEGAS,BETADS,BETAIS,EG
     namelist / land_parameters / ISURBAN,ISWATER,ISBARREN,ISICE,ISCROP,EBLFOREST,NATURAL,LOW_DENSITY_RESIDENTIAL,&
                                  HIGH_DENSITY_RESIDENTIAL,HIGH_INTENSITY_INDUSTRIAL
@@ -384,10 +387,10 @@ contains
      read(30, land_parameters)
     close(30)
 
-    allocate (zsoil (       1:nsoil))   !depth of layer-bottom from soil surface
-    allocate (dzsnso(-nsnow+1:nsoil))   !snow/soil layer thickness [m]
-    allocate (sice  (       1:nsoil))   !soil ice content [m3/m3]
-    allocate (sh2o  (       1:nsoil))   !soil liquid water content [m3/m3]
+    allocate (zsoil (       1:nsoil))   ! depth of layer-bottom from soil surface
+    allocate (dzsnso(-nsnow+1:nsoil))   ! snow/soil layer thickness [m]
+    allocate (sice  (       1:nsoil))   ! soil ice content [m3/m3]
+    allocate (sh2o  (       1:nsoil))   ! soil liquid water content [m3/m3]
 
 !---------------------------------------------------------------------
 !  read input file, part 2: initialize

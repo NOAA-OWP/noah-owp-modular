@@ -52,10 +52,6 @@ contains
     REAL                                 :: PSNSUN   ! sunlit photosynthesis (umolco2/m2/s)
     REAL                                 :: PSNSHA   ! shaded photosynthesis (umolco2/m2/s)
     REAL                                 :: FIRE     ! emitted IR (w/m2)
-    
-    
-    
-    
     ! ---------------------------------------------------------------------
 
     ! associate common variables to keep variable names intact in the code below  
@@ -333,16 +329,16 @@ contains
     ! When we're computing a TRAD, subtract from the emitted IR the
     ! reflected portion of the incoming LWDN, so we're just
     ! considering the IR originating in the canopy/ground system.
-    energy%TRAD = ( ( FIRE - (1-energy%EMISSI)*LWDN ) / (energy%EMISSI*parameters%SB) ) ** 0.25
+    energy%TRAD = ( ( FIRE - (1 - energy%EMISSI) * LWDN ) / (energy%EMISSI * parameters%SB) ) ** 0.25
     !energy%TRAD = (FIRE/SB)**0.25          Old TRAD calculation not taking into account Emissivity
 
-    energy%APAR = energy%PARSUN*energy%LAISUN + energy%PARSHA*energy%LAISHA
-    energy%PSN  = energy%PSNSUN*energy%LAISUN + energy%PSNSHA*energy%LAISHA
+    energy%APAR = energy%PARSUN * energy%LAISUN + energy%PARSHA * energy%LAISHA
+    energy%PSN  = energy%PSNSUN * energy%LAISUN + energy%PSNSHA * energy%LAISHA
     
     ! calculate 3L snow & 4L soil temperatures
     CALL TSNOSOI (parameters, levels, domain, energy%ICE, water%ISNOW   , & ! in
                   energy%SSOIL, energy%DF, energy%HCPCT, & !in
-                  energy%SAG, water%SSNOWH, TG, & !in
+                  energy%SAG, water%SNOWH, TG, & !in
                   energy%STC     )                                          ! inout
     
     ! AW:  need to decide what to do with STC if no subsurface will be simulated
@@ -364,7 +360,7 @@ contains
     END IF
 
     ! Energy released or consumed by snow & frozen soil
-    CALL PHASECHANGE (parameters, domain, energy, water, levelslevels%NSNOW, levels%NSOIL)
+    CALL PHASECHANGE (parameters, domain, energy, water, levels%NSNOW, levels%NSOIL)
                       
   END SUBROUTINE EnergyMain   
 
