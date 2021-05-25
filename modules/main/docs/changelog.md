@@ -39,7 +39,8 @@ Changes are given in both reference to
 - The original call to TWOSTREAM in ALBEDO passed TV, which was then redefined to T in the arguments of TWOSTREAM. This is more difficult to do using types (and unintuitive), so I've changed T to energy%TV.
     - The same was done for FAB, FRE, FTD, FTI, FREV, and FREG (original INTENT(OUT) arguments to TWOSTREAM). The call, depending on whether direct or diffuse shrotwave were being considered used the suffixed versions of these vars (D for direct, I for diffuse). Because this passing format is unclear, we now pass only the types (ENERGY in this case) and give the variables value within IF statements (already in the original code).
 - VAI and VEG are now computed only once in the EnergyModule, and they are part of the ParametersType. In the original code, VAI and VEG were computed multiple times locally even though their values never changed.
-- C3PSN is a constant 1.0 for all vegtypes in MPTABLE, but has 20 (MODIS) and 27 (USGS) table entries. Parameter is changed to be a single value (i.e., no need to read in a table if the value only has 1 option).
+- C3PSN is a constant 1.0 for all vegtypes in MPTABLE, but has 20 (MODIS) and 27 (USGS) table entries. Parameter is changed to be a single value (i.e., no need to read in a table if the value only has 1 option). Same for KC25 and KO25. Similarly, CZIL is a single value formerly read in as a "table" from GENPARM.TBL, but it's now set to a single value.
+- Changed RS to RSMIN in veg_parameters to be consistent with use in model
 
 ## Bug fixes:
 - Albedo for direct shortwave radiation in the NIR (ALBSND(2)) was incorrectly computed using parameters%BATS_VIS_DIR
