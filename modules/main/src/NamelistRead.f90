@@ -101,6 +101,7 @@ type, public :: namelist_type
   real, dimension(20)     ::   RC             ! tree crown radius (m)
   real, dimension(20)     ::   XL             ! leaf/stem orientation index
   real                    ::   CWP            ! canopy wind absorption coefficient (formerly CWPVT)
+  real                    ::   C3PSN          ! photosynth. pathway: 0. = c4, 1. = c3 
   real, dimension(20)     ::   RHOL_VIS       ! leaf reflectance in visible
   real, dimension(20)     ::   RHOL_NIR       ! leaf reflectance in near infrared
   real, dimension(20)     ::   RHOS_VIS       ! stem reflectance in visible
@@ -276,6 +277,7 @@ contains
     real, dimension(20)     ::   RC             ! tree crown radius (m)
     real, dimension(20)     ::   XL             ! leaf/stem orientation index
     real                    ::   CWP            ! canopy wind absorption coefficient (formerly CWPVT)
+    real                    ::   C3PSN          ! photosynth. pathway: 0. = c4, 1. = c3 
     real, dimension(20)     ::   RHOL_VIS       ! leaf reflectance in visible
     real, dimension(20)     ::   RHOL_NIR       ! leaf reflectance in near infrared
     real, dimension(20)     ::   RHOS_VIS       ! stem reflectance in visible
@@ -359,7 +361,7 @@ contains
     namelist / snow_parameters / SSI,MFSNO,Z0SNO,SWEMX,TAU0,GRAIN_GROWTH,EXTRA_GROWTH,DIRT_SOOT,&
                                  BATS_COSZ,BATS_VIS_NEW,BATS_NIR_NEW,BATS_VIS_AGE,BATS_NIR_AGE,BATS_VIS_DIR,BATS_NIR_DIR,&
                                  RSURF_SNOW,RSURF_EXP
-    namelist / veg_parameters  / CH2OP,NROOT,HVT,HVB,TMIN,SHDFAC,SHDMAX,Z0MVT,RC,XL,CWP,&
+    namelist / veg_parameters  / CH2OP,NROOT,HVT,HVB,TMIN,SHDFAC,SHDMAX,Z0MVT,RC,XL,CWP,C3PSN,&
                                  RHOL_VIS,RHOL_NIR,RHOS_VIS,RHOS_NIR,TAUL_VIS,TAUL_NIR,TAUS_VIS,TAUS_NIR,&
                                  LAI_JAN,LAI_FEB,LAI_MAR,LAI_APR,LAI_MAY,LAI_JUN,&
                                  LAI_JUL,LAI_AUG,LAI_SEP,LAI_OCT,LAI_NOV,LAI_DEC,&
@@ -522,6 +524,7 @@ contains
     this%RC      = RC
     this%XL      = XL
     this%CWP     = CWP
+    this%C3PSN   = C3PSN
 
     this%SSI          = SSI
     this%MFSNO        = MFSNO

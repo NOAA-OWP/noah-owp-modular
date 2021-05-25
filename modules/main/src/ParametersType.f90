@@ -15,8 +15,6 @@ type, public :: parameters_type
   real, allocatable, dimension(:) :: dksat  ! saturated conductivity
   real, allocatable, dimension(:) :: dwsat  ! saturated diffusivity
   real, allocatable, dimension(:) :: psisat ! saturated matric potential
-  REAL, allocatable, dimension(:) :: C3PSN_TABLE  ! MPTABLE data for photosynth. pathway: 0. = c4, 1. = c3 [by vegtype]
-  REAL                            :: C3PSN  ! photosynth. pathway: 0. = c4, 1. = c3 [by vegtype]
   real                            :: bvic   ! VIC or DVIC model infiltration parameter
   real                            :: AXAJ   ! Xinanjiang: Tension water distribution inflection parameter [-]
   real                            :: BXAJ   ! Xinanjiang: Tension water distribution shape parameter [-]
@@ -49,6 +47,7 @@ type, public :: parameters_type
   real                            :: RC     ! tree crown radius (m)
   real                            :: XL     ! leaf/stem orientation index
   real                            :: CWP    ! canopy wind absorption coefficient (formerly CWPVT)
+  real                            :: C3PSN  ! photosynth. pathway: 0. = c4, 1. = c3 [by vegtype]
   real                            :: ELAI
   real                            :: ESAI
   real                            :: VAI     ! sum of ELAI + ESAI
@@ -159,9 +158,7 @@ contains
     allocate(this%smcref (namelist%nsoil))  ; this%smcref (:) = huge(1.0)
     allocate(this%dksat  (namelist%nsoil))  ; this%dksat  (:) = huge(1.0)
     allocate(this%dwsat  (namelist%nsoil))  ; this%dwsat  (:) = huge(1.0)
-    allocate(this%psisat (namelist%nsoil))  ; this%psisat (:) = huge(1.0)
-    
-    allocate(this%c3psn_table (namelist%nveg))  ; this%c3psn_table(:) = huge(1.0)    
+    allocate(this%psisat (namelist%nsoil))  ; this%psisat (:) = huge(1.0)    
 
   end subroutine InitAllocate
 
@@ -211,11 +208,11 @@ contains
     this%RC     = namelist%RC (namelist%vegtyp)
     this%XL     = namelist%XL (namelist%vegtyp)
     this%CWP    = namelist%CWP
+    this%c3psn  = namelist%c3psn
     this%RHOL   = namelist%RHOL_TABLE  (namelist%vegtyp, :)
     this%RHOS   = namelist%RHOS_TABLE  (namelist%vegtyp, :)
     this%TAUL   = namelist%TAUL_TABLE  (namelist%vegtyp, :)
     this%TAUS   = namelist%TAUS_TABLE  (namelist%vegtyp, :)
-    this%c3psn  = namelist%c3psn_table (namelist%vegtyp)
     this%refkdt = namelist%refkdt
     this%refdk  = namelist%refdk
     this%kdt    = this%refkdt * this%dksat(1) / this%refdk
