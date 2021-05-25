@@ -465,6 +465,7 @@ contains
     energy%CHLEAF = CVH
     energy%CHUC   = 1./RAHG
   
+    end associate ! end the associated variables
   END SUBROUTINE VegeFluxMain
 
 
@@ -713,7 +714,8 @@ contains
 
     ! update CH 
     energy%CH = EHB
-
+    
+    end associate ! end the associated variables
   END SUBROUTINE BareFluxMain
   
   
