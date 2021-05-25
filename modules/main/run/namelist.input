@@ -38,7 +38,7 @@
  isltyp           = 1       ! soil texture class
  nsoil            = 4       ! number of soil levels
  nsnow            = 3       ! number of snow levels
- nveg             = 27      ! number of vegetation types
+ nveg             = 20      ! number of vegetation types
  structure_option = 1       ! 1: use preset zsoil; 2: uniform levels
  soil_depth       = 2.0     ! total soil thickness [m] for structure_option > 1
  vegtyp           = 1       ! vegetation type modis
@@ -121,6 +121,7 @@
  RC     =  1.20,   3.60,   1.20,   1.40,   1.40,   0.12,   0.12,   0.12,   3.00,   0.03,   0.75,   0.08,   1.00,   0.08,   0.00,   0.01,   0.01,   0.30,   0.30,   0.30,
  XL     = 0.010,  0.010,  0.010,  0.250,  0.250,  0.010,  0.010,  0.010,  0.010,  -0.30, -0.025,  -0.30,  0.000,  -0.30,  0.000,  0.000,  0.000,  0.250,  0.250,  0.250,
  CWP    =  0.18,
+ C3PSN  =  1.0,
 
  ! Row 1:  Vis
  ! Row 2:  Near IR
