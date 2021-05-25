@@ -320,7 +320,7 @@ contains
     this%QMELT     = huge(1.0)
 
     
-    this%ICE       = huge(1.0)    
+    this%ICE       = huge(1)    
     
     
     
