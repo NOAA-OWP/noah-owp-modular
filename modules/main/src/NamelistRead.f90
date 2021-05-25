@@ -82,6 +82,7 @@ type, public :: namelist_type
   real                ::   refdk  ! reference diffusivity for Schaake scheme
   real                ::   csoil  ! volumetric soil heat capacity [j/m3/K]
   real                ::   Z0     ! bare soil roughness length (m)
+  real                ::   CZIL   ! Parameter used in the calculation of the roughness length for heat, originally in GENPARM.TBL
 
   !--------------------!
   !  Vegetation parameters   !
@@ -100,8 +101,19 @@ type, public :: namelist_type
   real, dimension(20)     ::   Z0MVT          ! momentum roughness length (m)
   real, dimension(20)     ::   RC             ! tree crown radius (m)
   real, dimension(20)     ::   XL             ! leaf/stem orientation index
+  real, dimension(20)     ::   BP             ! minimum leaf conductance (umol/m**2/s)
+  real, dimension(20)     ::   FOLNMX         ! foliage nitrogen concentration when f(n)=1 (%)
+  real, dimension(20)     ::   QE25           ! quantum efficiency at 25c (umol co2 / umol photon)
+  real, dimension(20)     ::   VCMX25         ! maximum rate of carboxylation at 25c (umol co2/m**2/s)
+  real, dimension(20)     ::   MP             ! slope of conductance-to-photosynthesis relationship
+  real, dimension(20)     ::   RGL            ! Parameter used in radiation stress function
+  real, dimension(20)     ::   RSMIN          ! Minimum stomatal resistance [s m-1]
+  real, dimension(20)     ::   HS             ! Parameter used in vapor pressure deficit function
   real                    ::   CWP            ! canopy wind absorption coefficient (formerly CWPVT)
   real                    ::   C3PSN          ! photosynth. pathway: 0. = c4, 1. = c3 
+  real                    ::   DLEAF          ! characteristic leaf dimension (m)
+  real                    ::   KC25           ! co2 michaelis-menten constant at 25c (pa)
+  real                    ::   KO25           ! o2 michaelis-menten constant at 25c (pa)
   real, dimension(20)     ::   RHOL_VIS       ! leaf reflectance in visible
   real, dimension(20)     ::   RHOL_NIR       ! leaf reflectance in near infrared
   real, dimension(20)     ::   RHOS_VIS       ! stem reflectance in visible
@@ -258,6 +270,7 @@ contains
     real                ::   refdk  ! reference diffusivity for Schaake scheme
     real                ::   csoil  ! volumetric soil heat capacity [j/m3/K]
     real                ::   Z0     ! bare soil roughness length (m)
+    real                ::   CZIL   ! Parameter used in the calculation of the roughness length for heat, originally in GENPARM.TBL
 
     !--------------------!
     !  Vegetation parameters   !
@@ -276,8 +289,19 @@ contains
     real, dimension(20)     ::   Z0MVT          ! momentum roughness length (m)
     real, dimension(20)     ::   RC             ! tree crown radius (m)
     real, dimension(20)     ::   XL             ! leaf/stem orientation index
+    real, dimension(20)     ::   BP             ! minimum leaf conductance (umol/m**2/s)
+    real, dimension(20)     ::   FOLNMX         ! foliage nitrogen concentration when f(n)=1 (%)
+    real, dimension(20)     ::   QE25           ! quantum efficiency at 25c (umol co2 / umol photon)
+    real, dimension(20)     ::   VCMX25         ! maximum rate of carboxylation at 25c (umol co2/m**2/s)
+    real, dimension(20)     ::   MP             ! slope of conductance-to-photosynthesis relationship
+    real, dimension(20)     ::   RGL            ! Parameter used in radiation stress function
+    real, dimension(20)     ::   RSMIN          ! Minimum stomatal resistance [s m-1]
+    real, dimension(20)     ::   HS             ! Parameter used in vapor pressure deficit function
     real                    ::   CWP            ! canopy wind absorption coefficient (formerly CWPVT)
     real                    ::   C3PSN          ! photosynth. pathway: 0. = c4, 1. = c3 
+    real                    ::   DLEAF          ! characteristic leaf dimension (m)
+    real                    ::   KC25           ! co2 michaelis-menten constant at 25c (pa)
+    real                    ::   KO25           ! o2 michaelis-menten constant at 25c (pa)
     real, dimension(20)     ::   RHOL_VIS       ! leaf reflectance in visible
     real, dimension(20)     ::   RHOL_NIR       ! leaf reflectance in near infrared
     real, dimension(20)     ::   RHOS_VIS       ! stem reflectance in visible
@@ -357,11 +381,13 @@ contains
                                  initial_sice_value
     namelist / soil_parameters / bb,satdk,satdw,maxsmc,satpsi,wltsmc, &
                                  refsmc,pctsand,pctclay,bvic,AXAJ,BXAJ,XXAJ,&
-                                 BBVIC,G,QUARTZ,slope,refkdt,refdk,CSOIL,Z0
+                                 BBVIC,G,QUARTZ,slope,refkdt,refdk,CSOIL,Z0,CZIL
     namelist / snow_parameters / SSI,MFSNO,Z0SNO,SWEMX,TAU0,GRAIN_GROWTH,EXTRA_GROWTH,DIRT_SOOT,&
                                  BATS_COSZ,BATS_VIS_NEW,BATS_NIR_NEW,BATS_VIS_AGE,BATS_NIR_AGE,BATS_VIS_DIR,BATS_NIR_DIR,&
                                  RSURF_SNOW,RSURF_EXP
-    namelist / veg_parameters  / CH2OP,NROOT,HVT,HVB,TMIN,SHDFAC,SHDMAX,Z0MVT,RC,XL,CWP,C3PSN,&
+    namelist / veg_parameters  / CH2OP,NROOT,HVT,HVB,TMIN,SHDFAC,SHDMAX,Z0MVT,RC,XL,&
+                                 BP,FOLNMX,QE25,VCMX25,MP,RGL,RSMIN,HS,&
+                                 CWP,C3PSN,DLEAF,KC25,KO25,&
                                  RHOL_VIS,RHOL_NIR,RHOS_VIS,RHOS_NIR,TAUL_VIS,TAUL_NIR,TAUS_VIS,TAUS_NIR,&
                                  LAI_JAN,LAI_FEB,LAI_MAR,LAI_APR,LAI_MAY,LAI_JUN,&
                                  LAI_JUL,LAI_AUG,LAI_SEP,LAI_OCT,LAI_NOV,LAI_DEC,&
@@ -477,6 +503,7 @@ contains
     this%refdk   = refdk
     this%csoil   = csoil
     this%Z0      = Z0
+    this%CZIL    = CZIL
     
     this%RHOL_TABLE(1:20, 1) = RHOL_VIS(1:20)
     this%RHOL_TABLE(1:20, 2) = RHOL_NIR(1:20)
@@ -523,8 +550,19 @@ contains
     this%Z0MVT   = Z0MVT
     this%RC      = RC
     this%XL      = XL
+    this%BP      = BP
+    this%FOLNMX  = FOLNMX
+    this%QE25    = QE25
+    this%VCMX25  = VCMX25
+    this%MP      = MP
+    this%RGL     = RGL
+    this%RSMIN   = RSMIN
+    this%HS      = HS
     this%CWP     = CWP
     this%C3PSN   = C3PSN
+    this%DLEAF   = DLEAF
+    this%KC25    = KC25
+    this%KO25    = KO25
 
     this%SSI          = SSI
     this%MFSNO        = MFSNO

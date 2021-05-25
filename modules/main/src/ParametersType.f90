@@ -27,6 +27,7 @@ type, public :: parameters_type
   real                            :: refdk  !
   real                            :: csoil  ! volumetric soil heat capacity [j/m3/K]
   real                            :: Z0     ! bare soil roughness length (m)
+  real                            :: CZIL   ! Parameter used in the calculation of the roughness length for heat, originally in GENPARM.TBL
   real                            :: frzx   !
   real                            :: slope  ! drainage parameter
   real                            :: timean
@@ -46,8 +47,19 @@ type, public :: parameters_type
   real                            :: Z0MVT  ! momentum roughness length (m)
   real                            :: RC     ! tree crown radius (m)
   real                            :: XL     ! leaf/stem orientation index
+  real                            :: BP     ! minimum leaf conductance (umol/m**2/s)
+  real                            :: FOLNMX ! foliage nitrogen concentration when f(n)=1 (%)
+  real                            :: QE25   ! quantum efficiency at 25c (umol co2 / umol photon)
+  real                            :: VCMX25 ! maximum rate of carboxylation at 25c (umol co2/m**2/s)
+  real                            :: MP     ! slope of conductance-to-photosynthesis relationship
+  real                            :: RGL    ! Parameter used in radiation stress function
+  real                            :: RSMIN  ! Minimum stomatal resistance [s m-1]
+  real                            :: HS     ! Parameter used in vapor pressure deficit function
   real                            :: CWP    ! canopy wind absorption coefficient (formerly CWPVT)
   real                            :: C3PSN  ! photosynth. pathway: 0. = c4, 1. = c3 [by vegtype]
+  real                            :: DLEAF  ! characteristic leaf dimension (m)
+  real                            :: KC25   ! co2 michaelis-menten constant at 25c (pa)
+  real                            :: KO25   ! o2 michaelis-menten constant at 25c (pa)
   real                            :: ELAI
   real                            :: ESAI
   real                            :: VAI     ! sum of ELAI + ESAI
@@ -207,8 +219,19 @@ contains
     this%Z0MVT  = namelist%Z0MVT (namelist%vegtyp)
     this%RC     = namelist%RC (namelist%vegtyp)
     this%XL     = namelist%XL (namelist%vegtyp)
+    this%BP     = namelist%BP (namelist%vegtyp)
+    this%FOLNMX = namelist%FOLNMX (namelist%vegtyp)
+    this%QE25   = namelist%QE25 (namelist%vegtyp)
+    this%VCMX25 = namelist%VCMX25 (namelist%vegtyp)
+    this%MP     = namelist%MP (namelist%vegtyp)
+    this%RGL    = namelist%RGL (namelist%vegtyp)
+    this%RSMIN  = namelist%RSMIN (namelist%vegtyp)
+    this%HS     = namelist%HS (namelist%vegtyp)
     this%CWP    = namelist%CWP
     this%c3psn  = namelist%c3psn
+    this%DLEAF  = namelist%DLEAF
+    this%KC25   = namelist%KC25
+    this%KO25   = namelist%KO25
     this%RHOL   = namelist%RHOL_TABLE  (namelist%vegtyp, :)
     this%RHOS   = namelist%RHOS_TABLE  (namelist%vegtyp, :)
     this%TAUL   = namelist%TAUL_TABLE  (namelist%vegtyp, :)
@@ -218,6 +241,7 @@ contains
     this%kdt    = this%refkdt * this%dksat(1) / this%refdk
     this%csoil  = namelist%csoil
     this%Z0     = namelist%Z0     ! orig = 0.002 in energy() as a fixed parameter
+    this%CZIL   = namelist%CZIL
     this%frzx   = 0.15 * (this%smcmax(1) / this%smcref(1)) * (0.412 / 0.468)
     this%SSI    = namelist%SSI  
     this%MFSNO  = namelist%MFSNO  
