@@ -336,10 +336,10 @@ contains
     energy%PSN  = energy%PSNSUN * energy%LAISUN + energy%PSNSHA * energy%LAISHA
     
     ! calculate 3L snow & 4L soil temperatures
-    CALL TSNOSOI (parameters, levels, domain, energy%ICE, water%ISNOW   , & ! in
-                  energy%SSOIL, energy%DF, energy%HCPCT, & !in
-                  energy%SAG, water%SNOWH, TG, & !in
-                  energy%STC     )                                          ! inout
+    CALL TSNOSOI (parameters, levels, domain, options, forcing,                   & !in
+                  energy%ICE, water%ISNOW, energy%SSOIL, energy%DF, energy%HCPCT, & !in
+                  energy%SAG, water%SNOWH, TG,                                    & !in
+                  energy%STC     )                                                  !inout
     
     ! AW:  need to decide what to do with STC if no subsurface will be simulated
     !      ie, should soil layers be 0C if there is snow and TGB if not? 
