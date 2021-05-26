@@ -206,7 +206,7 @@ contains
       energy%LATHEAV = parameters%HSUB
       energy%frozen_canopy = .true.
     END IF
-    energy%GAMMAV = CPAIR*SFCPRS/(0.622*energy%LATHEAV)
+    energy%GAMMAV = CPAIR*forcing%SFCPRS/(0.622*energy%LATHEAV)
 
     IF (TG .GT. parameters%TFRZ) THEN
      energy%LATHEAG = parameters%HVAP
@@ -215,7 +215,7 @@ contains
       energy%LATHEAG = parameters%HSUB
       energy%frozen_ground = .true.
     END IF
-    energy%GAMMAG = CPAIR*SFCPRS/(0.622*energy%LATHEAG)
+    energy%GAMMAG = CPAIR*forcing%SFCPRS/(0.622*energy%LATHEAG)
 
     ! next block commented out in orig code
     !IF (SFCTMP .GT. parameters%TFRZ) THEN
@@ -241,8 +241,8 @@ contains
       energy%SHC       = 0.
       energy%IRG       = 0.
       energy%SHG       = 0.
-      EVG              = 0.
-      EVC              = 0.
+      energy%EVG       = 0.
+      energy%EVC       = 0.
       energy%TR        = 0.
       energy%GHV       = 0.
       PSNSUN           = 0.
@@ -256,9 +256,9 @@ contains
       energy%RB        = 0.
     END IF
 
-    TGB = TG
+    energy%TGB = TG
     CMB = energy%CM
-    CHB = energy%CH
+    energy%CHB = energy%CH
 
     CALL BareFluxMain (domain, levels, options, parameters, forcing, energy, water)
 
@@ -281,7 +281,7 @@ contains
       energy%TS    = FVEG * energy%TV        + (1.0 - FVEG) * energy%TGB
       energy%CM    = FVEG * CMV       + (1.0 - FVEG) * CMB      ! better way to average?
       energy%CH    = FVEG * energy%CHV       + (1.0 - FVEG) * energy%CHB
-      energy%Q1    = FVEG * (EAH*0.622/(energy%SFCPRS - 0.378*EAH)) + (1.0 - FVEG)*energy%QSFC
+      energy%Q1    = FVEG * (EAH*0.622/(forcing%SFCPRS - 0.378*EAH)) + (1.0 - FVEG)*energy%QSFC
       energy%Q2E   = FVEG * energy%Q2V       + (1.0 - FVEG) * energy%Q2B
       energy%Z0WRF = Z0M
     ELSE
@@ -350,7 +350,7 @@ contains
         energy%TGV = parameters%TFRZ
         energy%TGB = parameters%TFRZ
         IF (parameters%VEG .AND. FVEG > 0) THEN
-          TG           = FVEG * energy%T    + (1.0 - FVEG) * energy%TGB
+          TG           = FVEG * energy%TGV  + (1.0 - FVEG) * energy%TGB
           energy%TS    = FVEG * TV          + (1.0 - FVEG) * energy%TGB
         ELSE
           TG           = energy%TGB
