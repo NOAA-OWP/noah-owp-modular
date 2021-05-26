@@ -430,7 +430,7 @@ contains
         energy%IRG = CIR * (energy%TG)**4 - EMG*(1.-EMV)*LWDN - EMG*EMV*parameters%SB*TV**4
         energy%SHG = CSH * (energy%TG  - TAH)
         energy%EVG = CEV * (ESTG*RHSUR - EAH)
-        energy%GH  = energy%SAG+PAHG - (energy%IRG+energy%SHG+energy%EVG)
+        energy%GH  = energy%SAG + energy%PAHG - (energy%IRG+energy%SHG+energy%EVG)
       END IF
     END IF
 
@@ -575,7 +575,6 @@ contains
       EMG      => energy%EMG         ,&   ! intent(in)    : real ground emissivity
       LWDN     => energy%LWDN        ,&   ! intent(inout) : real atmospheric longwave radiation (w/m2)
       CPAIR    => parameters%CPAIR   ,&   ! intent(in)    : real heat capacity dry air at const pres (j/kg/k)
-   
       UR       => forcing%UR          &   ! intent(in)    : real roughness length, momentum (m)  
     ) ! ---- end associate block --------------------------------------------------------------------
     
@@ -650,12 +649,12 @@ contains
       CEV = RHOAIR*CPAIR/energy%GAMMA/(energy%RSURF+RAWB)
 
       ! surface fluxes and dtg
-      IRB = CIR * TGB**4 - EMG*LWDN
-      SHB = CSH * (TGB - SFCTMP)
-      EVB = CEV * (ESTG*energy%RHSUR - forcing%EAIR)
-      GHB = CGH * (TGB - energy%STC(water%ISNOW+1))
+      energy%IRB = CIR * TGB**4 - EMG*LWDN
+      energy%SHB = CSH * (TGB - SFCTMP)
+      energy%EVB = CEV * (ESTG*energy%RHSUR - forcing%EAIR)
+      energy%GHB = CGH * (TGB - energy%STC(water%ISNOW+1))
 
-      B   = energy%SAG-energy%IRB-energy%SHB-energy%EVB-energy%GHB+PAHB
+      B   = energy%SAG-energy%IRB-energy%SHB-energy%EVB-energy%GHB + energy%PAHB
       A   = 4.*CIR*TGB**3 + CSH + CEV*DESTG + CGH
       DTG = B/A
 
