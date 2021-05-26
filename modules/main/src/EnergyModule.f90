@@ -360,7 +360,7 @@ contains
     END IF
 
     ! Energy released or consumed by snow & frozen soil
-    CALL PHASECHANGE (parameters, domain, energy, water, levels%NSNOW, levels%NSOIL)
+    CALL PHASECHANGE (parameters, domain, energy, water, options, levels%NSNOW, levels%NSOIL)
                       
   END SUBROUTINE EnergyMain   
 

@@ -165,7 +165,7 @@ program snow_driver
   forcing%JULIAN   = 45.0       ! Setting arbitrary julian day
   forcing%YEARLEN  = 365        ! Setting year to be normal (i.e. not a leap year)  
   forcing%FOLN     = 1.0        ! foliage nitrogen concentration (%); for now, set to nitrogen saturation
-  
+  forcing%TBOT     = 285.0      ! bottom condition for soil temperature [K]
 
   ! other variables
   ntime         =  nint(namelist%maxtime * 3600.0 / namelist%dt)
