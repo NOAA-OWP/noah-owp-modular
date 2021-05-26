@@ -390,9 +390,10 @@ contains
     namelist / forcing         / preciprate,precip_duration,dry_duration,&
                                  precipitating,uwind,vwind,ZREF
     namelist / model_options   / precip_phase_option,runoff_option,drainage_option,frozen_soil_option,dynamic_vic_option,&
-                                 dynamic_veg_option,snow_albedo_option,radiative_transfer_option,soil_temp_boundary_option,&
+                                 dynamic_veg_option,snow_albedo_option,radiative_transfer_option,sfc_drag_coeff_option,&
+                                 canopy_stom_resist_option,crop_model_option,snowsoil_temp_time_option,soil_temp_boundary_option,&
                                  supercooled_water_option,stomatal_resistance_option,evap_srfc_resistance_option
-    namelist / structure       / isltyp,nsoil,nsnow,structure_option,soil_depth,&
+    namelist / structure       / isltyp,nsoil,nsnow,nveg,structure_option,soil_depth,&
                                  vegtyp,croptype,sfctyp,soilcolor
     namelist / fixed_initial   / zsoil,dzsnso,sice,sh2o
     namelist / uniform_initial / initial_uniform,initial_sh2o_value,&
@@ -475,6 +476,7 @@ contains
     this%isltyp           = isltyp
     this%nsoil            = nsoil
     this%nsnow            = nsnow
+    this%nveg             = nveg
     this%structure_option = structure_option
     this%soil_depth       = soil_depth
     this%vegtyp           = vegtyp
