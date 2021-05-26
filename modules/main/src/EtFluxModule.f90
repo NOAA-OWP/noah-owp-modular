@@ -690,7 +690,7 @@ contains
         energy%IRB = CIR * TGB**4 - EMG*LWDN
         energy%SHB = CSH * (TGB        - SFCTMP)
         energy%EVB = CEV * (ESTG*energy%RHSUR - forcing%EAIR )          !ESTG reevaluate ?
-        energy%GHB = energy%SAG+PAHB - (energy%IRB+energy%SHB+energy%EVB)
+        energy%GHB = energy%SAG + energy%PAHB - (energy%IRB+energy%SHB+energy%EVB)
       END IF
     END IF
 
@@ -771,7 +771,7 @@ contains
     MOZG = 0.; MOLG = 0.
 
     IF(ITER > 1) THEN
-      TMP1 = VKC * (parameters%GRAV/TAH) * HG/(RHOAIR*parameters%CPAIR)
+      TMP1 = parameters%VKC * (parameters%GRAV/TAH) * HG/(RHOAIR*parameters%CPAIR)
       IF (ABS(TMP1) .LE. parameters%MPE) TMP1 = parameters%MPE
       MOLG = -1. * FV**3 / TMP1
       MOZG = MIN( (ZPD-Z0MG)/MOLG, 1.)
@@ -797,7 +797,7 @@ contains
     TMPRAH2 = HCAN*EXP(CWPC) / CWPC * (TMP1-TMP2)
 
     ! aerodynamic resistances raw and rah between heights zpd+z0h and z0hg.
-    KH = MAX ( VKC*FV*(HCAN-ZPD), parameters%MPE )
+    KH = MAX ( parameters%VKC*FV*(HCAN-ZPD), parameters%MPE )
     RAMG = 0.
     RAHG = TMPRAH2 / KH
     RAWG = RAHG
@@ -837,8 +837,6 @@ contains
     ! output
     REAL, INTENT(OUT)   :: RS     !leaf stomatal resistance (s/m)
     REAL, INTENT(OUT)   :: PSN    !foliage photosynthesis (umol co2 /m2/ s) [always +]
-    ! inout
-    !REAL                :: RLB    !boundary layer resistance (s m2 / umol)
 
     ! ------------------------ local variables ----------------------------------------------------
     INTEGER :: ITER     !iteration index
@@ -846,6 +844,7 @@ contains
     DATA NITER /3/
     SAVE NITER
 
+    REAL :: RLB         !boundary layer resistance (s m2 / umol)
     REAL :: AB          !used in statement functions
     REAL :: BC          !used in statement functions
     REAL :: TC          !foliage temperature (degree Celsius)
@@ -878,7 +877,7 @@ contains
     IF (APAR .LE. 0.) RETURN
 
     FNF = MIN( FOLN/MAX(parameters%MPE,parameters%FOLNMX), 1.0 )
-    TC  = TV-TFRZ
+    TC  = TV-parameters%TFRZ
     PPF = 4.6*APAR
     J   = PPF*parameters%QE25
     KC  = parameters%KC25 * F1(parameters%AKC, TC)
@@ -1109,7 +1108,7 @@ contains
        MOZ2 = 0.0
     ELSE
        TVIR = (1. + 0.61*QAIR) * SFCTMP
-       TMP1 = VKC * (parameters%GRAV/TVIR) * H/(RHOAIR*parameters%CPAIR)
+       TMP1 = parameters%VKC * (parameters%GRAV/TVIR) * H/(RHOAIR*parameters%CPAIR)
        IF (ABS(TMP1) .LE. parameters%MPE) TMP1 = parameters%MPE
        MOL  = -1. * FV**3 / TMP1
        MOZ  = MIN( (ZLVL-ZPD)/MOL, 1.)
@@ -1176,13 +1175,13 @@ contains
     IF(ABS(CHFH) <= parameters%MPE) CHFH = parameters%MPE
     IF(ABS(CM2FM2) <= parameters%MPE) CM2FM2 = parameters%MPE
     IF(ABS(CH2FH2) <= parameters%MPE) CH2FH2 = parameters%MPE
-    CM  = VKC*VKC/(CMFM*CMFM)
-    CH  = VKC*VKC/(CMFM*CHFH)
-    CH2  = VKC*VKC/(CM2FM2*CH2FH2)
+    CM  = parameters%VKC*parameters%VKC/(CMFM*CMFM)
+    CH  = parameters%VKC*parameters%VKC/(CMFM*CHFH)
+    CH2  = parameters%VKC*parameters%VKC/(CM2FM2*CH2FH2)
         
     ! friction velocity
     FV = UR * SQRT(CM)
-    CH2  = VKC*FV/CH2FH2
+    CH2  = parameters%VKC*FV/CH2FH2
 
   END SUBROUTINE SFCDIF1
 
