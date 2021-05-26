@@ -22,8 +22,8 @@ module SnowSoilTempModule
 contains
   
   ! == begin tsnosoi ==================================================================================
-  SUBROUTINE TSNOSOI (parameters, levels, domain, options, ICE, ISNOW,   & ! in
-                      SSOIL, DF, HCPCT,                                  & ! in
+  SUBROUTINE TSNOSOI (parameters, levels, domain, options, forcing,      & ! in
+                      ICE, ISNOW, SSOIL, DF, HCPCT,                      & ! in
                       SAG, SNOWH, TG,                                    & ! in
                       STC     )                                            ! inout
     ! --------------------------------------------------------------------------------------------------
@@ -35,9 +35,10 @@ contains
     ! --------------------------------------------------------------------------------------------------
     ! input
     type (parameters_type), intent(in) :: parameters
-    type (levels_type), intent(in)     :: levels
-    type (domain_type), intent(in)     :: domain
-    type (options_type), intent(in)    :: options
+    type (levels_type),     intent(in) :: levels
+    type (domain_type),     intent(in) :: domain
+    type (options_type),    intent(in) :: options
+    type (forcing_type),    intent(in) :: forcing
     INTEGER,                         INTENT(IN)  :: ICE    ! 1 if sea ice, -1 if glacier, 0 if no land ice (seasonal snow)
     INTEGER,                         INTENT(IN)  :: ISNOW  ! actual no of snow layers
     REAL,                            INTENT(IN)  :: SSOIL  ! ground heat flux (w/m2)
@@ -86,7 +87,7 @@ contains
     IF(options%OPT_TBOT == 1) THEN
        EFLXB2 = 0.
     ELSE IF(options%OPT_TBOT == 2) THEN
-       EFLXB2 = DF(levels%NSOIL) * (TBOT - STC(levels%NSOIL)) / &
+       EFLXB2 = DF(levels%NSOIL) * (forcing%TBOT - STC(levels%NSOIL)) / &
             (0.5 * (domain%ZSNSO(levels%NSOIL-1) + domain%ZSNSO(levels%NSOIL)) - ZBOTSNO)
     END IF
 
@@ -410,7 +411,7 @@ contains
       DO J = 1, NSOIL
         IF (options%OPT_FRZ == 1) THEN
           IF(STC(J) < parameters%TFRZ) THEN
-            SMP = parameters%HFUS * (TFRZ-STC(J))/(parameters%GRAV*STC(J))             ! (m)
+            SMP = parameters%HFUS * (parameters%TFRZ-STC(J))/(parameters%GRAV*STC(J))             ! (m)
             SUPERCOOL(J) = parameters%SMCMAX(J) * (SMP/parameters%PSISAT(J))**(-1./parameters%BEXP(J))
             SUPERCOOL(J) = SUPERCOOL(J) * domain%DZSNSO(J)*1000.            ! (mm)
           END IF
