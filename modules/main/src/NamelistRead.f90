@@ -109,6 +109,10 @@ type, public :: namelist_type
   real, dimension(20)     ::   RGL            ! Parameter used in radiation stress function
   real, dimension(20)     ::   RSMIN          ! Minimum stomatal resistance [s m-1]
   real, dimension(20)     ::   HS             ! Parameter used in vapor pressure deficit function
+  real, dimension(20)     ::   AKC            ! q10 for kc25
+  real, dimension(20)     ::   AKO            ! q10 for ko25
+  real, dimension(20)     ::   AVCMAX         ! q10 for vcmx25
+  real, dimension(20)     ::   RSMAX          ! Maximal stomatal resistance [s m-1]
   real                    ::   CWP            ! canopy wind absorption coefficient (formerly CWPVT)
   real                    ::   C3PSN          ! photosynth. pathway: 0. = c4, 1. = c3 
   real                    ::   DLEAF          ! characteristic leaf dimension (m)
@@ -297,6 +301,10 @@ contains
     real, dimension(20)     ::   RGL            ! Parameter used in radiation stress function
     real, dimension(20)     ::   RSMIN          ! Minimum stomatal resistance [s m-1]
     real, dimension(20)     ::   HS             ! Parameter used in vapor pressure deficit function
+    real, dimension(20)     ::   AKC            ! q10 for kc25
+    real, dimension(20)     ::   AKO            ! q10 for ko25
+    real, dimension(20)     ::   AVCMAX         ! q10 for vcmx25
+    real, dimension(20)     ::   RSMAX          ! Maximal stomatal resistance [s m-1]
     real                    ::   CWP            ! canopy wind absorption coefficient (formerly CWPVT)
     real                    ::   C3PSN          ! photosynth. pathway: 0. = c4, 1. = c3 
     real                    ::   DLEAF          ! characteristic leaf dimension (m)
@@ -386,7 +394,7 @@ contains
                                  BATS_COSZ,BATS_VIS_NEW,BATS_NIR_NEW,BATS_VIS_AGE,BATS_NIR_AGE,BATS_VIS_DIR,BATS_NIR_DIR,&
                                  RSURF_SNOW,RSURF_EXP
     namelist / veg_parameters  / CH2OP,NROOT,HVT,HVB,TMIN,SHDFAC,SHDMAX,Z0MVT,RC,XL,&
-                                 BP,FOLNMX,QE25,VCMX25,MP,RGL,RSMIN,HS,&
+                                 BP,FOLNMX,QE25,VCMX25,MP,RGL,RSMIN,HS,AKC,AKO,AVCMX,RSMAX,&
                                  CWP,C3PSN,DLEAF,KC25,KO25,&
                                  RHOL_VIS,RHOL_NIR,RHOS_VIS,RHOS_NIR,TAUL_VIS,TAUL_NIR,TAUS_VIS,TAUS_NIR,&
                                  LAI_JAN,LAI_FEB,LAI_MAR,LAI_APR,LAI_MAY,LAI_JUN,&
@@ -558,6 +566,10 @@ contains
     this%RGL     = RGL
     this%RSMIN   = RSMIN
     this%HS      = HS
+    this%AKC     = AKC
+    this%AKO     = AKO
+    this%AVCMX   = AVCMX
+    this%RSMAX   = RSMAX
     this%CWP     = CWP
     this%C3PSN   = C3PSN
     this%DLEAF   = DLEAF

@@ -55,6 +55,10 @@ type, public :: parameters_type
   real                            :: RGL    ! Parameter used in radiation stress function
   real                            :: RSMIN  ! Minimum stomatal resistance [s m-1]
   real                            :: HS     ! Parameter used in vapor pressure deficit function
+  real                            :: AKC    ! q10 for kc25
+  real                            :: AKO    ! q10 for ko25
+  real                            :: AVCMAX ! q10 for vcmx25
+  real                            :: RSMAX  ! Maximal stomatal resistance [s m-1]
   real                            :: CWP    ! canopy wind absorption coefficient (formerly CWPVT)
   real                            :: C3PSN  ! photosynth. pathway: 0. = c4, 1. = c3 [by vegtype]
   real                            :: DLEAF  ! characteristic leaf dimension (m)
@@ -227,6 +231,10 @@ contains
     this%RGL    = namelist%RGL (namelist%vegtyp)
     this%RSMIN  = namelist%RSMIN (namelist%vegtyp)
     this%HS     = namelist%HS (namelist%vegtyp)
+    this%AKC    = namelist%AKC (namelist%vegtyp)
+    this%AKO    = namelist%AKO (namelist%vegtyp)
+    this%AVCMX  = namelist%AVCMX (namelist%vegtyp)
+    this%RSMAX  = namelist%RSMAX (namelist%vegtyp)
     this%CWP    = namelist%CWP
     this%c3psn  = namelist%c3psn
     this%DLEAF  = namelist%DLEAF
