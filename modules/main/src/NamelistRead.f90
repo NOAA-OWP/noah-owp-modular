@@ -55,7 +55,7 @@ type, public :: namelist_type
   integer       :: crop_model_option
   integer       :: canopy_stom_resist_option
   integer       :: snowsoil_temp_time_option    
-
+  integer       :: soil_temp_boundary_option
 
   !--------------------!
   !  soil parameters   !
@@ -83,6 +83,7 @@ type, public :: namelist_type
   real                ::   csoil  ! volumetric soil heat capacity [j/m3/K]
   real                ::   Z0     ! bare soil roughness length (m)
   real                ::   CZIL   ! Parameter used in the calculation of the roughness length for heat, originally in GENPARM.TBL
+  real                ::   ZBOT   ! Depth (m) of lower boundary soil temperature, originally in GENPARM.TBL
 
   !--------------------!
   !  Vegetation parameters   !
@@ -248,6 +249,7 @@ contains
     integer       :: crop_model_option
     integer       :: canopy_stom_resist_option
     integer       :: snowsoil_temp_time_option    
+    integer       :: soil_temp_boundary_option
 
     !--------------------!
     !  soil parameters   !
@@ -275,6 +277,7 @@ contains
     real                ::   csoil  ! volumetric soil heat capacity [j/m3/K]
     real                ::   Z0     ! bare soil roughness length (m)
     real                ::   CZIL   ! Parameter used in the calculation of the roughness length for heat, originally in GENPARM.TBL
+    real                ::   ZBOT   ! Depth (m) of lower boundary soil temperature, originally in GENPARM.TBL
 
     !--------------------!
     !  Vegetation parameters   !
@@ -381,7 +384,7 @@ contains
     namelist / forcing         / preciprate,precip_duration,dry_duration,&
                                  precipitating,uwind,vwind,ZREF
     namelist / model_options   / precip_phase_option,runoff_option,drainage_option,frozen_soil_option,dynamic_vic_option,&
-                                 dynamic_veg_option,snow_albedo_option,radiative_transfer_option
+                                 dynamic_veg_option,snow_albedo_option,radiative_transfer_option,soil_temp_boundary_option
     namelist / structure       / isltyp,nsoil,nsnow,structure_option,soil_depth,&
                                  vegtyp,croptype,sfctyp,soilcolor
     namelist / fixed_initial   / zsoil,dzsnso,sice,sh2o
@@ -389,7 +392,7 @@ contains
                                  initial_sice_value
     namelist / soil_parameters / bb,satdk,satdw,maxsmc,satpsi,wltsmc, &
                                  refsmc,pctsand,pctclay,bvic,AXAJ,BXAJ,XXAJ,&
-                                 BBVIC,G,QUARTZ,slope,refkdt,refdk,CSOIL,Z0,CZIL
+                                 BBVIC,G,QUARTZ,slope,refkdt,refdk,CSOIL,Z0,CZIL,ZBOT
     namelist / snow_parameters / SSI,MFSNO,Z0SNO,SWEMX,TAU0,GRAIN_GROWTH,EXTRA_GROWTH,DIRT_SOOT,&
                                  BATS_COSZ,BATS_VIS_NEW,BATS_NIR_NEW,BATS_VIS_AGE,BATS_NIR_AGE,BATS_VIS_DIR,BATS_NIR_DIR,&
                                  RSURF_SNOW,RSURF_EXP
@@ -489,6 +492,7 @@ contains
     this%dynamic_veg_option  = dynamic_veg_option
     this%snow_albedo_option  = snow_albedo_option
     this%radiative_transfer_option  = radiative_transfer_option
+    this%soil_temp_boundary_option  = soil_temp_boundary_option
 
     this%bb      = bb
     this%satdk   = satdk
@@ -512,6 +516,7 @@ contains
     this%csoil   = csoil
     this%Z0      = Z0
     this%CZIL    = CZIL
+    this%ZBOT    = ZBOT
     
     this%RHOL_TABLE(1:20, 1) = RHOL_VIS(1:20)
     this%RHOL_TABLE(1:20, 2) = RHOL_NIR(1:20)

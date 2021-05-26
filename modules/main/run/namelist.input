@@ -32,6 +32,7 @@
   canopy_stom_resist_option         = 1
   crop_model_option                 = 0
   snowsoil_temp_time_option         = 3
+  soil_temp_boundary_option         = 2
 /
 
 &structure
@@ -84,7 +85,8 @@
    refdk = 2.0e-6
    csoil = 2.0e+6 ! volumetric soil heat capacity [j/m3/K]
       Z0 = 0.002  ! bare soil roughness length (m)
-    CZIL = 0.1.   ! Parameter used in the calculation of the roughness length for heat, originally in GENPARM.TBL
+    CZIL = 0.1    ! Parameter used in the calculation of the roughness length for heat, originally in GENPARM.TBL
+    ZBOT = -8.0   ! Depth (m) of lower boundary soil temperature, originally in GENPARM.TBL
 /
 
 &snow_parameters
