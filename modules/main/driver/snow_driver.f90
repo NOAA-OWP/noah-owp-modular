@@ -200,8 +200,8 @@ program snow_driver
     !---------------------------------------------------------------------
     ! it would handle the following plus a lot of other conversions, reassignments, settings
     forcing%P_ML     = forcing%SFCPRS              ! surf press estimated at model level [Pa], can avg multi-level nwp
-    forcing%O2PP     = parameters%O2 * P_ML        ! atmospheric co2 concentration partial pressure (Pa)
-    forcing%CO2PP    = parameters%CO2 * P_ML       ! atmospheric o2 concentration partial pressure (Pa) 
+    forcing%O2PP     = parameters%O2 * forcing%P_ML        ! atmospheric co2 concentration partial pressure (Pa)
+    forcing%CO2PP    = parameters%CO2 * forcing%P_ML       ! atmospheric o2 concentration partial pressure (Pa) 
      
     energy%TAH = forcing%SFCTMP                         ! assign canopy temp with forcing air temp (K) 
     QV_CURR    = forcing%Q2 / (1 - forcing%Q2)          ! mixing ratio, assuming input forcing Q2 is specific hum.
