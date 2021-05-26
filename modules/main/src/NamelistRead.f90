@@ -57,6 +57,8 @@ type, public :: namelist_type
   integer       :: snowsoil_temp_time_option    
   integer       :: soil_temp_boundary_option
   integer       :: supercooled_water_option
+  integer       :: stomatal_resistance_option
+  integer       :: evap_srfc_resistance_option
 
   !--------------------!
   !  soil parameters   !
@@ -252,6 +254,8 @@ contains
     integer       :: snowsoil_temp_time_option    
     integer       :: soil_temp_boundary_option
     integer       :: supercooled_water_option
+    integer       :: stomatal_resistance_option
+    integer       :: evap_srfc_resistance_option
 
     !--------------------!
     !  soil parameters   !
@@ -387,7 +391,7 @@ contains
                                  precipitating,uwind,vwind,ZREF
     namelist / model_options   / precip_phase_option,runoff_option,drainage_option,frozen_soil_option,dynamic_vic_option,&
                                  dynamic_veg_option,snow_albedo_option,radiative_transfer_option,soil_temp_boundary_option,&
-                                 supercooled_water_option
+                                 supercooled_water_option,stomatal_resistance_option,evap_srfc_resistance_option
     namelist / structure       / isltyp,nsoil,nsnow,structure_option,soil_depth,&
                                  vegtyp,croptype,sfctyp,soilcolor
     namelist / fixed_initial   / zsoil,dzsnso,sice,sh2o
@@ -497,6 +501,8 @@ contains
     this%radiative_transfer_option  = radiative_transfer_option
     this%soil_temp_boundary_option  = soil_temp_boundary_option
     this%supercooled_water_option   = supercooled_water_option
+    this%stomatal_resistance_option = stomatal_resistance_option
+    this%evap_srfc_resistance_option= evap_srfc_resistance_option
 
     this%bb      = bb
     this%satdk   = satdk
