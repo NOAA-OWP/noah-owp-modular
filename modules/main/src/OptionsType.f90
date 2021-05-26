@@ -34,7 +34,16 @@ type, public :: options_type
   integer :: opt_frz    ! options for supercooled liquid water (or ice fraction)
                         ! **1 -> no iteration (Niu and Yang, 2006 JHM)
                         !   2 -> nonlinear effects, less permeable (old)
-  
+  integer :: opt_btr    ! options for soil moisture factor for stomatal resistance
+                        ! **1 -> Noah (soil moisture) 
+                        !   2 -> CLM  (matric potential)
+                        !   3 -> SSiB (matric potential)
+  integer :: opt_rsf    ! options for surface resistent to evaporation/sublimation
+                        ! **1 -> Sakaguchi and Zeng, 2009
+                        !   2 -> Sellers (1992)
+                        !   3 -> adjusted Sellers to decrease RSURF for wet soil
+                        !   4 -> option 1 for non-snow; rsurf = rsurf_snow for snow (set in MPTABLE); AD v3.8
+
   contains
 
     procedure, public  :: Init         
@@ -71,6 +80,8 @@ contains
     this%opt_stc   = huge(1)    
     this%opt_tbot   = huge(1)    
     this%opt_frz    = huge(1)    
+    this%opt_btr    = huge(1)    
+    this%opt_rsf    = huge(1)    
 
   end subroutine InitDefault
 
@@ -93,6 +104,8 @@ contains
     this%opt_stc   = namelist%snowsoil_temp_time_option 
     this%opt_tbot  = namelist%soil_temp_boundary_option 
     this%opt_frz   = namelist%supercooled_water_option
+    this%opt_btr   = namelist%stomatal_resistance_option
+    this%opt_rsf   = namelist%evap_srfc_resistance_option
 
   end subroutine InitTransfer
 

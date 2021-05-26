@@ -67,7 +67,7 @@ contains
       LWDN     => energy%LWDN        ,&   ! intent(inout) : atmospheric longwave radiation (w/m2)
       FVEG     => parameters%FVEG    ,&   ! intent(in)    : greeness vegetation fraction (-)
       CPAIR    => parameters%CPAIR   ,&   ! intent(in)    : heat capacity dry air at const pres (j/kg/k)
-      FSNO     => water%FSNO         ,&   ! REAL, INTENT(OUT)   : fraction of grid cell with snow cover
+      FSNO     => water%FSNO          &   ! REAL, INTENT(OUT)   : fraction of grid cell with snow cover
     )  
     ! ---- end associate block --------------------------------------------------------------------
 
@@ -361,9 +361,9 @@ contains
 
     ! Energy released or consumed by snow & frozen soil
     CALL PHASECHANGE (parameters, domain, energy, water, options, levels%NSNOW, levels%NSOIL)
-                      
+
+    END associate ! terminate associate block
+
   END SUBROUTINE EnergyMain   
-
-
 
 END module EnergyModule
