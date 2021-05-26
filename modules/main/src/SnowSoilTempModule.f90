@@ -78,7 +78,7 @@ contains
               ISNOW, STC, ZBOTSNO, DF, HCPCT, SSOIL, PHI,               & ! in 
               AI, BI, CI, RHSTS, EFLXB)                                   ! out
 
-    CALL HSTEP (domain%NSNOW, domain%NSOIL, ISNOW, domain%DT,           & ! in
+    CALL HSTEP (levels%NSNOW, levels%NSOIL, ISNOW, domain%DT,           & ! in
                 AI, BI, CI, RHSTS, STC)                                 & ! inout
 
     ! update ground heat flux just for energy check, but not for final output

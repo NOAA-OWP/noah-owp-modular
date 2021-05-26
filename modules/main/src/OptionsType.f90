@@ -28,7 +28,9 @@ type, public :: options_type
                         !   1 -> semi-implicit; flux top boundary condition
                         !   2 -> full implicit (original Noah); temperature top boundary condition
                         !   3 -> same as 1, but FSNO for TS calculation (generally improves snow; v3.7)
-  
+  integer :: opt_tbot   ! options for lower boundary condition of soil temperature 
+                        !   1 -> zero heat flux from bottom (ZBOT and TBOT not used)
+                        ! **2 -> TBOT at ZBOT (8m) read from a file (original Noah)
   
   contains
 
@@ -64,6 +66,7 @@ contains
     this%opt_crs   = huge(1)
     this%opt_crop  = huge(1)
     this%opt_stc   = huge(1)    
+    this%opt_tbot   = huge(1)    
     
 
   end subroutine InitDefault
@@ -85,6 +88,7 @@ contains
     this%opt_crs   = namelist%canopy_stom_resist_option    
     this%opt_crop  = namelist%crop_model_option    
     this%opt_stc   = namelist%snowsoil_temp_time_option 
+    this%opt_tbot  = namelist%soil_temp_boundary_option 
 
   end subroutine InitTransfer
 

@@ -28,6 +28,7 @@ type, public :: parameters_type
   real                            :: csoil  ! volumetric soil heat capacity [j/m3/K]
   real                            :: Z0     ! bare soil roughness length (m)
   real                            :: CZIL   ! Parameter used in the calculation of the roughness length for heat, originally in GENPARM.TBL
+  real                            :: ZBOT   ! Depth (m) of lower boundary soil temperature, originally in GENPARM.TBL
   real                            :: frzx   !
   real                            :: slope  ! drainage parameter
   real                            :: timean
@@ -250,6 +251,7 @@ contains
     this%csoil  = namelist%csoil
     this%Z0     = namelist%Z0     ! orig = 0.002 in energy() as a fixed parameter
     this%CZIL   = namelist%CZIL
+    this%ZBOT   = namelist%ZBOT
     this%frzx   = 0.15 * (this%smcmax(1) / this%smcref(1)) * (0.412 / 0.468)
     this%SSI    = namelist%SSI  
     this%MFSNO  = namelist%MFSNO  
