@@ -211,6 +211,8 @@ contains
         END IF
            RHSTS(K)  = EFLUX(K)/ (-DENOM(K))
     END DO
+    
+    end associate ! terminate the associate block
 
   END SUBROUTINE HRT
 
@@ -524,6 +526,8 @@ contains
       SH2O(J) =  MLIQ(J)            / (1000. * domain%DZSNSO(J))
       SMC(J)  = (MLIQ(J) + MICE(J)) / (1000. * domain%DZSNSO(J))
     END DO
+  
+    end associate ! terminate the associate block
    
   END SUBROUTINE PHASECHANGE
 
