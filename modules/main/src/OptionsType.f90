@@ -31,6 +31,9 @@ type, public :: options_type
   integer :: opt_tbot   ! options for lower boundary condition of soil temperature 
                         !   1 -> zero heat flux from bottom (ZBOT and TBOT not used)
                         ! **2 -> TBOT at ZBOT (8m) read from a file (original Noah)
+  integer :: opt_frz    ! options for supercooled liquid water (or ice fraction)
+                        ! **1 -> no iteration (Niu and Yang, 2006 JHM)
+                        !   2 -> nonlinear effects, less permeable (old)
   
   contains
 
@@ -67,7 +70,7 @@ contains
     this%opt_crop  = huge(1)
     this%opt_stc   = huge(1)    
     this%opt_tbot   = huge(1)    
-    
+    this%opt_frz    = huge(1)    
 
   end subroutine InitDefault
 
@@ -89,6 +92,7 @@ contains
     this%opt_crop  = namelist%crop_model_option    
     this%opt_stc   = namelist%snowsoil_temp_time_option 
     this%opt_tbot  = namelist%soil_temp_boundary_option 
+    this%opt_frz   = namelist%supercooled_water_option
 
   end subroutine InitTransfer
 

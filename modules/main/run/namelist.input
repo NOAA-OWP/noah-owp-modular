@@ -33,6 +33,7 @@
   crop_model_option                 = 0
   snowsoil_temp_time_option         = 3
   soil_temp_boundary_option         = 2
+  supercooled_water_option          = 1
 /
 
 &structure

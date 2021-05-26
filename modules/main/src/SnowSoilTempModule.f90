@@ -79,7 +79,7 @@ contains
               AI, BI, CI, RHSTS, EFLXB)                                   ! out
 
     CALL HSTEP (levels%NSNOW, levels%NSOIL, ISNOW, domain%DT,           & ! in
-                AI, BI, CI, RHSTS, STC)                                 & ! inout
+                AI, BI, CI, RHSTS, STC)                                   ! inout
 
     ! update ground heat flux just for energy check, but not for final output
     ! otherwise, it would break the surface energy balance
@@ -160,7 +160,7 @@ contains
     
     ! associate variables to keep variable names intact in the code below  
     associate(&
-      ZSNSO   => domain%ZSNSO     ! real,dim(-NSNOW+1:NSOIL), intent(in): snow/soil layerthickness [m]  
+      ZSNSO   => domain%ZSNSO     &! real,dim(-NSNOW+1:NSOIL), intent(in): snow/soil layerthickness [m]  
     )      
 
     DO K = ISNOW+1, NSOIL
@@ -179,10 +179,10 @@ contains
         ELSE IF (K == NSOIL) THEN
            DENOM(K)  = (ZSNSO(K-1) - ZSNSO(K)) * HCPCT(K)
            TEMP1     =  ZSNSO(K-1) - ZSNSO(K)
-           IF(OPT_TBOT == 1) THEN
+           IF(options%OPT_TBOT == 1) THEN
                BOTFLX     = 0. 
            END IF
-           IF(OPT_TBOT == 2) THEN
+           IF(options%OPT_TBOT == 2) THEN
                DTSDZ(K)  = (STC(K) - parameters%TBOT) / ( 0.5*(ZSNSO(K-1)+ZSNSO(K)) - ZBOT)
                BOTFLX    = -DF(K) * DTSDZ(K)
            END IF
@@ -329,16 +329,17 @@ contains
   
 
   ! == begin phasechange ==============================================================================
-  SUBROUTINE PHASECHANGE (parameters, domain, energy, water, NSNOW, NSOIL)
+  SUBROUTINE PHASECHANGE (parameters, domain, energy, water, options, NSNOW, NSOIL)
     ! ----------------------------------------------------------------------
     ! melting/freezing of snow water and soil water
     ! ----------------------------------------------------------------------
     IMPLICIT NONE
     ! inputs
     type (parameters_type), intent(in)              :: parameters
-    type (domain_type), intent(in)                  :: domain
-    type (energy_type), intent(in)                  :: energy
-    type (water_type), intent(in)                   :: water
+    type (domain_type),     intent(in)              :: domain
+    type (energy_type),     intent(in)              :: energy
+    type (water_type),      intent(in)              :: water
+    type (options_type),    intent(in)              :: options
     INTEGER, INTENT(IN)                             :: NSNOW   ! maximum no. of snow layers [=3]
     INTEGER, INTENT(IN)                             :: NSOIL   ! No. of soil layers [=4]
    
@@ -407,14 +408,14 @@ contains
 
     if(domain%IST == 1) then
       DO J = 1, NSOIL
-        IF (OPT_FRZ == 1) THEN
-          IF(STC(J) < TFRZ) THEN
+        IF (options%OPT_FRZ == 1) THEN
+          IF(STC(J) < parameters%TFRZ) THEN
             SMP = parameters%HFUS * (TFRZ-STC(J))/(parameters%GRAV*STC(J))             ! (m)
             SUPERCOOL(J) = parameters%SMCMAX(J) * (SMP/parameters%PSISAT(J))**(-1./parameters%BEXP(J))
             SUPERCOOL(J) = SUPERCOOL(J) * domain%DZSNSO(J)*1000.            ! (mm)
           END IF
         END IF
-        IF (OPT_FRZ == 2) THEN
+        IF (options%OPT_FRZ == 2) THEN
           CALL FRH2O (parameters, J, STC(J), SMC(J), SH2O(J), &  ! in
                       SUPERCOOL(J))                              ! out
           SUPERCOOL(J) = SUPERCOOL(J)*domain%DZSNSO(J)*1000.                ! (mm)
@@ -634,7 +635,7 @@ contains
       ! ----------------------------------------------------------------------
       IF (KCOUNT == 0) THEN
         write(message, '("Flerchinger used in NEW version. Iterations=", I6)') NLOG
-        #call wrf_message(trim(message))
+        !call wrf_message(trim(message))
         FK = ( ( (parameters%HFUS / (parameters%GRAV * ( - parameters%PSISAT(ISOIL))))*                    &
              ( (TKELV - parameters%TFRZ)/ TKELV))** ( -1/ BX))* parameters%SMCMAX(ISOIL)
         IF (FK < 0.02) FK = 0.02

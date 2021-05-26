@@ -27,6 +27,9 @@ type, public :: forcing_type
   real    :: CO2PP        ! atmospheric o2 concentration partial pressure (pa) 
   real    :: UU           ! wind speed in eastward dir (m/s)  
   real    :: VV           ! wind speed in northward dir (m/s)  
+  
+  ! surface inputs
+  real    :: TBOT         ! bottom condition for soil temperature [K]
 
   ! outputs
   real    :: UR     ! wind speed at reference height
@@ -90,7 +93,9 @@ contains
     this%PRCPHAIL  = huge(1.0)
     this%SOLDN     = huge(1.0)
     this%UU        = huge(1.0)
-    this%VV        = huge(1.0)    
+    this%VV        = huge(1.0)
+
+    this%TBOT      = huge(1.0)
 
     this%UR        = huge(1.0)
     this%THAIR     = huge(1.0)
