@@ -96,5 +96,6 @@ EtFluxModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyT
 SnowSoilTempModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
                ForcingType.o WaterType.o
 EnergyModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
-                ForcingType.o WaterType.o ThermalPropertiesModule.o ShortwaveRadiationModule.o PrecipHeatModule.o
+                ForcingType.o WaterType.o ThermalPropertiesModule.o ShortwaveRadiationModule.o \
+                PrecipHeatModule.o EtFluxModule.o SnowSoilTempModule.o
 

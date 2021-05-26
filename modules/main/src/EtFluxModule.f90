@@ -1093,7 +1093,7 @@ contains
   
     IF(ZLVL <= ZPD) THEN
        write(*,*) 'WARNING: critical problem: ZLVL <= ZPD; model stops'
-       call wrf_error_fatal("STOP in Noah-MP")
+       !call wrf_error_fatal("STOP in Noah-MP")
     ENDIF
 
     TMPCM = LOG((ZLVL-ZPD) / Z0M)
@@ -1209,8 +1209,8 @@ contains
     REAL,   intent(OUT) :: USTAR
 
     ! local
-    REAL     ZZ, PSLMU, PSLMS, PSLHU, PSLHS
-    REAL     XX, PSPMU, YY, PSPMS, PSPHU, PSPHS
+    REAL     ZZ !,PSLMU, PSLMS, PSLHU, PSLHS
+    REAL     XX, YY !, PSPMU, PSPMS, PSPHU, PSPHS
     REAL     ZILFC, ZU, ZT, RDZ, CXCH
     REAL     DTHV, DU2, BTGH, ZSLU, ZSLT, RLOGU, RLOGT
     REAL     ZETALT, ZETALU, ZETAU, ZETAT, XLU4, XLT4, XU4, XT4

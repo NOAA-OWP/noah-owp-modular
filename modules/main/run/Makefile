@@ -32,6 +32,8 @@ OBJS = \
         ../src/AlbedoModule.o \
         ../src/ShortwaveRadiationModule.o \
         ../src/PrecipHeatModule.o \
+        ../src/EtFluxModule.o \
+        ../src/SnowSoilTempModule.o \
         ../src/EnergyModule.o \
 	../driver/snow_output.o \
 	../driver/snow_driver.o
