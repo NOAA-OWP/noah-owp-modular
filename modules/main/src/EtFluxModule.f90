@@ -947,7 +947,7 @@ contains
     REAL,                     INTENT(IN)  :: BTRAN ! soil moisture stress factor (orig RCSOIL in this subr.)
 
     ! outputs
-    REAL,                     INTENT(OUT) :: RS     ! canopy resistance per unit LAI
+    REAL,                     INTENT(OUT) :: RS     ! canopy resistance per unit LAI (formerly RC)
     REAL,                     INTENT(OUT) :: PSN    ! foliage photosynthesis (umolco2/m2/s)
 
     ! local params
@@ -963,7 +963,7 @@ contains
     ! ----------------------------------------------------------------------
     ! initialize canopy resistance multiplier terms.
     ! ----------------------------------------------------------------------
-    RC     = 0.0
+    RS     = 0.0
     RCS    = 0.0
     RCT    = 0.0
     RCQ    = 0.0
@@ -1333,8 +1333,8 @@ contains
       ELSE
         ZETALU = MIN (ZETALU,ZTMAX)
         ZETALT = MIN (ZETALT,ZTMAX)
-        PSMZ = PSLMS (ZETAU)
-        SIMM = PSLMS (ZETALU) - PSMZ + RLOGU
+        PSMZ = PSLMS (ZETAU, RRIC)
+        SIMM = PSLMS (ZETALU, RRIC) - PSMZ + RLOGU
         PSHZ = PSLHS (ZETAT)
         SIMH = PSLHS (ZETALT) - PSHZ + RLOGT
       END IF
@@ -1461,8 +1461,9 @@ contains
     PSLMU = -0.96* log (1.0-4.5* ZZ)
     return
   end function
-  function PSLMS (ZZ)
+  function PSLMS (ZZ, RRIC)
     real, intent(in)     :: ZZ
+    real, intent(in)     :: RRIC
     real                 :: PSLMS
     PSLMS = ZZ * RRIC -2.076* (1. -1./ (ZZ +1.))
     return
