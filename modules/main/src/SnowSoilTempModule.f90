@@ -338,8 +338,8 @@ contains
     ! inputs
     type (parameters_type), intent(in)              :: parameters
     type (domain_type),     intent(in)              :: domain
-    type (energy_type),     intent(in)              :: energy
-    type (water_type),      intent(in)              :: water
+    type (energy_type)                              :: energy
+    type (water_type)                               :: water
     type (options_type),    intent(in)              :: options
     INTEGER, INTENT(IN)                             :: NSNOW   ! maximum no. of snow layers [=3]
     INTEGER, INTENT(IN)                             :: NSOIL   ! No. of soil layers [=4]
