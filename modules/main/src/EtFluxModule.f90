@@ -1307,8 +1307,8 @@ contains
           XU   = SQRT (SQRT (XU4))
 
           XT = SQRT (SQRT (XT4))
-          PSMZ = PSPMU (XU)
-          SIMM = PSPMU (XLU) - PSMZ + RLOGU
+          PSMZ = PSPMU (XU, PIHF)
+          SIMM = PSPMU (XLU, PIHF) - PSMZ + RLOGU
           PSHZ = PSPHU (XT)
           SIMH = PSPHU (XLT) - PSHZ + RLOGT
        ELSE
@@ -1335,8 +1335,8 @@ contains
         ZETALT = MIN (ZETALT,ZTMAX)
         PSMZ = PSLMS (ZETAU, RRIC)
         SIMM = PSLMS (ZETALU, RRIC) - PSMZ + RLOGU
-        PSHZ = PSLHS (ZETAT)
-        SIMH = PSLHS (ZETALT) - PSHZ + RLOGT
+        PSHZ = PSLHS (ZETAT, RFAC)
+        SIMH = PSLHS (ZETALT, RFAC) - PSHZ + RLOGT
       END IF
 
     END IF
@@ -1474,17 +1474,19 @@ contains
     PSLHU = -0.96* log (1.0-4.5* ZZ)
     return
   end function
-  function PSLHS (ZZ)
+  function PSLHS (ZZ, RFAC)
     real, intent(in)     :: ZZ
+    real, intent(in)     :: RFAC
     real                 :: PSLHS
     PSLHS = ZZ * RFAC -2.076* (1. -1./ (ZZ +1.))
     return
   end function
   ! PAULSON'S SURFACE FUNCTIONS
-  function PSPMU (XX)
+  function PSPMU (XX, PIHF)
     real, intent(in)     :: XX
+    real, intent(in)     :: PIHF
     real                 :: PSPMU
-    PSPMU = -2.* log ( (XX +1.)*0.5) - log ( (XX * XX +1.)*0.5)+2.* ATAN (XX)  - PIHF     
+    PSPMU = -2.* log ( (XX +1.)*0.5) - log ( (XX * XX +1.)*0.5)+2.* ATAN (XX) - PIHF     
     return
   end function
   function PSPMS (YY)
