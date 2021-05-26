@@ -31,7 +31,7 @@ module EtFluxModule
   private ::    CANRES                  
   private ::    ESAT
   private ::    RAGRB
-  private ::    TDC, F1, PSLMU, PSMLS, PSLHU, PSLHS, PSPMU, PSPMS, PSPHU, PSPHS  ! statement functions
+  private ::    TDC, F1, PSLMU, PSLMS, PSLHU, PSLHS, PSPMU, PSPMS, PSPHU, PSPHS  ! statement functions
 
 contains
   
@@ -166,6 +166,8 @@ contains
       EMV      => energy%EMV         ,&   ! intent(in)    : vegetation emissivity
       EMG      => energy%EMG         ,&   ! intent(in)    : ground emissivity
       LWDN     => energy%LWDN        ,&   ! intent(inout) : atmospheric longwave radiation (w/m2)
+      RSSHA    => energy%RSSHA       ,&   ! intent(in)    : shaded leaf stomatal resistance (s/m)
+      RHSUR    => energy%RHSUR       ,&   ! intent(in)    : relative humidity in surface soil/snow air space (-)  
       FVEG     => parameters%FVEG    ,&   ! intent(in)    : greeness vegetation fraction (-)
       CPAIR    => parameters%CPAIR   ,&   ! intent(in)    : heat capacity dry air at const pres (j/kg/k)
       UR       => forcing%UR         )    ! intent(in)    : roughness length, momentum (m)  
@@ -405,7 +407,7 @@ contains
       energy%EVG = CEV * (ESTG*energy%RHSUR - EAH         )
       energy%GH  = CGH * (energy%TG         - energy%STC(water%ISNOW+1))
 
-      B = energy%SAG-energy%IRG-energy%SHG-energy%EVG-energy%GH+PAHG
+      B = energy%SAG-energy%IRG-energy%SHG-energy%EVG-energy%GH+energy%PAHG
       A = 4.*CIR*energy%TG**3+CSH+CEV*DESTG+CGH
       DTG = B/A
 

@@ -57,7 +57,7 @@ type, public :: parameters_type
   real                            :: HS     ! Parameter used in vapor pressure deficit function
   real                            :: AKC    ! q10 for kc25
   real                            :: AKO    ! q10 for ko25
-  real                            :: AVCMAX ! q10 for vcmx25
+  real                            :: AVCMX ! q10 for vcmx25
   real                            :: RSMAX  ! Maximal stomatal resistance [s m-1]
   real                            :: CWP    ! canopy wind absorption coefficient (formerly CWPVT)
   real                            :: C3PSN  ! photosynth. pathway: 0. = c4, 1. = c3 [by vegtype]
