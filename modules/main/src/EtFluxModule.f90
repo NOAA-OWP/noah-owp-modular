@@ -1108,7 +1108,7 @@ contains
        MOZ2 = 0.0
     ELSE
        TVIR = (1. + 0.61*QAIR) * SFCTMP
-       TMP1 = VKC * (parameters%GRAV/TVIR) * H/(RHOAIR*CPAIR)
+       TMP1 = VKC * (parameters%GRAV/TVIR) * H/(RHOAIR*parameters%CPAIR)
        IF (ABS(TMP1) .LE. parameters%MPE) TMP1 = parameters%MPE
        MOL  = -1. * FV**3 / TMP1
        MOZ  = MIN( (ZLVL-ZPD)/MOL, 1.)
