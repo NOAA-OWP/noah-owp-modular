@@ -9,8 +9,6 @@ private
 type, public :: forcing_type
 
   ! atmospheric inputs (meteorology, chemistry)
-  real    :: uwind        ! wind speed in u direction (m s-1)
-  real    :: vwind        ! wind speed in v direction (m s-1)
   real    :: SFCPRS       ! surface pressure (pa)
   real    :: SFCTMP       ! surface air temperature [k]
   real    :: Q2           ! mixing ratio (kg/kg)
@@ -21,6 +19,7 @@ type, public :: forcing_type
   real    :: PRCPGRPL     ! graupel entering land model [mm/s]           ! MB/AN : v3.7
   real    :: PRCPHAIL     ! hail entering land model [mm/s]              ! MB/AN : v3.7
   real    :: SOLDN        ! downward shortwave radiation (w/m2)
+  real    :: LWDN    ! atmospheric longwave radiation (w/m2)
   real    :: FOLN         ! foliage nitrogen concentration (%)
   real    :: P_ML         ! surf press estimated at model level [Pa], can avg multi-level nwp
   real    :: O2PP         ! atmospheric co2 concentration partial pressure (pa)
@@ -79,8 +78,6 @@ contains
 
     class(forcing_type) :: this
 
-    this%uwind     = huge(1.0)
-    this%vwind     = huge(1.0)
     this%SFCPRS    = huge(1.0)
     this%SFCPRS    = huge(1.0)
     this%SFCTMP    = huge(1.0)
@@ -92,6 +89,7 @@ contains
     this%PRCPGRPL  = huge(1.0)
     this%PRCPHAIL  = huge(1.0)
     this%SOLDN     = huge(1.0)
+    this%LWDN      = huge(1.0)  
     this%UU        = huge(1.0)
     this%VV        = huge(1.0)
 
@@ -116,9 +114,6 @@ contains
 
     class(forcing_type) :: this
     type(namelist_type) :: namelist
-
-    this%uwind      = namelist%uwind
-    this%vwind      = namelist%vwind
 
   end subroutine InitTransfer
 

@@ -27,8 +27,6 @@ type, public :: namelist_type
   integer       :: croptype
   integer       :: sfctyp
   integer       :: soilcolor
-  real          :: uwind
-  real          :: vwind
 
   real, allocatable, dimension(:) :: zsoil   ! depth of layer-bottom from soil surface
   real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
@@ -224,8 +222,6 @@ contains
     integer       :: croptype
     integer       :: sfctyp
     integer       :: soilcolor
-    real          :: uwind
-    real          :: vwind
 
     real, allocatable, dimension(:) :: zsoil   ! depth of layer-bottom from soil surface
     real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
@@ -388,7 +384,7 @@ contains
     namelist / timing          / dt,maxtime,output_filename
     namelist / location        / lat,lon
     namelist / forcing         / preciprate,precip_duration,dry_duration,&
-                                 precipitating,uwind,vwind,ZREF
+                                 precipitating,ZREF
     namelist / model_options   / precip_phase_option,runoff_option,drainage_option,frozen_soil_option,dynamic_vic_option,&
                                  dynamic_veg_option,snow_albedo_option,radiative_transfer_option,sfc_drag_coeff_option,&
                                  canopy_stom_resist_option,crop_model_option,snowsoil_temp_time_option,soil_temp_boundary_option,&
@@ -469,8 +465,6 @@ contains
     this%precip_duration  = precip_duration
     this%dry_duration     = dry_duration
     this%precipitating    = precipitating
-    this%uwind            = uwind
-    this%vwind            = vwind
     this%ZREF             = ZREF
 
     this%isltyp           = isltyp

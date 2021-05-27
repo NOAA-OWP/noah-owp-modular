@@ -64,7 +64,7 @@ contains
       ZLVL     => energy%ZLVL        ,&   ! intent(in)    : reference height (m) 
       EMV      => energy%EMV         ,&   ! intent(in)    : vegetation emissivity
       EMG      => energy%EMG         ,&   ! intent(in)    : ground emissivity
-      LWDN     => energy%LWDN        ,&   ! intent(inout) : atmospheric longwave radiation (w/m2)
+      LWDN     => forcing%LWDN        ,&   ! intent(in) : atmospheric longwave radiation (w/m2)
       FVEG     => parameters%FVEG    ,&   ! intent(in)    : greeness vegetation fraction (-)
       CPAIR    => parameters%CPAIR   ,&   ! intent(in)    : heat capacity dry air at const pres (j/kg/k)
       FSNO     => water%FSNO          &   ! REAL, INTENT(OUT)   : fraction of grid cell with snow cover
@@ -144,7 +144,7 @@ contains
     ELSE
       EMG = parameters%EG(domain%IST)*(1.-FSNO) + 1.0*FSNO
     END IF
-
+    
     ! calculate soil moisture stress factor controlling stomatal resistance
     water%BTRAN = 0.
 
@@ -259,6 +259,8 @@ contains
       energy%RB        = 0.
     END IF
 
+    print*, "GHV = " ,energy%GHV
+    
     energy%TGB = TG
     CMB = energy%CM
     energy%CHB = energy%CH
@@ -325,6 +327,8 @@ contains
       WRITE(*,*) 'Exiting ...'
       STOP
     END IF
+    
+    print*, "FIRE = ", FIRE
 
     ! Compute a net emissivity
     energy%EMISSI = FVEG * ( EMG*(1-EMV) + EMV + EMV*(1-EMV)*(1-EMG) ) + (1-FVEG) * EMG

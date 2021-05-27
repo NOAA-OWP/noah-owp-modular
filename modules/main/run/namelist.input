@@ -14,8 +14,6 @@
   precip_duration = 3       ! duration of precipitation events [hours]
   dry_duration    = 3       ! duration of dry events [hours]
   precipitating   = .true.  ! start with precipitation
-  uwind           = 3.0     ! wind speed m/s
-  vwind           = 3.0     ! wind speed m/s
   ZREF            = 10.0    ! measurment height for wind speed
 /
 

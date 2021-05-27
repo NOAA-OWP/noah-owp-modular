@@ -149,7 +149,7 @@ contains
     ! Compute wind speed at reference height: ur >= 1
     ! Moved from main level of ENERGY, KSJ 2021-04-06
 
-    forcing%UR = MAX( SQRT(forcing%uwind**2. + forcing%vwind**2.), 1. )
+    forcing%UR = MAX( SQRT(forcing%UU**2. + forcing%VV**2.), 1. )
 
   END SUBROUTINE ATM
   
