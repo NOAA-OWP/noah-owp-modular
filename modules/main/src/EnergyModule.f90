@@ -38,7 +38,7 @@ contains
     REAL                                 :: Z0MG     ! z0 momentum, ground (m)
     REAL                                 :: Z0M      ! z0 momentum (m)
     REAL                                 :: ZPDG     ! zero plane displacement, ground (m)
-    REAL                                 :: ZPD      ! zero plane displacement (m)
+    !REAL                                 :: ZPD      ! zero plane displacement (m) (now part of EnergyType)
     REAL                                 :: ZLVL     ! reference height (m)
     REAL                                 :: GX       ! temporary variable -- prev. undeclared in ENERGY())
     REAL                                 :: PSI      ! surface layer soil matrix potential (m)
@@ -105,11 +105,11 @@ contains
     ZPDG  = water%SNOWH
     IF(parameters%VEG) THEN
       Z0M  = parameters%Z0MVT
-      ZPD  = 0.65 * parameters%HVT
-      IF(water%SNOWH > ZPD) ZPD = water%SNOWH
+      energy%ZPD  = 0.65 * parameters%HVT
+      IF(water%SNOWH > energy%ZPD) energy%ZPD = water%SNOWH
     ELSE
       Z0M  = Z0MG
-      ZPD  = ZPDG
+      energy%ZPD  = ZPDG
     END IF
 
     ! special case for urban
@@ -117,11 +117,14 @@ contains
       Z0MG = parameters%Z0MVT
       ZPDG = 0.65 * parameters%HVT
       Z0M  = Z0MG
-      ZPD  = ZPDG
+      energy%ZPD  = ZPDG
     END IF
 
-    ZLVL = MAX(ZPD, parameters%HVT) + domain%ZREF
+    ZLVL = MAX(energy%ZPD, parameters%HVT) + domain%ZREF
     IF(ZPDG >= ZLVL) ZLVL = ZPDG + domain%ZREF
+
+    print*, "ZPD = ", energy%ZPD
+    print*, "ZLVL = ", ZLVL
 
     ! Compute snow and soil thermodynamic properties
     call THERMOPROP(domain, levels, options, parameters, forcing, energy, water)
