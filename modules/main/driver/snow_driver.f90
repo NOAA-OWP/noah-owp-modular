@@ -93,6 +93,7 @@ program snow_driver
   water%etrani    = 0.0          ! transpiration from each level[mm/s]
   water%btrani    = 0.0          ! soil water transpiration factor (0 to 1) by soil layer
   water%btran     = 0.0          ! soil water transpiration factor (0 to 1)
+  
   ! for canopy water
   water%RAIN      = 0.0          ! rainfall mm/s
   water%SNOW      = 0.0          ! snowfall mm/s
@@ -114,6 +115,7 @@ program snow_driver
   water%SNOWHIN  = 0.0           ! snow depth increasing rate (m/s)
   water%ECAN     = 0.0           ! evap of intercepted water (mm/s) [+]
   water%ETRAN    = 0.0           ! transpiration rate (mm/s) [+]
+  
   ! for snow water
   water%QVAP     = 0.0           ! evaporation/sublimation rate mm/s 
   water%ISNOW    = 0
@@ -132,6 +134,7 @@ program snow_driver
   water%SNLIQ    = 0.0
   water%FICEOLD  = 0.0
   water%FSNO     = 0.0
+  
   ! for energy-related variable
   energy%TV      = 298.0        ! leaf temperature [K]
   energy%TG      = 298.0        ! ground temperature [K]
@@ -143,9 +146,10 @@ program snow_driver
   energy%STC      = 298.0
   energy%COSZ     = 0.7        ! cosine of solar zenith angle
   energy%ICE      = 0          ! 1 if sea ice, -1 if glacier, 0 if no land ice (seasonal snow)
+  
   ! forcing-related variables
-  forcing%uwind    = 0.0        ! wind speed in u direction (m s-1)
-  forcing%vwind    = 0.0        ! wind speed in v direction (m s-1)
+  forcing%UU       = 3.0        ! wind speed in u direction (m s-1)
+  forcing%VV       = 3.0        ! wind speed in v direction (m s-1)
   forcing%SFCPRS   = 100000.0   ! pressure (pa)
   forcing%SFCTMP   = 273.0      ! surface air temperature [k]
   forcing%Q2       = 0.0        ! mixing ratio (kg/kg)
@@ -156,6 +160,7 @@ program snow_driver
   forcing%PRCPGRPL = 0.0        ! graupel entering land model [mm/s]           ! MB/AN : v3.7
   forcing%PRCPHAIL = 0.0        ! hail entering land model [mm/s]              ! MB/AN : v3.7
   forcing%SOLDN    = 500.0      ! downward shortwave radiation (w/m2)
+  forcing%LWDN     = 300.0      ! downward longwave radiation (w/m2)
   forcing%THAIR    = 0.0        ! potential temperature (k)
   forcing%QAIR     = 0.0        ! specific humidity (kg/kg) (q2/(1+q2))
   forcing%EAIR     = 0.0        ! vapor pressure air (pa)

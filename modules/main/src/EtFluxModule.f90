@@ -165,7 +165,7 @@ contains
       QSFC     => energy%QSFC        ,&   ! intent(inout  : mixing ratio at lowest model layer (g/g)  
       EMV      => energy%EMV         ,&   ! intent(in)    : vegetation emissivity
       EMG      => energy%EMG         ,&   ! intent(in)    : ground emissivity
-      LWDN     => energy%LWDN        ,&   ! intent(inout) : atmospheric longwave radiation (w/m2)
+      LWDN     => forcing%LWDN       ,&   ! intent(in) : atmospheric longwave radiation (w/m2)
       RSSHA    => energy%RSSHA       ,&   ! intent(in)    : shaded leaf stomatal resistance (s/m)
       RHSUR    => energy%RHSUR       ,&   ! intent(in)    : relative humidity in surface soil/snow air space (-)  
       FVEG     => parameters%FVEG    ,&   ! intent(in)    : greeness vegetation fraction (-)
@@ -573,7 +573,7 @@ contains
       ZLVL     => energy%ZLVL        ,&   ! intent(in)    : real reference height (m) 
       QSFC     => energy%QSFC        ,&   ! intent(inout  : real mixing ratio at lowest model layer (g/g)  
       EMG      => energy%EMG         ,&   ! intent(in)    : real ground emissivity
-      LWDN     => energy%LWDN        ,&   ! intent(inout) : real atmospheric longwave radiation (w/m2)
+      LWDN     => forcing%LWDN       ,&   ! intent(in) : real atmospheric longwave radiation (w/m2)
       CPAIR    => parameters%CPAIR   ,&   ! intent(in)    : real heat capacity dry air at const pres (j/kg/k)
       UR       => forcing%UR          &   ! intent(in)    : real roughness length, momentum (m)  
     ) ! ---- end associate block --------------------------------------------------------------------
