@@ -152,7 +152,7 @@ program snow_driver
   forcing%VV       = 3.0        ! wind speed in v direction (m s-1)
   forcing%SFCPRS   = 100000.0   ! pressure (pa)
   forcing%SFCTMP   = 273.0      ! surface air temperature [k]
-  forcing%Q2       = 0.0        ! mixing ratio (kg/kg)
+  forcing%Q2       = 0.005      ! mixing ratio (kg/kg)
   forcing%PRCPCONV = 0.0        ! convective precipitation entering  [mm/s]    ! MB/AN : v3.7
   forcing%PRCPNONC = 0.0        ! non-convective precipitation entering [mm/s] ! MB/AN : v3.7
   forcing%PRCPSHCV = 0.0        ! shallow convective precip entering  [mm/s]   ! MB/AN : v3.7
