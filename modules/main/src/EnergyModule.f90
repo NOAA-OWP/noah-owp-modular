@@ -180,34 +180,39 @@ contains
     IF (parameters%urban_flag .and. water%SNOWH == 0. ) THEN
       RSURF = 1.E6
     ENDIF
-    print*, "RSURF = ", RSURF
-    print*, "RHSUR = ", RHSUR
-!     ! set psychrometric constant
-!     IF (TV .GT. parameters%TFRZ) THEN           ! Barlage: add distinction between ground and
-!       energy%LATHEAV = parameters%HVAP          !          vegetation in v3.6
-!       energy%frozen_canopy = .false.
-!     ELSE
-!       energy%LATHEAV = parameters%HSUB
-!       energy%frozen_canopy = .true.
-!     END IF
-!     energy%GAMMAV = CPAIR*forcing%SFCPRS/(0.622*energy%LATHEAV)
-!
-!     IF (TG .GT. parameters%TFRZ) THEN
-!      energy%LATHEAG = parameters%HVAP
-!      energy%frozen_ground = .false.
-!     ELSE
-!       energy%LATHEAG = parameters%HSUB
-!       energy%frozen_ground = .true.
-!     END IF
-!     energy%GAMMAG = CPAIR*forcing%SFCPRS/(0.622*energy%LATHEAG)
-!
-!     ! next block commented out in orig code
-!     !IF (SFCTMP .GT. parameters%TFRZ) THEN
-!     !  energy%LATHEA = parameters%HVAP
-!     !ELSE
-!     !  energy%LATHEA = parameters%HSUB
-!     !END IF
-!     !energy%GAMMA = CPAIR*SFCPRS/(0.622*energy%LATHEA)
+
+    ! set psychrometric constant
+    IF (energy%TV .GT. parameters%TFRZ) THEN           ! Barlage: add distinction between ground and
+      energy%LATHEAV = parameters%HVAP          !          vegetation in v3.6
+      energy%frozen_canopy = .false.
+    ELSE
+      energy%LATHEAV = parameters%HSUB
+      energy%frozen_canopy = .true.
+    END IF
+    energy%GAMMAV = parameters%CPAIR*forcing%SFCPRS/(0.622*energy%LATHEAV)
+
+    IF (energy%TG .GT. parameters%TFRZ) THEN
+     energy%LATHEAG = parameters%HVAP
+     energy%frozen_ground = .false.
+    ELSE
+      energy%LATHEAG = parameters%HSUB
+      energy%frozen_ground = .true.
+    END IF
+    energy%GAMMAG = parameters%CPAIR*forcing%SFCPRS/(0.622*energy%LATHEAG)
+    print*, "TV = ", energy%TV
+    print*, "TG = ", energy%TG
+    print*, "LATHEAV = ", energy%LATHEAV
+    print*, "LATHEAG = ", energy%LATHEAG
+    print*, "GAMMAV = ", energy%GAMMAV
+    print*, "GAMMAG = ", energy%GAMMAG
+
+    ! next block commented out in orig code
+    !IF (SFCTMP .GT. parameters%TFRZ) THEN
+    !  energy%LATHEA = parameters%HVAP
+    !ELSE
+    !  energy%LATHEA = parameters%HSUB
+    !END IF
+    !energy%GAMMA = CPAIR*SFCPRS/(0.622*energy%LATHEA)
 !
 !     ! Calculate surface temperatures of the ground and canopy and energy fluxes
 !     IF (parameters%VEG .AND. FVEG > 0) THEN
