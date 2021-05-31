@@ -259,7 +259,9 @@ program snow_driver
   !---------------------------------------------------------------------
   ! add to output file
   !---------------------------------------------------------------------
-
+  if (allocated(forcing%SOLAD)) then
+           print *, 'SOLAD A is allocated'
+        endif
     call add_to_output(itime,levels%nsoil,levels%nsnow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)
    
   end do ! time loop

@@ -5,7 +5,7 @@
 
  COMPILERF90    =       /usr/local/bin/gfortran
  FREESOURCE     =       -ffree-form  -ffree-line-length-none
- F90FLAGS       =       #-fdefault-real-8
+ F90FLAGS       =       -g #-fdefault-real-8
  CPP            =       /usr/local/bin/cpp-10
  CPPFLAGS       =       -P -traditional -D_GFORTRAN_
  NETCDFMOD      =       -I/usr/local/Cellar/netcdf/4.7.4_2/include
