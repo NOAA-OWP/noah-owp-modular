@@ -47,7 +47,7 @@ contains
     
     this%nsoil  = namelist%nsoil
     this%nsnow  = namelist%nsnow
-    this%nsnow  = namelist%nveg    
+    this%nveg  = namelist%nveg    
 
   end subroutine InitTransfer
 
