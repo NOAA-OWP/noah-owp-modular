@@ -36,10 +36,7 @@ contains
     INTEGER                              :: IZ     ! do-loop index
     REAL                                 :: FMELT  ! melting factor for snow cover frac
     REAL                                 :: Z0MG   ! z0 momentum, ground (m)
-    REAL                                 :: Z0M    ! z0 momentum (m)
     REAL                                 :: ZPDG   ! zero plane displacement, ground (m)
-    REAL                                 :: ZPD    ! zero plane displacement (m)
-    REAL                                 :: ZLVL   ! reference height (m)
       
     REAL                                 :: GX       ! temporary variable -- prev. undeclared in ENERGY())
     REAL                                 :: PSI      ! surface layer soil matrix potential (m)
@@ -49,6 +46,9 @@ contains
     REAL                                 :: L_RSURF  ! Dry-layer thickness for computing RSURF (Sakaguchi and Zeng, 2009)
     REAL                                 :: D_RSURF  ! Reduced vapor diffusivity in soil for computing RSURF (SZ09)
     REAL                                 :: RHSUR    ! relative humidity in surface soil/snow air space (-)  
+    
+    REAL                                 :: CMV      ! momentum drag coefficient (vegetated)
+    REAL                                 :: CMB      ! momentum drag coefficient (bare ground)
       !---------------------------------------------------------------------
 
       ! Determine whether grid cell is vegetated or not
@@ -86,24 +86,24 @@ contains
       ! Compute roughness length and displacement height
       ZPDG  = water%SNOWH
       IF(parameters%VEG) THEN
-        Z0M  = parameters%Z0MVT
-        ZPD  = 0.65 * parameters%HVT
-        IF(water%SNOWH > ZPD) ZPD = water%SNOWH
+        energy%Z0M  = parameters%Z0MVT
+        energy%ZPD  = 0.65 * parameters%HVT
+        IF(water%SNOWH > energy%ZPD) energy%ZPD = water%SNOWH
       ELSE
-        Z0M  = Z0MG
-        ZPD  = ZPDG
+        energy%Z0M  = Z0MG
+        energy%ZPD  = ZPDG
       END IF
 
       ! special case for urban
       IF (parameters%urban_flag) THEN
         Z0MG = parameters%Z0MVT
         ZPDG = 0.65 * parameters%HVT
-        Z0M  = Z0MG
-        ZPD  = ZPDG
+        energy%Z0M  = Z0MG
+        energy%ZPD  = ZPDG
       END IF
 
-      ZLVL = MAX(ZPD, parameters%HVT) + domain%ZREF
-      IF(ZPDG >= ZLVL) ZLVL = ZPDG + domain%ZREF
+      energy%ZLVL = MAX(energy%ZPD, parameters%HVT) + domain%ZREF
+      IF(ZPDG >= energy%ZLVL) energy%ZLVL = ZPDG + domain%ZREF
 
       ! Compute snow and soil thermodynamic properties
       call THERMOPROP(domain, levels, options, parameters, forcing, energy, water)
@@ -199,12 +199,6 @@ contains
       energy%frozen_ground = .true.
     END IF
     energy%GAMMAG = parameters%CPAIR*forcing%SFCPRS/(0.622*energy%LATHEAG)
-    print*, "TV = ", energy%TV
-    print*, "TG = ", energy%TG
-    print*, "LATHEAV = ", energy%LATHEAV
-    print*, "LATHEAG = ", energy%LATHEAG
-    print*, "GAMMAV = ", energy%GAMMAV
-    print*, "GAMMAG = ", energy%GAMMAG
 
     ! next block commented out in orig code
     !IF (SFCTMP .GT. parameters%TFRZ) THEN
@@ -214,37 +208,41 @@ contains
     !END IF
     !energy%GAMMA = CPAIR*SFCPRS/(0.622*energy%LATHEA)
 !
-!     ! Calculate surface temperatures of the ground and canopy and energy fluxes
-!     IF (parameters%VEG .AND. FVEG > 0) THEN
-!       energy%TGV = TG
-!       CMV        = energy%CM
-!       energy%CHV = energy%CH
-!
-!       ! Calculate canopy energy fluxes
-!       CALL VegeFluxMain (domain, levels, options, parameters, forcing, energy, water)
-!
-!     ELSE
-!       energy%TAUXV     = 0.
-!       energy%TAUYV     = 0.
-!       energy%IRC       = 0.
-!       energy%SHC       = 0.
-!       energy%IRG       = 0.
-!       energy%SHG       = 0.
-!       energy%EVG       = 0.
-!       energy%EVC       = 0.
-!       energy%TR        = 0.
-!       energy%GHV       = 0.
-!       PSNSUN           = 0.
-!       PSNSHA           = 0.
-!       energy%T2MV      = 0.
-!       energy%Q2V       = 0.
-!       energy%CHV       = 0.
-!       energy%CHLEAF    = 0.
-!       energy%CHUC      = 0.
-!       energy%CHV2      = 0.
-!       energy%RB        = 0.
-!     END IF
-!
+    ! Calculate surface temperatures of the ground and canopy and energy fluxes
+    IF (parameters%VEG .AND. parameters%FVEG > 0) THEN
+      energy%TGV = energy%TG
+      CMV        = energy%CM
+      energy%CHV = energy%CH
+
+      ! Calculate canopy energy fluxes
+      CALL VegeFluxMain (domain, levels, options, parameters, forcing, energy, water)
+
+    ELSE
+      energy%TAUXV     = 0.
+      energy%TAUYV     = 0.
+      energy%IRC       = 0.
+      energy%SHC       = 0.
+      energy%IRG       = 0.
+      energy%SHG       = 0.
+      energy%EVG       = 0.
+      energy%EVC       = 0.
+      energy%TR        = 0.
+      energy%GHV       = 0.
+      energy%PSNSUN    = 0.
+      energy%PSNSHA    = 0.
+      energy%T2MV      = 0.
+      energy%Q2V       = 0.
+      energy%CHV       = 0.
+      energy%CHLEAF    = 0.
+      energy%CHUC      = 0.
+      energy%CHV2      = 0.
+      energy%RB        = 0.
+    END IF
+    
+    print*, "CHV = ", energy%CHV
+    print*, "IRC = ", energy%IRC
+    print*, "SHC = ", energy%SHC
+
 !     print*, "GHV = " ,energy%GHV
 !
 !     energy%TGB = TG
@@ -274,7 +272,7 @@ contains
 !       energy%CH    = FVEG * energy%CHV       + (1.0 - FVEG) * energy%CHB
 !       energy%Q1    = FVEG * (EAH*0.622/(forcing%SFCPRS - 0.378*EAH)) + (1.0 - FVEG)*energy%QSFC
 !       energy%Q2E   = FVEG * energy%Q2V       + (1.0 - FVEG) * energy%Q2B
-!       energy%Z0WRF = Z0M
+!       energy%Z0WRF = energy%Z0M
 !     ELSE
 !       energy%TAUX  = energy%TAUXB
 !       energy%TAUY  = energy%TAUYB
