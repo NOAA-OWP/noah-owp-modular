@@ -80,7 +80,9 @@ type, public :: energy_type
   REAL                 :: Z0MG    ! z0 momentum, ground (m)
   REAL                 :: Z0M     ! roughness length, momentum (m)
   REAL                 :: ZLVL    ! reference height (m)  
-  REAL                 :: CM      ! momentum drag coefficient  
+  REAL                 :: CMV     ! momentum drag coefficient (vegetated surface)  
+  REAL                 :: CMB     ! momentum drag coefficient (bare ground)  
+  REAL                 :: CM      ! momentum drag coefficient (weighted version of CMV + CMB by FVEG)  
   REAL                 :: CH      ! drag coefficient for heat
   REAL                 :: TGB     ! ground temperature (K)
   REAL                 :: QSFC    ! mixing ratio at lowest model layer (g/g)
@@ -249,6 +251,8 @@ contains
     this%Z0MG      = huge(1.0)    
     this%Z0M       = huge(1.0)      
     this%ZLVL      = huge(1.0)
+    this%CMV       = huge(1.0)  
+    this%CMB       = huge(1.0)  
     this%CM        = huge(1.0)  
     this%CH        = huge(1.0)  
     this%TGB       = huge(1.0)    

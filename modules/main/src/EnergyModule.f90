@@ -35,7 +35,6 @@ contains
     ! ------------------------ local variables ---------------------------
     INTEGER                              :: IZ     ! do-loop index
     REAL                                 :: FMELT  ! melting factor for snow cover frac
-    REAL                                 :: Z0MG   ! z0 momentum, ground (m)
     REAL                                 :: ZPDG   ! zero plane displacement, ground (m)
       
     REAL                                 :: GX       ! temporary variable -- prev. undeclared in ENERGY())
@@ -46,10 +45,7 @@ contains
     REAL                                 :: L_RSURF  ! Dry-layer thickness for computing RSURF (Sakaguchi and Zeng, 2009)
     REAL                                 :: D_RSURF  ! Reduced vapor diffusivity in soil for computing RSURF (SZ09)
     REAL                                 :: RHSUR    ! relative humidity in surface soil/snow air space (-)  
-    
-    REAL                                 :: CMV      ! momentum drag coefficient (vegetated)
-    REAL                                 :: CMB      ! momentum drag coefficient (bare ground)
-      !---------------------------------------------------------------------
+    !---------------------------------------------------------------------
 
       ! Determine whether grid cell is vegetated or not
 
@@ -75,12 +71,12 @@ contains
       ! Compute ground roughness length
       IF(domain%IST == 2) THEN
         IF(energy%TG <= parameters%TFRZ) THEN
-          Z0MG = (0.01 * (1.0 - water%FSNO)) + (water%FSNO * parameters%Z0SNO)
+          energy%Z0MG = (0.01 * (1.0 - water%FSNO)) + (water%FSNO * parameters%Z0SNO)
         ELSE
-          Z0MG = 0.01  
+          energy%Z0MG = 0.01  
         END IF
       ELSE
-        Z0MG = (parameters%Z0 * (1.0 - water%FSNO)) + (water%FSNO * parameters%Z0SNO)
+        energy%Z0MG = (parameters%Z0 * (1.0 - water%FSNO)) + (water%FSNO * parameters%Z0SNO)
       END IF
 
       ! Compute roughness length and displacement height
@@ -90,15 +86,15 @@ contains
         energy%ZPD  = 0.65 * parameters%HVT
         IF(water%SNOWH > energy%ZPD) energy%ZPD = water%SNOWH
       ELSE
-        energy%Z0M  = Z0MG
+        energy%Z0M  = energy%Z0MG
         energy%ZPD  = ZPDG
       END IF
 
       ! special case for urban
       IF (parameters%urban_flag) THEN
-        Z0MG = parameters%Z0MVT
+        energy%Z0MG = parameters%Z0MVT
         ZPDG = 0.65 * parameters%HVT
-        energy%Z0M  = Z0MG
+        energy%Z0M  = energy%Z0MG
         energy%ZPD  = ZPDG
       END IF
 
@@ -211,7 +207,7 @@ contains
     ! Calculate surface temperatures of the ground and canopy and energy fluxes
     IF (parameters%VEG .AND. parameters%FVEG > 0) THEN
       energy%TGV = energy%TG
-      CMV        = energy%CM
+      energy%CMV = energy%CM
       energy%CHV = energy%CH
 
       ! Calculate canopy energy fluxes
@@ -294,7 +290,7 @@ contains
 !       energy%RSSHA = 0.0
 !       energy%TGV   = energy%TGB
 !       energy%CHV   = energy%CHB
-!       energy%Z0WRF = Z0MG
+!       energy%Z0WRF = energy%Z0MG
 !     END IF
 !
 !     FIRE = LWDN + energy%FIRA
