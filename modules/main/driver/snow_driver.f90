@@ -138,6 +138,8 @@ program snow_driver
   ! for energy-related variable
   energy%TV      = 298.0        ! leaf temperature [K]
   energy%TG      = 298.0        ! ground temperature [K]
+  energy%CM      = 0.0          ! momentum drag coefficient
+  energy%CH      = 0.0          ! heat drag coefficient
   energy%FCEV    = 5.0          ! constant canopy evaporation (w/m2) [+ to atm ]
   energy%FCTR    = 5.0          ! constant transpiration (w/m2) [+ to atm]
   energy%FROZEN_CANOPY = .false. ! used to define latent heat pathway
@@ -151,7 +153,7 @@ program snow_driver
   forcing%UU       = 3.0        ! wind speed in u direction (m s-1)
   forcing%VV       = 3.0        ! wind speed in v direction (m s-1)
   forcing%SFCPRS   = 100000.0   ! pressure (pa)
-  forcing%SFCTMP   = 273.0      ! surface air temperature [k]
+  forcing%SFCTMP   = 298.0      ! surface air temperature [k]
   forcing%Q2       = 0.005      ! mixing ratio (kg/kg)
   forcing%PRCPCONV = 0.0        ! convective precipitation entering  [mm/s]    ! MB/AN : v3.7
   forcing%PRCPNONC = 0.0        ! non-convective precipitation entering [mm/s] ! MB/AN : v3.7
@@ -259,9 +261,7 @@ program snow_driver
   !---------------------------------------------------------------------
   ! add to output file
   !---------------------------------------------------------------------
-  if (allocated(forcing%SOLAD)) then
-           print *, 'SOLAD A is allocated'
-        endif
+
     call add_to_output(itime,levels%nsoil,levels%nsnow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)
    
   end do ! time loop
