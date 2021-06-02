@@ -495,6 +495,10 @@ contains
     this%dynamic_veg_option  = dynamic_veg_option
     this%snow_albedo_option  = snow_albedo_option
     this%radiative_transfer_option  = radiative_transfer_option
+    this%sfc_drag_coeff_option      = sfc_drag_coeff_option
+    this%crop_model_option          = crop_model_option
+    this%canopy_stom_resist_option  = canopy_stom_resist_option
+    this%snowsoil_temp_time_option  = snowsoil_temp_time_option
     this%soil_temp_boundary_option  = soil_temp_boundary_option
     this%supercooled_water_option   = supercooled_water_option
     this%stomatal_resistance_option = stomatal_resistance_option

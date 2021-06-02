@@ -813,8 +813,9 @@ contains
 
   ! == begin stomata ==================================================================================
 
-  SUBROUTINE STOMATA (parameters, VEGTYP, APAR, FOLN, TV, EI, EA, & ! in
-                      SFCTMP, SFCPRS, O2, CO2, IGS, BTRAN, RB,    & ! in
+  SUBROUTINE STOMATA (parameters, VEGTYP, APAR, FOLN, TV, &         ! in
+                      EI, EA, SFCTMP, SFCPRS, O2, &                 ! in
+                      CO2, IGS, BTRAN, RB,    &                     ! in
                       RS, PSN)                                      ! out
     IMPLICIT NONE
 
@@ -822,17 +823,17 @@ contains
     ! input
     type (parameters_type), intent(in) :: parameters
     INTEGER,INTENT(IN)  :: VEGTYP !vegetation physiology type
-    REAL, INTENT(IN)    :: IGS    !growing season index (0=off, 1=on)
+    REAL, INTENT(IN)    :: APAR   !par absorbed per unit lai (w/m2)
+    REAL, INTENT(IN)    :: FOLN   !foliage nitrogen concentration (%)
     REAL, INTENT(IN)    :: TV     !foliage temperature (k)
     REAL, INTENT(IN)    :: EI     !vapor pressure inside leaf (sat vapor press at tv) (pa)
     REAL, INTENT(IN)    :: EA     !vapor pressure of canopy air (pa)
-    REAL, INTENT(IN)    :: APAR   !par absorbed per unit lai (w/m2)
+    REAL, INTENT(IN)    :: SFCTMP !air temperature at reference height (k)
+    REAL, INTENT(IN)    :: SFCPRS !air pressure at reference height (pa)
     REAL, INTENT(IN)    :: O2     !atmospheric o2 concentration (pa) -- partial pressures, from parameters type
     REAL, INTENT(IN)    :: CO2    !atmospheric co2 concentration (pa)
-    REAL, INTENT(IN)    :: SFCPRS !air pressure at reference height (pa)
-    REAL, INTENT(IN)    :: SFCTMP !air temperature at reference height (k)
+    REAL, INTENT(IN)    :: IGS    !growing season index (0=off, 1=on)
     REAL, INTENT(IN)    :: BTRAN  !soil water transpiration factor (0 to 1)
-    REAL, INTENT(IN)    :: FOLN   !foliage nitrogen concentration (%)
     REAL, INTENT(IN)    :: RB     !boundary layer resistance (s/m)
     ! output
     REAL, INTENT(OUT)   :: RS     !leaf stomatal resistance (s/m)
