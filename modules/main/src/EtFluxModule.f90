@@ -440,6 +440,7 @@ contains
 
     ! consistent vegetation air temperature and vapor pressure since TG is not consistent with the TAH/EAH
     ! calculation.
+    ! Commented out in original code
     !     TAH = SFCTMP + (SHG+SHC)/(RHOAIR*CPAIR*CAH) 
     !     TAH = SFCTMP + (SHG*FVEG+SHC)/(RHOAIR*CPAIR*CAH) ! ground flux need fveg
     !     EAH = EAIR + (EVC+FVEG*(TR+EVG))/(RHOAIR*CAW*CPAIR/GAMMAG )

@@ -41,10 +41,8 @@ contains
     REAL                                 :: PSI      ! surface layer soil matrix potential (m)
     
     REAL                                 :: BEVAP    ! soil water evaporation factor (0-1)
-    REAL                                 :: RSURF    ! ground surface resistance (s/m)
     REAL                                 :: L_RSURF  ! Dry-layer thickness for computing RSURF (Sakaguchi and Zeng, 2009)
     REAL                                 :: D_RSURF  ! Reduced vapor diffusivity in soil for computing RSURF (SZ09)
-    REAL                                 :: RHSUR    ! relative humidity in surface soil/snow air space (-)  
     !---------------------------------------------------------------------
 
       ! Determine whether grid cell is vegetated or not
@@ -148,8 +146,8 @@ contains
     ! calculate soil surface resistance for ground evap.
     BEVAP = MAX(0.0, water%SH2O(1)/parameters%SMCMAX(1) )
     IF(domain%IST == 2) THEN
-      RSURF = 1.0         ! avoid being divided by 0
-      RHSUR = 1.0
+      energy%RSURF = 1.0         ! avoid being divided by 0
+      energy%RHSUR = 1.0
     ELSE
       IF(options%OPT_RSF == 1 .OR. options%OPT_RSF == 4) THEN
         ! RSURF based on Sakaguchi and Zeng, 2009
@@ -158,23 +156,23 @@ contains
         L_RSURF = (-domain%ZSOIL(1)) * ( exp ( (1.0 - MIN(1.0,water%SH2O(1)/parameters%SMCMAX(1))) ** parameters%RSURF_EXP ) - 1.0 ) / ( 2.71828 - 1.0 )
         D_RSURF = 2.2E-5 * parameters%SMCMAX(1) * parameters%SMCMAX(1) * ( 1.0 - parameters%SMCWLT(1) / parameters%SMCMAX(1) ) ** &
                     (2.0+3.0/parameters%BEXP(1))
-        RSURF = L_RSURF / D_RSURF
+        energy%RSURF = L_RSURF / D_RSURF
       ELSEIF(options%OPT_RSF == 2) THEN
-        RSURF = water%FSNO * 1. + (1.-water%FSNO) * EXP(8.25-4.225 * BEVAP)       ! Sellers (1992) ! Older RSURF computations
+        energy%RSURF = water%FSNO * 1. + (1.-water%FSNO) * EXP(8.25-4.225 * BEVAP)       ! Sellers (1992) ! Older RSURF computations
       ELSEIF(options%OPT_RSF == 3) THEN
-        RSURF = water%FSNO * 1. + (1.-water%FSNO) * EXP(8.25-6.0   * BEVAP)       ! adjusted to decrease RSURF for wet soil
+        energy%RSURF = water%FSNO * 1. + (1.-water%FSNO) * EXP(8.25-6.0   * BEVAP)       ! adjusted to decrease RSURF for wet soil
     ENDIF
     IF(options%OPT_RSF == 4) THEN                                     ! AD: FSNO weighted; snow RSURF set in MPTABLE v3.8
-      RSURF = 1. / (water%FSNO * (1./parameters%RSURF_SNOW) + (1.-water%FSNO) * (1./max(RSURF, 0.001)))
+      energy%RSURF = 1. / (water%FSNO * (1./parameters%RSURF_SNOW) + (1.-water%FSNO) * (1./max(energy%RSURF, 0.001)))
     ENDIF
-    IF(water%SH2O(1) < 0.01 .and. water%SNOWH == 0.) RSURF = 1.E6
+    IF(water%SH2O(1) < 0.01 .and. water%SNOWH == 0.) energy%RSURF = 1.E6
       PSI   = -parameters%PSISAT(1) * (MAX(0.01, water%SH2O(1))/parameters%SMCMAX(1))**(-parameters%BEXP(1))
-      RHSUR = water%FSNO + (1.-water%FSNO) * EXP(PSI * parameters%GRAV/(parameters%RW * energy%TG))
+      energy%RHSUR = water%FSNO + (1.-water%FSNO) * EXP(PSI * parameters%GRAV/(parameters%RW * energy%TG))
     END IF
 
     ! urban - jref
     IF (parameters%urban_flag .and. water%SNOWH == 0. ) THEN
-      RSURF = 1.E6
+      energy%RSURF = 1.E6
     ENDIF
 
     ! set psychrometric constant
