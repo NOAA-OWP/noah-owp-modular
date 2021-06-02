@@ -43,73 +43,76 @@ contains
     REAL                                 :: BEVAP    ! soil water evaporation factor (0-1)
     REAL                                 :: L_RSURF  ! Dry-layer thickness for computing RSURF (Sakaguchi and Zeng, 2009)
     REAL                                 :: D_RSURF  ! Reduced vapor diffusivity in soil for computing RSURF (SZ09)
+    
+    REAL                                 :: FIRE   !emitted IR (w/m2)
+    
     !---------------------------------------------------------------------
 
-      ! Determine whether grid cell is vegetated or not
+    ! Determine whether grid cell is vegetated or not
 
-      parameters%VAI = parameters%ELAI + parameters%ESAI
-      IF(parameters%VAI > 0.0) THEN
-        parameters%VEG = .TRUE.
+    parameters%VAI = parameters%ELAI + parameters%ESAI
+    IF(parameters%VAI > 0.0) THEN
+      parameters%VEG = .TRUE.
+    ELSE
+      parameters%VEG = .FALSE.
+    ENDIF
+
+    ! Compute fraction of grid cell with snow cover [Niu and Yang, 2007, JGR]
+    ! Note: MFSNO (m in Niu and Yang) is set to 2.5 for all vegtypes in NOAH-MP
+    ! Reference paper indicates MFSNO varies in space (values of 1.0, 1.6, 1.8)
+    ! KSJ 2021-04-06
+
+    water%FSNO = 0.0
+    IF(water%SNOWH > 0.0)  THEN
+      water%BDSNO  = water%SNEQV / water%SNOWH
+      FMELT        = (water%BDSNO / 100.)**parameters%MFSNO
+      water%FSNO   = TANH( water%SNOWH /(2.5 * parameters%Z0 * FMELT)) ! eq. 4 from Niu and Yang (2007)
+    ENDIF
+
+    ! Compute ground roughness length
+    IF(domain%IST == 2) THEN
+      IF(energy%TG <= parameters%TFRZ) THEN
+        energy%Z0MG = (0.01 * (1.0 - water%FSNO)) + (water%FSNO * parameters%Z0SNO)
       ELSE
-        parameters%VEG = .FALSE.
-      ENDIF
-
-      ! Compute fraction of grid cell with snow cover [Niu and Yang, 2007, JGR]
-      ! Note: MFSNO (m in Niu and Yang) is set to 2.5 for all vegtypes in NOAH-MP
-      ! Reference paper indicates MFSNO varies in space (values of 1.0, 1.6, 1.8)
-      ! KSJ 2021-04-06
-
-      water%FSNO = 0.0
-      IF(water%SNOWH > 0.0)  THEN
-        water%BDSNO  = water%SNEQV / water%SNOWH
-        FMELT        = (water%BDSNO / 100.)**parameters%MFSNO
-        water%FSNO   = TANH( water%SNOWH /(2.5 * parameters%Z0 * FMELT)) ! eq. 4 from Niu and Yang (2007)
-      ENDIF
-
-      ! Compute ground roughness length
-      IF(domain%IST == 2) THEN
-        IF(energy%TG <= parameters%TFRZ) THEN
-          energy%Z0MG = (0.01 * (1.0 - water%FSNO)) + (water%FSNO * parameters%Z0SNO)
-        ELSE
-          energy%Z0MG = 0.01  
-        END IF
-      ELSE
-        energy%Z0MG = (parameters%Z0 * (1.0 - water%FSNO)) + (water%FSNO * parameters%Z0SNO)
+        energy%Z0MG = 0.01  
       END IF
+    ELSE
+      energy%Z0MG = (parameters%Z0 * (1.0 - water%FSNO)) + (water%FSNO * parameters%Z0SNO)
+    END IF
 
-      ! Compute roughness length and displacement height
-      ZPDG  = water%SNOWH
-      IF(parameters%VEG) THEN
-        energy%Z0M  = parameters%Z0MVT
-        energy%ZPD  = 0.65 * parameters%HVT
-        IF(water%SNOWH > energy%ZPD) energy%ZPD = water%SNOWH
-      ELSE
-        energy%Z0M  = energy%Z0MG
-        energy%ZPD  = ZPDG
-      END IF
+    ! Compute roughness length and displacement height
+    ZPDG  = water%SNOWH
+    IF(parameters%VEG) THEN
+      energy%Z0M  = parameters%Z0MVT
+      energy%ZPD  = 0.65 * parameters%HVT
+      IF(water%SNOWH > energy%ZPD) energy%ZPD = water%SNOWH
+    ELSE
+      energy%Z0M  = energy%Z0MG
+      energy%ZPD  = ZPDG
+    END IF
 
-      ! special case for urban
-      IF (parameters%urban_flag) THEN
-        energy%Z0MG = parameters%Z0MVT
-        ZPDG = 0.65 * parameters%HVT
-        energy%Z0M  = energy%Z0MG
-        energy%ZPD  = ZPDG
-      END IF
+    ! special case for urban
+    IF (parameters%urban_flag) THEN
+      energy%Z0MG = parameters%Z0MVT
+      ZPDG = 0.65 * parameters%HVT
+      energy%Z0M  = energy%Z0MG
+      energy%ZPD  = ZPDG
+    END IF
 
-      energy%ZLVL = MAX(energy%ZPD, parameters%HVT) + domain%ZREF
-      IF(ZPDG >= energy%ZLVL) energy%ZLVL = ZPDG + domain%ZREF
+    energy%ZLVL = MAX(energy%ZPD, parameters%HVT) + domain%ZREF
+    IF(ZPDG >= energy%ZLVL) energy%ZLVL = ZPDG + domain%ZREF
 
-      ! Compute snow and soil thermodynamic properties
-      call THERMOPROP(domain, levels, options, parameters, forcing, energy, water)
+    ! Compute snow and soil thermodynamic properties
+    call THERMOPROP(domain, levels, options, parameters, forcing, energy, water)
 
-      ! Compute the heat advected by precipitation
-      call PRECIP_HEAT(parameters, forcing, energy, water)
+    ! Compute the heat advected by precipitation
+    call PRECIP_HEAT(parameters, forcing, energy, water)
 
-      ! Compute net solar radiation
-      ! Subroutine was formerly called RADIATION
-      ! Changed name because it only computes shortwave
-      ! KSJ 2021-04-20
-      call ShortwaveRadiationMain (domain, levels, options, parameters, forcing, energy, water)
+    ! Compute net solar radiation
+    ! Subroutine was formerly called RADIATION
+    ! Changed name because it only computes shortwave
+    ! KSJ 2021-04-20
+    call ShortwaveRadiationMain (domain, levels, options, parameters, forcing, energy, water)
 
     ! vegetation and ground emissivity
     energy%EMV = 1. - EXP(-(parameters%ELAI + parameters%ESAI)/1.0)
@@ -237,88 +240,89 @@ contains
     print*, "IRC = ", energy%IRC
     print*, "SHC = ", energy%SHC
 
-!     print*, "GHV = " ,energy%GHV
-!
-!     energy%TGB = TG
-!     CMB = energy%CM
-!     energy%CHB = energy%CH
-!
-!     CALL BareFluxMain (domain, levels, options, parameters, forcing, energy, water)
-!
-!     !energy balance at vege canopy: SAV          =(IRC+SHC+EVC+TR)     *FVEG  at   FVEG
-!     !energy balance at vege ground: SAG*    FVEG =(IRG+SHG+EVG+GHV)    *FVEG  at   FVEG
-!     !energy balance at bare ground: SAG*(1.-FVEG)=(IRB+SHB+EVB+GHB)*(1.-FVEG) at 1-FVEG
-!
-!     IF (parameters%VEG .AND. FVEG > 0) THEN
-!       energy%TAUX  = FVEG * energy%TAUXV     + (1.0 - FVEG) * energy%TAUXB
-!       energy%TAUY  = FVEG * energy%TAUYV     + (1.0 - FVEG) * energy%TAUYB
-!       energy%FIRA  = FVEG * energy%IRG       + (1.0 - FVEG) * energy%IRB       + energy%IRC
-!       energy%FSH   = FVEG * energy%SHG       + (1.0 - FVEG) * energy%SHB       + energy%SHC
-!       energy%FGEV  = FVEG * energy%EVG       + (1.0 - FVEG) * energy%EVB
-!       energy%SSOIL = FVEG * energy%GHV       + (1.0 - FVEG) * energy%GHB
-!       energy%FCEV  = energy%EVC
-!       energy%FCTR  = energy%TR
-!       energy%PAH   = FVEG * energy%PAHG      + (1.0 - FVEG) * energy%PAHB   + energy%PAHV
-!       TG    = FVEG * energy%TGV       + (1.0 - FVEG) * energy%TGB
-!       energy%T2M   = FVEG * energy%T2MV      + (1.0 - FVEG) * energy%T2MB
-!       energy%TS    = FVEG * energy%TV        + (1.0 - FVEG) * energy%TGB
-!       energy%CM    = FVEG * CMV       + (1.0 - FVEG) * CMB      ! better way to average?
-!       energy%CH    = FVEG * energy%CHV       + (1.0 - FVEG) * energy%CHB
-!       energy%Q1    = FVEG * (EAH*0.622/(forcing%SFCPRS - 0.378*EAH)) + (1.0 - FVEG)*energy%QSFC
-!       energy%Q2E   = FVEG * energy%Q2V       + (1.0 - FVEG) * energy%Q2B
-!       energy%Z0WRF = energy%Z0M
-!     ELSE
-!       energy%TAUX  = energy%TAUXB
-!       energy%TAUY  = energy%TAUYB
-!       energy%FIRA  = energy%IRB
-!       energy%FSH   = energy%SHB
-!       energy%FGEV  = energy%EVB
-!       energy%SSOIL = energy%GHB
-!       TG           = energy%TGB      ! could use more associated variables to unclutter the code
-!       energy%T2M   = energy%T2MB
-!       energy%FCEV  = 0.
-!       energy%FCTR  = 0.
-!       energy%PAH   = energy%PAHB
-!       energy%TS    = TG
-!       energy%CM    = CMB
-!       energy%CH    = energy%CHB
-!       energy%Q1    = energy%QSFC
-!       energy%Q2E   = energy%Q2B
-!       energy%RSSUN = 0.0
-!       energy%RSSHA = 0.0
-!       energy%TGV   = energy%TGB
-!       energy%CHV   = energy%CHB
-!       energy%Z0WRF = energy%Z0MG
-!     END IF
-!
-!     FIRE = LWDN + energy%FIRA
-!     IF(FIRE <=0.) THEN
-!       !WRITE(6,*) 'emitted longwave <0; skin T may be wrong due to inconsistent'
-!       !WRITE(6,*) 'input of SHDFAC with LAI'
-!       !WRITE(6,*) domain%ILOC, domain%JLOC, 'SHDFAC=',FVEG,'parameters%VAI=',parameters%VAI,'TV=',TV,'TG=',TG
-!       !WRITE(6,*) 'LWDN=',LWDN,'energy%FIRA=',energy%FIRA,'water%SNOWH=',water%SNOWH
-!       ! call wrf_error_fatal("STOP in Noah-MP")
-!       WRITE(*,*) 'emitted longwave <0; skin T may be wrong due to inconsistent'
-!       WRITE(*,*) 'input of SHDFAC with LAI'
-!       WRITE(*,*) domain%ILOC, domain%JLOC, 'SHDFAC=',FVEG,'parameters%VAI=',parameters%VAI,'TV=',TV,'TG=',TG
-!       WRITE(*,*) 'LWDN=',LWDN,'energy%FIRA=',energy%FIRA,'water%SNOWH=',water%SNOWH
-!       WRITE(*,*) 'Exiting ...'
-!       STOP
-!     END IF
-!
-!     print*, "FIRE = ", FIRE
-!
-!     ! Compute a net emissivity
-!     energy%EMISSI = FVEG * ( EMG*(1-EMV) + EMV + EMV*(1-EMV)*(1-EMG) ) + (1-FVEG) * EMG
-!
-!     ! When we're computing a TRAD, subtract from the emitted IR the
-!     ! reflected portion of the incoming LWDN, so we're just
-!     ! considering the IR originating in the canopy/ground system.
-!     energy%TRAD = ( ( FIRE - (1 - energy%EMISSI) * LWDN ) / (energy%EMISSI * parameters%SB) ) ** 0.25
-!     !energy%TRAD = (FIRE/SB)**0.25          Old TRAD calculation not taking into account Emissivity
-!
-!     energy%APAR = energy%PARSUN * energy%LAISUN + energy%PARSHA * energy%LAISHA
-!     energy%PSN  = energy%PSNSUN * energy%LAISUN + energy%PSNSHA * energy%LAISHA
+    print*, "GHV = " ,energy%GHV
+
+    energy%TGB = energy%TG
+    energy%CMB = energy%CM
+    energy%CHB = energy%CH
+
+    CALL BareFluxMain (domain, levels, options, parameters, forcing, energy, water)
+
+    !energy balance at vege canopy: SAV          =(IRC+SHC+EVC+TR)     *FVEG  at   FVEG
+    !energy balance at vege ground: SAG*    FVEG =(IRG+SHG+EVG+GHV)    *FVEG  at   FVEG
+    !energy balance at bare ground: SAG*(1.-FVEG)=(IRB+SHB+EVB+GHB)*(1.-FVEG) at 1-FVEG
+
+    IF (parameters%VEG .AND. parameters%FVEG > 0) THEN
+      energy%TAUX  = parameters%FVEG * energy%TAUXV     + (1.0 - parameters%FVEG) * energy%TAUXB
+      energy%TAUY  = parameters%FVEG * energy%TAUYV     + (1.0 - parameters%FVEG) * energy%TAUYB
+      energy%FIRA  = parameters%FVEG * energy%IRG       + (1.0 - parameters%FVEG) * energy%IRB       + energy%IRC
+      energy%FSH   = parameters%FVEG * energy%SHG       + (1.0 - parameters%FVEG) * energy%SHB       + energy%SHC
+      energy%FGEV  = parameters%FVEG * energy%EVG       + (1.0 - parameters%FVEG) * energy%EVB
+      energy%SSOIL = parameters%FVEG * energy%GHV       + (1.0 - parameters%FVEG) * energy%GHB
+      energy%FCEV  = energy%EVC
+      energy%FCTR  = energy%TR
+      energy%PAH   = parameters%FVEG * energy%PAHG      + (1.0 - parameters%FVEG) * energy%PAHB   + energy%PAHV
+      energy%TG    = parameters%FVEG * energy%TGV       + (1.0 - parameters%FVEG) * energy%TGB
+      energy%T2M   = parameters%FVEG * energy%T2MV      + (1.0 - parameters%FVEG) * energy%T2MB
+      energy%TS    = parameters%FVEG * energy%TV        + (1.0 - parameters%FVEG) * energy%TGB
+      energy%CM    = parameters%FVEG * energy%CMV       + (1.0 - parameters%FVEG) * energy%CMB      ! better way to average?
+      energy%CH    = parameters%FVEG * energy%CHV       + (1.0 - parameters%FVEG) * energy%CHB
+      energy%Q1    = parameters%FVEG *(energy%EAH*0.622/(forcing%SFCPRS - 0.378*energy%EAH)) + (1.0 - parameters%FVEG)*energy%QSFC
+      energy%Q2E   = parameters%FVEG * energy%Q2V       + (1.0 - parameters%FVEG) * energy%Q2B
+      energy%Z0WRF = energy%Z0M
+    ELSE
+      energy%TAUX  = energy%TAUXB
+      energy%TAUY  = energy%TAUYB
+      energy%FIRA  = energy%IRB
+      energy%FSH   = energy%SHB
+      energy%FGEV  = energy%EVB
+      energy%SSOIL = energy%GHB
+      energy%TG    = energy%TGB      ! could use more associated variables to unclutter the code
+      energy%T2M   = energy%T2MB
+      energy%FCEV  = 0.
+      energy%FCTR  = 0.
+      energy%PAH   = energy%PAHB
+      energy%TS    = energy%TG
+      energy%CM    = energy%CMB
+      energy%CH    = energy%CHB
+      energy%Q1    = energy%QSFC
+      energy%Q2E   = energy%Q2B
+      energy%RSSUN = 0.0
+      energy%RSSHA = 0.0
+      energy%TGV   = energy%TGB
+      energy%CHV   = energy%CHB
+      energy%Z0WRF = energy%Z0MG
+    END IF
+
+    FIRE = forcing%LWDN + energy%FIRA
+    IF(FIRE <=0.) THEN
+      !WRITE(6,*) 'emitted longwave <0; skin T may be wrong due to inconsistent'
+      !WRITE(6,*) 'input of SHDFAC with LAI'
+      !WRITE(6,*) domain%ILOC, domain%JLOC, 'SHDFAC=',FVEG,'parameters%VAI=',parameters%VAI,'TV=',TV,'TG=',TG
+      !WRITE(6,*) 'LWDN=',LWDN,'energy%FIRA=',energy%FIRA,'water%SNOWH=',water%SNOWH
+      ! call wrf_error_fatal("STOP in Noah-MP")
+      WRITE(*,*) 'emitted longwave <0; skin T may be wrong due to inconsistent'
+      WRITE(*,*) 'input of SHDFAC with LAI'
+      WRITE(*,*) domain%ILOC, domain%JLOC, 'SHDFAC=',parameters%FVEG,'parameters%VAI=',parameters%VAI,'TV=',energy%TV,'TG=',energy%TG
+      WRITE(*,*) 'LWDN=',forcing%LWDN,'energy%FIRA=',energy%FIRA,'water%SNOWH=',water%SNOWH
+      WRITE(*,*) 'Exiting ...'
+      STOP
+    END IF
+
+    print*, "FIRE = ", FIRE
+
+    ! Compute a net emissivity
+    energy%EMISSI = parameters%FVEG * (energy%EMG*(1-energy%EMV) + energy%EMV + energy%EMV*(1-energy%EMV)*(1-energy%EMG)) +&
+                    (1-parameters%FVEG) * energy%EMG
+
+    ! When we're computing a TRAD, subtract from the emitted IR the
+    ! reflected portion of the incoming LWDN, so we're just
+    ! considering the IR originating in the canopy/ground system.
+    energy%TRAD = ( ( FIRE - (1 - energy%EMISSI) * forcing%LWDN ) / (energy%EMISSI * parameters%SB) ) ** 0.25
+    !energy%TRAD = (FIRE/SB)**0.25          Old TRAD calculation not taking into account Emissivity
+
+    energy%APAR = energy%PARSUN * energy%LAISUN + energy%PARSHA * energy%LAISHA
+    energy%PSN  = energy%PSNSUN * energy%LAISUN + energy%PSNSHA * energy%LAISHA
 !
 !     ! calculate 3L snow & 4L soil temperatures
 !     CALL TSNOSOI (parameters, levels, domain, options, forcing,                   & !in
