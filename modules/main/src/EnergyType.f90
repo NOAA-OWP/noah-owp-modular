@@ -90,7 +90,7 @@ type, public :: energy_type
   REAL                 :: EMG     ! ground emissivity (-)
   REAL                 :: GAMMAV  ! psychrometric constant (Pa/K)
   REAL                 :: GAMMAG  ! psychrometric constant (Pa/K)  
-  REAL                 :: GAMMA   ! psychrometric constant (Pa/K)  
+!  REAL                 :: GAMMA   ! psychrometric constant (Pa/K)  NOT USED IN CURRENT VERSION
   REAL                 :: EVC     ! evaporation heat flux (w/m2)  [+= to atm]  
   REAL                 :: IRC     ! net longwave radiation (w/m2) [+= to atm]
   REAL                 :: IRG     ! net longwave radiation (w/m2) [+= to atm]
@@ -261,7 +261,7 @@ contains
     this%EMG       = huge(1.0)  
     this%GAMMAV    = huge(1.0)  
     this%GAMMAG    = huge(1.0)  
-    this%GAMMA     = huge(1.0)  
+!    this%GAMMA     = huge(1.0)  ! NOT USED IN CURRENT VERSION
     
     this%EVC       = huge(1.0)  
     this%IRC       = huge(1.0)  

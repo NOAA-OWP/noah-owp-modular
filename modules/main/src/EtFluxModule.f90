@@ -405,16 +405,16 @@ contains
       energy%IRG = CIR * energy%TG**4 + AIR
       energy%SHG = CSH * (energy%TG         - TAH         )
       energy%EVG = CEV * (ESTG*energy%RHSUR - EAH         )
-      energy%GH  = CGH * (energy%TG         - energy%STC(water%ISNOW+1))
+      energy%GHV  = CGH * (energy%TG         - energy%STC(water%ISNOW+1))
 
-      B = energy%SAG-energy%IRG-energy%SHG-energy%EVG-energy%GH+energy%PAHG
+      B = energy%SAG-energy%IRG-energy%SHG-energy%EVG-energy%GHV+energy%PAHG
       A = 4.*CIR*energy%TG**3+CSH+CEV*DESTG+CGH
       DTG = B/A
 
       energy%IRG = energy%IRG + 4.*CIR*energy%TG**3*DTG
       energy%SHG = energy%SHG + CSH*DTG
       energy%EVG = energy%EVG + CEV*DESTG*DTG
-      energy%GH  = energy%GH  + CGH*DTG
+      energy%GHV = energy%GHV + CGH*DTG
       energy%TG  = energy%TG  + DTG
 
     END DO loop2
@@ -430,7 +430,7 @@ contains
         energy%IRG = CIR * (energy%TG)**4 - EMG*(1.-EMV)*LWDN - EMG*EMV*parameters%SB*TV**4
         energy%SHG = CSH * (energy%TG  - TAH)
         energy%EVG = CEV * (ESTG*RHSUR - EAH)
-        energy%GH  = energy%SAG + energy%PAHG - (energy%IRG+energy%SHG+energy%EVG)
+        energy%GHV = energy%SAG + energy%PAHG - (energy%IRG+energy%SHG+energy%EVG)
       END IF
     END IF
 
@@ -647,7 +647,7 @@ contains
       END IF
 
       CSH = RHOAIR*CPAIR/RAHB
-      CEV = RHOAIR*CPAIR/energy%GAMMA/(energy%RSURF+RAWB)
+      CEV = RHOAIR*CPAIR/energy%GAMMAG/(energy%RSURF+RAWB)
 
       ! surface fluxes and dtg
       energy%IRB = CIR * TGB**4 - EMG*LWDN
@@ -678,7 +678,7 @@ contains
         ESTG  = ESATI
       END IF
       QSFC = 0.622*(ESTG*energy%RHSUR)/(PSFC-0.378*(ESTG*energy%RHSUR))
-      QFX  = (QSFC-forcing%QAIR)*CEV*energy%GAMMA/CPAIR
+      QFX  = (QSFC-forcing%QAIR)*CEV*energy%GAMMAG/CPAIR
 
     END DO loop3 ! end stability iteration
     ! -----------------------------------------------------------------
