@@ -180,7 +180,7 @@ contains
     class(energy_type) :: this
     type(namelist_type) :: namelist
 
-    allocate(this%IMELT (-namelist%nsnow+1:0)); this%IMELT(:)              = huge(1)
+    allocate(this%IMELT (-namelist%nsnow+1:namelist%nsoil)); this%IMELT(:) = huge(1)
     allocate(this%STC   (-namelist%nsnow+1:namelist%nsoil)); this%STC(:)   = huge(1.0)
     allocate(this%DF    (-namelist%nsnow+1:namelist%nsoil)); this%DF(:)    = huge(1.0)
     allocate(this%HCPCT (-namelist%nsnow+1:namelist%nsoil)); this%HCPCT(:) = huge(1.0)
