@@ -10,7 +10,7 @@ type, public :: domain_type
 
   integer :: iloc
   integer :: jloc
-  real    :: dt
+  real    :: DT    ! ? run timestep (unit?)
   real    :: lat
   real    :: lon
   real    :: ZREF

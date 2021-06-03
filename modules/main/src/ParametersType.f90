@@ -27,6 +27,8 @@ type, public :: parameters_type
   real                            :: refdk  !
   real                            :: csoil  ! volumetric soil heat capacity [j/m3/K]
   real                            :: Z0     ! bare soil roughness length (m)
+  real                            :: CZIL   ! Parameter used in the calculation of the roughness length for heat, originally in GENPARM.TBL
+  real                            :: ZBOT   ! Depth (m) of lower boundary soil temperature, originally in GENPARM.TBL
   real                            :: frzx   !
   real                            :: slope  ! drainage parameter
   real                            :: timean
@@ -46,7 +48,23 @@ type, public :: parameters_type
   real                            :: Z0MVT  ! momentum roughness length (m)
   real                            :: RC     ! tree crown radius (m)
   real                            :: XL     ! leaf/stem orientation index
+  real                            :: BP     ! minimum leaf conductance (umol/m**2/s)
+  real                            :: FOLNMX ! foliage nitrogen concentration when f(n)=1 (%)
+  real                            :: QE25   ! quantum efficiency at 25c (umol co2 / umol photon)
+  real                            :: VCMX25 ! maximum rate of carboxylation at 25c (umol co2/m**2/s)
+  real                            :: MP     ! slope of conductance-to-photosynthesis relationship
+  real                            :: RGL    ! Parameter used in radiation stress function
+  real                            :: RSMIN  ! Minimum stomatal resistance [s m-1]
+  real                            :: HS     ! Parameter used in vapor pressure deficit function
+  real                            :: AKC    ! q10 for kc25
+  real                            :: AKO    ! q10 for ko25
+  real                            :: AVCMX ! q10 for vcmx25
+  real                            :: RSMAX  ! Maximal stomatal resistance [s m-1]
   real                            :: CWP    ! canopy wind absorption coefficient (formerly CWPVT)
+  real                            :: C3PSN  ! photosynth. pathway: 0. = c4, 1. = c3 [by vegtype]
+  real                            :: DLEAF  ! characteristic leaf dimension (m)
+  real                            :: KC25   ! co2 michaelis-menten constant at 25c (pa)
+  real                            :: KO25   ! o2 michaelis-menten constant at 25c (pa)
   real                            :: ELAI
   real                            :: ESAI
   real                            :: VAI     ! sum of ELAI + ESAI
@@ -66,7 +84,6 @@ type, public :: parameters_type
   integer                         :: LOW_DENSITY_RESIDENTIAL   ! vegtype code for low density residential
   integer                         :: HIGH_DENSITY_RESIDENTIAL  ! vegtype code for high density residential
   integer                         :: HIGH_INTENSITY_INDUSTRIAL ! vegtype code for high density industrial
-  real                            :: GRAV     !acceleration due to gravity (m/s2)
   real                            :: SB       !Stefan-Boltzmann constant (w/m2/k4)
   real                            :: VKC      !von Karman constant
   real                            :: TFRZ     !freezing/melting point (k)
@@ -116,6 +133,15 @@ type, public :: parameters_type
   real                            :: SNOW_RET_FAC !snowpack water release timescale factor (1/s)
   integer                         :: NBAND        ! Number of shortwave bands (2, visible and NIR)
   real                            :: MPE          ! MPE is nominally small to prevent dividing by zero error
+  real                            :: TOPT         ! Optimum transpiration air temperature [K]   
+  real                            :: O2           ! o2 partial pressure, from MPTABLE.TBL
+  real                            :: CO2          ! co2 partial pressure, from MPTABLE.TBL  
+  
+  REAL                            :: PSIWLT       ! matric potential for wilting point (m)  (orig a fixed param.)
+  REAL                            :: TBOT         ! bottom condition for soil temp. (k) 
+  
+  real                            :: GRAV         ! acceleration due to gravity (m/s2)
+  
 
   contains
 
@@ -149,7 +175,7 @@ contains
     allocate(this%smcref (namelist%nsoil))  ; this%smcref (:) = huge(1.0)
     allocate(this%dksat  (namelist%nsoil))  ; this%dksat  (:) = huge(1.0)
     allocate(this%dwsat  (namelist%nsoil))  ; this%dwsat  (:) = huge(1.0)
-    allocate(this%psisat (namelist%nsoil))  ; this%psisat (:) = huge(1.0)
+    allocate(this%psisat (namelist%nsoil))  ; this%psisat (:) = huge(1.0)    
 
   end subroutine InitAllocate
 
@@ -198,7 +224,23 @@ contains
     this%Z0MVT  = namelist%Z0MVT (namelist%vegtyp)
     this%RC     = namelist%RC (namelist%vegtyp)
     this%XL     = namelist%XL (namelist%vegtyp)
+    this%BP     = namelist%BP (namelist%vegtyp)
+    this%FOLNMX = namelist%FOLNMX (namelist%vegtyp)
+    this%QE25   = namelist%QE25 (namelist%vegtyp)
+    this%VCMX25 = namelist%VCMX25 (namelist%vegtyp)
+    this%MP     = namelist%MP (namelist%vegtyp)
+    this%RGL    = namelist%RGL (namelist%vegtyp)
+    this%RSMIN  = namelist%RSMIN (namelist%vegtyp)
+    this%HS     = namelist%HS (namelist%vegtyp)
+    this%AKC    = namelist%AKC (namelist%vegtyp)
+    this%AKO    = namelist%AKO (namelist%vegtyp)
+    this%AVCMX  = namelist%AVCMX (namelist%vegtyp)
+    this%RSMAX  = namelist%RSMAX (namelist%vegtyp)
     this%CWP    = namelist%CWP
+    this%c3psn  = namelist%c3psn
+    this%DLEAF  = namelist%DLEAF
+    this%KC25   = namelist%KC25
+    this%KO25   = namelist%KO25
     this%RHOL   = namelist%RHOL_TABLE  (namelist%vegtyp, :)
     this%RHOS   = namelist%RHOS_TABLE  (namelist%vegtyp, :)
     this%TAUL   = namelist%TAUL_TABLE  (namelist%vegtyp, :)
@@ -207,7 +249,9 @@ contains
     this%refdk  = namelist%refdk
     this%kdt    = this%refkdt * this%dksat(1) / this%refdk
     this%csoil  = namelist%csoil
-    this%Z0     = namelist%Z0
+    this%Z0     = namelist%Z0     ! orig = 0.002 in energy() as a fixed parameter
+    this%CZIL   = namelist%CZIL
+    this%ZBOT   = namelist%ZBOT
     this%frzx   = 0.15 * (this%smcmax(1) / this%smcref(1)) * (0.412 / 0.468)
     this%SSI    = namelist%SSI  
     this%MFSNO  = namelist%MFSNO  
@@ -272,7 +316,13 @@ contains
     this%max_liq_mass_fraction = 0.4
     this%SNOW_RET_FAC = 5.e-5
     this%NBAND        = 2  ! do not change 
-    this%MPE          = 1.E-06  ! do not change 
+    this%MPE          = 1.E-06  ! do not change ! need to make this a parameter
+    this%TOPT         = 1.E-06  ! Optimum transpiration air temperature [K]   
+    
+    this%CO2       =  395.e-06   ! co2 partial pressure, from CO2_TABLE var (set in MPTABLE.TBL)
+    this%O2        =  0.209      ! o2 partial pressure, from O2_TABLE var (set in MPTABLE.TBL)
+    this%PSIWLT    = -150.0      ! originally a fixed parameter set in ENERGY()
+    this%TBOT      = 263.0       ! (K) can be updated depending on option OPT_TBOT
 
   end subroutine InitTransfer
 

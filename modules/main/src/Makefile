@@ -31,6 +31,8 @@ OBJS = NamelistRead.o \
        ShortwaveRadiationModule.o \
        ThermalPropertiesModule.o \
        PrecipHeatModule.o \
+       EtFluxModule.o \
+       SnowSoilTempModule.o \
        EnergyModule.o 
 
 all:	$(OBJS)
@@ -87,8 +89,13 @@ ThermalPropertiesModule.o: OptionsType.o LevelsType.o DomainType.o ParametersTyp
 AlbedoModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
                ForcingType.o WaterType.o 
 ShortwaveRadiationModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
-               ForcingType.o WaterType.o AlbedoModule.o
+                ForcingType.o WaterType.o AlbedoModule.o
 PrecipHeatModule.o: ParametersType.o EnergyType.o ForcingType.o WaterType.o
+EtFluxModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
+                ForcingType.o WaterType.o
+SnowSoilTempModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
+               ForcingType.o WaterType.o
 EnergyModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
-                ForcingType.o WaterType.o ThermalPropertiesModule.o ShortwaveRadiationModule.o PrecipHeatModule.o
+                ForcingType.o WaterType.o ThermalPropertiesModule.o ShortwaveRadiationModule.o \
+                PrecipHeatModule.o EtFluxModule.o SnowSoilTempModule.o
 

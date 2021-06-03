@@ -14,13 +14,11 @@
   precip_duration = 3       ! duration of precipitation events [hours]
   dry_duration    = 3       ! duration of dry events [hours]
   precipitating   = .true.  ! start with precipitation
-  uwind           = 3.0     ! wind speed m/s
-  vwind           = 3.0     ! wind speed m/s
   ZREF            = 10.0    ! measurment height for wind speed
 /
 
 &model_options
-  precip_phase_option = 2
+  precip_phase_option               = 2
   snow_albedo_option                = 2 ! 1 = BATS, 2 = CLASS
   dynamic_veg_option                = 1
   runoff_option                     = 8
@@ -28,12 +26,21 @@
   frozen_soil_option                = 1
   dynamic_vic_option                = 1
   radiative_transfer_option         = 3
+  sfc_drag_coeff_option             = 1
+  canopy_stom_resist_option         = 1
+  crop_model_option                 = 0
+  snowsoil_temp_time_option         = 3
+  soil_temp_boundary_option         = 2
+  supercooled_water_option          = 1
+  stomatal_resistance_option        = 1
+  evap_srfc_resistance_option       = 1
 /
 
 &structure
  isltyp           = 1       ! soil texture class
  nsoil            = 4       ! number of soil levels
  nsnow            = 3       ! number of snow levels
+ nveg             = 20      ! number of vegetation types
  structure_option = 1       ! 1: use preset zsoil; 2: uniform levels
  soil_depth       = 2.0     ! total soil thickness [m] for structure_option > 1
  vegtyp           = 1       ! vegetation type modis
@@ -79,6 +86,8 @@
    refdk = 2.0e-6
    csoil = 2.0e+6 ! volumetric soil heat capacity [j/m3/K]
       Z0 = 0.002  ! bare soil roughness length (m)
+    CZIL = 0.1    ! Parameter used in the calculation of the roughness length for heat, originally in GENPARM.TBL
+    ZBOT = -8.0   ! Depth (m) of lower boundary soil temperature, originally in GENPARM.TBL
 /
 
 &snow_parameters
@@ -115,7 +124,28 @@
  Z0MVT  =  1.09,   1.10,   0.85,   0.80,   0.80,   0.20,   0.06,   0.60,   0.50,   0.12,   0.30,   0.15,   1.00,   0.14,   0.00,   0.00,   0.00,   0.30,   0.20,   0.03,
  RC     =  1.20,   3.60,   1.20,   1.40,   1.40,   0.12,   0.12,   0.12,   3.00,   0.03,   0.75,   0.08,   1.00,   0.08,   0.00,   0.01,   0.01,   0.30,   0.30,   0.30,
  XL     = 0.010,  0.010,  0.010,  0.250,  0.250,  0.010,  0.010,  0.010,  0.010,  -0.30, -0.025,  -0.30,  0.000,  -0.30,  0.000,  0.000,  0.000,  0.250,  0.250,  0.250,
+ BP     =  2.E3,   2.E3,   2.E3,   2.E3,   2.E3,   2.E3,   2.E3,   2.E3,   2.E3,   2.E3,   2.E3,   2.E3,  1.E15,   2.E3,  1.E15,   2.E3,  1.E15,   2.E3,   2.E3,   2.E3,
+ FOLNMX =   1.5,    1.5,    1.5,    1.5,    1.5,    1.5,    1.5,    1.5,    1.5,    1.5,    1.5,    1.5,   0.00,    1.5,   0.00,    1.5,   0.00,    1.5,    1.5,    1.5,
+ QE25   =  0.06,   0.06,   0.06,   0.06,   0.06,   0.06,   0.06,   0.06,   0.06,   0.06,   0.06,   0.06,   0.00,   0.06,   0.00,   0.06,   0.00,   0.06,   0.06,   0.06,
+ VCMX25 =  50.0,   60.0,   60.0,   60.0,   55.0,   40.0,   40.0,   40.0,   40.0,   40.0,   50.0,   80.0,   0.00,   60.0,   0.00,   0.00,   0.00,   50.0,   50.0,   50.0,
+ MP     =    6.,     9.,     6.,     9.,     9.,     9.,     9.,     9.,     9.,     9.,     9.,     9.,     9.,     9.,     9.,     9.,     9.,     9.,     9.,     9.,
+ RGL    =  30.0,   30.0,   30.0,   30.0,   30.0,  100.0,  100.0,  100.0,   65.0,  100.0,   65.0,  100.0,  999.0,  100.0,  999.0,  999.0,   30.0,  100.0,  100.0,  100.0,
+ RSMIN  = 125.0,  150.0,  150.0,  100.0,  125.0,  300.0,  170.0,  300.0,   70.0,   40.0,   70.0,   40.0,  200.0,   40.0,  999.0,  999.0,  100.0,  150.0,  150.0,  200.0,
+ HS     = 47.35,  41.69,  47.35,  54.53,  51.93,  42.00,  39.18,  42.00,  54.53,  36.35,  55.97,  36.25,  999.0,  36.25,  999.0,  999.0,  51.75,  42.00,  42.00,  42.00,
+ AKC    =   2.1,    2.1,    2.1,    2.1,    2.1,    2.1,    2.1,    2.1,    2.1,    2.1,    2.1,    2.1,    2.1,    2.1,    2.1,    2.1,    2.1,    2.1,    2.1,    2.1,
+ AKO    =   1.2,    1.2,    1.2,    1.2,    1.2,    1.2,    1.2,    1.2,    1.2,    1.2,    1.2,    1.2,    1.2,    1.2,    1.2,    1.2,    1.2,    1.2,    1.2,    1.2,
+ AVCMX  =   2.4,    2.4,    2.4,    2.4,    2.4,    2.4,    2.4,    2.4,    2.4,    2.4,    2.4,    2.4,    2.4,    2.4,    2.4,    2.4,    2.4,    2.4,    2.4,    2.4,
+ RSMAX  = 5000.,  5000.,  5000.,  5000.,  5000.,  5000.,  5000.,  5000.,  5000.,  5000.,  5000.,  5000.,  5000.,  5000.,  5000.,  5000.,  5000.,  5000.,  5000.,  5000.,
+
+
+
+
+
  CWP    =  0.18,
+ C3PSN  =  1.0,
+ DLEAF  =  0.04,
+ KC25   =  30.0,
+ KO25   =  3.E4,
 
  ! Row 1:  Vis
  ! Row 2:  Near IR

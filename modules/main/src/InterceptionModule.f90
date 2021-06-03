@@ -208,7 +208,7 @@ contains
                     (1.-EXP(-water%SNOW * domain%DT / MAXSNO)) )
        water%QINTS = MAX(water%QINTS, 0.)
        FT = MAX(0.0,(energy%TV - 270.15) / 1.87E5)
-       FV = SQRT(forcing%uwind*forcing%uwind+forcing%vwind*forcing%vwind) / 1.56E5
+       FV = SQRT(forcing%UU*forcing%UU+forcing%VV*forcing%VV) / 1.56E5
        ! MB: changed below to reflect the rain assumption that all precip gets intercepted 
        ICEDRIP = MAX(0.,water%CANICE) * (FV+FT)    !MB: removed /DT
        water%QDRIPS = (parameters%FVEG * water%SNOW - water%QINTS) + ICEDRIP
