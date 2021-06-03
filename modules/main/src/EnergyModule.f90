@@ -323,35 +323,51 @@ contains
 
     energy%APAR = energy%PARSUN * energy%LAISUN + energy%PARSHA * energy%LAISHA
     energy%PSN  = energy%PSNSUN * energy%LAISUN + energy%PSNSHA * energy%LAISHA
-!
-!     ! calculate 3L snow & 4L soil temperatures
-!     CALL TSNOSOI (parameters, levels, domain, options, forcing,                   & !in
-!                   energy%ICE, water%ISNOW, energy%SSOIL, energy%DF, energy%HCPCT, & !in
-!                   energy%SAG, water%SNOWH, TG,                                    & !in
-!                   energy%STC     )                                                  !inout
-!
-!     ! AW:  need to decide what to do with STC if no subsurface will be simulated
-!     !      ie, should soil layers be 0C if there is snow and TGB if not?
-!
-!     ! adjusting snow surface temperature
-!     IF(options%OPT_STC == 2) THEN
-!       IF (water%SNOWH > 0.05 .AND. TG > parameters%TFRZ) THEN
-!         energy%TGV = parameters%TFRZ
-!         energy%TGB = parameters%TFRZ
-!         IF (parameters%VEG .AND. FVEG > 0) THEN
-!           TG           = FVEG * energy%TGV  + (1.0 - FVEG) * energy%TGB
-!           energy%TS    = FVEG * TV          + (1.0 - FVEG) * energy%TGB
-!         ELSE
-!           TG           = energy%TGB
-!           energy%TS    = energy%TGB
-!         END IF
-!       END IF
-!     END IF
+
+    ! print the layer temperatures
+    print*, "energy%stc(-2) = ", energy%stc(-2)
+    print*, "energy%stc(-1) = ", energy%stc(-1)
+    print*, "energy%stc(0) = ", energy%stc(0)
+    print*, "energy%stc(1) = ", energy%stc(1)
+    print*, "energy%stc(2) = ", energy%stc(2)
+    print*, "energy%stc(3) = ", energy%stc(3)
+    print*, "energy%stc(4) = ", energy%stc(4)
+
+    ! calculate 3L snow & 4L soil temperatures
+    CALL TSNOSOI (parameters, levels, domain, options, forcing,                   & !in
+                  energy%ICE, water%ISNOW, energy%SSOIL, energy%DF, energy%HCPCT, & !in
+                  energy%SAG, water%SNOWH, energy%TG,                             & !in
+                  energy%STC     )                                                  !inout
+
+    ! print the layer temperatures
+    print*, "energy%stc(-2) = ", energy%stc(-2)
+    print*, "energy%stc(-1) = ", energy%stc(-1)
+    print*, "energy%stc(0) = ", energy%stc(0)
+    print*, "energy%stc(1) = ", energy%stc(1)
+    print*, "energy%stc(2) = ", energy%stc(2)
+    print*, "energy%stc(3) = ", energy%stc(3)
+    print*, "energy%stc(4) = ", energy%stc(4)
+
+    ! AW:  need to decide what to do with STC if no subsurface will be simulated
+    !      ie, should soil layers be 0C if there is snow and TGB if not?
+
+    ! adjusting snow surface temperature
+    IF(options%OPT_STC == 2) THEN
+      IF (water%SNOWH > 0.05 .AND. energy%TG > parameters%TFRZ) THEN
+        energy%TGV = parameters%TFRZ
+        energy%TGB = parameters%TFRZ
+        IF (parameters%VEG .AND. parameters%FVEG > 0) THEN
+          energy%TG = parameters%FVEG * energy%TGV  + (1.0 - parameters%FVEG) * energy%TGB
+          energy%TS = parameters%FVEG * energy%TV   + (1.0 - parameters%FVEG) * energy%TGB
+        ELSE
+          energy%TG = energy%TGB
+          energy%TS = energy%TGB
+        END IF
+      END IF
+    END IF
 !
 !     ! Energy released or consumed by snow & frozen soil
-!     CALL PHASECHANGE (parameters, domain, energy, water, options, levels%NSNOW, levels%NSOIL)
-!
-!     END associate ! terminate associate block
+!     CALL PHASECHANGE (parameters, domain, energy, water, options, levels%NSNOW, levels%NSOIL)!
 
   END SUBROUTINE EnergyMain   
 
