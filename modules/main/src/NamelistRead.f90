@@ -20,14 +20,13 @@ type, public :: namelist_type
   integer       :: isltyp
   integer       :: nsoil
   integer       :: nsnow
+  integer       :: nveg               ! number of vegetation types  
   integer       :: structure_option
   real          :: soil_depth
   integer       :: vegtyp
   integer       :: croptype
   integer       :: sfctyp
   integer       :: soilcolor
-  real          :: uwind
-  real          :: vwind
 
   real, allocatable, dimension(:) :: zsoil   ! depth of layer-bottom from soil surface
   real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
@@ -50,6 +49,14 @@ type, public :: namelist_type
   integer       :: dynamic_veg_option
   integer       :: snow_albedo_option
   integer       :: radiative_transfer_option
+  integer       :: sfc_drag_coeff_option
+  integer       :: crop_model_option
+  integer       :: canopy_stom_resist_option
+  integer       :: snowsoil_temp_time_option    
+  integer       :: soil_temp_boundary_option
+  integer       :: supercooled_water_option
+  integer       :: stomatal_resistance_option
+  integer       :: evap_srfc_resistance_option
 
   !--------------------!
   !  soil parameters   !
@@ -76,6 +83,8 @@ type, public :: namelist_type
   real                ::   refdk  ! reference diffusivity for Schaake scheme
   real                ::   csoil  ! volumetric soil heat capacity [j/m3/K]
   real                ::   Z0     ! bare soil roughness length (m)
+  real                ::   CZIL   ! Parameter used in the calculation of the roughness length for heat, originally in GENPARM.TBL
+  real                ::   ZBOT   ! Depth (m) of lower boundary soil temperature, originally in GENPARM.TBL
 
   !--------------------!
   !  Vegetation parameters   !
@@ -94,7 +103,23 @@ type, public :: namelist_type
   real, dimension(20)     ::   Z0MVT          ! momentum roughness length (m)
   real, dimension(20)     ::   RC             ! tree crown radius (m)
   real, dimension(20)     ::   XL             ! leaf/stem orientation index
+  real, dimension(20)     ::   BP             ! minimum leaf conductance (umol/m**2/s)
+  real, dimension(20)     ::   FOLNMX         ! foliage nitrogen concentration when f(n)=1 (%)
+  real, dimension(20)     ::   QE25           ! quantum efficiency at 25c (umol co2 / umol photon)
+  real, dimension(20)     ::   VCMX25         ! maximum rate of carboxylation at 25c (umol co2/m**2/s)
+  real, dimension(20)     ::   MP             ! slope of conductance-to-photosynthesis relationship
+  real, dimension(20)     ::   RGL            ! Parameter used in radiation stress function
+  real, dimension(20)     ::   RSMIN          ! Minimum stomatal resistance [s m-1]
+  real, dimension(20)     ::   HS             ! Parameter used in vapor pressure deficit function
+  real, dimension(20)     ::   AKC            ! q10 for kc25
+  real, dimension(20)     ::   AKO            ! q10 for ko25
+  real, dimension(20)     ::   AVCMX          ! q10 for vcmx25
+  real, dimension(20)     ::   RSMAX          ! Maximal stomatal resistance [s m-1]
   real                    ::   CWP            ! canopy wind absorption coefficient (formerly CWPVT)
+  real                    ::   C3PSN          ! photosynth. pathway: 0. = c4, 1. = c3 
+  real                    ::   DLEAF          ! characteristic leaf dimension (m)
+  real                    ::   KC25           ! co2 michaelis-menten constant at 25c (pa)
+  real                    ::   KO25           ! o2 michaelis-menten constant at 25c (pa)
   real, dimension(20)     ::   RHOL_VIS       ! leaf reflectance in visible
   real, dimension(20)     ::   RHOL_NIR       ! leaf reflectance in near infrared
   real, dimension(20)     ::   RHOS_VIS       ! stem reflectance in visible
@@ -190,14 +215,13 @@ contains
     integer       :: isltyp
     integer       :: nsoil
     integer       :: nsnow
+    integer       :: nveg    
     integer       :: structure_option
     real          :: soil_depth
     integer       :: vegtyp
     integer       :: croptype
     integer       :: sfctyp
     integer       :: soilcolor
-    real          :: uwind
-    real          :: vwind
 
     real, allocatable, dimension(:) :: zsoil   ! depth of layer-bottom from soil surface
     real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
@@ -220,6 +244,14 @@ contains
     integer       :: dynamic_veg_option
     integer       :: snow_albedo_option
     integer       :: radiative_transfer_option
+    integer       :: sfc_drag_coeff_option
+    integer       :: crop_model_option
+    integer       :: canopy_stom_resist_option
+    integer       :: snowsoil_temp_time_option    
+    integer       :: soil_temp_boundary_option
+    integer       :: supercooled_water_option
+    integer       :: stomatal_resistance_option
+    integer       :: evap_srfc_resistance_option
 
     !--------------------!
     !  soil parameters   !
@@ -246,11 +278,12 @@ contains
     real                ::   refdk  ! reference diffusivity for Schaake scheme
     real                ::   csoil  ! volumetric soil heat capacity [j/m3/K]
     real                ::   Z0     ! bare soil roughness length (m)
+    real                ::   CZIL   ! Parameter used in the calculation of the roughness length for heat, originally in GENPARM.TBL
+    real                ::   ZBOT   ! Depth (m) of lower boundary soil temperature, originally in GENPARM.TBL
 
     !--------------------!
     !  Vegetation parameters   !
     !--------------------!
-    
     real, dimension(20)     ::   LAI_JAN,LAI_FEB,LAI_MAR,LAI_APR,LAI_MAY,LAI_JUN, &
                                      LAI_JUL,LAI_AUG,LAI_SEP,LAI_OCT,LAI_NOV,LAI_DEC
     real, dimension(20)     ::   SAI_JAN,SAI_FEB,SAI_MAR,SAI_APR,SAI_MAY,SAI_JUN, &
@@ -265,7 +298,23 @@ contains
     real, dimension(20)     ::   Z0MVT          ! momentum roughness length (m)
     real, dimension(20)     ::   RC             ! tree crown radius (m)
     real, dimension(20)     ::   XL             ! leaf/stem orientation index
+    real, dimension(20)     ::   BP             ! minimum leaf conductance (umol/m**2/s)
+    real, dimension(20)     ::   FOLNMX         ! foliage nitrogen concentration when f(n)=1 (%)
+    real, dimension(20)     ::   QE25           ! quantum efficiency at 25c (umol co2 / umol photon)
+    real, dimension(20)     ::   VCMX25         ! maximum rate of carboxylation at 25c (umol co2/m**2/s)
+    real, dimension(20)     ::   MP             ! slope of conductance-to-photosynthesis relationship
+    real, dimension(20)     ::   RGL            ! Parameter used in radiation stress function
+    real, dimension(20)     ::   RSMIN          ! Minimum stomatal resistance [s m-1]
+    real, dimension(20)     ::   HS             ! Parameter used in vapor pressure deficit function
+    real, dimension(20)     ::   AKC            ! q10 for kc25
+    real, dimension(20)     ::   AKO            ! q10 for ko25
+    real, dimension(20)     ::   AVCMX          ! q10 for vcmx25
+    real, dimension(20)     ::   RSMAX          ! Maximal stomatal resistance [s m-1]
     real                    ::   CWP            ! canopy wind absorption coefficient (formerly CWPVT)
+    real                    ::   C3PSN          ! photosynth. pathway: 0. = c4, 1. = c3 
+    real                    ::   DLEAF          ! characteristic leaf dimension (m)
+    real                    ::   KC25           ! co2 michaelis-menten constant at 25c (pa)
+    real                    ::   KO25           ! o2 michaelis-menten constant at 25c (pa)
     real, dimension(20)     ::   RHOL_VIS       ! leaf reflectance in visible
     real, dimension(20)     ::   RHOL_NIR       ! leaf reflectance in near infrared
     real, dimension(20)     ::   RHOS_VIS       ! stem reflectance in visible
@@ -335,24 +384,30 @@ contains
     namelist / timing          / dt,maxtime,output_filename
     namelist / location        / lat,lon
     namelist / forcing         / preciprate,precip_duration,dry_duration,&
-                                 precipitating,uwind,vwind,ZREF
+                                 precipitating,ZREF
     namelist / model_options   / precip_phase_option,runoff_option,drainage_option,frozen_soil_option,dynamic_vic_option,&
-                                 dynamic_veg_option,snow_albedo_option,radiative_transfer_option
-    namelist / structure       / isltyp,nsoil,nsnow,structure_option,soil_depth,&
+                                 dynamic_veg_option,snow_albedo_option,radiative_transfer_option,sfc_drag_coeff_option,&
+                                 canopy_stom_resist_option,crop_model_option,snowsoil_temp_time_option,soil_temp_boundary_option,&
+                                 supercooled_water_option,stomatal_resistance_option,evap_srfc_resistance_option
+    namelist / structure       / isltyp,nsoil,nsnow,nveg,structure_option,soil_depth,&
                                  vegtyp,croptype,sfctyp,soilcolor
     namelist / fixed_initial   / zsoil,dzsnso,sice,sh2o
     namelist / uniform_initial / initial_uniform,initial_sh2o_value,&
                                  initial_sice_value
     namelist / soil_parameters / bb,satdk,satdw,maxsmc,satpsi,wltsmc, &
                                  refsmc,pctsand,pctclay,bvic,AXAJ,BXAJ,XXAJ,&
-                                 BBVIC,G,QUARTZ,slope,refkdt,refdk,CSOIL,Z0
+                                 BBVIC,G,QUARTZ,slope,refkdt,refdk,CSOIL,Z0,CZIL,ZBOT
     namelist / snow_parameters / SSI,MFSNO,Z0SNO,SWEMX,TAU0,GRAIN_GROWTH,EXTRA_GROWTH,DIRT_SOOT,&
                                  BATS_COSZ,BATS_VIS_NEW,BATS_NIR_NEW,BATS_VIS_AGE,BATS_NIR_AGE,BATS_VIS_DIR,BATS_NIR_DIR,&
                                  RSURF_SNOW,RSURF_EXP
-    namelist / veg_parameters  / CH2OP,NROOT,HVT,HVB,TMIN,SHDFAC,SHDMAX,Z0MVT,RC,XL,CWP,&
+    namelist / veg_parameters  / CH2OP,NROOT,HVT,HVB,TMIN,SHDFAC,SHDMAX,Z0MVT,RC,XL,&
+                                 BP,FOLNMX,QE25,VCMX25,MP,RGL,RSMIN,HS,AKC,AKO,AVCMX,RSMAX,&
+                                 CWP,C3PSN,DLEAF,KC25,KO25,&
                                  RHOL_VIS,RHOL_NIR,RHOS_VIS,RHOS_NIR,TAUL_VIS,TAUL_NIR,TAUS_VIS,TAUS_NIR,&
-                                 LAI_JAN,LAI_FEB,LAI_MAR,LAI_APR,LAI_MAY,LAI_JUN,LAI_JUL,LAI_AUG,LAI_SEP,LAI_OCT,LAI_NOV,LAI_DEC,&
-                                 SAI_JAN,SAI_FEB,SAI_MAR,SAI_APR,SAI_MAY,SAI_JUN,SAI_JUL,SAI_AUG,SAI_SEP,SAI_OCT,SAI_NOV,SAI_DEC
+                                 LAI_JAN,LAI_FEB,LAI_MAR,LAI_APR,LAI_MAY,LAI_JUN,&
+                                 LAI_JUL,LAI_AUG,LAI_SEP,LAI_OCT,LAI_NOV,LAI_DEC,&
+                                 SAI_JAN,SAI_FEB,SAI_MAR,SAI_APR,SAI_MAY,SAI_JUN,&
+                                 SAI_JUL,SAI_AUG,SAI_SEP,SAI_OCT,SAI_NOV,SAI_DEC
     namelist / radiation_parameters / ALBSAT_VIS,ALBSAT_NIR,ALBDRY_VIS,ALBDRY_NIR,ALBICE,ALBLAK,OMEGAS,BETADS,BETAIS,EG
     namelist / land_parameters / ISURBAN,ISWATER,ISBARREN,ISICE,ISCROP,EBLFOREST,NATURAL,LOW_DENSITY_RESIDENTIAL,&
                                  HIGH_DENSITY_RESIDENTIAL,HIGH_INTENSITY_INDUSTRIAL
@@ -375,10 +430,10 @@ contains
      read(30, land_parameters)
     close(30)
 
-    allocate (zsoil (       1:nsoil))   !depth of layer-bottom from soil surface
-    allocate (dzsnso(-nsnow+1:nsoil))   !snow/soil layer thickness [m]
-    allocate (sice  (       1:nsoil))   !soil ice content [m3/m3]
-    allocate (sh2o  (       1:nsoil))   !soil liquid water content [m3/m3]
+    allocate (zsoil (       1:nsoil))   ! depth of layer-bottom from soil surface
+    allocate (dzsnso(-nsnow+1:nsoil))   ! snow/soil layer thickness [m]
+    allocate (sice  (       1:nsoil))   ! soil ice content [m3/m3]
+    allocate (sh2o  (       1:nsoil))   ! soil liquid water content [m3/m3]
 
 !---------------------------------------------------------------------
 !  read input file, part 2: initialize
@@ -410,13 +465,12 @@ contains
     this%precip_duration  = precip_duration
     this%dry_duration     = dry_duration
     this%precipitating    = precipitating
-    this%uwind            = uwind
-    this%vwind            = vwind
     this%ZREF             = ZREF
 
     this%isltyp           = isltyp
     this%nsoil            = nsoil
     this%nsnow            = nsnow
+    this%nveg             = nveg
     this%structure_option = structure_option
     this%soil_depth       = soil_depth
     this%vegtyp           = vegtyp
@@ -441,6 +495,14 @@ contains
     this%dynamic_veg_option  = dynamic_veg_option
     this%snow_albedo_option  = snow_albedo_option
     this%radiative_transfer_option  = radiative_transfer_option
+    this%sfc_drag_coeff_option      = sfc_drag_coeff_option
+    this%crop_model_option          = crop_model_option
+    this%canopy_stom_resist_option  = canopy_stom_resist_option
+    this%snowsoil_temp_time_option  = snowsoil_temp_time_option
+    this%soil_temp_boundary_option  = soil_temp_boundary_option
+    this%supercooled_water_option   = supercooled_water_option
+    this%stomatal_resistance_option = stomatal_resistance_option
+    this%evap_srfc_resistance_option= evap_srfc_resistance_option
 
     this%bb      = bb
     this%satdk   = satdk
@@ -463,6 +525,8 @@ contains
     this%refdk   = refdk
     this%csoil   = csoil
     this%Z0      = Z0
+    this%CZIL    = CZIL
+    this%ZBOT    = ZBOT
     
     this%RHOL_TABLE(1:20, 1) = RHOL_VIS(1:20)
     this%RHOL_TABLE(1:20, 2) = RHOL_NIR(1:20)
@@ -509,7 +573,23 @@ contains
     this%Z0MVT   = Z0MVT
     this%RC      = RC
     this%XL      = XL
+    this%BP      = BP
+    this%FOLNMX  = FOLNMX
+    this%QE25    = QE25
+    this%VCMX25  = VCMX25
+    this%MP      = MP
+    this%RGL     = RGL
+    this%RSMIN   = RSMIN
+    this%HS      = HS
+    this%AKC     = AKC
+    this%AKO     = AKO
+    this%AVCMX   = AVCMX
+    this%RSMAX   = RSMAX
     this%CWP     = CWP
+    this%C3PSN   = C3PSN
+    this%DLEAF   = DLEAF
+    this%KC25    = KC25
+    this%KO25    = KO25
 
     this%SSI          = SSI
     this%MFSNO        = MFSNO
