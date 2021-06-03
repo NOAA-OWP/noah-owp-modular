@@ -119,9 +119,9 @@ contains
   END SUBROUTINE TSNOSOI
 
   ! == begin hrt ======================================================================================
-  SUBROUTINE HRT (parameters, domain, options, NSNOW, NSOIL, ISNOW,  & ! in
-                  STC, ZBOT, DF, HCPCT, SSOIL, PHI,                  & ! in 
-                  AI, BI, CI, RHSTS, BOTFLX)                           ! out
+  SUBROUTINE HRT (parameters, domain, options, NSNOW, NSOIL, & ! in
+                  ISNOW, STC, ZBOT, DF, HCPCT, SSOIL, PHI,   & ! in 
+                  AI, BI, CI, RHSTS, BOTFLX)                   ! out
     ! ----------------------------------------------------------------------
     ! calculate the right hand side of the time tendency term of the soil
     ! thermal diffusion equation.  also to compute ( prepare ) the matrix
