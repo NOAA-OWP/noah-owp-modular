@@ -6,16 +6,18 @@ private
 
 type, public :: namelist_type
 
-  real          :: dt                 ! model timestep (s)
-  integer       :: maxtime
-  character*256 :: output_filename    ! name of the output file
-  real          :: lat                ! latitude (°)
-  real          :: lon                ! longitude (°)
-  real          :: preciprate         ! precipitation rate 
-  integer       :: precip_duration    ! duration of precipitation event (# of timesteps)
-  integer       :: dry_duration       ! duration of dry event (# of timesteps)
-  logical       :: precipitating      ! logical flag for when it is precipitating
-  real          :: ZREF               ! measurement height for wind speed (m)
+  real              :: dt                 ! model timestep (s)
+  integer           :: maxtime
+  character(len=12) :: startdate          ! Start date of the model run ( YYYYMMDDHHmm ) 
+  character(len=12) :: enddate            ! End date of the model run ( YYYYMMDDHHmm ) 
+  character*256     :: output_filename    ! name of the output file
+  real              :: lat                ! latitude (°)
+  real              :: lon                ! longitude (°)
+  real              :: preciprate         ! precipitation rate 
+  integer           :: precip_duration    ! duration of precipitation event (# of timesteps)
+  integer           :: dry_duration       ! duration of dry event (# of timesteps)
+  logical           :: precipitating      ! logical flag for when it is precipitating
+  real              :: ZREF               ! measurement height for wind speed (m)
   
   integer       :: isltyp
   integer       :: nsoil
@@ -201,16 +203,18 @@ contains
     
     integer       :: iz
 
-    real          :: dt
-    integer       :: maxtime
-    character*256 :: output_filename
-    real          :: lat
-    real          :: lon
-    real          :: preciprate
-    integer       :: precip_duration
-    integer       :: dry_duration
-    logical       :: precipitating
-    real          :: ZREF               ! measurement height for wind speed (m)
+    real              :: dt
+    integer           :: maxtime
+    character(len=12) :: startdate
+    character(len=12) :: enddate
+    character*256     :: output_filename
+    real              :: lat
+    real              :: lon
+    real              :: preciprate
+    integer           :: precip_duration
+    integer           :: dry_duration
+    logical           :: precipitating
+    real              :: ZREF               ! measurement height for wind speed (m)
     
     integer       :: isltyp
     integer       :: nsoil
@@ -381,7 +385,7 @@ contains
     integer       :: HIGH_DENSITY_RESIDENTIAL  ! vegtype code for high density residential
     integer       :: HIGH_INTENSITY_INDUSTRIAL ! vegtype code for high density industrial
 
-    namelist / timing          / dt,maxtime,output_filename
+    namelist / timing          / dt,maxtime,startdate,enddate,output_filename
     namelist / location        / lat,lon
     namelist / forcing         / preciprate,precip_duration,dry_duration,&
                                  precipitating,ZREF
@@ -458,6 +462,8 @@ contains
 
     this%dt               = dt
     this%maxtime          = maxtime
+    this%startdate        = startdate
+    this%enddate          = enddate
     this%output_filename  = output_filename
     this%lat              = lat
     this%lon              = lon

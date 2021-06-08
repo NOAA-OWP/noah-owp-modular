@@ -13,10 +13,11 @@ program snow_driver
   use WaterType
   use ForcingType
   use EnergyType
-  use WaterModule
+  use UtilitiesModule
   use ForcingModule
   use InterceptionModule
   use EnergyModule
+  use WaterModule
 
   implicit none
 
@@ -183,6 +184,7 @@ program snow_driver
   domain%IST = 1
   domain%zsnso(-namelist%nsnow+1:0) = 0.0
   domain%zsnso(1:namelist%nsoil) = namelist%zsoil
+  domain%nowdate = domain%startdate ! start the model with nowdate = startdate
 
   ! additional assignment for testing
   water%qseva     = 0.005/3600.0
@@ -233,6 +235,12 @@ program snow_driver
         precipitating  = .true.
       end if
     end if
+
+  !---------------------------------------------------------------------
+  ! call the main utility routines 
+  !--------------------------------------------------------------------- 
+
+    call UtilitiesMain (itime, domain, levels, options, parameters, forcing, energy, water)
 
   !---------------------------------------------------------------------
   ! call the main forcing routines 

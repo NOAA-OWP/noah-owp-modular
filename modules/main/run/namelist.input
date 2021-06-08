@@ -1,12 +1,14 @@
 &timing ! and output
   dt              = 600.0   ! timestep [seconds]
   maxtime         = 30      ! total simulation time [hours]
+  startdate       = "199801010630" ! start of simulation (YYYYMMDDhhmm)
+  enddate         = "199901010630" ! end of simulation (YYYYMMDDhhmm)
   output_filename = "output.nc"
 /
 
 &location ! for point runs, needs to be modified for gridded
-  lat              = 40.0    ! latitude [degrees]
-  lon              = -105.0  ! longitude [degrees]
+  lat              = 40.01    ! latitude [degrees]
+  lon              = -88.37  ! longitude [degrees]
 /
 
 &forcing
