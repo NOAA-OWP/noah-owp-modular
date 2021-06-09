@@ -2,9 +2,9 @@
 ! compile: 
 !
 
-program snow_driver
+program noahmp_driver
 
-  use SnowOutput
+  use NoahMPOutput
   use LevelsType
   use DomainType
   use NamelistRead
@@ -198,7 +198,19 @@ program snow_driver
   !---------------------------------------------------------------------
   call initialize_output(namelist%output_filename, ntime+1, levels%nsoil, levels%nsnow)
   call add_to_output(0,levels%nsoil,levels%nsnow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)  
-
+  
+  !---------------------------------------------------------------------
+  ! Open the forcing file 
+  ! Code adapted from the ASCII_IO from NOAH-MP V1.1
+  !---------------------------------------------------------------------
+!   call open_forcing_file(iunit, output_dir, forcing_filename, infotext, nsoil, startdate, enddate, loop_for_a_while, &
+!        latitude, longitude, &
+!        forcing_timestep, noahlsm_timestep, ice, t1, stc_ptr, smc_ptr, sh2o_ptr, sldpth, cmc, snowh, sneqv, tbot,        &
+!        dveg, opt_crs, opt_btr, opt_run, opt_sfc, &
+!        opt_frz, opt_inf, opt_rad, opt_alb, opt_snf, opt_tbot, opt_stc, &
+!        vegtype, soiltype, slopetype, snoalb, zlvl, zlvl_wind, albedo_monthly, shdfac_monthly,                  &
+!        z0brd_monthly, lai_monthly, use_urban_module, isurban, usemonalb, rdlai2d, llanduse)
+  
   !---------------------------------------------------------------------
   ! start the time loop
   !---------------------------------------------------------------------
