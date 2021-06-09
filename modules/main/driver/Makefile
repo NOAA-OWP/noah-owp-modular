@@ -59,5 +59,6 @@ snow_driver.o: snow_output.o \
                ../src/PrecipHeatModule.o \
                ../src/EtFluxModule.o \
                ../src/SnowSoilTempModule.o \
-               ../src/EnergyModule.o
+               ../src/EnergyModule.o \
+               ../src/UtilitiesModule.o
 

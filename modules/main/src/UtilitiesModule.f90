@@ -7,91 +7,82 @@
 
 module UtilitiesModule
 
-  use LevelsType
   use DomainType
-  use ParametersType
-  use WaterType
   use EnergyType
   use ForcingType
-  use OptionsType
   implicit none
 
 contains
 
-  SUBROUTINE UtilitiesMain (itime, domain, levels, options, parameters, forcing, energy, water)
-    integer, intent(in)                   :: ITIME ! current integer time step
-    type (    domain_type)                :: domain
-    type (    levels_type), intent(in)    :: levels
-    type (   options_type)                :: options
-    type (parameters_type)                :: parameters
-    type (   forcing_type)                :: forcing
-    type (    energy_type)                :: energy
-    type (     water_type)                :: water
+  SUBROUTINE UtilitiesMain (itime, domain, forcing, energy)
     
     IMPLICIT NONE
     
-    call geth_newdate(domain%nowdate, domain%startdate, itime*(domain%dt/60))
+    integer, intent(in)                   :: ITIME ! current integer time step
+    type (    domain_type)                :: domain
+    type (   forcing_type)                :: forcing
+    type (    energy_type)                :: energy
     
-    call calc_declin()
+    ! local variable
+    integer  :: idt ! change in time since beginning of run (in minutes)
+    idt = itime * (domain%dt / 60)
+
+    call geth_newdate(domain%startdate, idt, &  ! in
+                      domain%nowdate)           ! out
+    
+    call calc_declin(domain%nowdate(1:4)//"-"//domain%nowdate(5:6)//"-"//domain%nowdate(7:8)//"_"//domain%nowdate(9:10)//":"//domain%nowdate(11:12)//":00", & ! in
+                     domain%lat, domain%lon, &                                                                                                                ! in
+                     energy%cosz, forcing%yearlen, forcing%julian)                                                                                            ! out
     
   END SUBROUTINE UtilitiesMain
 
-  subroutine geth_newdate (ndate, odate, idt)
-    implicit none
+  subroutine geth_newdate (odate, idt, & ! in
+                           ndate)        ! out
 
-!  From old date ('YYYY-MM-DD HH:MM:SS.ffff') and 
-!  delta-time, compute the new date.
+    IMPLICIT NONE
 
-!  on entry     -  odate  -  the old hdate.
-!                  idt    -  the change in time
+    character (len=*), intent(in)  :: odate ! start date
+    integer, intent(in)            :: idt   ! change in time (in minutes)
+    character (len=*), intent(out) :: ndate ! current 
 
-!  on exit      -  ndate  -  the new hdate.
-
-    integer, intent(in)           :: idt
-    character (len=*), intent(out) :: ndate
-    character (len=*), intent(in)  :: odate
-
-
-!  Local Variables
-
-!  yrold    -  indicates the year associated with "odate"
-!  moold    -  indicates the month associated with "odate"
-!  dyold    -  indicates the day associated with "odate"
-!  hrold    -  indicates the hour associated with "odate"
-!  miold    -  indicates the minute associated with "odate"
-!  scold    -  indicates the second associated with "odate"
-
-!  yrnew    -  indicates the year associated with "ndate"
-!  monew    -  indicates the month associated with "ndate"
-!  dynew    -  indicates the day associated with "ndate"
-!  hrnew    -  indicates the hour associated with "ndate"
-!  minew    -  indicates the minute associated with "ndate"
-!  scnew    -  indicates the second associated with "ndate"
-
-!  mday     -  a list assigning the number of days in each month
-
-!  i        -  loop counter
-!  nday     -  the integer number of days represented by "idt"
-!  nhour    -  the integer number of hours in "idt" after taking out
-!              all the whole days
-!  nmin     -  the integer number of minutes in "idt" after taking out
-!              all the whole days and whole hours.
-!  nsec     -  the integer number of minutes in "idt" after taking out
-!              all the whole days, whole hours, and whole minutes.
-
-    integer :: nlen, olen
-    integer :: yrnew, monew, dynew, hrnew, minew, scnew, frnew
-    integer :: yrold, moold, dyold, hrold, miold, scold, frold
-    integer :: mday(12), nday, nhour, nmin, nsec, nfrac, i, ifrc
-    logical :: opass
+    ! ------------------------ local variables ---------------------------
+    integer :: nlen  ! length of "ndate" string
+    integer :: olen  ! length of "odate" string
+    integer :: yrnew ! year associated with "ndate"
+    integer :: monew ! month associated with "ndate"
+    integer :: dynew ! day associated with "ndate"
+    integer :: hrnew ! hour associated with "ndate"
+    integer :: minew ! minute associated with "ndate"
+    integer :: scnew ! second associated with "ndate"
+    integer :: frnew
+    integer :: yrold ! year associated with "odate"
+    integer :: moold ! month associated with "odate"
+    integer :: dyold ! day associated with "odate"
+    integer :: hrold ! hour associated with "odate"
+    integer :: miold ! minute associated with "odate"
+    integer :: scold ! second associated with "odate"
+    integer :: frold
+    integer :: mday(12) ! list assigning the number of days in each month
+    integer :: nday     ! integer number of days represented by "idt"
+    integer :: nhour    ! integer number of hours in "idt" after removing whole days
+    integer :: nmin     ! integer number of minutes in "idt" after removing whole days and hours 
+    integer :: nsec     ! integer number of seconds in "idt" after removing whole days, hours, and mins 
+    integer :: nfrac 
+    integer :: i        ! loop counter
+    integer :: ifrc
+    logical :: opass    ! logical for whether odate components pass their checks
     character (len=10) :: hfrc
     character (len=1) :: sp
 
-    logical :: punctuated
-    logical :: idtdy, idthr, idtmin, idtsec, idtfrac
+    logical :: punctuated ! logical for whether the date string has hyphens to separate
+    logical :: idtdy      ! logical for whether idt has units of days
+    logical :: idthr      ! logical for whether idt has units of hours
+    logical :: idtmin     ! logical for whether idt has units of minutes
+    logical :: idtsec     ! logical for whether idt has units of seconds
+    logical :: idtfrac    ! logical for whether idt has units of fractional seconds
+    ! ------------------------ end local variables ---------------------------
 
-!  Assign the number of days in a months
-
+    ! Assign the number of days in a months
     mday( 1) = 31
     mday( 2) = 28
     mday( 3) = 31
@@ -105,31 +96,29 @@ contains
     mday(11) = 30
     mday(12) = 31
 
-!  Determine if the date is "punctuated" or just a string of numbers.
+    ! Determine if the date is "punctuated" or just a string of numbers.
     if ( odate(5:5) == "-") then
        punctuated = .TRUE.
     else
        punctuated = .FALSE.
     endif
 
-!  Break down old hdate into parts
-
+    ! Break down old hdate into parts
     hrold = 0
     miold = 0
     scold = 0
     frold = 0
     olen = len(odate)
     if (punctuated) then
-       if (olen.ge.11) then
+       if (olen >= 11) then
           sp = odate(11:11)
        else
           sp = ' '
        end if
     endif
 
-!  Use internal READ statements to convert the CHARACTER string
-!  date into INTEGER components.
-
+    ! Use internal READ statements to convert the CHARACTER string
+    ! date into INTEGER components.
     idtdy   = .FALSE.
     idthr   = .FALSE.
     idtmin  = .FALSE.
@@ -140,16 +129,16 @@ contains
        read(odate(6:7),  '(i2)') moold
        read(odate(9:10), '(i2)') dyold
        idtdy = .TRUE.
-       if (olen.ge.13) then
+       if (olen >= 13) then
           idthr = .TRUE.
           read(odate(12:13),'(i2)') hrold
-          if (olen.ge.16) then
+          if (olen >= 16) then
              idtmin = .TRUE.
              read(odate(15:16),'(i2)') miold
-             if (olen.ge.19) then
+             if (olen >= 19) then
                 idtsec = .TRUE.
                 read(odate(18:19),'(i2)') scold
-                if (olen.gt.20) then
+                if (olen > 20) then
                    idtfrac = .TRUE.
                    read(odate(21:olen),*) frold
                 end if
@@ -160,16 +149,16 @@ contains
        read(odate(5:6),  '(i2)') moold
        read(odate(7:8), '(i2)') dyold
        idtdy = .TRUE.
-       if (olen.ge.10) then
+       if (olen >= 10) then
           idthr = .TRUE.
           read(odate(9:10),'(i2)') hrold
-          if (olen.ge.12) then
+          if (olen >= 12) then
              idtmin = .TRUE.
              read(odate(11:12),'(i2)') miold
-             if (olen.ge.14) then
+             if (olen >= 14) then
                 idtsec = .TRUE.
                 read(odate(13:14),'(i2)') scold
-                if (olen.ge.15) then
+                if (olen >= 15) then
                    idtfrac = .TRUE.
                    read(odate(15:olen),*) frold
                 end if
@@ -178,66 +167,53 @@ contains
        end if
     endif
 
-!  Set the number of days in February for that year.
-
+    ! Set the number of days in February for that year
+    ! calls the nfeb() function below
     mday(2) = nfeb(yrold)
 
-!  Check that ODATE makes sense.
-
+    ! Check that ODATE makes sense.
     opass = .TRUE.
 
-!  Check that the month of ODATE makes sense.
-
-    if ((moold.gt.12).or.(moold.lt.1)) then
+    ! Check that the month of ODATE makes sense.
+    if ((moold > 12).or.(moold < 1)) then
        write(*,*) 'GETH_NEWDATE:  Month of ODATE = ', moold
        opass = .FALSE.
     end if
 
-!  Check that the day of ODATE makes sense.
-
-    if ((dyold.gt.mday(moold)).or.(dyold.lt.1)) then
+    ! Check that the day of ODATE makes sense.
+    if ((dyold > mday(moold)).or.(dyold < 1)) then
        write(*,*) 'GETH_NEWDATE:  Day of ODATE = ', dyold
        opass = .FALSE.
     end if
 
-!  Check that the hour of ODATE makes sense.
-
-    if ((hrold.gt.23).or.(hrold.lt.0)) then
+    ! Check that the hour of ODATE makes sense.
+    if ((hrold > 23).or.(hrold < 0)) then
        write(*,*) 'GETH_NEWDATE:  Hour of ODATE = ', hrold
        opass = .FALSE.
     end if
 
-!  Check that the minute of ODATE makes sense.
-
-    if ((miold.gt.59).or.(miold.lt.0)) then
+    ! Check that the minute of ODATE makes sense.
+    if ((miold > 59).or.(miold < 0)) then
        write(*,*) 'GETH_NEWDATE:  Minute of ODATE = ', miold
        opass = .FALSE.
     end if
 
-!  Check that the second of ODATE makes sense.
-
-    if ((scold.gt.59).or.(scold.lt.0)) then
+    ! Check that the second of ODATE makes sense.
+    if ((scold > 59).or.(scold < 0)) then
        write(*,*) 'GETH_NEWDATE:  Second of ODATE = ', scold
        opass = .FALSE.
     end if
-
-!  Check that the fractional part  of ODATE makes sense.
-
-!KWM      IF ((scold.GT.59).or.(scold.LT.0)) THEN
-!KWM         WRITE(*,*) 'GETH_NEWDATE:  Second of ODATE = ', scold
-!KWM         opass = .FALSE.
-!KWM      END IF
-
+    
+    ! If opass = false, then cancel the run
     if (.not.opass) then
        write(*,*) 'Crazy ODATE: ', odate(1:olen), olen
        call abort()
     end if
 
-!  Date Checks are completed.  Continue.
+    ! Date Checks are completed.  Continue.
 
 
-!  Compute the number of days, hours, minutes, and seconds in idt
-
+    ! Compute the number of days, hours, minutes, and seconds in idt
     if (idtfrac) then !idt should be in fractions of seconds
        if (punctuated) then
           ifrc = olen-14
@@ -285,28 +261,28 @@ contains
        call abort()
     end if
 
-    if (idt.ge.0) then
+    if (idt >= 0) then
 
        frnew = frold + nfrac
-       if (frnew.ge.ifrc) then
+       if (frnew >= ifrc) then
           frnew = frnew - ifrc
           nsec = nsec + 1
        end if
 
        scnew = scold + nsec
-       if (scnew .ge. 60) then
+       if (scnew  >=  60) then
           scnew = scnew - 60
           nmin  = nmin + 1
        end if
 
        minew = miold + nmin
-       if (minew .ge. 60) then
+       if (minew  >=  60) then
           minew = minew - 60
           nhour  = nhour + 1
        end if
 
        hrnew = hrold + nhour
-       if (hrnew .ge. 24) then
+       if (hrnew  >=  24) then
           hrnew = hrnew - 24
           nday  = nday + 1
        end if
@@ -316,10 +292,10 @@ contains
        yrnew = yrold
        do i = 1, nday
           dynew = dynew + 1
-          if (dynew.gt.mday(monew)) then
+          if (dynew > mday(monew)) then
              dynew = dynew - mday(monew)
              monew = monew + 1
-             if (monew .gt. 12) then
+             if (monew  >  12) then
                 monew = 1
                 yrnew = yrnew + 1
                 ! If the year changes, recompute the number of days in February
@@ -328,28 +304,28 @@ contains
           end if
        end do
 
-    else if (idt.lt.0) then
+    else if (idt < 0) then
 
        frnew = frold - nfrac
-       if (frnew .lt. 0) then
+       if (frnew  <  0) then
           frnew = frnew + ifrc
           nsec = nsec + 1
        end if
 
        scnew = scold - nsec
-       if (scnew .lt. 00) then
+       if (scnew  <  00) then
           scnew = scnew + 60
           nmin  = nmin + 1
        end if
 
        minew = miold - nmin
-       if (minew .lt. 00) then
+       if (minew  <  00) then
           minew = minew + 60
           nhour  = nhour + 1
        end if
 
        hrnew = hrold - nhour
-       if (hrnew .lt. 00) then
+       if (hrnew  <  00) then
           hrnew = hrnew + 24
           nday  = nday + 1
        end if
@@ -359,9 +335,9 @@ contains
        yrnew = yrold
        do i = 1, nday
           dynew = dynew - 1
-          if (dynew.eq.0) then
+          if (dynew == 0) then
              monew = monew - 1
-             if (monew.eq.0) then
+             if (monew == 0) then
                 monew = 12
                 yrnew = yrnew - 1
                 ! If the year changes, recompute the number of days in February
@@ -378,52 +354,52 @@ contains
 
     if (punctuated) then
 
-       if (nlen.gt.20) then
+       if (nlen > 20) then
           write(ndate(1:19),19) yrnew, monew, dynew, hrnew, minew, scnew
           write(hfrc,'(i10)') frnew+1000000000
           ndate = ndate(1:19)//'.'//hfrc(31-nlen:10)
 
-       else if (nlen.eq.19.or.nlen.eq.20) then
+       else if (nlen == 19.or.nlen == 20) then
           write(ndate(1:19),19) yrnew, monew, dynew, hrnew, minew, scnew
 19        format(i4,'-',i2.2,'-',i2.2,'_',i2.2,':',i2.2,':',i2.2)
-          if (nlen.eq.20) ndate = ndate(1:19)//'.'
+          if (nlen == 20) ndate = ndate(1:19)//'.'
 
-       else if (nlen.eq.16) then
+       else if (nlen == 16) then
           write(ndate,16) yrnew, monew, dynew, hrnew, minew
 16        format(i4,'-',i2.2,'-',i2.2,'_',i2.2,':',i2.2)
 
-       else if (nlen.eq.13) then
+       else if (nlen == 13) then
           write(ndate,13) yrnew, monew, dynew, hrnew
 13        format(i4,'-',i2.2,'-',i2.2,'_',i2.2)
           
-       else if (nlen.eq.10) then
+       else if (nlen == 10) then
           write(ndate,10) yrnew, monew, dynew
 10        format(i4,'-',i2.2,'-',i2.2)
 
        end if
 
-       if (olen.ge.11) ndate(11:11) = sp
+       if (olen >= 11) ndate(11:11) = sp
        
     else
 
-       if (nlen.gt.20) then
+       if (nlen > 20) then
           write(ndate(1:14),14) yrnew, monew, dynew, hrnew, minew, scnew
           write(hfrc,'(i10)') frnew+1000000000
           ndate = ndate(1:18)//hfrc(31-nlen:10)
 
-       else if (nlen.eq.14) then
+       else if (nlen == 14) then
           write(ndate(1:14),14) yrnew, monew, dynew, hrnew, minew, scnew
 14        format(i4,i2.2,i2.2,i2.2,i2.2,i2.2)
 
-       else if (nlen.eq.12) then
+       else if (nlen == 12) then
           write(ndate,12) yrnew, monew, dynew, hrnew, minew
 12        format(i4,i2.2,i2.2,i2.2,i2.2)
 
-       else if (nlen.eq.10) then
+       else if (nlen == 10) then
           write(ndate,210) yrnew, monew, dynew, hrnew
 210       format(i4,i2.2,i2.2,i2.2)
           
-       else if (nlen.eq.8) then
+       else if (nlen == 8) then
           write(ndate,8) yrnew, monew, dynew
 8         format(i4,i2.2,i2.2)
 
@@ -435,59 +411,51 @@ contains
   end subroutine geth_newdate
 
   subroutine geth_idts (newdate, olddate, idt)
+    
     implicit none
 
-!  From 2 input mdates ('YYYY-MM-DD HH:MM:SS.ffff'), 
-!  compute the time difference.
+    character (len=*) , intent(in)  :: newdate ! current date of run
+    character (len=*) , intent(in)  :: olddate ! first day of current year
+    integer           , intent(out) :: idt     ! integer day of year
 
-!  on entry     -  newdate  -  the new hdate.
-!                  olddate  -  the old hdate.
-
-!  on exit      -  idt    -  the change in time.
-!                            Units depend on length of date strings.
-
-    character (len=*) , intent(in) :: newdate, olddate
-    integer           , intent(out)   :: idt
-
-!  Local Variables
-
-!  yrnew    -  indicates the year associated with "ndate"
-!  yrold    -  indicates the year associated with "odate"
-!  monew    -  indicates the month associated with "ndate"
-!  moold    -  indicates the month associated with "odate"
-!  dynew    -  indicates the day associated with "ndate"
-!  dyold    -  indicates the day associated with "odate"
-!  hrnew    -  indicates the hour associated with "ndate"
-!  hrold    -  indicates the hour associated with "odate"
-!  minew    -  indicates the minute associated with "ndate"
-!  miold    -  indicates the minute associated with "odate"
-!  scnew    -  indicates the second associated with "ndate"
-!  scold    -  indicates the second associated with "odate"
-!  i        -  loop counter
-!  mday     -  a list assigning the number of days in each month
-
-! ndate, odate: local values of newdate and olddate
-    character(len=24) :: ndate, odate
-
+    ! ------------------------ local variables ---------------------------
+    character(len=24)  :: ndate
+    character(len=24)  :: odate
     character (len=24) :: tdate
-    integer :: olen, nlen
-    integer :: yrnew, monew, dynew, hrnew, minew, scnew, frnew
-    integer :: yrold, moold, dyold, hrold, miold, scold, frold
-    integer :: mday(12), i, newdys, olddys
-    logical :: npass, opass
+    integer :: olen  ! length of olddate
+    integer :: nlen  ! length of newdate
+    integer :: yrnew ! year associated with "ndate"
+    integer :: monew ! month associated with "ndate"
+    integer :: dynew ! day associated with "ndate"
+    integer :: hrnew ! hour associated with "ndate"
+    integer :: minew ! minute associated with "ndate"
+    integer :: scnew ! second associated with "ndate"
+    integer :: frnew
+    integer :: yrold ! year associated with "odate"
+    integer :: moold ! month associated with "odate"
+    integer :: dyold ! day associated with "odate"
+    integer :: hrold ! hour associated with "odate"
+    integer :: miold ! minute associated with "odate"
+    integer :: scold ! second associated with "odate"
+    integer :: frold
+    integer :: mday(12) ! list assigning the number of days in each month
+    integer :: i
+    integer :: newdys
+    integer :: olddys
+    logical :: npass
+    logical :: opass
     integer :: isign
     integer :: ifrc
-
     logical :: punctuated
 
     olen = len(olddate)
     nlen = len(newdate)
-    if (nlen.ne.olen) then
+    if (nlen /= olen) then
        write(*,'("GETH_IDTS: NLEN /= OLEN: ", A, 3x, A)') newdate(1:nlen), olddate(1:olen)
        call abort
     endif
 
-    if (olddate.gt.newdate) then
+    if (olddate > newdate) then
        isign = -1
 
        ifrc = olen
@@ -502,8 +470,7 @@ contains
        odate = olddate
     end if
 
-!  Assign the number of days in a months
-
+    ! Assign the number of days in a months
     mday( 1) = 31
     mday( 2) = 28
     mday( 3) = 31
@@ -543,24 +510,24 @@ contains
 
     if (punctuated) then
 
-!  Break down old hdate into parts
+      !  Break down old hdate into parts
 
        read(odate(6:7),  '(i2)') moold
        read(odate(9:10), '(i2)') dyold
-       if (olen.ge.13) then
+       if (olen >= 13) then
           read(odate(12:13),'(i2)') hrold
-          if (olen.ge.16) then
+          if (olen >= 16) then
              read(odate(15:16),'(i2)') miold
-             if (olen.ge.19) then
+             if (olen >= 19) then
                 read(odate(18:19),'(i2)') scold
-                if (olen.gt.20) then
-                   if (olen.eq.21) then
+                if (olen > 20) then
+                   if (olen == 21) then
                       read(odate(21:21),'(i1)') frold
-                   else if (olen.eq.22) then
+                   else if (olen == 22) then
                       read(odate(21:22),'(i2)') frold
-                   else if (olen.eq.23) then
+                   else if (olen == 23) then
                       read(odate(21:23),'(i3)') frold
-                   else if (olen.eq.24) then
+                   else if (olen == 24) then
                       read(odate(21:24),'(i4)') frold
                    endif
                 end if
@@ -568,17 +535,17 @@ contains
           end if
        end if
        
-!  Break down new hdate into parts
+       !  Break down new hdate into parts
 
        read(ndate(6:7),  '(i2)') monew
        read(ndate(9:10), '(i2)') dynew
-       if (nlen.ge.13) then
+       if (nlen >= 13) then
           read(ndate(12:13),'(i2)') hrnew
-          if (nlen.ge.16) then
+          if (nlen >= 16) then
              read(ndate(15:16),'(i2)') minew
-             if (nlen.ge.19) then
+             if (nlen >= 19) then
                 read(ndate(18:19),'(i2)') scnew
-                if (nlen.gt.20) then
+                if (nlen > 20) then
                    read(ndate(21:nlen),*) frnew
                 end if
              end if
@@ -586,34 +553,34 @@ contains
        end if
     else
 
-!  Break down old hdate into parts
+      !  Break down old hdate into parts
 
        read(odate(5:6),  '(i2)') moold
        read(odate(7:8), '(i2)') dyold
-       if (olen.ge.10) then
+       if (olen >= 10) then
           read(odate(9:10),'(i2)') hrold
-          if (olen.ge.12) then
+          if (olen >= 12) then
              read(odate(11:12),'(i2)') miold
-             if (olen.ge.14) then
+             if (olen >= 14) then
                 read(odate(13:14),'(i2)') scold
-                if (olen.ge.15) then
+                if (olen >= 15) then
                    read(odate(15:olen),*) frold
                 end if
              end if
           end if
        end if
        
-!  Break down new hdate into parts
+       !  Break down new hdate into parts
 
        read(ndate(5:6),  '(i2)') monew
        read(ndate(7:8), '(i2)') dynew
-       if (nlen.ge.10) then
+       if (nlen >= 10) then
           read(ndate(9:10),'(i2)') hrnew
-          if (nlen.ge.12) then
+          if (nlen >= 12) then
              read(ndate(11:12),'(i2)') minew
-             if (nlen.ge.14) then
+             if (nlen >= 14) then
                 read(ndate(13:14),'(i2)') scnew
-                if (nlen.ge.15) then
+                if (nlen >= 15) then
                    read(ndate(15:nlen),*) frnew
                 end if
              end if
@@ -621,34 +588,30 @@ contains
        end if
     endif
 
-!  Check that the dates make sense.
-
+    ! Check that the dates make sense.
     npass = .true.
     opass = .true.
 
-!  Check that the month of NDATE makes sense.
-
-    if ((monew.gt.12).or.(monew.lt.1)) then
+    ! Check that the month of NDATE makes sense.
+    if ((monew > 12).or.(monew < 1)) then
        print*, 'GETH_IDTS:  Month of NDATE = ', monew
        npass = .false.
     end if
 
-!  Check that the month of ODATE makes sense.
-
-    if ((moold.gt.12).or.(moold.lt.1)) then
+    ! Check that the month of ODATE makes sense.
+    if ((moold > 12).or.(moold < 1)) then
        print*, 'GETH_IDTS:  Month of ODATE = ', moold
        opass = .false.
     end if
 
-!  Check that the day of NDATE makes sense.
-
-    if (monew.ne.2) then
+    ! Check that the day of NDATE makes sense.
+    if (monew /= 2) then
        ! ...... For all months but February
-       if ((dynew.gt.mday(monew)).or.(dynew.lt.1)) then
+       if ((dynew > mday(monew)).or.(dynew < 1)) then
           print*, 'GETH_IDTS:  Day of NDATE = ', dynew
           npass = .false.
        end if
-    else if (monew.eq.2) then
+    else if (monew == 2) then
        ! ...... For February
        if ((dynew > nfeb(yrnew)).or.(dynew < 1)) then
           print*, 'GETH_IDTS:  Day of NDATE = ', dynew
@@ -656,15 +619,14 @@ contains
        end if
     endif
 
-!  Check that the day of ODATE makes sense.
-
-    if (moold.ne.2) then
+    !  Check that the day of ODATE makes sense.
+    if (moold /= 2) then
        ! ...... For all months but February
-       if ((dyold.gt.mday(moold)).or.(dyold.lt.1)) then
+       if ((dyold > mday(moold)).or.(dyold < 1)) then
           print*, 'GETH_IDTS:  Day of ODATE = ', dyold
           opass = .false.
        end if
-    else if (moold.eq.2) then
+    else if (moold == 2) then
        ! ....... For February
        if ((dyold > nfeb(yrold)).or.(dyold < 1)) then
           print*, 'GETH_IDTS:  Day of ODATE = ', dyold
@@ -672,44 +634,38 @@ contains
        end if
     end if
 
-!  Check that the hour of NDATE makes sense.
-
-    if ((hrnew.gt.23).or.(hrnew.lt.0)) then
+    ! Check that the hour of NDATE makes sense.
+    if ((hrnew > 23).or.(hrnew < 0)) then
        print*, 'GETH_IDTS:  Hour of NDATE = ', hrnew
        npass = .false.
     end if
 
-!  Check that the hour of ODATE makes sense.
-
-    if ((hrold.gt.23).or.(hrold.lt.0)) then
+    ! Check that the hour of ODATE makes sense.
+    if ((hrold > 23).or.(hrold < 0)) then
        print*, 'GETH_IDTS:  Hour of ODATE = ', hrold
        opass = .false.
     end if
 
-!  Check that the minute of NDATE makes sense.
-
-    if ((minew.gt.59).or.(minew.lt.0)) then
+    ! Check that the minute of NDATE makes sense.
+    if ((minew > 59).or.(minew < 0)) then
        print*, 'GETH_IDTS:  Minute of NDATE = ', minew
        npass = .false.
     end if
 
-!  Check that the minute of ODATE makes sense.
-
-    if ((miold.gt.59).or.(miold.lt.0)) then
+    ! Check that the minute of ODATE makes sense.
+    if ((miold > 59).or.(miold < 0)) then
        print*, 'GETH_IDTS:  Minute of ODATE = ', miold
        opass = .false.
     end if
 
-!  Check that the second of NDATE makes sense.
-
-    if ((scnew.gt.59).or.(scnew.lt.0)) then
+    ! Check that the second of NDATE makes sense.
+    if ((scnew > 59).or.(scnew < 0)) then
        print*, 'GETH_IDTS:  SECOND of NDATE = ', scnew
        npass = .false.
     end if
 
-!  Check that the second of ODATE makes sense.
-
-    if ((scold.gt.59).or.(scold.lt.0)) then
+    ! Check that the second of ODATE makes sense.
+    if ((scold > 59).or.(scold < 0)) then
        print*, 'GETH_IDTS:  Second of ODATE = ', scold
        opass = .false.
     end if
@@ -724,18 +680,18 @@ contains
        call abort()
     end if
 
-!  Date Checks are completed.  Continue.
+    ! Date Checks are completed.  Continue.
 
-!  Compute number of days from 1 January ODATE, 00:00:00 until ndate
-!  Compute number of hours from 1 January ODATE, 00:00:00 until ndate
-!  Compute number of minutes from 1 January ODATE, 00:00:00 until ndate
+    ! Compute number of days from 1 January ODATE, 00:00:00 until ndate
+    ! Compute number of hours from 1 January ODATE, 00:00:00 until ndate
+    ! Compute number of minutes from 1 January ODATE, 00:00:00 until ndate
 
     newdys = 0
     do i = yrold, yrnew - 1
        newdys = newdys + 337 + nfeb(i)
     end do
 
-    if (monew .gt. 1) then
+    if (monew  >  1) then
        mday(2) = nfeb(yrnew)
        do i = 1, monew - 1
           newdys = newdys + mday(i)
@@ -745,12 +701,12 @@ contains
 
     newdys = newdys + dynew - 1
 
-!  Compute number of hours from 1 January ODATE, 00:00:00 until odate
-!  Compute number of minutes from 1 January ODATE, 00:00:00 until odate
+    ! Compute number of hours from 1 January ODATE, 00:00:00 until odate
+    ! Compute number of minutes from 1 January ODATE, 00:00:00 until odate
 
     olddys = 0
 
-    if (moold .gt. 1) then
+    if (moold  >  1) then
        mday(2) = nfeb(yrold)
        do i = 1, moold - 1
           olddys = olddys + mday(i)
@@ -760,17 +716,17 @@ contains
 
     olddys = olddys + dyold -1
 
-!  Determine the time difference
+    !  Determine the time difference
 
     idt = (newdys - olddys)
     if (punctuated) then
-       if (olen.gt.10) then
+       if (olen > 10) then
           idt = idt*24 + (hrnew - hrold)
-          if (olen.gt.13) then
+          if (olen > 13) then
              idt = idt*60 + (minew - miold)
-             if (olen.gt.16) then
+             if (olen > 16) then
                 idt = idt*60 + (scnew - scold)
-                if (olen.gt.20) then
+                if (olen > 20) then
                    ifrc = olen-20
                    ifrc = 10**ifrc
                    idt = idt * ifrc + (frnew-frold)
@@ -779,13 +735,13 @@ contains
           endif
        endif
     else
-       if (olen.gt.8) then
+       if (olen > 8) then
           idt = idt*24 + (hrnew - hrold)
-          if (olen.gt.10) then
+          if (olen > 10) then
              idt = idt*60 + (minew - miold)
-             if (olen.gt.12) then
+             if (olen > 12) then
                 idt = idt*60 + (scnew - scold)
-                if (olen.gt.14) then
+                if (olen > 14) then
                    ifrc = olen-14
                    ifrc = 10**ifrc
                    idt = idt * ifrc + (frnew-frold)
@@ -795,7 +751,7 @@ contains
        endif
     endif
 
-    if (isign .eq. -1) then
+    if (isign  ==  -1) then
        idt = idt * isign
     end if
 
@@ -810,13 +766,13 @@ contains
     integer, intent(in) :: year ! Four-digit year
 
     nfeb = 28 ! By default, February has 28 days ...
-    if (mod(year,4).eq.0) then  
+    if (mod(year,4) == 0) then  
        nfeb = 29  ! But every four years, it has 29 days ...
-       if (mod(year,100).eq.0) then
+       if (mod(year,100) == 0) then
           nfeb = 28  ! Except every 100 years, when it has 28 days ...
-          if (mod(year,400).eq.0) then
+          if (mod(year,400) == 0) then
              nfeb = 29  ! Except every 400 years, when it has 29 days ...
-             if (mod(year,3600).eq.0) then
+             if (mod(year,3600) == 0) then
                 nfeb = 28  ! Except every 3600 years, when it has 28 days.
              endif
           endif
@@ -847,14 +803,13 @@ contains
     endif
   end function nmdays
 
-  SUBROUTINE calc_declin ( nowdate, latitude, longitude, cosz, yearlen, julian)
-    use kwm_date_utilities
+  SUBROUTINE calc_declin (nowdate, &              ! in
+                          latitude, longitude, &  ! in
+                          cosz, yearlen, julian)  ! out
   !---------------------------------------------------------------------
     IMPLICIT NONE
   !---------------------------------------------------------------------
 
-    REAL, PARAMETER :: DEGRAD = 3.14159265/180.
-    REAL, PARAMETER :: DPD    = 360./365.
   ! !ARGUMENTS:
     character(len=19), intent(in)  :: nowdate    ! YYYY-MM-DD_HH:mm:ss
     real,              intent(in)  :: latitude
@@ -863,23 +818,25 @@ contains
     integer,           intent(out) :: yearlen
     real,              intent(out) :: JULIAN
 
-    REAL                           :: hrang
-    real                           :: DECLIN
-    real                           :: tloctim
-    REAL                           :: OBECL
-    REAL                           :: SINOB
-    REAL                           :: SXLONG
-    REAL                           :: ARG
-    integer                        :: iyear
-    integer                        :: iday
-    integer                        :: ihour
-    integer                        :: iminute
-    integer                        :: isecond
+    ! ------------------------ local variables ---------------------------
+    REAL, PARAMETER :: DEGRAD = 3.14159265/180. ! convert degrees to radians 
+    REAL, PARAMETER :: DPD    = 360./365.
 
-    !
+    REAL            :: hrang
+    real            :: DECLIN
+    real            :: tloctim ! local time in hours
+    REAL            :: OBECL
+    REAL            :: SINOB
+    REAL            :: SXLONG
+    REAL            :: ARG
+    integer         :: iyear
+    integer         :: iday
+    integer         :: ihour
+    integer         :: iminute
+    integer         :: isecond
+    ! ------------------------ end local variables ---------------------------
+
     ! Determine the number of days in the year
-    !
-
     read(nowdate(1:4), '(I4)') iyear
     yearlen = 365
     if (mod(iyear,4) == 0) then
@@ -895,10 +852,7 @@ contains
        endif
     endif
 
-    !
-    ! Determine the Julian time (floating-point day of year).
-    !
-
+    ! Determine the Julian time (floating-point day of year)
     call geth_idts(nowdate(1:10), nowdate(1:4)//"-01-01", iday)
     read(nowdate(12:13), *) ihour
     read(nowdate(15:16), *) iminute
@@ -907,25 +861,24 @@ contains
 
   !
   ! for short wave radiation
-
-    DECLIN=0.
+    DECLIN = 0.
 
   !-----OBECL : OBLIQUITY = 23.5 DEGREE.
 
-    OBECL=23.5*DEGRAD
-    SINOB=SIN(OBECL)
+    OBECL = 23.5*DEGRAD
+    SINOB = SIN(OBECL)
 
   !-----CALCULATE LONGITUDE OF THE SUN FROM VERNAL EQUINOX:
 
-    IF(JULIAN.GE.80.)SXLONG=DPD*(JULIAN-80.)*DEGRAD
-    IF(JULIAN.LT.80.)SXLONG=DPD*(JULIAN+285.)*DEGRAD
-    ARG=SINOB*SIN(SXLONG)
-    DECLIN=ASIN(ARG)
+    IF(JULIAN >= 80.) SXLONG = DPD * (JULIAN-80.) * DEGRAD
+    IF(JULIAN < 80.)  SXLONG = DPD * (JULIAN+285.)* DEGRAD
+    ARG = SINOB * SIN(SXLONG)
+    DECLIN = ASIN(ARG)
 
     TLOCTIM = REAL(IHOUR) + REAL(IMINUTE)/60.0 + REAL(ISECOND)/3600.0 + LONGITUDE/15.0 ! Local time in hours
-    tloctim = AMOD(tloctim+24.0, 24.0)
-    HRANG=15.*(TLOCTIM-12.)*DEGRAD
-    COSZ=SIN(LATITUDE*DEGRAD)*SIN(DECLIN)+COS(LATITUDE*DEGRAD)*COS(DECLIN)*COS(HRANG)
+    TLOCTIM = MOD(TLOCTIM+24.0, 24.0)
+    HRANG=15. * (TLOCTIM-12.) * DEGRAD
+    COSZ = SIN(LATITUDE * DEGRAD) * SIN(DECLIN) + COS(LATITUDE * DEGRAD) * COS(DECLIN) * COS(HRANG)
 
   !KWM   write(wrf_err_message,10)DECDEG/DEGRAD
   !KWM10 FORMAT(1X,'*** SOLAR DECLINATION ANGLE = ',F6.2,' DEGREES.',' ***')

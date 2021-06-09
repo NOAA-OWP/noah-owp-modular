@@ -33,7 +33,8 @@ OBJS = NamelistRead.o \
        PrecipHeatModule.o \
        EtFluxModule.o \
        SnowSoilTempModule.o \
-       EnergyModule.o 
+       EnergyModule.o \
+       UtilitiesModule.o
 
 all:	$(OBJS)
 
@@ -98,4 +99,5 @@ SnowSoilTempModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o E
 EnergyModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
                 ForcingType.o WaterType.o ThermalPropertiesModule.o ShortwaveRadiationModule.o \
                 PrecipHeatModule.o EtFluxModule.o SnowSoilTempModule.o
+UtilitiesModule.o: DomainType.o ForcingType.o EnergyType.o
 
