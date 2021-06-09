@@ -1,8 +1,8 @@
 &timing ! and output
   dt              = 600.0   ! timestep [seconds]
   maxtime         = 30      ! total simulation time [hours]
-  startdate       = "199801010630" ! start of simulation (YYYYMMDDhhmm)
-  enddate         = "199901010630" ! end of simulation (YYYYMMDDhhmm)
+  startdate       = "199801010630" ! UTC time start of simulation (YYYYMMDDhhmm)
+  enddate         = "199901010630" ! UTC time end of simulation (YYYYMMDDhhmm)
   output_filename = "output.nc"
 /
 

@@ -35,6 +35,7 @@ OBJS = \
         ../src/EtFluxModule.o \
         ../src/SnowSoilTempModule.o \
         ../src/EnergyModule.o \
+        ../src/UtilitiesModule.o \
 	../driver/snow_output.o \
 	../driver/snow_driver.o
 

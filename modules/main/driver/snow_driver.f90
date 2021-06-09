@@ -240,7 +240,9 @@ program snow_driver
   ! call the main utility routines 
   !--------------------------------------------------------------------- 
 
-    call UtilitiesMain (itime, domain, levels, options, parameters, forcing, energy, water)
+    call UtilitiesMain (itime, domain, forcing, energy)
+    print*, "Julian day = ", forcing%JULIAN
+    print*, "COSZ = ", energy%COSZ
 
   !---------------------------------------------------------------------
   ! call the main forcing routines 
