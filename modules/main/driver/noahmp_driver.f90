@@ -4,6 +4,7 @@
 
 program noahmp_driver
 
+  use NoahMPAsciiRead
   use NoahMPOutput
   use LevelsType
   use DomainType
@@ -203,14 +204,8 @@ program noahmp_driver
   ! Open the forcing file 
   ! Code adapted from the ASCII_IO from NOAH-MP V1.1
   !---------------------------------------------------------------------
-!   call open_forcing_file(iunit, output_dir, forcing_filename, infotext, nsoil, startdate, enddate, loop_for_a_while, &
-!        latitude, longitude, &
-!        forcing_timestep, noahlsm_timestep, ice, t1, stc_ptr, smc_ptr, sh2o_ptr, sldpth, cmc, snowh, sneqv, tbot,        &
-!        dveg, opt_crs, opt_btr, opt_run, opt_sfc, &
-!        opt_frz, opt_inf, opt_rad, opt_alb, opt_snf, opt_tbot, opt_stc, &
-!        vegtype, soiltype, slopetype, snoalb, zlvl, zlvl_wind, albedo_monthly, shdfac_monthly,                  &
-!        z0brd_monthly, lai_monthly, use_urban_module, isurban, usemonalb, rdlai2d, llanduse)
-  
+   call open_forcing_file(namelist%input_filename)
+
   !---------------------------------------------------------------------
   ! start the time loop
   !---------------------------------------------------------------------

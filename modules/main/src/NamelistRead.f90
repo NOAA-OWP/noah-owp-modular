@@ -10,6 +10,7 @@ type, public :: namelist_type
   integer           :: maxtime
   character(len=12) :: startdate          ! Start date of the model run ( YYYYMMDDHHmm ) 
   character(len=12) :: enddate            ! End date of the model run ( YYYYMMDDHHmm ) 
+  character*256     :: input_filename     ! name of the input/forcing file
   character*256     :: output_filename    ! name of the output file
   real              :: lat                ! latitude (°)
   real              :: lon                ! longitude (°)
@@ -207,6 +208,7 @@ contains
     integer           :: maxtime
     character(len=12) :: startdate
     character(len=12) :: enddate
+    character*256     :: input_filename
     character*256     :: output_filename
     real              :: lat
     real              :: lon
@@ -385,7 +387,7 @@ contains
     integer       :: HIGH_DENSITY_RESIDENTIAL  ! vegtype code for high density residential
     integer       :: HIGH_INTENSITY_INDUSTRIAL ! vegtype code for high density industrial
 
-    namelist / timing          / dt,maxtime,startdate,enddate,output_filename
+    namelist / timing          / dt,maxtime,startdate,enddate,input_filename,output_filename
     namelist / location        / lat,lon
     namelist / forcing         / preciprate,precip_duration,dry_duration,&
                                  precipitating,ZREF
@@ -464,6 +466,7 @@ contains
     this%maxtime          = maxtime
     this%startdate        = startdate
     this%enddate          = enddate
+    this%input_filename   = input_filename
     this%output_filename  = output_filename
     this%lat              = lat
     this%lon              = lon
