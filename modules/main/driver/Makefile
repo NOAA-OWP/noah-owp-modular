@@ -5,15 +5,15 @@
 
 include ../user_build_options
 
-OBJS = snow_output.o snow_driver.o
+OBJS = noahmp_output.o noahmp_driver.o
 
 all:	$(OBJS)
 
-snow_driver.o: snow_driver.f90
+noahmp_driver.o: noahmp_driver.f90
 
 	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../src -I./ $(*).f90 
 
-snow_output.o: snow_output.f90
+noahmp_output.o: noahmp_output.f90
 
 	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../src -I./ $(*).f90 
 
@@ -28,9 +28,9 @@ clean:
 # Dependencies:
 #
 
-snow_output.o: ../src/WaterType.o \
+noahmp_output.o: ../src/WaterType.o \
                ../src/EnergyType.o 
-snow_driver.o: snow_output.o \
+noahmp_driver.o: noahmp_output.o \
                ../src/NamelistRead.o \
                ../src/LevelsType.o \
                ../src/DomainType.o \
