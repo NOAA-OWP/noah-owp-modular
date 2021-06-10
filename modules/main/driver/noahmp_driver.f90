@@ -153,6 +153,8 @@ program noahmp_driver
   energy%STC      = 298.0
   energy%COSZ     = 0.7        ! cosine of solar zenith angle
   energy%ICE      = 0          ! 1 if sea ice, -1 if glacier, 0 if no land ice (seasonal snow)
+  energy%ALB      = 0.6        ! initialize snow albedo in CLASS routine
+  energy%ALBOLD   = 0.6        ! initialize snow albedo in CLASS routine
   
   ! forcing-related variables
   forcing%UU       = 3.0        ! wind speed in u direction (m s-1)
