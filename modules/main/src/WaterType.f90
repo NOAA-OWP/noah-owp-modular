@@ -29,15 +29,15 @@ type, public :: water_type
   real                            :: canliq      ! intercepted liquid water (mm)
   real                            :: canice      ! intercepted ice mass (mm)
   real                            :: FWET        ! wetted or snowed fraction of the canopy (-)
-  real                            :: CMC         ! intercepted water (mm)
+  real                            :: CMC         ! total canopy moisture content (CANLIQ + CANICE) (mm)
   real                            :: QINTR       ! interception rate for rain (mm/s)
   real                            :: QDRIPR      ! drip rate for rain (mm/s)
   real                            :: QTHROR      ! throughfall for rain (mm/s)
   real                            :: QINTS       ! interception (loading) rate for snowfall (mm/s)
   real                            :: QDRIPS      ! drip (unloading) rate for intercepted snow (mm/s)
   real                            :: QTHROS      ! throughfall of snowfall (mm/s)
-  real                            :: QRAIN       ! rain at ground srf (mm/s) [+]
-  real                            :: QSNOW       ! snow at ground srf (mm/s) [+]
+  real                            :: QRAIN       ! rain at ground surface (mm/s) [+]
+  real                            :: QSNOW       ! snow at ground surface (mm/s) [+]
   real                            :: SNOWHIN     ! snow depth increasing rate (m/s)
   real                            :: ECAN        ! evaporation of intercepted water (mm/s) [+]
   real                            :: ETRAN       ! transpiration rate (mm/s) [+]
