@@ -1,7 +1,5 @@
 # Changelog for NOAH-MP modularized snow model
 
-Changes are given in both reference to 
-
 ## Major changes:
 - Removed PGS from PHENOLOGY because we’re not implementing CARBON_CROP
 - Moved CanopyWaterIntercept to InterceptionModule
@@ -36,8 +34,8 @@ Changes are given in both reference to
 - Removed redundant SWE-tracking variable SNEQVO from SNOW_AGE and now use QSNOW * dt to calculate new snowfall relative to SWEMX (the amount of snowfall needed to refresh albedo)
 - Added SOILCOLOR as a user-settable parameter in namelist.read
     - SOILCOLOR is hard-coded as 4 in module_sf_noahmpdrv.F in the current release of HRLDAS. SOILCOLOR is used to select the albedo values for dry and saturated soil.
-- The original call to TWOSTREAM in ALBEDO passed TV, which was then redefined to T in the arguments of TWOSTREAM. This is more difficult to do using types (and unintuitive), so I've changed T to energy%TV.
-    - The same was done for FAB, FRE, FTD, FTI, FREV, and FREG (original INTENT(OUT) arguments to TWOSTREAM). The call, depending on whether direct or diffuse shrotwave were being considered used the suffixed versions of these vars (D for direct, I for diffuse). Because this passing format is unclear, we now pass only the types (ENERGY in this case) and give the variables value within IF statements (already in the original code).
+- The original call to TWOSTREAM in ALBEDO passed TV, which was then redefined to T in the arguments of TWOSTREAM. This is more difficult to do using types, so I've changed T to energy%TV.
+    - The same was done for FAB, FRE, FTD, FTI, FREV, and FREG (original INTENT(OUT) arguments to TWOSTREAM). The call, depending on whether direct or diffuse shrotwave were being considered used the suffixed versions of these vars (D for direct, I for diffuse). We now pass only the types (ENERGY in this case) and give the variables value within IF statements (already in the original code).
 - VAI and VEG are now computed only once in the EnergyModule, and they are part of the ParametersType. In the original code, VAI and VEG were computed multiple times locally even though their values never changed.
 - C3PSN is a constant 1.0 for all vegtypes in MPTABLE, but has 20 (MODIS) and 27 (USGS) table entries. Parameter is changed to be a single value (i.e., no need to read in a table if the value only has 1 option). Same for KC25 and KO25. Similarly, CZIL is a single value formerly read in as a "table" from GENPARM.TBL, but it's now set to a single value (same with ZBOT).
 - Changed RS to RSMIN in veg_parameters to be consistent with use in model
@@ -68,7 +66,7 @@ Changes are given in both reference to
     - ZOMG = 0.01
     - 0.65 * parameters%HVT
     - Where do these values come from?
-        - Should they be parameters
+        - Should they be parameters?
 - Where is IST (ground = 1, lake = 2) instantiated?
 - The current code initializes model states from the namelist
     - Maybe we could move to a separate file, similar to what’s available in SNOWPACK?
@@ -93,22 +91,12 @@ Changes are given in both reference to
     - VEGTYP
         - Currently included as a parameter in namelist.input under “structure”
         - This means if the model were to be run as- is over a grid, every cell would have the prescribed VEGTYP from the namelist
-        - HRLDAS uses NETCDF to read in land cover from a grid:
+        - HRLDAS uses NETCDF to read in land cover from a grid
 - Lines 488–490 in module_hrldas_netcdf_io.F
     - LAT and LON
         - Model is set up to run at a single point
         - LAT and LON are given in the namelist.input file under “location”
         - They are then read in using NamelistRead and transferred to the DomainType
-
-- ForcingType
-    - JULIAN
-        - Currently hardcoded upon initialization in the snow_driver file
-        - Need to add a date utility to process the forcing date into JULIAN
-- See HRLDAS for info (module_date_utilities)
-    - YEARLEN
-        - Currently hardcoded upon initialization in the snow_driver file
-        - Need to add a date utility to process the forcing date into JULIAN
-- See HRLDAS for info (module_date_utilities)
 
 - Namelist and Parameter types
     - Model is only setup to read in MODIS land cover categories, NOT USGS
@@ -116,9 +104,9 @@ Changes are given in both reference to
     - FVEG computation pulled from main level of noahmp_sflx and moved into PHENOLOGY
         - SHDFAC values from an old NOAH- MP veg param table (couldn’t find in HRLDAS version)
         - SHDMAX is implemented as a hack currently
-- It looks like HRLDAS can read this as gvfmax from land cover data, but implementation is not straightforward
-- SHDMAX values are in namelist and are identical to SHDFAC
-        - Removed OPT_CROP from FVEG computation because it doesn’t seem to be implemented elsewhere important
+    - It looks like HRLDAS can read this as gvfmax from land cover data, but implementation is not straightforward
+    - SHDMAX values are in namelist and are identical to SHDFAC
+    - Removed OPT_CROP from FVEG computation because it doesn’t seem to be implemented elsewhere important
 
 
 ## BMI notes for future:

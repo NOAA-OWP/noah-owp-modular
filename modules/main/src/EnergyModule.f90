@@ -45,7 +45,6 @@ contains
     REAL                                 :: D_RSURF  ! Reduced vapor diffusivity in soil for computing RSURF (SZ09)
     
     REAL                                 :: FIRE   !emitted IR (w/m2)
-    
     !---------------------------------------------------------------------
 
     ! Determine whether grid cell is vegetated or not
