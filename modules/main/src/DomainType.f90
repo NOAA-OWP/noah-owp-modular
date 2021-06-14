@@ -8,9 +8,12 @@ private
 
 type, public :: domain_type
 
-  integer :: iloc
-  integer :: jloc
-  real    :: DT    ! ? run timestep (unit?)
+  integer           :: iloc
+  integer           :: jloc
+  real              :: DT    ! ? run timestep (unit?)
+  character(len=12) :: startdate ! Start date of the model run ( YYYYMMDDHHmm ) 
+  character(len=12) :: enddate   ! End date of the model run ( YYYYMMDDHHmm ) 
+  character(len=12) :: nowdate   ! Current date of the model run ( YYYYMMDDHHmm ) 
   real    :: lat
   real    :: lon
   real    :: ZREF
@@ -60,17 +63,20 @@ contains
 
     class(domain_type) :: this
 
-    this%iloc     = huge(1)
-    this%jloc     = huge(1)
-    this%dt       = huge(1.0)
-    this%lat      = huge(1.0)
-    this%lon      = huge(1.0)
-    this%ZREF     = huge(1.0)
-    this%vegtyp   = huge(1)
-    this%croptype = huge(1)
-    this%isltyp   = huge(1)
-    this%sfctyp   = huge(1)
-    this%IST      = huge(1)
+    this%iloc      = huge(1)
+    this%jloc      = huge(1)
+    this%dt        = huge(1.0)
+    this%startdate = 'EMPTYDATE999'
+    this%enddate   = 'EMPTYDATE999'
+    this%nowdate   = 'EMPTYDATE999'
+    this%lat       = huge(1.0)
+    this%lon       = huge(1.0)
+    this%ZREF      = huge(1.0)
+    this%vegtyp    = huge(1)
+    this%croptype  = huge(1)
+    this%isltyp    = huge(1)
+    this%sfctyp    = huge(1)
+    this%IST       = huge(1)
 
   end subroutine InitDefault
 
@@ -79,16 +85,18 @@ contains
     class(domain_type) :: this
     type(namelist_type) :: namelist
 
-    this%dt       = namelist%dt
-    this%lat      = namelist%lat
-    this%lon      = namelist%lon
+    this%dt        = namelist%dt
+    this%startdate = namelist%startdate
+    this%enddate   = namelist%enddate
+    this%lat       = namelist%lat
+    this%lon       = namelist%lon
     this%ZREF      = namelist%ZREF
-    this%zsoil    = namelist%zsoil
-    this%dzsnso   = namelist%dzsnso
-    this%vegtyp   = namelist%vegtyp
-    this%croptype = namelist%croptype
-    this%isltyp   = namelist%isltyp
-    this%sfctyp   = namelist%sfctyp
+    this%zsoil     = namelist%zsoil
+    this%dzsnso    = namelist%dzsnso
+    this%vegtyp    = namelist%vegtyp
+    this%croptype  = namelist%croptype
+    this%isltyp    = namelist%isltyp
+    this%sfctyp    = namelist%sfctyp
 
   end subroutine InitTransfer
 

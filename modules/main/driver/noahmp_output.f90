@@ -1,4 +1,4 @@
-module SnowOutput
+module NoahMPOutput
 
   use netcdf
   use WaterType
@@ -170,5 +170,5 @@ contains
 
    end subroutine finalize_output
    
-end module SnowOutput
+end module NoahMPOutput
 
