@@ -5,15 +5,19 @@
 
 include ../user_build_options
 
-OBJS = snow_output.o snow_driver.o
+OBJS = noahmp_output.o noahmp_driver.o noahmp_ascii_read.o
 
 all:	$(OBJS)
 
-snow_driver.o: snow_driver.f90
+noahmp_driver.o: noahmp_driver.f90
 
 	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../src -I./ $(*).f90 
 
-snow_output.o: snow_output.f90
+noahmp_output.o: noahmp_output.f90
+
+	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../src -I./ $(*).f90 
+
+noahmp_ascii_read.o: noahmp_ascii_read.f90
 
 	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../src -I./ $(*).f90 
 
@@ -28,9 +32,10 @@ clean:
 # Dependencies:
 #
 
-snow_output.o: ../src/WaterType.o \
+noahmp_output.o: ../src/WaterType.o \
                ../src/EnergyType.o 
-snow_driver.o: snow_output.o \
+noahmp_driver.o: noahmp_output.o \
+                 noahmp_ascii_read.o \
                ../src/NamelistRead.o \
                ../src/LevelsType.o \
                ../src/DomainType.o \
@@ -59,5 +64,6 @@ snow_driver.o: snow_output.o \
                ../src/PrecipHeatModule.o \
                ../src/EtFluxModule.o \
                ../src/SnowSoilTempModule.o \
-               ../src/EnergyModule.o
+               ../src/EnergyModule.o \
+               ../src/UtilitiesModule.o
 

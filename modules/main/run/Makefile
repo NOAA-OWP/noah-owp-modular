@@ -35,13 +35,16 @@ OBJS = \
         ../src/EtFluxModule.o \
         ../src/SnowSoilTempModule.o \
         ../src/EnergyModule.o \
-	../driver/snow_output.o \
-	../driver/snow_driver.o
+        ../src/UtilitiesModule.o \
+        ../driver/noahmp_output.o \
+        ../driver/noahmp_driver.o \
+        ../driver/noahmp_ascii_read.o
+  
 
-CMD = snow_refac.exe
+CMD = noahmp_refac.exe
 all:	$(CMD)
 
-snow_refac.exe: $(OBJS)
+noahmp_refac.exe: $(OBJS)
 	$(COMPILERF90) -o $(@) -I../driver -I../src $(OBJS) $(NETCDFLIB)
 
 # This command cleans up

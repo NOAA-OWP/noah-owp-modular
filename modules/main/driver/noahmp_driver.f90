@@ -2,9 +2,10 @@
 ! compile: 
 !
 
-program snow_driver
+program noahmp_driver
 
-  use SnowOutput
+  use NoahMPAsciiRead
+  use NoahMPOutput
   use LevelsType
   use DomainType
   use NamelistRead
@@ -13,10 +14,11 @@ program snow_driver
   use WaterType
   use ForcingType
   use EnergyType
-  use WaterModule
+  use UtilitiesModule
   use ForcingModule
   use InterceptionModule
   use EnergyModule
+  use WaterModule
 
   implicit none
 
@@ -37,14 +39,17 @@ program snow_driver
 !  local variables
 !---------------------------------------------------------------------
 
-  integer :: itime, iz            ! some loop counters
-  integer :: ntime      = 0       ! number of timesteps to run
-  integer :: precip_steps = 0     ! number of timesteps in rain event
-  integer :: dry_steps  = 0       ! number of timesteps between rain events
-  integer :: precip_step  = 0     ! number of timesteps in current event
-  integer :: dry_step   = 0       ! number of timesteps in current event
-  logical :: precipitating        ! .true. if precipitating
-  real    :: QV_CURR              ! water vapor mixing ratio (kg/kg)
+  integer            :: itime, iz         ! some loop counters
+  integer            :: ierr              ! error code for reading forcing data
+  integer, parameter :: iunit        = 10 ! Fortran unit number to attach to the opened file
+  integer            :: forcing_timestep  ! integer time step (set to dt) for some subroutine calls
+  integer            :: ntime        = 0  ! number of timesteps to run
+  integer            :: precip_steps = 0  ! number of timesteps in rain event
+  integer            :: dry_steps    = 0  ! number of timesteps between rain events
+  integer            :: precip_step  = 0  ! number of timesteps in current event
+  integer            :: dry_step     = 0  ! number of timesteps in current event
+  logical            :: precipitating     ! .true. if precipitating
+  real               :: QV_CURR           ! water vapor mixing ratio (kg/kg)
 
 !---------------------------------------------------------------------
 !  initialize
@@ -148,6 +153,8 @@ program snow_driver
   energy%STC      = 298.0
   energy%COSZ     = 0.7        ! cosine of solar zenith angle
   energy%ICE      = 0          ! 1 if sea ice, -1 if glacier, 0 if no land ice (seasonal snow)
+  energy%ALB      = 0.6        ! initialize snow albedo in CLASS routine
+  energy%ALBOLD   = 0.6        ! initialize snow albedo in CLASS routine
   
   ! forcing-related variables
   forcing%UU       = 3.0        ! wind speed in u direction (m s-1)
@@ -183,12 +190,14 @@ program snow_driver
   domain%IST = 1
   domain%zsnso(-namelist%nsnow+1:0) = 0.0
   domain%zsnso(1:namelist%nsoil) = namelist%zsoil
+  domain%nowdate = domain%startdate ! start the model with nowdate = startdate
+  forcing_timestep = domain%dt      ! integer timestep for some subroutine calls
 
   ! additional assignment for testing
   water%qseva     = 0.005/3600.0
   water%etrani    = 0.005/3600.0
   water%QVAP      = 0.000005
-    
+  
     
 
   !---------------------------------------------------------------------
@@ -196,12 +205,34 @@ program snow_driver
   !---------------------------------------------------------------------
   call initialize_output(namelist%output_filename, ntime+1, levels%nsoil, levels%nsnow)
   call add_to_output(0,levels%nsoil,levels%nsnow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)  
+  
+  !---------------------------------------------------------------------
+  ! Open the forcing file 
+  ! Code adapted from the ASCII_IO from NOAH-MP V1.1
+  !---------------------------------------------------------------------
+   call open_forcing_file(namelist%input_filename)
 
   !---------------------------------------------------------------------
   ! start the time loop
   !---------------------------------------------------------------------
   do itime = 1, ntime
   
+    !---------------------------------------------------------------------
+    ! Read in the forcing data
+    !---------------------------------------------------------------------
+
+    call read_forcing_text(iunit, domain%nowdate, forcing_timestep, &
+         forcing%UU, forcing%VV, forcing%SFCTMP, forcing%Q2, forcing%SFCPRS, forcing%SOLDN, forcing%LWDN, forcing%PRCPNONC, ierr)
+         
+         print*, "UU = ", forcing%UU
+         print*, "VV = ", forcing%VV
+         print*, "SFCTMP = ", forcing%SFCTMP
+         print*, "Q2 = ", forcing%Q2
+         print*, "SFCPRS = ", forcing%SFCPRS
+         print*, "SOLDN = ", forcing%SOLDN
+         print*, "LWDN = ", forcing%LWDN
+         print*, "PRCPNONC = ", forcing%PRCPNONC
+
     !---------------------------------------------------------------------
     ! there is a need for a derived variables routine here
     !---------------------------------------------------------------------
@@ -215,24 +246,32 @@ program snow_driver
     energy%EAH = forcing%SFCPRS*QV_CURR/(0.622+QV_CURR) ! Initial guess only. (Pa)
   
    
-    !---------------------------------------------------------------------
-    ! calculate the input water by simulating a synthetic precip event
-    !---------------------------------------------------------------------
-    if(precipitating) then
-      forcing%PRCPNONC    = namelist%preciprate/3600.0    ! input water [m/s]
-      precip_step = precip_step + 1
-      if(precip_step == precip_steps) then            ! event length met
-        precip_step = 0
-        precipitating   = .false.
-      end if
-    else
-      forcing%PRCPNONC   = 0.0                        ! stop water input [m/s]
-      dry_step = dry_step + 1
-      if(dry_step == dry_steps) then              ! between event length met
-        dry_step = 0
-        precipitating  = .true.
-      end if
-    end if
+!     !---------------------------------------------------------------------
+!     ! calculate the input water by simulating a synthetic precip event
+!     !---------------------------------------------------------------------
+!     if(precipitating) then
+!       forcing%PRCPNONC    = namelist%preciprate/3600.0    ! input water [m/s]
+!       precip_step = precip_step + 1
+!       if(precip_step == precip_steps) then            ! event length met
+!         precip_step = 0
+!         precipitating   = .false.
+!       end if
+!     else
+!       forcing%PRCPNONC   = 0.0                        ! stop water input [m/s]
+!       dry_step = dry_step + 1
+!       if(dry_step == dry_steps) then              ! between event length met
+!         dry_step = 0
+!         precipitating  = .true.
+!       end if
+!     end if
+
+  !---------------------------------------------------------------------
+  ! call the main utility routines 
+  !--------------------------------------------------------------------- 
+
+    call UtilitiesMain (itime, domain, forcing, energy)
+    print*, "Julian day = ", forcing%JULIAN
+    print*, "COSZ = ", energy%COSZ
 
   !---------------------------------------------------------------------
   ! call the main forcing routines 
