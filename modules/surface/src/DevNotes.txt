@@ -1,0 +1,55 @@
+
+02/CO2: 
+  partial pressures at interface (sfc) originate in tables, assigned to parameters 02, CO2
+  O2/CO2 are local variables in the driver, converted to CO2PP/O2PP (forcings) before being used to call main SFLX routine in hrldas driver, 
+  then internally energy as 02AIR, CO2AIR, which call before entering sflx:
+       CO2PP  = CO2_TABLE * P_ML                      ! partial pressure co2 [Pa]
+       O2PP   = O2_TABLE  * P_ML                      ! partial pressure  o2 [Pa]
+       (P_ML can be substituted with 1-d pressure forcing (SFCPRS))
+
+       P_ML   =(P8W3D(I,KTS+1,J)+P8W3D(I,KTS,J))*0.5  ! surface pressure defined at intermediate level [Pa]
+
+       PSFC   = P8W3D(I,1,J)                          ! surface pressure defined a full levels [Pa] (lowest level)
+
+P8W -- xyz input forcing, where z is 2 levels if coming from wrf.  often the avg of the two is calculated, as above for P_ML
+
+     
+TAH -- comes from TAHXY, assigned from T_PHY (3d variable) in readforc_hrldas, where it just takes the temperature forcing. 
+       it's really the temperature above the canopy but could start with air temp
+
+EAH -- comes from EAHXY, ready from, which is estimated from P8W ... in hte i/o noahmp driver
+       EAHXY = (P8W(:,1,:)*QV_CURR(:,1,:))/(0.622+QV_CURR(:,1,:)) ! Initial guess only.
+
+       P8W is basically surface pressure (Pa)
+       QV_CURR is the conversion of Q2 (spec hum) to mixing ratio (see below)
+               happens in the driver (qv_curr originally read from Q2 forcing input)
+
+
+# =============
+
+Specific humidity (q) is the density of water vapor (mass per unit volume) divided by the density of all air, including the water vapor:
+
+q = mwater_vapor/mall_air = ρwater_vapor/ρall_air = ρvρ
+
+We have already seen that specific humidity is used to calculate virtual temperature. Specific humidity is unitless, but often we put it in g kg–1.
+
+Water vapor mixing ratio (w) is the density of water vapor divided by the density of dry air without the water vapor:
+
+w = mwater_vapor/mdry_air f =ρwater_vapor/ρdry_air = ρvρd
+
+Water vapor mixing ratio is widely used to calculate the amount of water vapor. It is also the quantity used on the 
+skew-T diagram, which we will discuss later in this lesson. Water vapor mixing ratio is unitless, but often we put it in g kg–1.
+
+Since ρd = ρ – ρv we can rearrange the equations to get the relationship between w (water vapor mixing ratio) and q (specific humidity):
+
+q=w/(1+w) w=q/(1−q)
+
+The water vapor mixing ratio, w, is typically at most about 40 g kg–1 or 0.04 kg kg–1, so even for this much water vapor, q = 0.040/(1 + 0.040) = 0.038 or 38 g kg–1.
+
+Thus, water vapor mixing ratio and specific humidity are the same to within a few percent. But specific humidity is less than the water vapor mixing ratio if the humidity is 
+more than zero.
+
+# ======= ICE =======
+set in driver -- 1 if sea ice (do nothing), -1 if land ice point (calls noahmp_glacier), 0 if neither sea ice or land ice (call SFLX)
+  use 0 
+

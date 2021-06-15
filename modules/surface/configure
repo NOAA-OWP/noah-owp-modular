@@ -1,0 +1,42 @@
+#!/usr/bin/perl
+
+  if($#ARGV == 0) {
+     $response = shift(@ARGV) ;
+     print("Configure soil test environment: $response \n");
+  }else {
+     print "Please select from following predefined environments: \n\n";
+
+     print "   1. Cheyenne pgf compiler \n";
+     print "   2. Mike's Linux PGI compiler \n";
+     print "   3. Mike's Mac gfortran compiler \n";
+     print "   4. Keith's Mac gfortran compiler \n";
+     print "   0. exit only \n";
+
+     printf "\nEnter selection : " ;
+
+     $response = <STDIN> ;
+     chop($response);
+  }
+
+  if ($response == 1) {
+              # Cheyenne 
+              system "cp config/user_build_options.cheyenne user_build_options"; 
+            }
+
+  elsif ($response == 2) {
+              # Mike's linux set up 
+              system "cp config/user_build_options.mike.linux user_build_options"; 
+            }
+
+  elsif ($response == 3) {
+              # Mike's mac set up
+              system "cp config/user_build_options.mike.gfortran user_build_options"; 
+            }
+
+    elsif ($response == 4) {
+                # Mike's mac set up
+                system "cp config/user_build_options.keith.gfortran user_build_options"; 
+              }
+
+  else   {print "no selection $response\n"; last}
+
