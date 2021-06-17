@@ -19,11 +19,6 @@ OBJS = NamelistRead.o \
        SnowWaterRenew.o \
        SnowLayerChange.o \
        SoilWaterModule.o \
-       SoilWaterRetentionCoeff.o \
-       SurfaceRunoffInfiltration.o \
-       SurfaceRunoffModule.o \
-       SoilWaterMovement.o \
-       SubsurfaceRunoffModule.o \
        ForcingModule.o \
        AtmProcessing.o \
        InterceptionModule.o \
@@ -67,16 +62,7 @@ SnowLayerChange.o: LevelsType.o DomainType.o ParametersType.o EnergyType.o Water
 SnowWaterRenew.o: LevelsType.o DomainType.o ParametersType.o EnergyType.o WaterType.o SnowLayerChange.o
 SnowWaterModule.o: LevelsType.o DomainType.o ParametersType.o EnergyType.o WaterType.o \
                    SnowWaterRenew.o SnowLayerChange.o
-SoilWaterRetentionCoeff.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o WaterType.o
-SubsurfaceRunoffModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o WaterType.o
-SurfaceRunoffInfiltration.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o WaterType.o \
-                             SoilWaterRetentionCoeff.o
-SurfaceRunoffModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o WaterType.o \
-                       SurfaceRunoffInfiltration.o
-SoilWaterMovement.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o WaterType.o \
-                     SoilWaterRetentionCoeff.o
-SoilWaterModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o WaterType.o \
-                   SurfaceRunoffModule.o SoilWaterMovement.o SubsurfaceRunoffModule.o
+SoilWaterModule.o: OptionsType.o LevelsType.o ParametersType.o WaterType.o
 WaterModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
                ForcingType.o WaterType.o SoilWaterModule.o CanopyWaterModule.o SnowWaterModule.o
 ForcingModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \

@@ -50,11 +50,6 @@ noahmp_driver.o: noahmp_output.o \
                ../src/SnowWaterRenew.o \
                ../src/SnowLayerChange.o \
                ../src/SoilWaterModule.o \
-               ../src/SoilWaterRetentionCoeff.o \
-               ../src/SurfaceRunoffInfiltration.o \
-               ../src/SurfaceRunoffModule.o \
-               ../src/SoilWaterMovement.o \
-               ../src/SubsurfaceRunoffModule.o \
                ../src/ForcingModule.o \
                ../src/AtmProcessing.o \
                ../src/InterceptionModule.o \

@@ -48,26 +48,26 @@ contains
                  water%SNICE(J-1) = water%SNICE(J-1) + water%SNICE(J)
                  domain%DZSNSO(J-1) = domain%DZSNSO(J-1) + domain%DZSNSO(J) 
                ELSE
-	         IF(water%SNICE(J) >= 0.) THEN
+                 IF(water%SNICE(J) >= 0.) THEN
                   water%PONDING1 = water%SNLIQ(J)    ! ISNOW WILL GET SET TO ZERO BELOW; PONDING1 WILL GET 
                   water%SNEQV = water%SNICE(J)       ! ADDED TO PONDING FROM PHASECHANGE PONDING SHOULD BE
                   water%SNOWH = domain%DZSNSO(J)      ! ZERO HERE BECAUSE IT WAS CALCULATED FOR THIN SNOW
-		 ELSE   ! SNICE OVER-SUBLIMATED EARLIER
-		  water%PONDING1 = water%SNLIQ(J) + water%SNICE(J)
-		  IF(water%PONDING1 < 0.) THEN  ! IF SNICE AND SNLIQ SUBLIMATES REMOVE FROM SOIL
-		   water%SICE(1) = MAX(0.0,water%SICE(1)+water%PONDING1/(domain%DZSNSO(1)*1000.))
-                   water%PONDING1 = 0.0
-		  END IF
-                  water%SNEQV = 0.0
-                  water%SNOWH = 0.0
-		 END IF
+                  ELSE   ! SNICE OVER-SUBLIMATED EARLIER
+                    water%PONDING1 = water%SNLIQ(J) + water%SNICE(J)
+                    IF(water%PONDING1 < 0.) THEN  ! IF SNICE AND SNLIQ SUBLIMATES REMOVE FROM SOIL
+                      water%SICE(1) = MAX(0.0,water%SICE(1)+water%PONDING1/(domain%DZSNSO(1)*1000.))
+                      water%PONDING1 = 0.0
+                    END IF
+                    water%SNEQV = 0.0
+                    water%SNOWH = 0.0
+                  END IF
                  water%SNLIQ(J) = 0.0
                  water%SNICE(J) = 0.0
                  domain%DZSNSO(J) = 0.0
                ENDIF
-!                SH2O(1) = SH2O(1)+SNLIQ(J)/(DZSNSO(1)*1000.)
-!                SICE(1) = SICE(1)+SNICE(J)/(DZSNSO(1)*1000.)
-             ENDIF
+!               SH2O(1) = SH2O(1)+SNLIQ(J)/(DZSNSO(1)*1000.)
+!               SICE(1) = SICE(1)+SNICE(J)/(DZSNSO(1)*1000.)
+              ENDIF
 
              ! shift all elements above this down by one.
              IF (J > water%ISNOW+1 .AND. water%ISNOW < -1) THEN

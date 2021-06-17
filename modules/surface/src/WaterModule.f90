@@ -42,6 +42,10 @@ contains
   integer :: IZ 
   real, dimension(1:levels%nsoil) :: smcold        !previous timestep smc
 !---------------------------------------------------------------------
+    ! Convert energy flux FGEV (w/m2) to evaporation/dew rate (mm/s)
+    ! moved from main level of noahmp_sflx, KSJ 2021-06-17
+    water%QVAP = MAX( energy%FGEV/energy%LATHEAG, 0.)       ! positive part of fgev; Barlage change to ground v3.6
+    water%QDEW = ABS( MIN(energy%FGEV/energy%LATHEAG, 0.))  ! negative part of fgev
 
 ! determine frozen canopy and/or ground
   IF (energy%TV .GT. parameters%TFRZ) THEN 
@@ -119,16 +123,13 @@ contains
        water%RUNSRF = 0.
        IF(water%WSLAKE >= parameters%WSLMAX) water%RUNSRF = water%QINSUR*1000.             !mm/s
        water%WSLAKE=water%WSLAKE+(water%QINSUR-water%QSEVA)*1000.*domain%DT -water%RUNSRF*domain%DT   !mm
-    ELSE                                                      ! soil
-
-! For soil points
-  !---------------------------------------------------------------------
-  ! call the soil water routines
-  !---------------------------------------------------------------------
-
-    smcold = water%smc
-    call SoilWater (domain, levels, options, parameters, water )   
-
+    ELSE
+      ! For soil points
+      !---------------------------------------------------------------------
+      ! call the soil water routines
+      !---------------------------------------------------------------------
+      smcold = water%smc
+      call SoilWater (levels, options, parameters, water )    
 !!!!! did not include groundwater part
     ENDIF
 
@@ -138,16 +139,16 @@ contains
   ! accumulate some fields and error checks
   !---------------------------------------------------------------------
 
-    water%runsub = water%runsub + water%snoflow      ! add glacier outflow to subsurface runoff [mm/s]
-    acsrf  = water%runsrf * domain%dt          ! accumulated surface runoff [mm]
-    acsub  = water%runsub * domain%dt          ! accumulated drainage [mm]
-    acpcp  = water%qinsur * domain%dt * 1000.0 ! accumulated precipitation [mm]
+    !water%runsub = water%runsub + water%snoflow      ! add glacier outflow to subsurface runoff [mm/s]
+    !acsrf  = water%runsrf * domain%dt          ! accumulated surface runoff [mm]
+    !acsub  = water%runsub * domain%dt          ! accumulated drainage [mm]
+    !acpcp  = water%qinsur * domain%dt * 1000.0 ! accumulated precipitation [mm]
    
-    dtheta_max = maxval(abs(water%smc-smcold))
+    !dtheta_max = maxval(abs(water%smc-smcold))
 !    if (dtheta_max .lt. 0.00001) done = .true.
    
-    totalwat = sum(domain%dzsnso(1:levels%nsoil)*water%smc*1000.0)         ! total soil water [mm]
-    errwat = acpcp - acsrf - acsub - (totalwat - tw0)  ! accum error [mm]
+    !totalwat = sum(domain%dzsnso(1:levels%nsoil)*water%smc*1000.0)         ! total soil water [mm]
+    !errwat = acpcp - acsrf - acsub - (totalwat - tw0)  ! accum error [mm]
 
   END SUBROUTINE WaterMain   
 

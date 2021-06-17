@@ -130,11 +130,13 @@ contains
           GX    = (water%SH2O(IZ)-parameters%SMCWLT(IZ)) / (parameters%SMCREF(IZ)-parameters%SMCWLT(IZ))
         END IF
         IF(options%OPT_BTR == 2) then                  ! CLM
-          PSI   = MAX(parameters%PSIWLT,-parameters%PSISAT(IZ)*(MAX(0.01,water%SH2O(IZ))/parameters%SMCMAX(IZ))**(-parameters%BEXP(IZ)) )
-          GX    = (1.-PSI/parameters%PSIWLT)/(1.+parameters%PSISAT(IZ)/parameters%PSIWLT)
+          !PSI   = MAX(parameters%PSIWLT,-parameters%PSISAT(IZ)*(MAX(0.01,water%SH2O(IZ))/parameters%SMCMAX(IZ))**(-parameters%BEXP(IZ)) )
+          PSI = water%ZWT - (domain%zsoil(IZ) + (domain%dzsnso(IZ) / 2)) ! set PSI to be midpoint of layer above water table
+          GX  = (1.-PSI/parameters%PSIWLT)/(1.+parameters%PSISAT(IZ)/parameters%PSIWLT)
         END IF
         IF(options%OPT_BTR == 3) then                  ! SSiB
-          PSI   = MAX(parameters%PSIWLT,-parameters%PSISAT(IZ)*(MAX(0.01,water%SH2O(IZ))/parameters%SMCMAX(IZ))**(-parameters%BEXP(IZ)) )
+          !PSI   = MAX(parameters%PSIWLT,-parameters%PSISAT(IZ)*(MAX(0.01,water%SH2O(IZ))/parameters%SMCMAX(IZ))**(-parameters%BEXP(IZ)) )
+          PSI = water%ZWT - (domain%zsoil(IZ) + (domain%dzsnso(IZ) / 2)) ! set PSI to be midpoint of layer above water table
           GX    = 1.-EXP(-5.8*(LOG(parameters%PSIWLT/PSI)))
         END IF
         GX = MIN(1.,MAX(0.,GX))

@@ -142,6 +142,8 @@ type, public :: parameters_type
   
   real                            :: GRAV         ! acceleration due to gravity (m/s2)
   
+  real                            :: ZWT_INIT     ! initial water table depth below surface [m]
+  
 
   contains
 
@@ -323,6 +325,12 @@ contains
     this%O2        =  0.209      ! o2 partial pressure, from O2_TABLE var (set in MPTABLE.TBL)
     this%PSIWLT    = -150.0      ! originally a fixed parameter set in ENERGY()
     this%TBOT      = 263.0       ! (K) can be updated depending on option OPT_TBOT
+
+    if(namelist%initial_uniform) then
+      this%zwt_init = namelist%initial_zwt
+    else
+      this%zwt_init = namelist%zwt
+    end if
 
   end subroutine InitTransfer
 
