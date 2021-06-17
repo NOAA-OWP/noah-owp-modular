@@ -57,12 +57,14 @@
  dzsnso    =  0.0,  0.0,  0.0,  0.1,  0.3,  0.6,  1.0  ! level thickness [m]
  sice      =  0.0,  0.0,  0.0,  0.0  ! initial soil ice profile [vol]
  sh2o      =  0.3,  0.3,  0.3,  0.3  ! initial soil liquid profile [vol]
+ zwt       =  -2.0                   ! initial water table depth below surface [m]
 /
 
 &uniform_initial
  initial_uniform    = .true.         ! initial all levels the same
  initial_sh2o_value = 0.3            ! constant soil liquid value [vol]
  initial_sice_value = 0.0            ! constant soil ice value [vol]
+ initial_zwt        =  -2.0          ! initial water table depth below surface [m]
 /
 
 &soil_parameters

@@ -35,10 +35,12 @@ type, public :: namelist_type
   real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
   real, allocatable, dimension(:) :: sice    ! soil ice content [m3/m3]
   real, allocatable, dimension(:) :: sh2o    ! soil liquid water content [m3/m3]
+  real                            :: zwt     ! initial water table depth [m]
 
   logical :: initial_uniform                 ! initial all levels the same
   real    :: initial_sh2o_value              ! constant sh2o value
   real    :: initial_sice_value              ! constant sice value
+  real    :: initial_zwt                     ! constant water table depth [m]
 
   !--------------------!
   !   model options    !
@@ -233,10 +235,12 @@ contains
     real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
     real, allocatable, dimension(:) :: sice    ! soil ice content [m3/m3]
     real, allocatable, dimension(:) :: sh2o    ! soil liquid water content [m3/m3]
+    real                            :: zwt     ! initial water table depth [m]
  
     logical :: initial_uniform                 ! initial all levels the same
     real    :: initial_sh2o_value              ! constant sh2o value
     real    :: initial_sice_value              ! constant sice value
+    real    :: initial_zwt                     ! constant water table depth [m]
 
     !--------------------!
     !   model options    !
@@ -397,9 +401,9 @@ contains
                                  supercooled_water_option,stomatal_resistance_option,evap_srfc_resistance_option
     namelist / structure       / isltyp,nsoil,nsnow,nveg,structure_option,soil_depth,&
                                  vegtyp,croptype,sfctyp,soilcolor
-    namelist / fixed_initial   / zsoil,dzsnso,sice,sh2o
+    namelist / fixed_initial   / zsoil,dzsnso,sice,sh2o,zwt
     namelist / uniform_initial / initial_uniform,initial_sh2o_value,&
-                                 initial_sice_value
+                                 initial_sice_value,initial_zwt
     namelist / soil_parameters / bb,satdk,satdw,maxsmc,satpsi,wltsmc, &
                                  refsmc,pctsand,pctclay,bvic,AXAJ,BXAJ,XXAJ,&
                                  BBVIC,G,QUARTZ,slope,refkdt,refdk,CSOIL,Z0,CZIL,ZBOT
@@ -491,10 +495,12 @@ contains
     this%dzsnso = dzsnso
     this%sice   = sice
     this%sh2o   = sh2o
+    this%zwt    = zwt
  
     this%initial_uniform    = initial_uniform
     this%initial_sh2o_value = initial_sh2o_value
     this%initial_sice_value = initial_sice_value
+    this%initial_zwt        = initial_zwt
 
     this%precip_phase_option = precip_phase_option
     this%runoff_option       = runoff_option

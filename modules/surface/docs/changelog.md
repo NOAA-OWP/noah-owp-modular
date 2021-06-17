@@ -1,6 +1,6 @@
 # Changelog for NOAH-MP modularized snow model
 
-## Major changes:
+## Major changes (all):
 - Removed PGS from PHENOLOGY because we’re not implementing CARBON_CROP
 - Moved CanopyWaterIntercept to InterceptionModule
     - Removed call from WaterModule and added to InterceptionModule
@@ -42,6 +42,9 @@
 - The subroutines calc_declin, geth_newdate, and geth_idts are now in UtilitiesModule.f90. Similar to the other high-level modules, the driver calls UtilitiesMain from the time loop.
 - Modifed the noahmp_driver to read in ASCII forcing data as in NOAH-MP V1.1.
     - *IMPORTANT NOTE* The driver is specific to the forcing data variables, units, and order found in the bondville.dat example. It will need to be modified to accept AORC data.
+
+## Major changes (surface module):
+- Moved computations of QVAP and QDEW from main level of noahmp_sflx to WaterModule (needs to be done in modules/main as well)
 
 ## Bug fixes:
 - Albedo for direct shortwave radiation in the NIR (ALBSND(2)) was incorrectly computed using parameters%BATS_VIS_DIR

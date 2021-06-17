@@ -18,8 +18,6 @@ module NoahMPOutput
   integer           :: smc_id
 !  integer           :: smcm_id
   integer           :: prcp_id
-  integer           :: sfrn_id
-  integer           :: ugrn_id
   integer           :: qinsur_id
 
   integer           :: qintr_id
@@ -69,11 +67,8 @@ contains
     iret = nf90_def_var(ncid, "timestep",             NF90_INT  , (/time_dim/), time_id)
     iret = nf90_def_var(ncid, "precipitation",        NF90_FLOAT, (/time_dim/), prcp_id)
     iret = nf90_def_var(ncid, "waterin_sfc",        NF90_FLOAT, (/time_dim/), qinsur_id)
-    iret = nf90_def_var(ncid, "surface_runoff",       NF90_FLOAT, (/time_dim/), sfrn_id)
-    iret = nf90_def_var(ncid, "subsurf_runoff",       NF90_FLOAT, (/time_dim/), ugrn_id)
     iret = nf90_def_var(ncid, "evaporation",          NF90_FLOAT, (/time_dim/), evap_id)
     iret = nf90_def_var(ncid, "transpiration",        NF90_FLOAT, (/time_dim/), tran_id)
-!    iret = nf90_def_var(ncid, "soil_moisture_mm",     NF90_FLOAT, (/time_dim,soil_dim/), smcm_id)
     iret = nf90_def_var(ncid, "soil_moisture",        NF90_FLOAT, (/time_dim,soil_dim/), smc_id)
 ! for canopy water
     iret = nf90_def_var(ncid, "rain_intercept",        NF90_FLOAT, (/time_dim/), qintr_id)
@@ -122,15 +117,11 @@ contains
      real, dimension(nsoil+nsnow) :: zsnso     
 
 ! for soil water
-!     smcmm = water%smc*dzsnso*1000.0 ! issues with this conversion
      iret = nf90_put_var(ncid, time_id,    itime,                       start=(/itime+1/))
      iret = nf90_put_var(ncid, prcp_id,    water%rain*dt,               start=(/itime+1/))
      iret = nf90_put_var(ncid, qinsur_id,  water%qinsur*1000*dt,        start=(/itime+1/))
-     iret = nf90_put_var(ncid, sfrn_id,    water%runsrf*dt,             start=(/itime+1/))
-     iret = nf90_put_var(ncid, ugrn_id,    water%runsub*dt,             start=(/itime+1/))
      iret = nf90_put_var(ncid, evap_id,    water%qseva*1000.0*dt,       start=(/itime+1/))
      iret = nf90_put_var(ncid, tran_id,    sum(water%etrani)*1000.0*dt, start=(/itime+1/))
-!     iret = nf90_put_var(ncid, smcm_id,    smcmm,       start=(/itime+1,1/), count=(/1,nsoil/))
      iret = nf90_put_var(ncid,  smc_id,    water%smc,   start=(/itime+1,1/), count=(/1,nsoil/))
 ! for canopy water
      iret = nf90_put_var(ncid, qintr_id,   water%qintr*dt,             start=(/itime+1/))

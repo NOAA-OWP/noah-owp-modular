@@ -83,16 +83,7 @@ program noahmp_driver
 
   ! Initializations
   ! for soil water
-  !    water%zwt       = (25.0 + 2.0) - 4900.0/1000/0.2 ! cenlin for run=1
-  water%zwt       = -100.0       ! should only be needed for run=1
-  water%smcwtd    = 0.0          ! should only be needed for run=5
-  water%deeprech  = 0.0          ! should only be needed for run=5
   water%qinsur    = 0.0          ! 
-  water%runsrf    = 0.0          ! 
-  water%runsub    = 0.0          ! 
-  water%qdrain    = 0.0          ! 
-  water%wcnd      = 0.0          ! 
-  water%fcrmax    = 0.0          ! 
   water%snoflow   = 0.0          ! glacier outflow for all RUNSUB options, [mm/s]
   water%qseva     = 0.0          ! soil evaporation [mm/s]
   water%etrani    = 0.0          ! transpiration from each level[mm/s]
@@ -193,13 +184,6 @@ program noahmp_driver
   domain%nowdate = domain%startdate ! start the model with nowdate = startdate
   forcing_timestep = domain%dt      ! integer timestep for some subroutine calls
 
-  ! additional assignment for testing
-  water%qseva     = 0.005/3600.0
-  water%etrani    = 0.005/3600.0
-  water%QVAP      = 0.000005
-  
-    
-
   !---------------------------------------------------------------------
   ! create output file and add initial values
   !---------------------------------------------------------------------
@@ -290,13 +274,15 @@ program noahmp_driver
   !--------------------------------------------------------------------- 
 
     call EnergyMain (domain, levels, options, parameters, forcing, energy, water)
+    print*, "FGEV = ", energy%FGEV
 
   !---------------------------------------------------------------------
   ! call the main water routines (canopy + snow + soil water components)
   !--------------------------------------------------------------------- 
 
     call WaterMain (domain, levels, options, parameters, forcing, energy, water)
-
+    print*, "QSEVA = ", water%QSEVA
+    print*, "QVAP = ", water%QVAP
   !---------------------------------------------------------------------
   ! add to output file
   !---------------------------------------------------------------------
