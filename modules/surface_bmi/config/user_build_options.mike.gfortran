@@ -1,0 +1,13 @@
+
+#=============================================================================================
+#  Options for Mike's Mac with gfortran 
+#=============================================================================================
+
+ COMPILERF90    =       /opt/local/bin/gfortran-mp-9
+ FREESOURCE     =       -ffree-form  -ffree-line-length-none
+ F90FLAGS       =       #-fdefault-real-8
+ CPP            =       /opt/local/bin/cpp-mp-9
+ CPPFLAGS       =       -P -traditional -D_GFORTRAN_
+ NETCDFMOD      =       -I/opt/local/include
+ NETCDFLIB      =       -L/opt/local/lib -lnetcdf -lnetcdff
+
