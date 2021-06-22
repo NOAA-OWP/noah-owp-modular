@@ -11,7 +11,7 @@ all:	$(OBJS)
 
 noahmp_driver.o: noahmp_driver.f90
 
-	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../src -I./ $(*).f90 
+	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../src -I./ -I../bmi $(*).f90 
 
 noahmp_output.o: noahmp_output.f90
 
@@ -60,5 +60,7 @@ noahmp_driver.o: noahmp_output.o \
                ../src/EtFluxModule.o \
                ../src/SnowSoilTempModule.o \
                ../src/EnergyModule.o \
-               ../src/UtilitiesModule.o
+               ../src/UtilitiesModule.o \
+               ../bmi/bmi_noahmp.o \
+               ../bmi/bmi.o
 

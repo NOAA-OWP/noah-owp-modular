@@ -6,6 +6,8 @@ program noahmp_driver
 
   use NoahMPAsciiRead
   use NoahMPOutput
+  use bminoahmp
+  use bmif_2_0
   use LevelsType
   use DomainType
   use NamelistRead
@@ -34,6 +36,7 @@ program noahmp_driver
   type (water_type)        :: water
   type (forcing_type)      :: forcing 
   type (energy_type)       :: energy
+  type (bmi_noahmp)        :: m
 
 !---------------------------------------------------------------------
 !  local variables
@@ -50,7 +53,18 @@ program noahmp_driver
   integer            :: dry_step     = 0  ! number of timesteps in current event
   logical            :: precipitating     ! .true. if precipitating
   real               :: QV_CURR           ! water vapor mixing ratio (kg/kg)
-
+  
+  !---------------------------------------------------------------------
+  !  local variables for BMI testing
+  !---------------------------------------------------------------------
+  character (len = BMI_MAX_COMPONENT_NAME), pointer :: component_name ! component name
+  integer                                           :: status    ! returning status values
+  integer                                           :: count     ! var counts
+  character (len = BMI_MAX_VAR_NAME), pointer       :: names(:)  ! var names
+  integer                                           :: n_inputs  ! n input vars
+  integer                                           :: n_outputs ! n output vars
+  integer                                           :: iBMI      ! loop counter
+  
 !---------------------------------------------------------------------
 !  initialize
 !---------------------------------------------------------------------
@@ -283,6 +297,32 @@ program noahmp_driver
     call WaterMain (domain, levels, options, parameters, forcing, energy, water)
     print*, "QSEVA = ", water%QSEVA
     print*, "QVAP = ", water%QVAP
+    
+  !---------------------------------------------------------------------
+  ! Do some BMI testing
+  !---------------------------------------------------------------------
+
+    status = m%get_component_name(component_name)
+    print*, "Component name = ", trim(component_name)
+    
+    status = m%get_input_item_count(count)
+    print*, "Total input vars = ", count
+    n_inputs = count
+    
+    status = m%get_output_item_count(count)
+    print*, "Total output vars = ", count
+    n_outputs = count
+    
+    status = m%get_input_var_names(names)
+    do iBMI = 1, n_inputs 
+      print*, "Input var = ", trim(names(iBMI))
+    end do
+    
+    status = m%get_output_var_names(names)
+    do iBMI = 1, n_outputs 
+      print*, "Output var = ", trim(names(iBMI))
+    end do
+    
   !---------------------------------------------------------------------
   ! add to output file
   !---------------------------------------------------------------------
