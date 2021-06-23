@@ -17,11 +17,11 @@ module bminoahmp
      procedure :: get_output_var_names => noahmp_output_var_names
      procedure :: initialize => noahmp_initialize
      procedure :: finalize => noahmp_finalize
-!      procedure :: get_start_time => noahmp_start_time
-!      procedure :: get_end_time => noahmp_end_time
-!      procedure :: get_current_time => noahmp_current_time
-!      procedure :: get_time_step => noahmp_time_step
-!      procedure :: get_time_units => noahmp_time_units
+     procedure :: get_start_time => noahmp_start_time
+     procedure :: get_end_time => noahmp_end_time
+     procedure :: get_current_time => noahmp_current_time
+     procedure :: get_time_step => noahmp_time_step
+     procedure :: get_time_units => noahmp_time_units
      procedure :: update => noahmp_update
 !      procedure :: update_until => noahmp_update_until
 !      procedure :: get_var_grid => noahmp_var_grid
@@ -185,56 +185,56 @@ contains
     bmi_status = BMI_SUCCESS
   end function noahmp_finalize
 
-!   ! Model start time.
-!   function noahmp_start_time(this, time) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     double precision, intent(out) :: time
-!     integer :: bmi_status
-!
-!     time = 0.d0
-!     bmi_status = BMI_SUCCESS
-!   end function noahmp_start_time
-!
-!   ! Model end time.
-!   function noahmp_end_time(this, time) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     double precision, intent(out) :: time
-!     integer :: bmi_status
-!
+  ! Model start time.
+  function noahmp_start_time(this, time) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    double precision, intent(out) :: time
+    integer :: bmi_status
+
+    time = 0.d0
+    bmi_status = BMI_SUCCESS
+  end function noahmp_start_time
+
+  ! Model end time.
+  function noahmp_end_time(this, time) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    double precision, intent(out) :: time
+    integer :: bmi_status
+
 !     time = dble(this%model%t_end)
-!     bmi_status = BMI_SUCCESS
-!   end function noahmp_end_time
-!
-!   ! Model current time.
-!   function noahmp_current_time(this, time) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     double precision, intent(out) :: time
-!     integer :: bmi_status
-!
+    bmi_status = BMI_SUCCESS
+  end function noahmp_end_time
+
+  ! Model current time.
+  function noahmp_current_time(this, time) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    double precision, intent(out) :: time
+    integer :: bmi_status
+
 !     time = dble(this%model%t)
-!     bmi_status = BMI_SUCCESS
-!   end function noahmp_current_time
-!
-!   ! Model time step.
-!   function noahmp_time_step(this, time_step) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     double precision, intent(out) :: time_step
-!     integer :: bmi_status
-!
-!     time_step = dble(this%model%dt)
-!     bmi_status = BMI_SUCCESS
-!   end function noahmp_time_step
-!
-!   ! Model time units.
-!   function noahmp_time_units(this, units) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     character (len=*), intent(out) :: units
-!     integer :: bmi_status
-!
-!     units = "s"
-!     bmi_status = BMI_SUCCESS
-!   end function noahmp_time_units
-!
+    bmi_status = BMI_SUCCESS
+  end function noahmp_current_time
+
+  ! Model time step.
+  function noahmp_time_step(this, time_step) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    real, intent(out)              :: time_step
+    integer :: bmi_status
+
+    time_step = this%model%domain%dt
+    bmi_status = BMI_SUCCESS
+  end function noahmp_time_step
+
+  ! Model time units.
+  function noahmp_time_units(this, units) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    character (len=*), intent(out) :: units
+    integer :: bmi_status
+
+    units = "s"
+    bmi_status = BMI_SUCCESS
+  end function noahmp_time_units
+
   ! Advance model by one time step.
   function noahmp_update(this) result (bmi_status)
     class (bmi_noahmp), intent(inout) :: this
