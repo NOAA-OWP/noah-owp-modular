@@ -11,6 +11,7 @@ module NoahMPSurfaceModule
   use ForcingType
   use EnergyType
   use NoahMPAsciiRead
+  use NoahMPOutput
 
   implicit none
   type :: noahmp_type
@@ -178,8 +179,22 @@ contains
       !---------------------------------------------------------------------
       call open_forcing_file(namelist%input_filename)
       
+      !---------------------------------------------------------------------
+      ! create output file and add initial values
+      !---------------------------------------------------------------------
+      call initialize_output(namelist%output_filename, ntime+1, levels%nsoil, levels%nsnow)
+      call add_to_output(0,levels%nsoil,levels%nsnow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)
+      
     end associate ! terminate the associate block
 
   END SUBROUTINE initialize_from_file   
+  
+  SUBROUTINE cleanup(model)
+    implicit none
+    type(noahmp_type), intent(inout) :: model
+
+      call finalize_output()
+  
+  END SUBROUTINE cleanup
 
 end module NoahMPSurfaceModule

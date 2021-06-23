@@ -310,6 +310,12 @@ program noahmp_driver
 !
 !   end do ! time loop
 !
+    !---------------------------------------------------------------------
+    ! initialize with BMI
+    !---------------------------------------------------------------------
+    print*, "Finalizing..."
+    status = m%finalize()
+    print*, "Finished!"
 !   call finalize_output()
 
 end program
