@@ -31,6 +31,7 @@ OBJS = \
         ../src/SnowSoilTempModule.o \
         ../src/EnergyModule.o \
         ../src/UtilitiesModule.o \
+        ../src/NoahMPSurfaceModule.o \
         ../driver/noahmp_output.o \
         ../driver/noahmp_driver.o \
         ../driver/noahmp_ascii_read.o \
