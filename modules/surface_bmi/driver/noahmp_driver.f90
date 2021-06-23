@@ -60,6 +60,9 @@ program noahmp_driver
   integer                                           :: n_inputs  ! n input vars
   integer                                           :: n_outputs ! n output vars
   integer                                           :: iBMI      ! loop counter
+  real                                              :: timestep  ! timestep
+  character (len = 1)                               :: ts_units  ! timestep units
+  
   
 ! !---------------------------------------------------------------------
 ! !  initialize
@@ -306,6 +309,10 @@ program noahmp_driver
       print*, "Output var = ", trim(names(iBMI))
     end do
     
+    status = m%get_time_step(timestep)
+    status = m%get_time_units(ts_units)
+    print*, " The time step is ", timestep
+    print*, "with a unit of ", ts_units
 !   !---------------------------------------------------------------------
 !   ! add to output file
 !   !---------------------------------------------------------------------
