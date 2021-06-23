@@ -88,4 +88,5 @@ EnergyModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyT
                 PrecipHeatModule.o EtFluxModule.o SnowSoilTempModule.o
 UtilitiesModule.o: DomainType.o ForcingType.o EnergyType.o
 NoahMPSurfaceModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
-                ForcingType.o WaterType.o NamelistRead.o ../driver/noahmp_ascii_read.o
+                ForcingType.o WaterType.o NamelistRead.o ../driver/noahmp_ascii_read.o \
+                ../driver/noahmp_output.o

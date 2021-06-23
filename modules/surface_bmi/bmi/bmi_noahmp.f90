@@ -16,7 +16,7 @@ module bminoahmp
      procedure :: get_input_var_names => noahmp_input_var_names
      procedure :: get_output_var_names => noahmp_output_var_names
      procedure :: initialize => noahmp_initialize
-!      procedure :: finalize => noahmp_finalize
+     procedure :: finalize => noahmp_finalize
 !      procedure :: get_start_time => noahmp_start_time
 !      procedure :: get_end_time => noahmp_end_time
 !      procedure :: get_current_time => noahmp_current_time
@@ -176,14 +176,14 @@ contains
     bmi_status = BMI_SUCCESS
   end function noahmp_initialize
 
-!   ! BMI finalizer.
-!   function noahmp_finalize(this) result (bmi_status)
-!     class (bmi_noahmp), intent(inout) :: this
-!     integer :: bmi_status
-!
-!     call cleanup(this%model)
-!     bmi_status = BMI_SUCCESS
-!   end function noahmp_finalize
+  ! BMI finalizer.
+  function noahmp_finalize(this) result (bmi_status)
+    class (bmi_noahmp), intent(inout) :: this
+    integer :: bmi_status
+
+    call cleanup(this%model)
+    bmi_status = BMI_SUCCESS
+  end function noahmp_finalize
 
 !   ! Model start time.
 !   function noahmp_start_time(this, time) result (bmi_status)
