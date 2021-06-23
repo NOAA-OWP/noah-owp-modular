@@ -12,6 +12,11 @@ module NoahMPSurfaceModule
   use EnergyType
   use NoahMPAsciiRead
   use NoahMPOutput
+  use UtilitiesModule
+  use ForcingModule
+  use InterceptionModule
+  use EnergyModule
+  use WaterModule
 
   implicit none
   type :: noahmp_type
@@ -26,7 +31,7 @@ module NoahMPSurfaceModule
   end type noahmp_type
 contains
 
-!== begin energy subroutine ================================================================================
+!== Initialize the model ================================================================================
 
   SUBROUTINE initialize_from_file (model, config_file)
     implicit none
@@ -37,7 +42,7 @@ contains
     integer            :: forcing_timestep  ! integer time step (set to dt) for some subroutine calls
     integer            :: ntime        = 0  ! number of timesteps to run
     
-    associate(namelist => model%namelist, &
+    associate(namelist   => model%namelist, &
               levels     => model%levels, &
               domain     => model%domain, &
               options    => model%options, &
@@ -189,6 +194,8 @@ contains
 
   END SUBROUTINE initialize_from_file   
   
+!== Finalize the model ================================================================================
+
   SUBROUTINE cleanup(model)
     implicit none
     type(noahmp_type), intent(inout) :: model
@@ -196,5 +203,98 @@ contains
       call finalize_output()
   
   END SUBROUTINE cleanup
+
+!== Move the model ahead one time step ================================================================
+
+  SUBROUTINE advance_in_time(model)
+    type (noahmp_type), intent (inout) :: model
+
+    call solve_noahmp(model)
+    ! Add counter for adding time? See heat example
+  END SUBROUTINE advance_in_time
+  
+!== Run one time step of the model ================================================================
+
+  SUBROUTINE solve_noahmp(model)
+    type (noahmp_type), intent (inout) :: model
+    integer, parameter :: iunit        = 10 ! Fortran unit number to attach to the opened file
+    integer            :: forcing_timestep  ! integer time step (set to dt) for some subroutine calls
+    integer            :: ierr              ! error code for reading forcing data
+    real               :: QV_CURR           ! water vapor mixing ratio (kg/kg)
+    integer            :: itime             ! time loop counter >> need to implement in BMI way
+    itime = 1 !!!!!!!!!!FOR TESTING ONLY!!!!!!!!!
+    associate(namelist => model%namelist, &
+              levels     => model%levels, &
+              domain     => model%domain, &
+              options    => model%options, &
+              parameters => model%parameters, &
+              water      => model%water, &
+              forcing    => model%forcing, &
+              energy     => model%energy)
+    !---------------------------------------------------------------------
+    ! Read in the forcing data
+    !---------------------------------------------------------------------
+    forcing_timestep = domain%dt
+    call read_forcing_text(iunit, domain%nowdate, forcing_timestep, &
+         forcing%UU, forcing%VV, forcing%SFCTMP, forcing%Q2, forcing%SFCPRS, forcing%SOLDN, forcing%LWDN, forcing%PRCPNONC, ierr)
+
+    print*, "UU = ", forcing%UU
+    print*, "VV = ", forcing%VV
+    print*, "SFCTMP = ", forcing%SFCTMP
+    print*, "Q2 = ", forcing%Q2
+    print*, "SFCPRS = ", forcing%SFCPRS
+    print*, "SOLDN = ", forcing%SOLDN
+    print*, "LWDN = ", forcing%LWDN
+    print*, "PRCPNONC = ", forcing%PRCPNONC
+
+    !---------------------------------------------------------------------
+    ! there is a need for a derived variables routine here
+    !---------------------------------------------------------------------
+    ! it would handle the following plus a lot of other conversions, reassignments, settings
+    forcing%P_ML     = forcing%SFCPRS              ! surf press estimated at model level [Pa], can avg multi-level nwp
+    forcing%O2PP     = parameters%O2 * forcing%P_ML        ! atmospheric co2 concentration partial pressure (Pa)
+    forcing%CO2PP    = parameters%CO2 * forcing%P_ML       ! atmospheric o2 concentration partial pressure (Pa)
+
+    energy%TAH = forcing%SFCTMP                         ! assign canopy temp with forcing air temp (K)
+    QV_CURR    = forcing%Q2 / (1 - forcing%Q2)          ! mixing ratio, assuming input forcing Q2 is specific hum.
+    energy%EAH = forcing%SFCPRS*QV_CURR/(0.622+QV_CURR) ! Initial guess only. (Pa)
+
+    !---------------------------------------------------------------------
+    ! call the main utility routines
+    !---------------------------------------------------------------------
+
+    call UtilitiesMain (itime, domain, forcing, energy)
+    print*, "Julian day = ", forcing%JULIAN
+    print*, "COSZ = ", energy%COSZ
+
+    !---------------------------------------------------------------------
+    ! call the main forcing routines
+    !---------------------------------------------------------------------
+
+    call ForcingMain (domain, levels, options, parameters, forcing, energy, water)
+
+    !---------------------------------------------------------------------
+    ! call the main interception routines
+    !---------------------------------------------------------------------
+
+    call InterceptionMain (domain, levels, options, parameters, forcing, energy, water)
+
+    !---------------------------------------------------------------------
+    ! call the main energy balance routines
+    !---------------------------------------------------------------------
+
+    call EnergyMain (domain, levels, options, parameters, forcing, energy, water)
+    print*, "FGEV = ", energy%FGEV
+
+    !---------------------------------------------------------------------
+    ! call the main water routines (canopy + snow + soil water components)
+    !---------------------------------------------------------------------
+
+    call WaterMain (domain, levels, options, parameters, forcing, energy, water)
+    print*, "QSEVA = ", water%QSEVA
+    print*, "QVAP = ", water%QVAP
+    
+    end associate ! terminate associate block
+  END SUBROUTINE solve_noahmp
 
 end module NoahMPSurfaceModule

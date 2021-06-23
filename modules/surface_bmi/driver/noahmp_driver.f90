@@ -276,10 +276,14 @@ program noahmp_driver
 !     call WaterMain (domain, levels, options, parameters, forcing, energy, water)
 !     print*, "QSEVA = ", water%QSEVA
 !     print*, "QVAP = ", water%QVAP
-    
-  !---------------------------------------------------------------------
-  ! Do some BMI testing
-  !---------------------------------------------------------------------
+    !---------------------------------------------------------------------
+    ! initialize with BMI
+    !---------------------------------------------------------------------
+    print*, "Running one time step..."
+    status = m%update()
+    !---------------------------------------------------------------------
+    ! Do some BMI testing
+    !---------------------------------------------------------------------
 
     status = m%get_component_name(component_name)
     print*, "Component name = ", trim(component_name)
