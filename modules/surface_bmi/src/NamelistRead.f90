@@ -200,9 +200,11 @@ end type namelist_type
      
 contains   
 
-  subroutine ReadNamelist(this)
+  subroutine ReadNamelist(this, config_file)
   
     class(namelist_type) :: this
+    
+    character(len=*), intent (in) :: config_file
     
     integer       :: iz
 
@@ -426,7 +428,7 @@ contains
 !  read input file, part 1
 !---------------------------------------------------------------------
 
-    open(30, file="namelist.input", form="formatted")
+    open(30, file= config_file, form="formatted")
      read(30, timing)
      read(30, location)
      read(30, forcing)

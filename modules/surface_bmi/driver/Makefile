@@ -61,6 +61,7 @@ noahmp_driver.o: noahmp_output.o \
                ../src/SnowSoilTempModule.o \
                ../src/EnergyModule.o \
                ../src/UtilitiesModule.o \
+               ../src/NoahMPSurfaceModule.o \
                ../bmi/bmi_noahmp.o \
                ../bmi/bmi.o
 

@@ -11,7 +11,7 @@ OBJS = bmi_noahmp.o \
 all:	$(OBJS)
 
 .f90.o:
-	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(*).f90
+	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) -I../src  $(*).f90
 
 #
 # This command cleans up object (etc) files:
@@ -24,5 +24,6 @@ clean:
 # Dependencies:
 #
 
-bmi_noahmp.o: bmi.o 
+bmi_noahmp.o: bmi.o \
+              ../src/NoahMPSurfaceModule.o
 
