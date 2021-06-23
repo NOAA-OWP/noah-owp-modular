@@ -22,7 +22,7 @@ module bminoahmp
 !      procedure :: get_current_time => noahmp_current_time
 !      procedure :: get_time_step => noahmp_time_step
 !      procedure :: get_time_units => noahmp_time_units
-!      procedure :: update => noahmp_update
+     procedure :: update => noahmp_update
 !      procedure :: update_until => noahmp_update_until
 !      procedure :: get_var_grid => noahmp_var_grid
 !      procedure :: get_grid_type => noahmp_grid_type
@@ -235,14 +235,14 @@ contains
 !     bmi_status = BMI_SUCCESS
 !   end function noahmp_time_units
 !
-!   ! Advance model by one time step.
-!   function noahmp_update(this) result (bmi_status)
-!     class (bmi_noahmp), intent(inout) :: this
-!     integer :: bmi_status
-!
-!     call advance_in_time(this%model)
-!     bmi_status = BMI_SUCCESS
-!   end function noahmp_update
+  ! Advance model by one time step.
+  function noahmp_update(this) result (bmi_status)
+    class (bmi_noahmp), intent(inout) :: this
+    integer :: bmi_status
+
+    call advance_in_time(this%model)
+    bmi_status = BMI_SUCCESS
+  end function noahmp_update
 !
 !   ! Advance the model until the given time.
 !   function noahmp_update_until(this, time) result (bmi_status)

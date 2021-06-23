@@ -21,7 +21,7 @@ module bmif_2_0
 
       ! Initialize, run, finalize (IRF)
       procedure(bmif_initialize), deferred :: initialize
-!       procedure(bmif_update), deferred :: update
+      procedure(bmif_update), deferred :: update
 !       procedure(bmif_update_until), deferred :: update_until
       procedure(bmif_finalize), deferred :: finalize
 
@@ -107,13 +107,13 @@ module bmif_2_0
       character(len=*), intent(in) :: config_file
       integer :: bmi_status
     end function bmif_initialize
-!
-!     ! Advance the model one time step.
-!     function bmif_update(this) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(inout) :: this
-!       integer :: bmi_status
-!     end function bmif_update
+
+    ! Advance the model one time step.
+    function bmif_update(this) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(inout) :: this
+      integer :: bmi_status
+    end function bmif_update
 !
 !     ! Advance the model until the given time.
 !     function bmif_update_until(this, time) result(bmi_status)
