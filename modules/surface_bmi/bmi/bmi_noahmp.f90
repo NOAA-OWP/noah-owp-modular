@@ -46,13 +46,13 @@ module bminoahmp
      procedure :: get_var_itemsize => noahmp_var_itemsize
      procedure :: get_var_nbytes => noahmp_var_nbytes
      procedure :: get_var_location => noahmp_var_location
-!      procedure :: get_value_int => noahmp_get_int
-!      procedure :: get_value_float => noahmp_get_float
-!      procedure :: get_value_double => noahmp_get_double
-!      generic :: get_value => &
-!           get_value_int, &
-!           get_value_float, &
-!           get_value_double
+     procedure :: get_value_int => noahmp_get_int
+     procedure :: get_value_float => noahmp_get_float
+     procedure :: get_value_double => noahmp_get_double
+     generic :: get_value => &
+          get_value_int, &
+          get_value_float, &
+          get_value_double
 !      procedure :: get_value_ptr_int => noahmp_get_ptr_int
 !      procedure :: get_value_ptr_float => noahmp_get_ptr_float
 !      procedure :: get_value_ptr_double => noahmp_get_ptr_double
@@ -669,67 +669,86 @@ contains
     end select
   end function noahmp_var_location
 
-!   ! Get a copy of a integer variable's values, flattened.
-!   function noahmp_get_int(this, name, dest) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     character (len=*), intent(in) :: name
-!     integer, intent(inout) :: dest(:)
-!     integer :: bmi_status
-!
-!     select case(name)
+  ! Get a copy of a integer variable's values, flattened.
+  function noahmp_get_int(this, name, dest) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    character (len=*), intent(in) :: name
+    integer, intent(inout) :: dest(:)
+    integer :: bmi_status
+
+    select case(name)
+!==================== UPDATE IMPLEMENTATION IF NECESSARY FOR INTEGER VARS =================
 !     case("model__identification_number")
 !        dest = [this%model%id]
 !        bmi_status = BMI_SUCCESS
-!     case default
-!        dest(:) = -1
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_get_int
-!
-!   ! Get a copy of a real variable's values, flattened.
-!   function noahmp_get_float(this, name, dest) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     character (len=*), intent(in) :: name
-!     real, intent(inout) :: dest(:)
-!     integer :: bmi_status
-!
-!     select case(name)
-!     case("plate_surface__temperature")
-!        ! This would be safe, but subject to indexing errors.
-!        ! do j = 1, this%model%n_y
-!        !    do i = 1, this%model%n_x
-!        !       k = j + this%model%n_y*(i-1)
-!        !       dest(k) = this%model%temperature(j,i)
-!        !    end do
-!        ! end do
-!
-!        ! This is an equivalent, elementwise copy into `dest`.
-!        ! See https://stackoverflow.com/a/11800068/1563298
-!        dest = reshape(this%model%temperature, [this%model%n_x*this%model%n_y])
-!        bmi_status = BMI_SUCCESS
-!     case("plate_surface__thermal_diffusivity")
-!        dest = [this%model%alpha]
-!        bmi_status = BMI_SUCCESS
-!     case default
-!        dest(:) = -1.0
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_get_float
-!
-!   ! Get a copy of a double variable's values, flattened.
-!   function noahmp_get_double(this, name, dest) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     character (len=*), intent(in) :: name
-!     double precision, intent(inout) :: dest(:)
-!     integer :: bmi_status
-!
-!     select case(name)
-!     case default
-!        dest(:) = -1.d0
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_get_double
-!
+    case default
+       dest(:) = -1
+       bmi_status = BMI_FAILURE
+    end select
+  end function noahmp_get_int
+
+  ! Get a copy of a real variable's values, flattened.
+  function noahmp_get_float(this, name, dest) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    character (len=*), intent(in) :: name
+    real, intent(inout) :: dest(:)
+    integer :: bmi_status
+
+    select case(name)
+    case("SFCPRS")
+       dest = [this%model%forcing%sfcprs]
+       bmi_status = BMI_SUCCESS
+    case("SFCTMP")
+       dest = [this%model%forcing%sfctmp]
+       bmi_status = BMI_SUCCESS
+    case("SOLDN")
+       dest = [this%model%forcing%soldn]
+       bmi_status = BMI_SUCCESS
+    case("LWDN")
+       dest = [this%model%forcing%lwdn]
+       bmi_status = BMI_SUCCESS
+    case("UU")
+       dest = [this%model%forcing%uu]
+       bmi_status = BMI_SUCCESS
+    case("VV")
+       dest = [this%model%forcing%vv]
+       bmi_status = BMI_SUCCESS
+    case("Q2")
+       dest = [this%model%forcing%q2]
+       bmi_status = BMI_SUCCESS
+    case("QINSUR")
+       dest = [this%model%water%qinsur]
+       bmi_status = BMI_SUCCESS
+    case("ETRAN")
+       dest = [this%model%water%etran]
+       bmi_status = BMI_SUCCESS
+    case("QSEVA")
+       dest = [this%model%water%qseva]
+       bmi_status = BMI_SUCCESS
+    case default
+       dest(:) = -1.0
+       bmi_status = BMI_FAILURE
+    end select
+    ! NOTE, if vars are gridded, then use:
+    ! dest = reshape(this%model%temperature, [this%model%n_x*this%model%n_y]) 
+  end function noahmp_get_float
+
+  ! Get a copy of a double variable's values, flattened.
+  function noahmp_get_double(this, name, dest) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    character (len=*), intent(in) :: name
+    double precision, intent(inout) :: dest(:)
+    integer :: bmi_status
+
+    !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR DOUBLE VARS =================
+
+    select case(name)
+    case default
+       dest(:) = -1.d0
+       bmi_status = BMI_FAILURE
+    end select
+  end function noahmp_get_double
+
 !   ! Get a reference to an integer-valued variable, flattened.
 !   function noahmp_get_ptr_int(this, name, dest_ptr) result (bmi_status)
 !     class (bmi_noahmp), intent(in) :: this
