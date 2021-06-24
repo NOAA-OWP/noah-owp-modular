@@ -47,10 +47,10 @@ module bmif_2_0
       procedure(bmif_get_time_units), deferred :: get_time_units
       procedure(bmif_get_time_step), deferred :: get_time_step
 !
-!       ! Getters, by type
-!       procedure(bmif_get_value_int), deferred :: get_value_int
-!       procedure(bmif_get_value_float), deferred :: get_value_float
-!       procedure(bmif_get_value_double), deferred :: get_value_double
+      ! Getters, by type
+      procedure(bmif_get_value_int), deferred :: get_value_int
+      procedure(bmif_get_value_float), deferred :: get_value_float
+      procedure(bmif_get_value_double), deferred :: get_value_double
 !       procedure(bmif_get_value_ptr_int), deferred :: get_value_ptr_int
 !       procedure(bmif_get_value_ptr_float), deferred :: get_value_ptr_float
 !       procedure(bmif_get_value_ptr_double), deferred :: get_value_ptr_double
@@ -263,34 +263,34 @@ module bmif_2_0
       double precision, intent(out) :: time_step
       integer :: bmi_status
     end function bmif_get_time_step
-!
-!     ! Get a copy of values (flattened!) of the given integer variable.
-!     function bmif_get_value_int(this, name, dest) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       character(len=*), intent(in) :: name
-!       integer, intent(inout) :: dest(:)
-!       integer :: bmi_status
-!     end function bmif_get_value_int
-!
-!     ! Get a copy of values (flattened!) of the given real variable.
-!     function bmif_get_value_float(this, name, dest) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       character(len=*), intent(in) :: name
-!       real, intent(inout) :: dest(:)
-!       integer :: bmi_status
-!     end function bmif_get_value_float
-!
-!     ! Get a copy of values (flattened!) of the given double variable.
-!     function bmif_get_value_double(this, name, dest) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       character(len=*), intent(in) :: name
-!       double precision, intent(inout) :: dest(:)
-!       integer :: bmi_status
-!     end function bmif_get_value_double
-!
+
+    ! Get a copy of values (flattened!) of the given integer variable.
+    function bmif_get_value_int(this, name, dest) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      character(len=*), intent(in) :: name
+      integer, intent(inout) :: dest(:)
+      integer :: bmi_status
+    end function bmif_get_value_int
+
+    ! Get a copy of values (flattened!) of the given real variable.
+    function bmif_get_value_float(this, name, dest) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      character(len=*), intent(in) :: name
+      real, intent(inout) :: dest(:)
+      integer :: bmi_status
+    end function bmif_get_value_float
+
+    ! Get a copy of values (flattened!) of the given double variable.
+    function bmif_get_value_double(this, name, dest) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      character(len=*), intent(in) :: name
+      double precision, intent(inout) :: dest(:)
+      integer :: bmi_status
+    end function bmif_get_value_double
+
 !     ! Get a reference to the given integer variable.
 !     function bmif_get_value_ptr_int(this, name, dest_ptr) result(bmi_status)
 !       import :: bmi
