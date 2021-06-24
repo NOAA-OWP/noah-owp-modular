@@ -32,14 +32,14 @@ module bmif_2_0
       procedure(bmif_get_input_var_names), deferred :: get_input_var_names
       procedure(bmif_get_output_var_names), deferred :: get_output_var_names
 
-!       ! Variable information
-!       procedure(bmif_get_var_grid), deferred :: get_var_grid
-!       procedure(bmif_get_var_type), deferred :: get_var_type
-!       procedure(bmif_get_var_units), deferred :: get_var_units
-!       procedure(bmif_get_var_itemsize), deferred :: get_var_itemsize
-!       procedure(bmif_get_var_nbytes), deferred :: get_var_nbytes
-!       procedure(bmif_get_var_location), deferred :: get_var_location
-!
+      ! Variable information
+      procedure(bmif_get_var_grid), deferred :: get_var_grid
+      procedure(bmif_get_var_type), deferred :: get_var_type
+      procedure(bmif_get_var_units), deferred :: get_var_units
+      procedure(bmif_get_var_itemsize), deferred :: get_var_itemsize
+      procedure(bmif_get_var_nbytes), deferred :: get_var_nbytes
+      procedure(bmif_get_var_location), deferred :: get_var_location
+
       ! Time information
       procedure(bmif_get_current_time), deferred :: get_current_time
       procedure(bmif_get_start_time), deferred :: get_start_time
@@ -74,7 +74,7 @@ module bmif_2_0
 !
 !       ! Grid information
 !       procedure(bmif_get_grid_rank), deferred :: get_grid_rank
-!       procedure(bmif_get_grid_size), deferred :: get_grid_size
+      procedure(bmif_get_grid_size), deferred :: get_grid_size
 !       procedure(bmif_get_grid_type), deferred :: get_grid_type
 !
 !       ! Uniform rectilinear
@@ -170,60 +170,60 @@ module bmif_2_0
       integer :: bmi_status
     end function bmif_get_output_var_names
 
-!     ! Get the grid identifier for the given variable.
-!     function bmif_get_var_grid(this, name, grid) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       character(len=*), intent(in) :: name
-!       integer, intent(out) :: grid
-!       integer :: bmi_status
-!     end function bmif_get_var_grid
-!
-!     ! Get the data type of the given variable as a string.
-!     function bmif_get_var_type(this, name, type) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       character(len=*), intent(in) :: name
-!       character(len=*), intent(out) :: type
-!       integer :: bmi_status
-!     end function bmif_get_var_type
-!
-!     ! Get the units of the given variable.
-!     function bmif_get_var_units(this, name, units) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       character(len=*), intent(in) :: name
-!       character(len=*), intent(out) :: units
-!       integer :: bmi_status
-!     end function bmif_get_var_units
-!
-!     ! Get memory use per array element, in bytes.
-!     function bmif_get_var_itemsize(this, name, size) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       character(len=*), intent(in) :: name
-!       integer, intent(out) :: size
-!       integer :: bmi_status
-!     end function bmif_get_var_itemsize
-!
-!     ! Get size of the given variable, in bytes.
-!     function bmif_get_var_nbytes(this, name, nbytes) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       character(len=*), intent(in) :: name
-!       integer, intent(out) :: nbytes
-!       integer :: bmi_status
-!     end function bmif_get_var_nbytes
-!
-!     ! Describe where a variable is located: node, edge, or face.
-!     function bmif_get_var_location(this, name, location) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       character(len=*), intent(in) :: name
-!       character(len=*), intent(out) :: location
-!       integer :: bmi_status
-!     end function bmif_get_var_location
-!
+    ! Get the grid identifier for the given variable.
+    function bmif_get_var_grid(this, name, grid) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      character(len=*), intent(in) :: name
+      integer, intent(out) :: grid
+      integer :: bmi_status
+    end function bmif_get_var_grid
+
+    ! Get the data type of the given variable as a string.
+    function bmif_get_var_type(this, name, type) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      character(len=*), intent(in) :: name
+      character(len=*), intent(out) :: type
+      integer :: bmi_status
+    end function bmif_get_var_type
+
+    ! Get the units of the given variable.
+    function bmif_get_var_units(this, name, units) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      character(len=*), intent(in) :: name
+      character(len=*), intent(out) :: units
+      integer :: bmi_status
+    end function bmif_get_var_units
+
+    ! Get memory use per array element, in bytes.
+    function bmif_get_var_itemsize(this, name, size) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      character(len=*), intent(in) :: name
+      integer, intent(out) :: size
+      integer :: bmi_status
+    end function bmif_get_var_itemsize
+
+    ! Get size of the given variable, in bytes.
+    function bmif_get_var_nbytes(this, name, nbytes) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      character(len=*), intent(in) :: name
+      integer, intent(out) :: nbytes
+      integer :: bmi_status
+    end function bmif_get_var_nbytes
+
+    ! Describe where a variable is located: node, edge, or face.
+    function bmif_get_var_location(this, name, location) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      character(len=*), intent(in) :: name
+      character(len=*), intent(out) :: location
+      integer :: bmi_status
+    end function bmif_get_var_location
+
     ! Current time of the model.
     function bmif_get_current_time(this, time) result(bmi_status)
       import :: bmi
@@ -419,16 +419,16 @@ module bmif_2_0
 !       integer, intent(out) :: rank
 !       integer :: bmi_status
 !     end function bmif_get_grid_rank
-!
-!     ! Get the total number of elements in the computational grid.
-!     function bmif_get_grid_size(this, grid, size) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       integer, intent(in) :: grid
-!       integer, intent(out) :: size
-!       integer :: bmi_status
-!     end function bmif_get_grid_size
-!
+
+    ! Get the total number of elements in the computational grid.
+    function bmif_get_grid_size(this, grid, size) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      integer, intent(in) :: grid
+      integer, intent(out) :: size
+      integer :: bmi_status
+    end function bmif_get_grid_size
+
 !     ! Get the grid type as a string.
 !     function bmif_get_grid_type(this, grid, type) result(bmi_status)
 !       import :: bmi
