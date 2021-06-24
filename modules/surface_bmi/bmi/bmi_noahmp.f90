@@ -24,11 +24,11 @@ module bminoahmp
      procedure :: get_time_units => noahmp_time_units
      procedure :: update => noahmp_update
      procedure :: update_until => noahmp_update_until
-!      procedure :: get_var_grid => noahmp_var_grid
+     procedure :: get_var_grid => noahmp_var_grid
 !      procedure :: get_grid_type => noahmp_grid_type
 !      procedure :: get_grid_rank => noahmp_grid_rank
 !      procedure :: get_grid_shape => noahmp_grid_shape
-!      procedure :: get_grid_size => noahmp_grid_size
+     procedure :: get_grid_size => noahmp_grid_size
 !      procedure :: get_grid_spacing => noahmp_grid_spacing
 !      procedure :: get_grid_origin => noahmp_grid_origin
 !      procedure :: get_grid_x => noahmp_grid_x
@@ -41,11 +41,11 @@ module bminoahmp
 !      procedure :: get_grid_face_edges => noahmp_grid_face_edges
 !      procedure :: get_grid_face_nodes => noahmp_grid_face_nodes
 !      procedure :: get_grid_nodes_per_face => noahmp_grid_nodes_per_face
-!      procedure :: get_var_type => noahmp_var_type
-!      procedure :: get_var_units => noahmp_var_units
-!      procedure :: get_var_itemsize => noahmp_var_itemsize
-!      procedure :: get_var_nbytes => noahmp_var_nbytes
-!      procedure :: get_var_location => noahmp_var_location
+     procedure :: get_var_type => noahmp_var_type
+     procedure :: get_var_units => noahmp_var_units
+     procedure :: get_var_itemsize => noahmp_var_itemsize
+     procedure :: get_var_nbytes => noahmp_var_nbytes
+     procedure :: get_var_location => noahmp_var_location
 !      procedure :: get_value_int => noahmp_get_int
 !      procedure :: get_value_float => noahmp_get_float
 !      procedure :: get_value_double => noahmp_get_double
@@ -266,29 +266,24 @@ contains
     bmi_status = BMI_SUCCESS
   end function noahmp_update_until
 
-!   ! Get the grid id for a particular variable.
-!   function noahmp_var_grid(this, name, grid) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     character (len=*), intent(in) :: name
-!     integer, intent(out) :: grid
-!     integer :: bmi_status
-!
-!     select case(name)
-!     case('plate_surface__temperature')
-!        grid = 0
-!        bmi_status = BMI_SUCCESS
-!     case('plate_surface__thermal_diffusivity')
-!        grid = 1
-!        bmi_status = BMI_SUCCESS
-!     case('model__identification_number')
-!        grid = 1
-!        bmi_status = BMI_SUCCESS
-!     case default
-!        grid = -1
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_var_grid
-!
+  ! Get the grid id for a particular variable.
+  function noahmp_var_grid(this, name, grid) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    character (len=*), intent(in) :: name
+    integer, intent(out) :: grid
+    integer :: bmi_status
+
+    select case(name)
+    case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', & ! input vars
+         'QINSUR', 'ETRAN', 'QSEVA')                              ! output vars
+       grid = 0
+       bmi_status = BMI_SUCCESS
+    case default
+       grid = -1
+       bmi_status = BMI_FAILURE
+    end select
+  end function noahmp_var_grid
+
 !   ! The type of a variable's grid.
 !   function noahmp_grid_type(this, grid, type) result (bmi_status)
 !     class (bmi_noahmp), intent(in) :: this
@@ -346,26 +341,27 @@ contains
 !     end select
 !   end function noahmp_grid_shape
 !
-!   ! The total number of elements in a grid.
-!   function noahmp_grid_size(this, grid, size) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     integer, intent(in) :: grid
-!     integer, intent(out) :: size
-!     integer :: bmi_status
-!
-!     select case(grid)
-!     case(0)
+  ! The total number of elements in a grid.
+  function noahmp_grid_size(this, grid, size) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    integer, intent(in) :: grid
+    integer, intent(out) :: size
+    integer :: bmi_status
+
+    select case(grid)
+    case(0)
+       size = 1
+       bmi_status = BMI_SUCCESS
+!================================ IMPLEMENT WHEN NOAHMP DONE IN GRID ======================
+!     case(1)
 !        size = this%model%n_y * this%model%n_x
 !        bmi_status = BMI_SUCCESS
-!     case(1)
-!        size = 1
-!        bmi_status = BMI_SUCCESS
-!     case default
-!        size = -1
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_grid_size
-!
+    case default
+       size = -1
+       bmi_status = BMI_FAILURE
+    end select
+  end function noahmp_grid_size
+
 !   ! The distance between nodes of a grid.
 !   function noahmp_grid_spacing(this, grid, spacing) result (bmi_status)
 !     class (bmi_noahmp), intent(in) :: this
@@ -533,110 +529,138 @@ contains
 !     bmi_status = BMI_FAILURE
 !   end function noahmp_grid_nodes_per_face
 !
-!   ! The data type of the variable, as a string.
-!   function noahmp_var_type(this, name, type) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     character (len=*), intent(in) :: name
-!     character (len=*), intent(out) :: type
-!     integer :: bmi_status
-!
-!     select case(name)
-!     case("plate_surface__temperature")
-!        type = "real"
-!        bmi_status = BMI_SUCCESS
-!     case("plate_surface__thermal_diffusivity")
-!        type = "real"
-!        bmi_status = BMI_SUCCESS
-!     case("model__identification_number")
-!        type = "integer"
-!        bmi_status = BMI_SUCCESS
-!     case default
-!        type = "-"
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_var_type
-!
-!   ! The units of the given variable.
-!   function noahmp_var_units(this, name, units) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     character (len=*), intent(in) :: name
-!     character (len=*), intent(out) :: units
-!     integer :: bmi_status
-!
-!     select case(name)
-!     case("plate_surface__temperature")
-!        units = "K"
-!        bmi_status = BMI_SUCCESS
-!     case("plate_surface__thermal_diffusivity")
-!        units = "m2 s-1"
-!        bmi_status = BMI_SUCCESS
-!     case("model__identification_number")
-!        units = "1"
-!        bmi_status = BMI_SUCCESS
-!     case default
-!        units = "-"
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_var_units
-!
-!   ! Memory use per array element.
-!   function noahmp_var_itemsize(this, name, size) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     character (len=*), intent(in) :: name
-!     integer, intent(out) :: size
-!     integer :: bmi_status
-!
-!     select case(name)
-!     case("plate_surface__temperature")
-!        size = sizeof(this%model%temperature(1,1))  ! 'sizeof' in gcc & ifort
-!        bmi_status = BMI_SUCCESS
-!     case("plate_surface__thermal_diffusivity")
-!        size = sizeof(this%model%alpha)             ! 'sizeof' in gcc & ifort
-!        bmi_status = BMI_SUCCESS
-!     case("model__identification_number")
-!        size = sizeof(this%model%id)                ! 'sizeof' in gcc & ifort
-!        bmi_status = BMI_SUCCESS
-!     case default
-!        size = -1
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_var_itemsize
-!
-!   ! The size of the given variable.
-!   function noahmp_var_nbytes(this, name, nbytes) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     character (len=*), intent(in) :: name
-!     integer, intent(out) :: nbytes
-!     integer :: bmi_status
-!     integer :: s1, s2, s3, grid, grid_size, item_size
-!
-!     s1 = this%get_var_grid(name, grid)
-!     s2 = this%get_grid_size(grid, grid_size)
-!     s3 = this%get_var_itemsize(name, item_size)
-!
-!     if ((s1 == BMI_SUCCESS).and.(s2 == BMI_SUCCESS).and.(s3 == BMI_SUCCESS)) then
-!        nbytes = item_size * grid_size
-!        bmi_status = BMI_SUCCESS
-!     else
-!        nbytes = -1
-!        bmi_status = BMI_FAILURE
-!     end if
-!   end function noahmp_var_nbytes
-!
-!   ! The location (node, face, edge) of the given variable.
-!   function noahmp_var_location(this, name, location) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     character (len=*), intent(in) :: name
-!     character (len=*), intent(out) :: location
-!     integer :: bmi_status
-!
-!     select case(name)
-!     case default
-!        location = "node"
-!        bmi_status = BMI_SUCCESS
-!     end select
-!   end function noahmp_var_location
-!
+  ! The data type of the variable, as a string.
+  function noahmp_var_type(this, name, type) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    character (len=*), intent(in) :: name
+    character (len=*), intent(out) :: type
+    integer :: bmi_status
+
+    select case(name)
+    case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', & ! input vars
+         'QINSUR', 'ETRAN', 'QSEVA')                              ! output vars
+       type = "real"
+       bmi_status = BMI_SUCCESS
+    case default
+       type = "-"
+       bmi_status = BMI_FAILURE
+    end select
+  end function noahmp_var_type
+
+  ! The units of the given variable.
+  function noahmp_var_units(this, name, units) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    character (len=*), intent(in) :: name
+    character (len=*), intent(out) :: units
+    integer :: bmi_status
+
+    select case(name)
+    case("SFCPRS")
+       units = "Pa"
+       bmi_status = BMI_SUCCESS
+    case("SFCTMP")
+       units = "K"
+       bmi_status = BMI_SUCCESS
+    case("SOLDN", "LWDN")
+       units = "w/m2"
+       bmi_status = BMI_SUCCESS
+    case("UU", "VV")
+       units = "m/s"
+       bmi_status = BMI_SUCCESS
+    case("Q2")
+       units = "kg/kg"
+       bmi_status = BMI_SUCCESS
+    case("QINSUR")
+       units = "m/s"
+       bmi_status = BMI_SUCCESS
+    case("ETRAN", "QSEVA")
+       units = "mm/s"
+       bmi_status = BMI_SUCCESS
+    case default
+       units = "-"
+       bmi_status = BMI_FAILURE
+    end select
+  end function noahmp_var_units
+
+  ! Memory use per array element.
+  function noahmp_var_itemsize(this, name, size) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    character (len=*), intent(in) :: name
+    integer, intent(out) :: size
+    integer :: bmi_status
+
+    select case(name)
+    case("SFCPRS")
+       size = sizeof(this%model%forcing%sfcprs)  ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("SFCTMP")
+       size = sizeof(this%model%forcing%sfctmp)             ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("SOLDN")
+       size = sizeof(this%model%forcing%soldn)                ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("LWDN")
+       size = sizeof(this%model%forcing%lwdn)                ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("UU")
+       size = sizeof(this%model%forcing%uu)                ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("VV")
+       size = sizeof(this%model%forcing%vv)                ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("Q2")
+       size = sizeof(this%model%forcing%q2)                ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("QINSUR")
+       size = sizeof(this%model%water%qinsur)                ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("ETRAN")
+       size = sizeof(this%model%water%etran)                ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("QSEVA")
+       size = sizeof(this%model%water%qseva)                ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case default
+       size = -1
+       bmi_status = BMI_FAILURE
+    end select
+  end function noahmp_var_itemsize
+
+  ! The size of the given variable.
+  function noahmp_var_nbytes(this, name, nbytes) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    character (len=*), intent(in) :: name
+    integer, intent(out) :: nbytes
+    integer :: bmi_status
+    integer :: s1, s2, s3, grid, grid_size, item_size
+
+    s1 = this%get_var_grid(name, grid)
+    s2 = this%get_grid_size(grid, grid_size)
+    s3 = this%get_var_itemsize(name, item_size)
+
+    if ((s1 == BMI_SUCCESS).and.(s2 == BMI_SUCCESS).and.(s3 == BMI_SUCCESS)) then
+       nbytes = item_size * grid_size
+       bmi_status = BMI_SUCCESS
+    else
+       nbytes = -1
+       bmi_status = BMI_FAILURE
+    end if
+  end function noahmp_var_nbytes
+
+  ! The location (node, face, edge) of the given variable.
+  function noahmp_var_location(this, name, location) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    character (len=*), intent(in) :: name
+    character (len=*), intent(out) :: location
+    integer :: bmi_status
+!==================== UPDATE IMPLEMENTATION IF NECESSARY WHEN RUN ON GRID =================
+    select case(name)
+    case default
+       location = "node"
+       bmi_status = BMI_SUCCESS
+    end select
+  end function noahmp_var_location
+
 !   ! Get a copy of a integer variable's values, flattened.
 !   function noahmp_get_int(this, name, dest) result (bmi_status)
 !     class (bmi_noahmp), intent(in) :: this
