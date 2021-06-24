@@ -227,8 +227,7 @@ contains
     integer            :: forcing_timestep  ! integer time step (set to dt) for some subroutine calls
     integer            :: ierr              ! error code for reading forcing data
     real               :: QV_CURR           ! water vapor mixing ratio (kg/kg)
-    integer            :: itime             ! time loop counter >> need to implement in BMI way
-    itime = 1 !!!!!!!!!!FOR TESTING ONLY!!!!!!!!!
+
     associate(namelist => model%namelist, &
               levels     => model%levels, &
               domain     => model%domain, &
@@ -268,8 +267,7 @@ contains
     !---------------------------------------------------------------------
     ! call the main utility routines
     !---------------------------------------------------------------------
-
-    call UtilitiesMain (itime, domain, forcing, energy)
+    call UtilitiesMain (domain%itime, domain, forcing, energy)
     print*, "Julian day = ", forcing%JULIAN
     print*, "COSZ = ", energy%COSZ
 

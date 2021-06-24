@@ -1,6 +1,6 @@
 &timing ! and output
   dt              = 1800.0   ! timestep [seconds]
-  maxtime         = 1     ! total simulation time [hours]
+  maxtime         = 10     ! total simulation time [hours]
   startdate       = "199801010630" ! UTC time start of simulation (YYYYMMDDhhmm)
   enddate         = "199901010630" ! UTC time end of simulation (YYYYMMDDhhmm)
   input_filename  = "bondville.dat" ! change filename to match your forcing data
