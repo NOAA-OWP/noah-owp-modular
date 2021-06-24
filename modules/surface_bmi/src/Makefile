@@ -35,7 +35,7 @@ OBJS = NamelistRead.o \
 all:	$(OBJS)
 
 .f90.o:
-	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) -I../driver $(*).f90
+	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../driver $(*).f90
 
 #
 # This command cleans up object (etc) files:

@@ -177,6 +177,10 @@ contains
       domain%zsnso(1:namelist%nsoil) = namelist%zsoil
       domain%nowdate = domain%startdate ! start the model with nowdate = startdate
       forcing_timestep = domain%dt      ! integer timestep for some subroutine calls
+      domain%itime = 1                  ! initialize the time loop counter
+      domain%ntime = nint(domain%nhours * 3600.0 / domain%dt) ! compute total number of integer time steps
+      domain%time_dbl = 0.d0 ! start model run at t = 0
+      
       
       !---------------------------------------------------------------------
       ! Open the forcing file
@@ -210,7 +214,9 @@ contains
     type (noahmp_type), intent (inout) :: model
 
     call solve_noahmp(model)
-    ! Add counter for adding time? See heat example
+
+    model%domain%itime    = model%domain%itime + 1 ! increment the integer time by 1
+    model%domain%time_dbl = dble(model%domain%time_dbl + model%domain%dt) ! increment model time in seconds by DT
   END SUBROUTINE advance_in_time
   
 !== Run one time step of the model ================================================================
