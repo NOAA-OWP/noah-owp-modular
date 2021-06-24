@@ -67,13 +67,13 @@ module bminoahmp
 !           get_value_at_indices_int, &
 !           get_value_at_indices_float, &
 !           get_value_at_indices_double
-!      procedure :: set_value_int => noahmp_set_int
-!      procedure :: set_value_float => noahmp_set_float
-!      procedure :: set_value_double => noahmp_set_double
-!      generic :: set_value => &
-!           set_value_int, &
-!           set_value_float, &
-!           set_value_double
+     procedure :: set_value_int => noahmp_set_int
+     procedure :: set_value_float => noahmp_set_float
+     procedure :: set_value_double => noahmp_set_double
+     generic :: set_value => &
+          set_value_int, &
+          set_value_float, &
+          set_value_double
 !      procedure :: set_value_at_indices_int => noahmp_set_at_indices_int
 !      procedure :: set_value_at_indices_float => noahmp_set_at_indices_float
 !      procedure :: set_value_at_indices_double => noahmp_set_at_indices_double
@@ -749,6 +749,8 @@ contains
     end select
   end function noahmp_get_double
 
+! !=================== get_value_ptr functions not implemented yet =================
+
 !   ! Get a reference to an integer-valued variable, flattened.
 !   function noahmp_get_ptr_int(this, name, dest_ptr) result (bmi_status)
 !     class (bmi_noahmp), intent(in) :: this
@@ -757,6 +759,8 @@ contains
 !     integer :: bmi_status
 !     type (c_ptr) :: src
 !     integer :: n_elements
+!
+! !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR INTEGER VARS =================
 !
 !     select case(name)
 !     case default
@@ -769,14 +773,15 @@ contains
 !     class (bmi_noahmp), intent(in) :: this
 !     character (len=*), intent(in) :: name
 !     real, pointer, intent(inout) :: dest_ptr(:)
-!     integer :: bmi_status
+!     integer :: bmi_status, status
 !     type (c_ptr) :: src
-!     integer :: n_elements
+!     integer :: n_elements, gridid
 !
 !     select case(name)
-!     case("plate_surface__temperature")
-!        src = c_loc(this%model%temperature(1,1))
-!        n_elements = this%model%n_y * this%model%n_x
+!     case("SFCPRS")
+!        src = c_loc(this%model%forcing%sfcprs)
+!        status = this%get_var_grid(name,gridid)
+!        status = this%get_grid_size(gridid, n_elements)
 !        call c_f_pointer(src, dest_ptr, [n_elements])
 !        bmi_status = BMI_SUCCESS
 !     case default
@@ -792,6 +797,8 @@ contains
 !     integer :: bmi_status
 !     type (c_ptr) :: src
 !     integer :: n_elements
+!
+! !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR DOUBLE VARS =================\
 !
 !     select case(name)
 !     case default
@@ -861,53 +868,83 @@ contains
 !     end select
 !   end function noahmp_get_at_indices_double
 !
-!   ! Set new integer values.
-!   function noahmp_set_int(this, name, src) result (bmi_status)
-!     class (bmi_noahmp), intent(inout) :: this
-!     character (len=*), intent(in) :: name
-!     integer, intent(in) :: src(:)
-!     integer :: bmi_status
-!
-!     select case(name)
+  ! Set new integer values.
+  function noahmp_set_int(this, name, src) result (bmi_status)
+    class (bmi_noahmp), intent(inout) :: this
+    character (len=*), intent(in) :: name
+    integer, intent(in) :: src(:)
+    integer :: bmi_status
+
+    !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR INTEGER VARS =================
+
+    select case(name)
 !     case("model__identification_number")
 !        this%model%id = src(1)
 !        bmi_status = BMI_SUCCESS
-!     case default
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_set_int
-!
-!   ! Set new real values.
-!   function noahmp_set_float(this, name, src) result (bmi_status)
-!     class (bmi_noahmp), intent(inout) :: this
-!     character (len=*), intent(in) :: name
-!     real, intent(in) :: src(:)
-!     integer :: bmi_status
-!
-!     select case(name)
-!     case("plate_surface__temperature")
-!        this%model%temperature = reshape(src, [this%model%n_y, this%model%n_x])
-!        bmi_status = BMI_SUCCESS
-!     case("plate_surface__thermal_diffusivity")
-!        this%model%alpha = src(1)
-!        bmi_status = BMI_SUCCESS
-!     case default
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_set_float
-!
-!   ! Set new double values.
-!   function noahmp_set_double(this, name, src) result (bmi_status)
-!     class (bmi_noahmp), intent(inout) :: this
-!     character (len=*), intent(in) :: name
-!     double precision, intent(in) :: src(:)
-!     integer :: bmi_status
-!
-!     select case(name)
-!     case default
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_set_double
+    case default
+       bmi_status = BMI_FAILURE
+    end select
+  end function noahmp_set_int
+
+  ! Set new real values.
+  function noahmp_set_float(this, name, src) result (bmi_status)
+    class (bmi_noahmp), intent(inout) :: this
+    character (len=*), intent(in) :: name
+    real, intent(in) :: src(:)
+    integer :: bmi_status
+
+    select case(name)
+    case("SFCPRS")
+       this%model%forcing%sfcprs = src(1)
+       bmi_status = BMI_SUCCESS
+    case("SFCTMP")
+       this%model%forcing%sfctmp = src(1)
+       bmi_status = BMI_SUCCESS
+    case("SOLDN")
+       this%model%forcing%soldn = src(1)
+       bmi_status = BMI_SUCCESS
+    case("LWDN")
+       this%model%forcing%lwdn = src(1)
+       bmi_status = BMI_SUCCESS
+    case("UU")
+       this%model%forcing%uu = src(1)
+       bmi_status = BMI_SUCCESS
+    case("VV")
+       this%model%forcing%vv = src(1)
+       bmi_status = BMI_SUCCESS
+    case("Q2")
+       this%model%forcing%q2 = src(1)
+       bmi_status = BMI_SUCCESS
+    case("QINSUR")
+       this%model%water%qinsur = src(1)
+       bmi_status = BMI_SUCCESS
+    case("ETRAN")
+       this%model%water%etran = src(1)
+       bmi_status = BMI_SUCCESS
+    case("QSEVA")
+       this%model%water%qseva = src(1)
+       bmi_status = BMI_SUCCESS
+    case default
+       bmi_status = BMI_FAILURE
+    end select
+    ! NOTE, if vars are gridded, then use:
+    ! this%model%temperature = reshape(src, [this%model%n_y, this%model%n_x])
+  end function noahmp_set_float
+
+  ! Set new double values.
+  function noahmp_set_double(this, name, src) result (bmi_status)
+    class (bmi_noahmp), intent(inout) :: this
+    character (len=*), intent(in) :: name
+    double precision, intent(in) :: src(:)
+    integer :: bmi_status
+
+    !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR DOUBLE VARS =================
+
+    select case(name)
+    case default
+       bmi_status = BMI_FAILURE
+    end select
+  end function noahmp_set_double
 !
 !   ! Set integer values at particular locations.
 !   function noahmp_set_at_indices_int(this, name, inds, src) &
