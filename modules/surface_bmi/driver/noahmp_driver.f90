@@ -281,13 +281,17 @@ program noahmp_driver
 !     print*, "QSEVA = ", water%QSEVA
 !     print*, "QVAP = ", water%QVAP
     !---------------------------------------------------------------------
-    ! initialize with BMI
+    ! Update one time step with BMI
     !---------------------------------------------------------------------
     print*, "Running one time step..."
     status = m%update()
     !---------------------------------------------------------------------
     ! Do some BMI testing
     !---------------------------------------------------------------------
+
+    status = m%get_end_time(bmi_time)
+    print*, "Updating until time = ", bmi_time
+    status = m%update_until(bmi_time)
 
     status = m%get_component_name(component_name)
     print*, "Component name = ", trim(component_name)

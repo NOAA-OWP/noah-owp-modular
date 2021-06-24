@@ -23,7 +23,7 @@ module bminoahmp
      procedure :: get_time_step => noahmp_time_step
      procedure :: get_time_units => noahmp_time_units
      procedure :: update => noahmp_update
-!      procedure :: update_until => noahmp_update_until
+     procedure :: update_until => noahmp_update_until
 !      procedure :: get_var_grid => noahmp_var_grid
 !      procedure :: get_grid_type => noahmp_grid_type
 !      procedure :: get_grid_rank => noahmp_grid_rank
@@ -243,29 +243,29 @@ contains
     call advance_in_time(this%model)
     bmi_status = BMI_SUCCESS
   end function noahmp_update
-!
-!   ! Advance the model until the given time.
-!   function noahmp_update_until(this, time) result (bmi_status)
-!     class (bmi_noahmp), intent(inout) :: this
-!     double precision, intent(in) :: time
-!     integer :: bmi_status
-!     double precision :: n_steps_real
-!     integer :: n_steps, i, s
-!
-!     if (time < this%model%t) then
-!        bmi_status = BMI_FAILURE
-!        return
-!     end if
-!
-!     n_steps_real = (time - this%model%t) / this%model%dt
-!     n_steps = floor(n_steps_real)
-!     do i = 1, n_steps
-!        s = this%update()
-!     end do
-!     call update_frac(this, n_steps_real - dble(n_steps)) ! See near bottom of file
-!     bmi_status = BMI_SUCCESS
-!   end function noahmp_update_until
-!
+
+  ! Advance the model until the given time.
+  function noahmp_update_until(this, time) result (bmi_status)
+    class (bmi_noahmp), intent(inout) :: this
+    double precision, intent(in) :: time
+    integer :: bmi_status
+    double precision :: n_steps_real
+    integer :: n_steps, i, s
+
+    if (time < this%model%domain%time_dbl) then
+       bmi_status = BMI_FAILURE
+       return
+    end if
+
+    n_steps_real = (time - this%model%domain%time_dbl) / this%model%domain%dt
+    n_steps = floor(n_steps_real)
+    do i = 1, n_steps
+       s = this%update()
+    end do
+!     call update_frac(this, n_steps_real - dble(n_steps)) ! NOT IMPLEMENTED
+    bmi_status = BMI_SUCCESS
+  end function noahmp_update_until
+
 !   ! Get the grid id for a particular variable.
 !   function noahmp_var_grid(this, name, grid) result (bmi_status)
 !     class (bmi_noahmp), intent(in) :: this
