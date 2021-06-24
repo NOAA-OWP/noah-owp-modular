@@ -71,31 +71,31 @@ module bmif_2_0
 !            set_value_at_indices_float
 !       procedure(bmif_set_value_at_indices_double), deferred :: &
 !            set_value_at_indices_double
-!
-!       ! Grid information
-!       procedure(bmif_get_grid_rank), deferred :: get_grid_rank
+
+      ! Grid information
+      procedure(bmif_get_grid_rank), deferred :: get_grid_rank
       procedure(bmif_get_grid_size), deferred :: get_grid_size
-!       procedure(bmif_get_grid_type), deferred :: get_grid_type
-!
-!       ! Uniform rectilinear
-!       procedure(bmif_get_grid_shape), deferred :: get_grid_shape
-!       procedure(bmif_get_grid_spacing), deferred :: get_grid_spacing
-!       procedure(bmif_get_grid_origin), deferred :: get_grid_origin
-!
-!       ! Non-uniform rectilinear, curvilinear
-!       procedure(bmif_get_grid_x), deferred :: get_grid_x
-!       procedure(bmif_get_grid_y), deferred :: get_grid_y
-!       procedure(bmif_get_grid_z), deferred :: get_grid_z
-!
-!       ! Unstructured
-!       procedure(bmif_get_grid_node_count), deferred :: get_grid_node_count
-!       procedure(bmif_get_grid_edge_count), deferred :: get_grid_edge_count
-!       procedure(bmif_get_grid_face_count), deferred :: get_grid_face_count
-!       procedure(bmif_get_grid_edge_nodes), deferred :: get_grid_edge_nodes
-!       procedure(bmif_get_grid_face_edges), deferred :: get_grid_face_edges
-!       procedure(bmif_get_grid_face_nodes), deferred :: get_grid_face_nodes
-!       procedure(bmif_get_grid_nodes_per_face), deferred :: &
-!            get_grid_nodes_per_face
+      procedure(bmif_get_grid_type), deferred :: get_grid_type
+
+      ! Uniform rectilinear
+      procedure(bmif_get_grid_shape), deferred :: get_grid_shape
+      procedure(bmif_get_grid_spacing), deferred :: get_grid_spacing
+      procedure(bmif_get_grid_origin), deferred :: get_grid_origin
+
+      ! Non-uniform rectilinear, curvilinear
+      procedure(bmif_get_grid_x), deferred :: get_grid_x
+      procedure(bmif_get_grid_y), deferred :: get_grid_y
+      procedure(bmif_get_grid_z), deferred :: get_grid_z
+
+      ! Unstructured
+      procedure(bmif_get_grid_node_count), deferred :: get_grid_node_count
+      procedure(bmif_get_grid_edge_count), deferred :: get_grid_edge_count
+      procedure(bmif_get_grid_face_count), deferred :: get_grid_face_count
+      procedure(bmif_get_grid_edge_nodes), deferred :: get_grid_edge_nodes
+      procedure(bmif_get_grid_face_edges), deferred :: get_grid_face_edges
+      procedure(bmif_get_grid_face_nodes), deferred :: get_grid_face_nodes
+      procedure(bmif_get_grid_nodes_per_face), deferred :: &
+           get_grid_nodes_per_face
   end type bmi
 
   abstract interface
@@ -411,16 +411,16 @@ module bmif_2_0
 !       integer :: bmi_status
 !     end function bmif_set_value_at_indices_double
 !
-!     ! Get number of dimensions of the computational grid.
-!     function bmif_get_grid_rank(this, grid, rank) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       integer, intent(in) :: grid
-!       integer, intent(out) :: rank
-!       integer :: bmi_status
-!     end function bmif_get_grid_rank
+    ! Get number of dimensions of the computational grid.
+    function bmif_get_grid_rank(this, grid, rank) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      integer, intent(in) :: grid
+      integer, intent(out) :: rank
+      integer :: bmi_status
+    end function bmif_get_grid_rank
 
-    ! Get the total number of elements in the computational grid.
+! Get the total number of elements in the computational grid.
     function bmif_get_grid_size(this, grid, size) result(bmi_status)
       import :: bmi
       class(bmi), intent(in) :: this
@@ -429,135 +429,135 @@ module bmif_2_0
       integer :: bmi_status
     end function bmif_get_grid_size
 
-!     ! Get the grid type as a string.
-!     function bmif_get_grid_type(this, grid, type) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       integer, intent(in) :: grid
-!       character(len=*), intent(out) :: type
-!       integer :: bmi_status
-!     end function bmif_get_grid_type
-!
-!     ! Get the dimensions of the computational grid.
-!     function bmif_get_grid_shape(this, grid, shape) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       integer, intent(in) :: grid
-!       integer, dimension(:), intent(out) :: shape
-!       integer :: bmi_status
-!     end function bmif_get_grid_shape
-!
-!     ! Get distance between nodes of the computational grid.
-!     function bmif_get_grid_spacing(this, grid, spacing) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       integer, intent(in) :: grid
-!       double precision, dimension(:), intent(out) :: spacing
-!       integer :: bmi_status
-!     end function bmif_get_grid_spacing
-!
-!     ! Get coordinates of the origin of the computational grid.
-!     function bmif_get_grid_origin(this, grid, origin) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       integer, intent(in) :: grid
-!       double precision, dimension(:), intent(out) :: origin
-!       integer :: bmi_status
-!     end function bmif_get_grid_origin
-!
-!     ! Get the x-coordinates of the nodes of a computational grid.
-!     function bmif_get_grid_x(this, grid, x) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       integer, intent(in) :: grid
-!       double precision, dimension(:), intent(out) :: x
-!       integer :: bmi_status
-!     end function bmif_get_grid_x
-!
-!     ! Get the y-coordinates of the nodes of a computational grid.
-!     function bmif_get_grid_y(this, grid, y) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       integer, intent(in) :: grid
-!       double precision, dimension(:), intent(out) :: y
-!       integer :: bmi_status
-!     end function bmif_get_grid_y
-!
-!     ! Get the z-coordinates of the nodes of a computational grid.
-!     function bmif_get_grid_z(this, grid, z) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       integer, intent(in) :: grid
-!       double precision, dimension(:), intent(out) :: z
-!       integer :: bmi_status
-!     end function bmif_get_grid_z
-!
-!     ! Get the number of nodes in an unstructured grid.
-!     function bmif_get_grid_node_count(this, grid, count) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       integer, intent(in) :: grid
-!       integer, intent(out) :: count
-!       integer :: bmi_status
-!     end function bmif_get_grid_node_count
-!
-!     ! Get the number of edges in an unstructured grid.
-!     function bmif_get_grid_edge_count(this, grid, count) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       integer, intent(in) :: grid
-!       integer, intent(out) :: count
-!       integer :: bmi_status
-!     end function bmif_get_grid_edge_count
-!
-!     ! Get the number of faces in an unstructured grid.
-!     function bmif_get_grid_face_count(this, grid, count) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       integer, intent(in) :: grid
-!       integer, intent(out) :: count
-!       integer :: bmi_status
-!     end function bmif_get_grid_face_count
-!
-!     ! Get the edge-node connectivity.
-!     function bmif_get_grid_edge_nodes(this, grid, edge_nodes) &
-!       result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       integer, intent(in) :: grid
-!       integer, dimension(:), intent(out) :: edge_nodes
-!       integer :: bmi_status
-!     end function bmif_get_grid_edge_nodes
-!
-!     ! Get the face-edge connectivity.
-!     function bmif_get_grid_face_edges(this, grid, face_edges) &
-!       result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       integer, intent(in) :: grid
-!       integer, dimension(:), intent(out) :: face_edges
-!       integer :: bmi_status
-!     end function bmif_get_grid_face_edges
-!
-!     ! Get the face-node connectivity.
-!     function bmif_get_grid_face_nodes(this, grid, face_nodes) &
-!       result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       integer, intent(in) :: grid
-!       integer, dimension(:), intent(out) :: face_nodes
-!       integer :: bmi_status
-!     end function bmif_get_grid_face_nodes
-!
-!     ! Get the number of nodes for each face.
-!     function bmif_get_grid_nodes_per_face(this, grid, nodes_per_face) &
-!       result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       integer, intent(in) :: grid
-!       integer, dimension(:), intent(out) :: nodes_per_face
-!       integer :: bmi_status
-!     end function bmif_get_grid_nodes_per_face
+    ! Get the grid type as a string.
+    function bmif_get_grid_type(this, grid, type) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      integer, intent(in) :: grid
+      character(len=*), intent(out) :: type
+      integer :: bmi_status
+    end function bmif_get_grid_type
+
+    ! Get the dimensions of the computational grid.
+    function bmif_get_grid_shape(this, grid, shape) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      integer, intent(in) :: grid
+      integer, dimension(:), intent(out) :: shape
+      integer :: bmi_status
+    end function bmif_get_grid_shape
+
+    ! Get distance between nodes of the computational grid.
+    function bmif_get_grid_spacing(this, grid, spacing) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      integer, intent(in) :: grid
+      double precision, dimension(:), intent(out) :: spacing
+      integer :: bmi_status
+    end function bmif_get_grid_spacing
+
+    ! Get coordinates of the origin of the computational grid.
+    function bmif_get_grid_origin(this, grid, origin) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      integer, intent(in) :: grid
+      double precision, dimension(:), intent(out) :: origin
+      integer :: bmi_status
+    end function bmif_get_grid_origin
+
+    ! Get the x-coordinates of the nodes of a computational grid.
+    function bmif_get_grid_x(this, grid, x) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      integer, intent(in) :: grid
+      double precision, dimension(:), intent(out) :: x
+      integer :: bmi_status
+    end function bmif_get_grid_x
+
+    ! Get the y-coordinates of the nodes of a computational grid.
+    function bmif_get_grid_y(this, grid, y) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      integer, intent(in) :: grid
+      double precision, dimension(:), intent(out) :: y
+      integer :: bmi_status
+    end function bmif_get_grid_y
+
+    ! Get the z-coordinates of the nodes of a computational grid.
+    function bmif_get_grid_z(this, grid, z) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      integer, intent(in) :: grid
+      double precision, dimension(:), intent(out) :: z
+      integer :: bmi_status
+    end function bmif_get_grid_z
+
+    ! Get the number of nodes in an unstructured grid.
+    function bmif_get_grid_node_count(this, grid, count) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      integer, intent(in) :: grid
+      integer, intent(out) :: count
+      integer :: bmi_status
+    end function bmif_get_grid_node_count
+
+    ! Get the number of edges in an unstructured grid.
+    function bmif_get_grid_edge_count(this, grid, count) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      integer, intent(in) :: grid
+      integer, intent(out) :: count
+      integer :: bmi_status
+    end function bmif_get_grid_edge_count
+
+    ! Get the number of faces in an unstructured grid.
+    function bmif_get_grid_face_count(this, grid, count) result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      integer, intent(in) :: grid
+      integer, intent(out) :: count
+      integer :: bmi_status
+    end function bmif_get_grid_face_count
+
+    ! Get the edge-node connectivity.
+    function bmif_get_grid_edge_nodes(this, grid, edge_nodes) &
+      result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      integer, intent(in) :: grid
+      integer, dimension(:), intent(out) :: edge_nodes
+      integer :: bmi_status
+    end function bmif_get_grid_edge_nodes
+
+    ! Get the face-edge connectivity.
+    function bmif_get_grid_face_edges(this, grid, face_edges) &
+      result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      integer, intent(in) :: grid
+      integer, dimension(:), intent(out) :: face_edges
+      integer :: bmi_status
+    end function bmif_get_grid_face_edges
+
+    ! Get the face-node connectivity.
+    function bmif_get_grid_face_nodes(this, grid, face_nodes) &
+      result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      integer, intent(in) :: grid
+      integer, dimension(:), intent(out) :: face_nodes
+      integer :: bmi_status
+    end function bmif_get_grid_face_nodes
+
+    ! Get the number of nodes for each face.
+    function bmif_get_grid_nodes_per_face(this, grid, nodes_per_face) &
+      result(bmi_status)
+      import :: bmi
+      class(bmi), intent(in) :: this
+      integer, intent(in) :: grid
+      integer, dimension(:), intent(out) :: nodes_per_face
+      integer :: bmi_status
+    end function bmif_get_grid_nodes_per_face
 
   end interface
 

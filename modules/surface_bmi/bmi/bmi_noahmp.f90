@@ -25,22 +25,22 @@ module bminoahmp
      procedure :: update => noahmp_update
      procedure :: update_until => noahmp_update_until
      procedure :: get_var_grid => noahmp_var_grid
-!      procedure :: get_grid_type => noahmp_grid_type
-!      procedure :: get_grid_rank => noahmp_grid_rank
-!      procedure :: get_grid_shape => noahmp_grid_shape
+     procedure :: get_grid_type => noahmp_grid_type
+     procedure :: get_grid_rank => noahmp_grid_rank
+     procedure :: get_grid_shape => noahmp_grid_shape
      procedure :: get_grid_size => noahmp_grid_size
-!      procedure :: get_grid_spacing => noahmp_grid_spacing
-!      procedure :: get_grid_origin => noahmp_grid_origin
-!      procedure :: get_grid_x => noahmp_grid_x
-!      procedure :: get_grid_y => noahmp_grid_y
-!      procedure :: get_grid_z => noahmp_grid_z
-!      procedure :: get_grid_node_count => noahmp_grid_node_count
-!      procedure :: get_grid_edge_count => noahmp_grid_edge_count
-!      procedure :: get_grid_face_count => noahmp_grid_face_count
-!      procedure :: get_grid_edge_nodes => noahmp_grid_edge_nodes
-!      procedure :: get_grid_face_edges => noahmp_grid_face_edges
-!      procedure :: get_grid_face_nodes => noahmp_grid_face_nodes
-!      procedure :: get_grid_nodes_per_face => noahmp_grid_nodes_per_face
+     procedure :: get_grid_spacing => noahmp_grid_spacing
+     procedure :: get_grid_origin => noahmp_grid_origin
+     procedure :: get_grid_x => noahmp_grid_x
+     procedure :: get_grid_y => noahmp_grid_y
+     procedure :: get_grid_z => noahmp_grid_z
+     procedure :: get_grid_node_count => noahmp_grid_node_count
+     procedure :: get_grid_edge_count => noahmp_grid_edge_count
+     procedure :: get_grid_face_count => noahmp_grid_face_count
+     procedure :: get_grid_edge_nodes => noahmp_grid_edge_nodes
+     procedure :: get_grid_face_edges => noahmp_grid_face_edges
+     procedure :: get_grid_face_nodes => noahmp_grid_face_nodes
+     procedure :: get_grid_nodes_per_face => noahmp_grid_nodes_per_face
      procedure :: get_var_type => noahmp_var_type
      procedure :: get_var_units => noahmp_var_units
      procedure :: get_var_itemsize => noahmp_var_itemsize
@@ -284,63 +284,67 @@ contains
     end select
   end function noahmp_var_grid
 
-!   ! The type of a variable's grid.
-!   function noahmp_grid_type(this, grid, type) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     integer, intent(in) :: grid
-!     character (len=*), intent(out) :: type
-!     integer :: bmi_status
-!
-!     select case(grid)
-!     case(0)
-!        type = "uniform_rectilinear"
-!        bmi_status = BMI_SUCCESS
+  ! The type of a variable's grid.
+  function noahmp_grid_type(this, grid, type) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    integer, intent(in) :: grid
+    character (len=*), intent(out) :: type
+    integer :: bmi_status
+
+    select case(grid)
+    case(0)
+       type = "scalar"
+       bmi_status = BMI_SUCCESS
+!================================ IMPLEMENT WHEN NOAHMP DONE IN GRID ======================
 !     case(1)
-!        type = "scalar"
+!       type = "uniform_rectilinear"
 !        bmi_status = BMI_SUCCESS
-!     case default
-!        type = "-"
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_grid_type
-!
-!   ! The number of dimensions of a grid.
-!   function noahmp_grid_rank(this, grid, rank) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     integer, intent(in) :: grid
-!     integer, intent(out) :: rank
-!     integer :: bmi_status
-!
-!     select case(grid)
-!     case(0)
+    case default
+       type = "-"
+       bmi_status = BMI_FAILURE
+    end select
+  end function noahmp_grid_type
+
+  ! The number of dimensions of a grid.
+  function noahmp_grid_rank(this, grid, rank) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    integer, intent(in) :: grid
+    integer, intent(out) :: rank
+    integer :: bmi_status
+
+    select case(grid)
+    case(0)
+       rank = 0
+       bmi_status = BMI_SUCCESS
+!================================ IMPLEMENT WHEN NOAHMP DONE IN GRID ======================
+!     case(1)
 !        rank = 2
 !        bmi_status = BMI_SUCCESS
+    case default
+       rank = -1
+       bmi_status = BMI_FAILURE
+    end select
+  end function noahmp_grid_rank
+
+  ! The dimensions of a grid.
+  function noahmp_grid_shape(this, grid, shape) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    integer, intent(in) :: grid
+    integer, dimension(:), intent(out) :: shape
+    integer :: bmi_status
+
+    select case(grid)
+!================================ IMPLEMENT WHEN NOAHMP DONE IN GRID ======================
+! NOTE: Scalar "grids" do not have dimensions, ie. there is no case(0)
 !     case(1)
-!        rank = 0
-!        bmi_status = BMI_SUCCESS
-!     case default
-!        rank = -1
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_grid_rank
-!
-!   ! The dimensions of a grid.
-!   function noahmp_grid_shape(this, grid, shape) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     integer, intent(in) :: grid
-!     integer, dimension(:), intent(out) :: shape
-!     integer :: bmi_status
-!
-!     select case(grid)
-!     case(0)
 !        shape(:) = [this%model%n_y, this%model%n_x]
 !        bmi_status = BMI_SUCCESS
-!     case default
-!        shape(:) = -1
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_grid_shape
-!
+    case default
+       shape(:) = -1
+       bmi_status = BMI_FAILURE
+    end select
+  end function noahmp_grid_shape
+
   ! The total number of elements in a grid.
   function noahmp_grid_size(this, grid, size) result (bmi_status)
     class (bmi_noahmp), intent(in) :: this
@@ -362,173 +366,177 @@ contains
     end select
   end function noahmp_grid_size
 
-!   ! The distance between nodes of a grid.
-!   function noahmp_grid_spacing(this, grid, spacing) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     integer, intent(in) :: grid
-!     double precision, dimension(:), intent(out) :: spacing
-!     integer :: bmi_status
-!
-!     select case(grid)
-!     case(0)
+  ! The distance between nodes of a grid.
+  function noahmp_grid_spacing(this, grid, spacing) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    integer, intent(in) :: grid
+    double precision, dimension(:), intent(out) :: spacing
+    integer :: bmi_status
+
+    select case(grid)
+!================================ IMPLEMENT WHEN NOAHMP DONE IN GRID ======================
+! NOTE: Scalar "grids" do not have spacing, ie. there is no case(0)
+!     case(1)
 !        spacing(:) = [this%model%dy, this%model%dx]
 !        bmi_status = BMI_SUCCESS
-!     case default
-!        spacing(:) = -1.d0
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_grid_spacing
+    case default
+       spacing(:) = -1.d0
+       bmi_status = BMI_FAILURE
+    end select
+  end function noahmp_grid_spacing
 !
-!   ! Coordinates of grid origin.
-!   function noahmp_grid_origin(this, grid, origin) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     integer, intent(in) :: grid
-!     double precision, dimension(:), intent(out) :: origin
-!     integer :: bmi_status
-!
-!     select case(grid)
-!     case(0)
+  ! Coordinates of grid origin.
+  function noahmp_grid_origin(this, grid, origin) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    integer, intent(in) :: grid
+    double precision, dimension(:), intent(out) :: origin
+    integer :: bmi_status
+
+    select case(grid)
+!================================ IMPLEMENT WHEN NOAHMP DONE IN GRID ======================
+! NOTE: Scalar "grids" do not have coordinates, ie. there is no case(0)
+!     case(1)
 !        origin(:) = [0.d0, 0.d0]
 !        bmi_status = BMI_SUCCESS
-!     case default
-!        origin(:) = -1.d0
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_grid_origin
-!
-!   ! X-coordinates of grid nodes.
-!   function noahmp_grid_x(this, grid, x) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     integer, intent(in) :: grid
-!     double precision, dimension(:), intent(out) :: x
-!     integer :: bmi_status
-!
-!     select case(grid)
-!     case(1)
-!        x(:) = [0.d0]
-!        bmi_status = BMI_SUCCESS
-!     case default
-!        x(:) = -1.d0
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_grid_x
-!
-!   ! Y-coordinates of grid nodes.
-!   function noahmp_grid_y(this, grid, y) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     integer, intent(in) :: grid
-!     double precision, dimension(:), intent(out) :: y
-!     integer :: bmi_status
-!
-!     select case(grid)
-!     case(1)
-!        y(:) = [0.d0]
-!        bmi_status = BMI_SUCCESS
-!     case default
-!        y(:) = -1.d0
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_grid_y
-!
-!   ! Z-coordinates of grid nodes.
-!   function noahmp_grid_z(this, grid, z) result (bmi_status)
-!     class (bmi_noahmp), intent(in) :: this
-!     integer, intent(in) :: grid
-!     double precision, dimension(:), intent(out) :: z
-!     integer :: bmi_status
-!
-!     select case(grid)
-!     case(1)
-!        z(:) = [0.d0]
-!        bmi_status = BMI_SUCCESS
-!     case default
-!        z(:) = -1.d0
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_grid_z
-!
-!   ! Get the number of nodes in an unstructured grid.
-!   function noahmp_grid_node_count(this, grid, count) result(bmi_status)
-!     class(bmi_noahmp), intent(in) :: this
-!     integer, intent(in) :: grid
-!     integer, intent(out) :: count
-!     integer :: bmi_status
-!
-!     select case(grid)
-!     case(0:1)
-!        bmi_status = this%get_grid_size(grid, count)
-!     case default
-!        count = -1
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahmp_grid_node_count
-!
-!   ! Get the number of edges in an unstructured grid.
-!   function noahmp_grid_edge_count(this, grid, count) result(bmi_status)
-!     class(bmi_noahmp), intent(in) :: this
-!     integer, intent(in) :: grid
-!     integer, intent(out) :: count
-!     integer :: bmi_status
-!
-!     count = -1
-!     bmi_status = BMI_FAILURE
-!   end function noahmp_grid_edge_count
-!
-!   ! Get the number of faces in an unstructured grid.
-!   function noahmp_grid_face_count(this, grid, count) result(bmi_status)
-!     class(bmi_noahmp), intent(in) :: this
-!     integer, intent(in) :: grid
-!     integer, intent(out) :: count
-!     integer :: bmi_status
-!
-!     count = -1
-!     bmi_status = BMI_FAILURE
-!   end function noahmp_grid_face_count
-!
-!   ! Get the edge-node connectivity.
-!   function noahmp_grid_edge_nodes(this, grid, edge_nodes) result(bmi_status)
-!     class(bmi_noahmp), intent(in) :: this
-!     integer, intent(in) :: grid
-!     integer, dimension(:), intent(out) :: edge_nodes
-!     integer :: bmi_status
-!
-!     edge_nodes(:) = -1
-!     bmi_status = BMI_FAILURE
-!   end function noahmp_grid_edge_nodes
-!
-!   ! Get the face-edge connectivity.
-!   function noahmp_grid_face_edges(this, grid, face_edges) result(bmi_status)
-!     class(bmi_noahmp), intent(in) :: this
-!     integer, intent(in) :: grid
-!     integer, dimension(:), intent(out) :: face_edges
-!     integer :: bmi_status
-!
-!     face_edges(:) = -1
-!     bmi_status = BMI_FAILURE
-!   end function noahmp_grid_face_edges
-!
-!   ! Get the face-node connectivity.
-!   function noahmp_grid_face_nodes(this, grid, face_nodes) result(bmi_status)
-!     class(bmi_noahmp), intent(in) :: this
-!     integer, intent(in) :: grid
-!     integer, dimension(:), intent(out) :: face_nodes
-!     integer :: bmi_status
-!
-!     face_nodes(:) = -1
-!     bmi_status = BMI_FAILURE
-!   end function noahmp_grid_face_nodes
-!
-!   ! Get the number of nodes for each face.
-!   function noahmp_grid_nodes_per_face(this, grid, nodes_per_face) result(bmi_status)
-!     class(bmi_noahmp), intent(in) :: this
-!     integer, intent(in) :: grid
-!     integer, dimension(:), intent(out) :: nodes_per_face
-!     integer :: bmi_status
-!
-!     nodes_per_face(:) = -1
-!     bmi_status = BMI_FAILURE
-!   end function noahmp_grid_nodes_per_face
-!
+    case default
+       origin(:) = -1.d0
+       bmi_status = BMI_FAILURE
+    end select
+  end function noahmp_grid_origin
+
+  ! X-coordinates of grid nodes.
+  function noahmp_grid_x(this, grid, x) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    integer, intent(in) :: grid
+    double precision, dimension(:), intent(out) :: x
+    integer :: bmi_status
+
+    select case(grid)
+    case(0)
+       x(:) = [0.d0]
+       bmi_status = BMI_SUCCESS
+    case default
+       x(:) = -1.d0
+       bmi_status = BMI_FAILURE
+    end select
+  end function noahmp_grid_x
+
+  ! Y-coordinates of grid nodes.
+  function noahmp_grid_y(this, grid, y) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    integer, intent(in) :: grid
+    double precision, dimension(:), intent(out) :: y
+    integer :: bmi_status
+
+    select case(grid)
+    case(0)
+       y(:) = [0.d0]
+       bmi_status = BMI_SUCCESS
+    case default
+       y(:) = -1.d0
+       bmi_status = BMI_FAILURE
+    end select
+  end function noahmp_grid_y
+
+  ! Z-coordinates of grid nodes.
+  function noahmp_grid_z(this, grid, z) result (bmi_status)
+    class (bmi_noahmp), intent(in) :: this
+    integer, intent(in) :: grid
+    double precision, dimension(:), intent(out) :: z
+    integer :: bmi_status
+
+    select case(grid)
+    case(0)
+       z(:) = [0.d0]
+       bmi_status = BMI_SUCCESS
+    case default
+       z(:) = -1.d0
+       bmi_status = BMI_FAILURE
+    end select
+  end function noahmp_grid_z
+
+  ! Get the number of nodes in an unstructured grid.
+  function noahmp_grid_node_count(this, grid, count) result(bmi_status)
+    class(bmi_noahmp), intent(in) :: this
+    integer, intent(in) :: grid
+    integer, intent(out) :: count
+    integer :: bmi_status
+
+    select case(grid)
+    case(0:1)
+       bmi_status = this%get_grid_size(grid, count)
+    case default
+       count = -1
+       bmi_status = BMI_FAILURE
+    end select
+  end function noahmp_grid_node_count
+
+  ! Get the number of edges in an unstructured grid.
+  function noahmp_grid_edge_count(this, grid, count) result(bmi_status)
+    class(bmi_noahmp), intent(in) :: this
+    integer, intent(in) :: grid
+    integer, intent(out) :: count
+    integer :: bmi_status
+
+    count = -1
+    bmi_status = BMI_FAILURE
+  end function noahmp_grid_edge_count
+
+  ! Get the number of faces in an unstructured grid.
+  function noahmp_grid_face_count(this, grid, count) result(bmi_status)
+    class(bmi_noahmp), intent(in) :: this
+    integer, intent(in) :: grid
+    integer, intent(out) :: count
+    integer :: bmi_status
+
+    count = -1
+    bmi_status = BMI_FAILURE
+  end function noahmp_grid_face_count
+
+  ! Get the edge-node connectivity.
+  function noahmp_grid_edge_nodes(this, grid, edge_nodes) result(bmi_status)
+    class(bmi_noahmp), intent(in) :: this
+    integer, intent(in) :: grid
+    integer, dimension(:), intent(out) :: edge_nodes
+    integer :: bmi_status
+
+    edge_nodes(:) = -1
+    bmi_status = BMI_FAILURE
+  end function noahmp_grid_edge_nodes
+
+  ! Get the face-edge connectivity.
+  function noahmp_grid_face_edges(this, grid, face_edges) result(bmi_status)
+    class(bmi_noahmp), intent(in) :: this
+    integer, intent(in) :: grid
+    integer, dimension(:), intent(out) :: face_edges
+    integer :: bmi_status
+
+    face_edges(:) = -1
+    bmi_status = BMI_FAILURE
+  end function noahmp_grid_face_edges
+
+  ! Get the face-node connectivity.
+  function noahmp_grid_face_nodes(this, grid, face_nodes) result(bmi_status)
+    class(bmi_noahmp), intent(in) :: this
+    integer, intent(in) :: grid
+    integer, dimension(:), intent(out) :: face_nodes
+    integer :: bmi_status
+
+    face_nodes(:) = -1
+    bmi_status = BMI_FAILURE
+  end function noahmp_grid_face_nodes
+
+  ! Get the number of nodes for each face.
+  function noahmp_grid_nodes_per_face(this, grid, nodes_per_face) result(bmi_status)
+    class(bmi_noahmp), intent(in) :: this
+    integer, intent(in) :: grid
+    integer, dimension(:), intent(out) :: nodes_per_face
+    integer :: bmi_status
+
+    nodes_per_face(:) = -1
+    bmi_status = BMI_FAILURE
+  end function noahmp_grid_nodes_per_face
+
   ! The data type of the variable, as a string.
   function noahmp_var_type(this, name, type) result (bmi_status)
     class (bmi_noahmp), intent(in) :: this
