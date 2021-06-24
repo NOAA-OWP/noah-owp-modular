@@ -260,7 +260,7 @@ module bmif_2_0
     function bmif_get_time_step(this, time_step) result(bmi_status)
       import :: bmi
       class(bmi), intent(in) :: this
-      real, intent(out) :: time_step
+      double precision, intent(out) :: time_step
       integer :: bmi_status
     end function bmif_get_time_step
 !

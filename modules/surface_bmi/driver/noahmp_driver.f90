@@ -60,7 +60,8 @@ program noahmp_driver
   integer                                           :: n_inputs  ! n input vars
   integer                                           :: n_outputs ! n output vars
   integer                                           :: iBMI      ! loop counter
-  real                                              :: timestep  ! timestep
+  double precision                                  :: timestep  ! timestep
+  double precision                                  :: bmi_time  ! time output from BMI functions
   character (len = 1)                               :: ts_units  ! timestep units
   
   
@@ -308,6 +309,15 @@ program noahmp_driver
     do iBMI = 1, n_outputs 
       print*, "Output var = ", trim(names(iBMI))
     end do
+    
+    status = m%get_start_time(bmi_time)
+    print*, "The start time is ", bmi_time
+    
+    status = m%get_current_time(bmi_time)
+    print*, "The current time is ", bmi_time
+    
+    status = m%get_end_time(bmi_time)
+    print*, "The end time is ", bmi_time
     
     status = m%get_time_step(timestep)
     status = m%get_time_units(ts_units)

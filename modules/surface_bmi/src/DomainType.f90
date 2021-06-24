@@ -10,10 +10,14 @@ type, public :: domain_type
 
   integer           :: iloc
   integer           :: jloc
-  real              :: DT    ! ? run timestep (unit?)
+  real              :: DT    ! ? run timestep (s)
   character(len=12) :: startdate ! Start date of the model run ( YYYYMMDDHHmm ) 
   character(len=12) :: enddate   ! End date of the model run ( YYYYMMDDHHmm ) 
   character(len=12) :: nowdate   ! Current date of the model run ( YYYYMMDDHHmm ) 
+  integer           :: itime     ! current integer time step of model run
+  integer           :: ntime     ! total number of integer time steps in model run
+  integer           :: nhours    ! total number of hours in run as specified in namelist
+  double precision  :: time_dbl  ! current time of model run in seconds from beginning
   real    :: lat
   real    :: lon
   real    :: ZREF
@@ -69,6 +73,10 @@ contains
     this%startdate = 'EMPTYDATE999'
     this%enddate   = 'EMPTYDATE999'
     this%nowdate   = 'EMPTYDATE999'
+    this%itime     = huge(1) 
+    this%ntime     = huge(1)
+    this%nhours    = huge(1)
+    this%time_dbl  = huge(1.d0)
     this%lat       = huge(1.0)
     this%lon       = huge(1.0)
     this%ZREF      = huge(1.0)
@@ -88,6 +96,7 @@ contains
     this%dt        = namelist%dt
     this%startdate = namelist%startdate
     this%enddate   = namelist%enddate
+    this%nhours    = namelist%maxtime
     this%lat       = namelist%lat
     this%lon       = namelist%lon
     this%ZREF      = namelist%ZREF

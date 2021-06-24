@@ -201,7 +201,7 @@ contains
     double precision, intent(out) :: time
     integer :: bmi_status
 
-!     time = dble(this%model%t_end)
+    time = dble(this%model%domain%ntime * this%model%domain%dt)
     bmi_status = BMI_SUCCESS
   end function noahmp_end_time
 
@@ -211,17 +211,17 @@ contains
     double precision, intent(out) :: time
     integer :: bmi_status
 
-!     time = dble(this%model%t)
+    time = dble(this%model%domain%time_dbl)
     bmi_status = BMI_SUCCESS
   end function noahmp_current_time
 
   ! Model time step.
   function noahmp_time_step(this, time_step) result (bmi_status)
     class (bmi_noahmp), intent(in) :: this
-    real, intent(out)              :: time_step
+    double precision, intent(out) :: time_step
     integer :: bmi_status
 
-    time_step = this%model%domain%dt
+    time_step = dble(this%model%domain%dt)
     bmi_status = BMI_SUCCESS
   end function noahmp_time_step
 
