@@ -63,7 +63,8 @@ program noahmp_driver
   double precision                                  :: timestep  ! timestep
   double precision                                  :: bmi_time  ! time output from BMI functions
   character (len = 1)                               :: ts_units  ! timestep units
-  
+  real, allocatable                                 :: var_value_get(:) ! value of a variable
+  real, allocatable                                 :: var_value_set(:) ! value of a variable
   
 ! !---------------------------------------------------------------------
 ! !  initialize
@@ -313,6 +314,19 @@ program noahmp_driver
     do iBMI = 1, n_outputs 
       print*, "Output var = ", trim(names(iBMI))
     end do
+
+    allocate(var_value_get(1))
+    allocate(var_value_set(1))
+    var_value_set = 999.99
+    status = m%get_value('SFCTMP', var_value_get)
+    print*, "SFCTMP from get_value = ", var_value_get
+    print*, "    our replacement value = ", var_value_set
+    status = m%set_value('SFCTMP', var_value_set)
+    status = m%get_value('SFCTMP', var_value_get)
+    print*, "    and the new value of SFCTMP = ", var_value_get
+    deallocate(var_value_get)
+    deallocate(var_value_set)
+    
     
     status = m%get_start_time(bmi_time)
     print*, "The start time is ", bmi_time
@@ -327,6 +341,7 @@ program noahmp_driver
     status = m%get_time_units(ts_units)
     print*, " The time step is ", timestep
     print*, "with a unit of ", ts_units
+    
 !   !---------------------------------------------------------------------
 !   ! add to output file
 !   !---------------------------------------------------------------------
