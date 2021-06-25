@@ -25,6 +25,8 @@ program noahmp_driver
 !  Local variable(s) 
 !---------------------------------------------------------------------
   character (len = 80)  :: arg          ! command line argument for config file
+  double precision      :: current_time ! current run time of model in s from beginning
+  double precision      :: end_time     ! end of model simulation time in s
 
 !---------------------------------------------------------------------
 !  Local variable(s) for BMI testing
@@ -52,19 +54,28 @@ program noahmp_driver
   status = m%initialize(arg)
 
 !---------------------------------------------------------------------
-! Run the model one time step with BMI
+! Run the model with BMI
 ! Change from non-BMI: All model excution code moved to
 ! ../src/NoahMPSurfaceModule.f90
 !---------------------------------------------------------------------
-  print*, "Running one time step..."
-  status = m%update()
+  ! get the current and end time for running the execution loop
+  status = m%get_current_time(current_time)
+  status = m%get_end_time(end_time)
+  
+  ! loop through while current time <= end time
+  print*, "Running..."
+  do while (current_time <= end_time)
+    status = m%update()                       ! run the model one time step
+    status = m%get_current_time(current_time) ! update current_time
+  end do
 
 !---------------------------------------------------------------------
 ! Do some BMI testing
+! Uncomment this code and "local variable(s) for BMI testing" to run tests
 !---------------------------------------------------------------------
-  status = m%get_end_time(bmi_time)
-  print*, "Updating until time = ", bmi_time
-  status = m%update_until(bmi_time)
+!   status = m%get_end_time(bmi_time)
+!   print*, "Updating until time = ", bmi_time
+!   status = m%update_until(bmi_time)
 
   status = m%get_component_name(component_name)
   print*, "Component name = ", trim(component_name)
