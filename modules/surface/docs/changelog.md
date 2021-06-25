@@ -45,6 +45,11 @@
 
 ## Major changes (surface module):
 - Moved computations of QVAP and QDEW from main level of noahmp_sflx to WaterModule (needs to be done in modules/main as well)
+- Removed all the subsurface modules except for SoilWaterModule.f90 (SoilWaterMovement.f90, SoilWaterRetentionCoeff.f90, SubsurfaceRunoffModule.f90, SurfaceRunoffInfiltration.f90, SurfaceRunoffModule.f90 are all deprecated).
+    - SoilWaterModule.f90 is now a simple set of routines to ensure hydrostatic conditions.
+    - Initial water table height and soil moisture are set in namelist.input
+        - These values are then converted to parameters to track changes.
+- Simple soil water treatment is left as part of NOAH-MP surface module because surface energy (evapotranspiration) and water (WaterModule:WaterMain, SnowLayerChange:COMBINE, SnowWaterRenew:SnowRenew) need access to at least the top discretization with SH2O and SICE information.
 
 ## Bug fixes:
 - Albedo for direct shortwave radiation in the NIR (ALBSND(2)) was incorrectly computed using parameters%BATS_VIS_DIR

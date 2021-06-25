@@ -1,6 +1,6 @@
 
 #=============================================================================================
-#  Options for Keith's Mac with gfortran 
+#  Options for MacOS Big Sur with gfortran, NETCDF via Brew
 #=============================================================================================
 
  COMPILERF90    =       /usr/local/bin/gfortran

@@ -1,6 +1,6 @@
 
 #=============================================================================================
-#  Options for Mike's Mac with gfortran 
+#  Options for MacOS with gfortran, NETCDF via source
 #=============================================================================================
 
  COMPILERF90    =       /opt/local/bin/gfortran-mp-9
