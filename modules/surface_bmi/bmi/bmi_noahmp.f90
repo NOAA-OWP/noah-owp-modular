@@ -91,7 +91,7 @@ module bminoahmp
        component_name = "NOAH-MP Surface Module"
 
   ! Exchange items
-  integer, parameter :: input_item_count = 7
+  integer, parameter :: input_item_count = 8
   integer, parameter :: output_item_count = 3
   character (len=BMI_MAX_VAR_NAME), target, &
        dimension(input_item_count) :: input_items
@@ -136,13 +136,15 @@ contains
     character (*), pointer, intent(out) :: names(:)
     integer :: bmi_status
 
-    input_items(1) = 'SFCPRS' ! surface pressure (Pa)
-    input_items(2) = 'SFCTMP' ! surface air temperature (K)
-    input_items(3) = 'SOLDN'  ! incoming shortwave radiation (W/m2)
-    input_items(4) = 'LWDN'   ! incoming longwave radiation (W/m2)
-    input_items(5) = 'UU'     ! wind speed in eastward direction (m/s)
-    input_items(6) = 'VV'     ! wind speed in northward direction (m/s)
-    input_items(7) = 'Q2'     ! mixing ratio (kg/kg)
+    input_items(1) = 'SFCPRS'   ! surface pressure (Pa)
+    input_items(2) = 'SFCTMP'   ! surface air temperature (K)
+    input_items(3) = 'SOLDN'    ! incoming shortwave radiation (W/m2)
+    input_items(4) = 'LWDN'     ! incoming longwave radiation (W/m2)
+    input_items(5) = 'UU'       ! wind speed in eastward direction (m/s)
+    input_items(6) = 'VV'       ! wind speed in northward direction (m/s)
+    input_items(7) = 'Q2'       ! mixing ratio (kg/kg)
+    input_items(8) = 'PRCPNONC' ! precipitation rate (mm/s)
+    
 
     names => input_items
     bmi_status = BMI_SUCCESS
@@ -274,7 +276,7 @@ contains
     integer :: bmi_status
 
     select case(name)
-    case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', & ! input vars
+    case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! input vars
          'QINSUR', 'ETRAN', 'QSEVA')                              ! output vars
        grid = 0
        bmi_status = BMI_SUCCESS
@@ -545,7 +547,7 @@ contains
     integer :: bmi_status
 
     select case(name)
-    case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', & ! input vars
+    case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! input vars
          'QINSUR', 'ETRAN', 'QSEVA')                              ! output vars
        type = "real"
        bmi_status = BMI_SUCCESS
@@ -581,7 +583,7 @@ contains
     case("QINSUR")
        units = "m/s"
        bmi_status = BMI_SUCCESS
-    case("ETRAN", "QSEVA")
+    case("PRCPNONC", "ETRAN", "QSEVA")
        units = "mm/s"
        bmi_status = BMI_SUCCESS
     case default
@@ -618,6 +620,9 @@ contains
        bmi_status = BMI_SUCCESS
     case("Q2")
        size = sizeof(this%model%forcing%q2)                ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("PRCPNONC")
+       size = sizeof(this%model%forcing%prcpnonc)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("QINSUR")
        size = sizeof(this%model%water%qinsur)                ! 'sizeof' in gcc & ifort
@@ -715,6 +720,9 @@ contains
        bmi_status = BMI_SUCCESS
     case("Q2")
        dest = [this%model%forcing%q2]
+       bmi_status = BMI_SUCCESS
+    case("PRCPNONC")
+       dest = [this%model%forcing%prcpnonc]
        bmi_status = BMI_SUCCESS
     case("QINSUR")
        dest = [this%model%water%qinsur]
@@ -914,6 +922,9 @@ contains
        bmi_status = BMI_SUCCESS
     case("Q2")
        this%model%forcing%q2 = src(1)
+       bmi_status = BMI_SUCCESS
+    case("PRCPNONC")
+       this%model%forcing%prcpnonc = src(1)
        bmi_status = BMI_SUCCESS
     case("QINSUR")
        this%model%water%qinsur = src(1)
