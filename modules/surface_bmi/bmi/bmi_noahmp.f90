@@ -1,6 +1,5 @@
 module bminoahmp
 
-!  use !<REPLACE WITH MODULE(S) NEEDED>
   use NoahMPSurfaceModule 
   use bmif_2_0
   use, intrinsic :: iso_c_binding, only: c_ptr, c_loc, c_f_pointer
