@@ -243,15 +243,6 @@ contains
     call read_forcing_text(iunit, domain%nowdate, forcing_timestep, &
          forcing%UU, forcing%VV, forcing%SFCTMP, forcing%Q2, forcing%SFCPRS, forcing%SOLDN, forcing%LWDN, forcing%PRCPNONC, ierr)
 
-    print*, "UU = ", forcing%UU
-    print*, "VV = ", forcing%VV
-    print*, "SFCTMP = ", forcing%SFCTMP
-    print*, "Q2 = ", forcing%Q2
-    print*, "SFCPRS = ", forcing%SFCPRS
-    print*, "SOLDN = ", forcing%SOLDN
-    print*, "LWDN = ", forcing%LWDN
-    print*, "PRCPNONC = ", forcing%PRCPNONC
-
     !---------------------------------------------------------------------
     ! there is a need for a derived variables routine here
     !---------------------------------------------------------------------
@@ -268,8 +259,6 @@ contains
     ! call the main utility routines
     !---------------------------------------------------------------------
     call UtilitiesMain (domain%itime, domain, forcing, energy)
-    print*, "Julian day = ", forcing%JULIAN
-    print*, "COSZ = ", energy%COSZ
 
     !---------------------------------------------------------------------
     ! call the main forcing routines
@@ -288,15 +277,18 @@ contains
     !---------------------------------------------------------------------
 
     call EnergyMain (domain, levels, options, parameters, forcing, energy, water)
-    print*, "FGEV = ", energy%FGEV
 
     !---------------------------------------------------------------------
     ! call the main water routines (canopy + snow + soil water components)
     !---------------------------------------------------------------------
 
     call WaterMain (domain, levels, options, parameters, forcing, energy, water)
-    print*, "QSEVA = ", water%QSEVA
-    print*, "QVAP = ", water%QVAP
+
+    !---------------------------------------------------------------------
+    ! add to output file
+    !---------------------------------------------------------------------
+
+    call add_to_output(domain%itime,levels%nsoil,levels%nsnow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)
     
     end associate ! terminate associate block
   END SUBROUTINE solve_noahmp
