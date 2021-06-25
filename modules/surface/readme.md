@@ -14,9 +14,9 @@ When coupled to a subsurface module, the main variable of interest is QINSUR, wh
 The NOAH-MP surface module presently requires only one external library: [NetCDF](https://www.unidata.ucar.edu/software/netcdf/). You can install NetCDF using the link or through a package manager such as [Brew](https://brew.sh/). Once NetCDF is installed, you can build the model. The first step is to set up a configuration file. There are currently 4 build options in the `config` directory:
 
 - `user_build_options.cheyenne`: Cheyenne supercomputer
-- `user_build_options.keith.gfortran`: MacOS Big Sur with gfortran compiler, NetCDF installed via Brew
-- `user_build_options.mike.gfortran`: MacOS with gfortran compiler, NetCDF installed via source (opt/local)
-- `user_build_options.mike.linux`: Linux with pgf90 compiler, NetCDF installed via source (usr/local)
+- `user_build_options.pgf90.linux`: Linux with pgf90 compiler, NetCDF installed via source (usr/local)
+- `user_build_options.macos.gfortran`: MacOS with gfortran compiler, NetCDF installed via source (opt/local)
+- `user_build_options.bigsur.gfortran`: MacOS Big Sur with gfortran compiler, NetCDF installed via Brew (** this is the current tesiting environment **)
 
 If your system does not match one of the above options, you'll need to edit one of the files or create your own. If you do the latter, you'll need to add another option to the `configure` Perl script.
 

@@ -2,14 +2,14 @@
 
   if($#ARGV == 0) {
      $response = shift(@ARGV) ;
-     print("Configure soil test environment: $response \n");
+     print("Configure build environment: $response \n");
   }else {
      print "Please select from following predefined environments: \n\n";
 
      print "   1. Cheyenne pgf compiler \n";
-     print "   2. Mike's Linux PGI compiler \n";
-     print "   3. Mike's Mac gfortran compiler \n";
-     print "   4. Keith's Mac gfortran compiler \n";
+     print "   2. Linux PGI compiler \n";
+     print "   3. MacOS gfortran compiler, NETCDF from source \n";
+     print "   4. MacOS BigSur gfortran compiler, NETCDF from Brew \n";
      print "   0. exit only \n";
 
      printf "\nEnter selection : " ;
@@ -24,18 +24,18 @@
             }
 
   elsif ($response == 2) {
-              # Mike's linux set up 
-              system "cp config/user_build_options.mike.linux user_build_options"; 
+              # Linux with pgf90 compiler
+              system "cp config/user_build_options.pgf90.linux user_build_options"; 
             }
 
   elsif ($response == 3) {
-              # Mike's mac set up
-              system "cp config/user_build_options.mike.gfortran user_build_options"; 
+              # MacOS, gfortran, NETCDF from source
+              system "cp config/user_build_options.macos.gfortran user_build_options"; 
             }
 
     elsif ($response == 4) {
-                # Mike's mac set up
-                system "cp config/user_build_options.keith.gfortran user_build_options"; 
+                # MacOS Big Sur, gfortran, NETCDF from source
+                system "cp config/user_build_options.bigsur.gfortran user_build_options"; 
               }
 
   else   {print "no selection $response\n"; last}
