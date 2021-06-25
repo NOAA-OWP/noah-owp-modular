@@ -45,6 +45,18 @@
 
 ## Major changes (surface module):
 - Moved computations of QVAP and QDEW from main level of noahmp_sflx to WaterModule (needs to be done in modules/main as well)
+- Removed all the subsurface modules except for SoilWaterModule.f90 (SoilWaterMovement.f90, SoilWaterRetentionCoeff.f90, SubsurfaceRunoffModule.f90, SurfaceRunoffInfiltration.f90, SurfaceRunoffModule.f90 are all deprecated).
+    - SoilWaterModule.f90 is now a simple set of routines to ensure hydrostatic conditions.
+    - Initial water table height and soil moisture are set in namelist.input
+        - These values are then converted to parameters to track changes.
+- Simple soil water treatment is left as part of NOAH-MP surface module because surface energy (evapotranspiration) and water (WaterModule:WaterMain, SnowLayerChange:COMBINE, SnowWaterRenew:SnowRenew) need access to at least the top discretization with SH2O and SICE information.
+
+## Major changes (surface module with BMI):
+- Added new subdirectory /bmi to contain the base BMI code (bmi.f90) and the NOAH-MP implementation (bmi_noahmp.f90)
+- Moved the majority of functional driver code to src/NoahMPSurfaceModule.f90. The driver is now mainly BMI control functions that initialize, update, and finalize the model.
+- Makefiles changed accordingly to reflect new model structure.
+- New model time tracking information added to DomainType.f90 to make NOAH-MP BMI-compliant.
+- The configuration file (namelist.input) is now specified as a command line argument at run time: `./noahmp_refac.exe namelist.input`
 
 ## Bug fixes:
 - Albedo for direct shortwave radiation in the NIR (ALBSND(2)) was incorrectly computed using parameters%BATS_VIS_DIR

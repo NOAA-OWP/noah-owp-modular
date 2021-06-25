@@ -34,34 +34,6 @@ clean:
 
 noahmp_output.o: ../src/WaterType.o \
                ../src/EnergyType.o 
-noahmp_driver.o: noahmp_output.o \
-                 noahmp_ascii_read.o \
-               ../src/NamelistRead.o \
-               ../src/LevelsType.o \
-               ../src/DomainType.o \
-               ../src/OptionsType.o \
-               ../src/ParametersType.o \
-               ../src/ForcingType.o \
-               ../src/EnergyType.o \
-               ../src/WaterType.o \
-               ../src/WaterModule.o \
-               ../src/CanopyWaterModule.o \
-               ../src/SnowWaterModule.o   \
-               ../src/SnowWaterRenew.o \
-               ../src/SnowLayerChange.o \
-               ../src/SoilWaterModule.o \
-               ../src/ForcingModule.o \
-               ../src/AtmProcessing.o \
-               ../src/InterceptionModule.o \
-               ../src/ThermalPropertiesModule.o \
-               ../src/AlbedoModule.o \
-               ../src/ShortwaveRadiationModule.o \
-               ../src/PrecipHeatModule.o \
-               ../src/EtFluxModule.o \
-               ../src/SnowSoilTempModule.o \
-               ../src/EnergyModule.o \
-               ../src/UtilitiesModule.o \
-               ../src/NoahMPSurfaceModule.o \
-               ../bmi/bmi_noahmp.o \
+noahmp_driver.o: ../bmi/bmi_noahmp.o \
                ../bmi/bmi.o
 
