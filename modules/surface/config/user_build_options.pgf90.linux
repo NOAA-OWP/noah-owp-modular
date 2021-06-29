@@ -1,0 +1,11 @@
+#=============================================================================================
+#  Options for Linux with pgf90 serial
+#=============================================================================================
+
+ COMPILERF90	=	pgf90
+ FREESOURCE	=	-Mfree
+ F90FLAGS	=       -g -Kieee #-fdefault-real-8
+ CPP		=	cpp
+ CPPFLAGS	=	-C -P -traditional
+ NETCDFMOD      =       -I/usr/local/netcdf4-pgi/include
+ NETCDFLIB      =       -L/usr/local/netcdf4-pgi/lib -lnetcdf -lnetcdff
