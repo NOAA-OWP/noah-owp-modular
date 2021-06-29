@@ -1,15 +1,17 @@
-# Modular NOAH-MP
+# NOAH-MP surface module
 
-This directory contains the in-progress work on a modularized version of NOAH-MP. There are two important changes:
+This subdirectory contains the NOAH-MP surface module, adapted from the complete modular NOAH-MP. The key difference is that the NOAH-MP subsurface routines for runoff partitioning, groundwater, soil moisture, etc. have been removed in favor of a simple hydrostatic subsurface treatment. This allows for the computation of the stomatal and surface resistances that are used in calculating evapotranspiration. Although the surface module can be run in standalone mode, it is specifically designed to be coupled with a subsurface module. 
 
-1. The single, monolith block of code is split into a series of individual modules.
-2. Data types are now used to simplify subroutine calls and arguments, and to facilitate the addition of future modules.
+The current subsurface treatment includes the following assumptions:
 
-Currently, the model runs using synthetic forcing data as specified in the driver.
+1. Soil moisture content is constant
+2. The water table height is constant
+
+When coupled to a subsurface module, the main variable of interest is QINSUR, which is the total liquid water flux at the land surface. 
 
 # Building the model
 
-Modular NOAH-MP presently requires only one external library: [NetCDF](https://www.unidata.ucar.edu/software/netcdf/). You can install NetCDF using the link or through a package manager such as [Brew](https://brew.sh/). Once NetCDF is installed, you can build the model. The first step is to set up a configuration file. There are currently 4 build options in the `config` directory:
+The NOAH-MP surface module presently requires only one external library: [NetCDF](https://www.unidata.ucar.edu/software/netcdf/). You can install NetCDF using the link or through a package manager such as [Brew](https://brew.sh/). Once NetCDF is installed, you can build the model. The first step is to set up a configuration file. There are currently 4 build options in the `config` directory:
 
 - `user_build_options.cheyenne`: Cheyenne supercomputer
 - `user_build_options.pgf90.linux`: Linux with pgf90 compiler, NetCDF installed via source (usr/local)
@@ -34,7 +36,7 @@ After the model is finished compiling and linking, you can change into the `run`
 
 ```
 cd run/
-./snow_refac.exe
+./noahmp_refac.exe
 ```
 
 You can examine model output in the `output.nc` file (requires [Panoply](https://www.giss.nasa.gov/tools/panoply/) or other NetCDF viewer).
