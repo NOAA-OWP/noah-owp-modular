@@ -103,7 +103,7 @@ contains
 ! ----------------------------------------------------------------------
 ! Calculate the saturated area and runoff based on VIC runoff scheme.
 ! This scheme adopted from VIC model
-! Author: Prasanth Valayamkunnath <prasanth@ucar.edu>
+! Author: PV
 ! ----------------------------------------------------------------------
     IMPLICIT NONE
 ! ----------------------------------------------------------------------
@@ -171,7 +171,7 @@ contains
 ! an open-source, extendable framework providing implementations of 46 conceptual 
 ! hydrologic models as continuous state-space formulations.
 ! ----------------------------------------------------------------------
-! Author: Prasanth Valayamkunnath <prasanth@ucar.edu>
+! Author: PV
 ! Date: August 03, 2020
 ! ----------------------------------------------------------------------
     IMPLICIT NONE
@@ -236,7 +236,7 @@ contains
 ! compute inflitration rate at soil surface and estimate surface runoff based on 
 ! Liang, X., & Xie, Z. (2001). A new surface runoff parameterization with subgrid-scale
 ! soil heterogeneity for land surface models. Advances in Water Resources, 24(9-10), 1173-1193.
-! Author: Prasanth Valayamkunnath <prasanth@ucar.edu>
+! Author: PV
 ! Date  : August 3, 2020
 ! --------------------------------------------------------------------------------
    IMPLICIT NONE
@@ -495,7 +495,7 @@ contains
   SUBROUTINE RR1 (parameters,I_0,I_MAX,YD,R1)
 !---------------------------------------------------------------------------------------------
 ! This subroutine estimate saturation excess runoff, R1
-! Author: Prasanth Valayamkunnath <prasanth@ucar.edu>
+! Author: PV
 !---------------------------------------------------------------------------------------------
    IMPLICIT NONE
 ! --------------------------------------------------------------------------------------------
@@ -517,7 +517,7 @@ contains
   SUBROUTINE RR2 (YD,Y0,R1,FMAX,FSUR,DT,DP,BB,R2)
 !---------------------------------------------------------------------------------------------
 ! This subroutine estimate infiltration excess runoff, R1
-! Author: Prasanth Valayamkunnath <prasanth@ucar.edu>
+! Author: PV
 !---------------------------------------------------------------------------------------------
    IMPLICIT NONE
 ! --------------------------------------------------------------------------------------------
@@ -538,7 +538,7 @@ contains
 ! This function estimate infiltration rate based on Smith-Parlange equation. We use its three
 ! parameter version of the equation (Eq. 6.25) from Smith, R.E. (2002) Infiltration Theory for
 ! Hydrologic Applications, Water Resources Monograph 15, AGU. 
-! Author: Prasanth Valayamkunnath <prasanth@ucar.edu>
+! Author: PV
 !---------------------------------------------------------------------------------------------
    IMPLICIT NONE
 ! --------------------------------------------------------------------------------------------
@@ -599,7 +599,7 @@ contains
 ! This function estimate infiltration rate based on Green-Ampt equation. We use its three
 ! parameter version of the smith-parlage equation (Eq. 6.25) from Smith, R.E. (2002) Infiltration Theory for
 ! Hydrologic Applications, Water Resources Monograph 15, AGU. Where gamma = 0, Eq 6.25 = Green-Ampt.
-! Author: Prasanth Valayamkunnath <prasanth@ucar.edu>
+! Author: PV
 !-------------------------------------------------------------------------------------------------
    IMPLICIT NONE
 ! ------------------------------------------------------------------------------------------------
@@ -652,7 +652,7 @@ contains
 ! This function estimate infiltration rate based on Philip's two parameter equation (Eq. 2) presented in
 ! Valiantzas (2010). New linearized two-parameter infiltration equation for direct determination 
 ! of conductivity and sorptivity, J. Hydrology.
-! Author: Prasanth Valayamkunnath <prasanth@ucar.edu>
+! Author: PV
 !---------------------------------------------------------------------------------------------
    IMPLICIT NONE
 ! --------------------------------------------------------------------------------------------
