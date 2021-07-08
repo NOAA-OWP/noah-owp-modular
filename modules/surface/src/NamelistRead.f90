@@ -14,10 +14,6 @@ type, public :: namelist_type
   character*256     :: output_filename    ! name of the output file
   real              :: lat                ! latitude (°)
   real              :: lon                ! longitude (°)
-  real              :: preciprate         ! precipitation rate 
-  integer           :: precip_duration    ! duration of precipitation event (# of timesteps)
-  integer           :: dry_duration       ! duration of dry event (# of timesteps)
-  logical           :: precipitating      ! logical flag for when it is precipitating
   real              :: ZREF               ! measurement height for wind speed (m)
   
   integer       :: isltyp
@@ -47,10 +43,6 @@ type, public :: namelist_type
   !--------------------!
 
   integer       :: precip_phase_option
-  integer       :: runoff_option
-  integer       :: drainage_option
-  integer       :: frozen_soil_option
-  integer       :: dynamic_vic_option
   integer       :: dynamic_veg_option
   integer       :: snow_albedo_option
   integer       :: radiative_transfer_option
@@ -214,10 +206,6 @@ contains
     character*256     :: output_filename
     real              :: lat
     real              :: lon
-    real              :: preciprate
-    integer           :: precip_duration
-    integer           :: dry_duration
-    logical           :: precipitating
     real              :: ZREF               ! measurement height for wind speed (m)
     
     integer       :: isltyp
@@ -247,10 +235,6 @@ contains
     !--------------------!
 
     integer       :: precip_phase_option
-    integer       :: runoff_option
-    integer       :: drainage_option
-    integer       :: frozen_soil_option
-    integer       :: dynamic_vic_option
     integer       :: dynamic_veg_option
     integer       :: snow_albedo_option
     integer       :: radiative_transfer_option
@@ -393,9 +377,8 @@ contains
 
     namelist / timing          / dt,maxtime,startdate,enddate,input_filename,output_filename
     namelist / location        / lat,lon
-    namelist / forcing         / preciprate,precip_duration,dry_duration,&
-                                 precipitating,ZREF
-    namelist / model_options   / precip_phase_option,runoff_option,drainage_option,frozen_soil_option,dynamic_vic_option,&
+    namelist / forcing         / ZREF
+    namelist / model_options   / precip_phase_option,&
                                  dynamic_veg_option,snow_albedo_option,radiative_transfer_option,sfc_drag_coeff_option,&
                                  canopy_stom_resist_option,crop_model_option,snowsoil_temp_time_option,soil_temp_boundary_option,&
                                  supercooled_water_option,stomatal_resistance_option,evap_srfc_resistance_option
@@ -474,10 +457,6 @@ contains
     this%output_filename  = output_filename
     this%lat              = lat
     this%lon              = lon
-    this%preciprate       = preciprate
-    this%precip_duration  = precip_duration
-    this%dry_duration     = dry_duration
-    this%precipitating    = precipitating
     this%ZREF             = ZREF
 
     this%isltyp           = isltyp
@@ -503,10 +482,6 @@ contains
     this%initial_zwt        = initial_zwt
 
     this%precip_phase_option = precip_phase_option
-    this%runoff_option       = runoff_option
-    this%drainage_option     = drainage_option
-    this%frozen_soil_option  = frozen_soil_option
-    this%dynamic_vic_option  = dynamic_vic_option
     this%dynamic_veg_option  = dynamic_veg_option
     this%snow_albedo_option  = snow_albedo_option
     this%radiative_transfer_option  = radiative_transfer_option

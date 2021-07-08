@@ -13,10 +13,6 @@
 /
 
 &forcing
-  preciprate      = 10.0    ! rain rate, when raining [mm/hr]
-  precip_duration = 3       ! duration of precipitation events [hours]
-  dry_duration    = 3       ! duration of dry events [hours]
-  precipitating   = .true.  ! start with precipitation
   ZREF            = 10.0    ! measurment height for wind speed
 /
 
@@ -24,10 +20,6 @@
   precip_phase_option               = 2
   snow_albedo_option                = 2 ! 1 = BATS, 2 = CLASS
   dynamic_veg_option                = 1
-  runoff_option                     = 8
-  drainage_option                   = 8
-  frozen_soil_option                = 1
-  dynamic_vic_option                = 1
   radiative_transfer_option         = 3
   sfc_drag_coeff_option             = 1
   canopy_stom_resist_option         = 1

@@ -237,11 +237,10 @@ contains
       energy%RB        = 0.
     END IF
     
-    print*, "CHV = ", energy%CHV
-    print*, "IRC = ", energy%IRC
-    print*, "SHC = ", energy%SHC
-
-    print*, "GHV = " ,energy%GHV
+!     print*, "CHV = ", energy%CHV
+!     print*, "IRC = ", energy%IRC
+!     print*, "SHC = ", energy%SHC
+!     print*, "GHV = " ,energy%GHV
 
     energy%TGB = energy%TG
     energy%CMB = energy%CM
@@ -310,8 +309,6 @@ contains
       STOP
     END IF
 
-    print*, "FIRE = ", FIRE
-
     ! Compute a net emissivity
     energy%EMISSI = parameters%FVEG * (energy%EMG*(1-energy%EMV) + energy%EMV + energy%EMV*(1-energy%EMV)*(1-energy%EMG)) +&
                     (1-parameters%FVEG) * energy%EMG
@@ -325,29 +322,20 @@ contains
     energy%APAR = energy%PARSUN * energy%LAISUN + energy%PARSHA * energy%LAISHA
     energy%PSN  = energy%PSNSUN * energy%LAISUN + energy%PSNSHA * energy%LAISHA
 
-    ! print the layer temperatures
-    print*, "energy%stc(-2) = ", energy%stc(-2)
-    print*, "energy%stc(-1) = ", energy%stc(-1)
-    print*, "energy%stc(0) = ", energy%stc(0)
-    print*, "energy%stc(1) = ", energy%stc(1)
-    print*, "energy%stc(2) = ", energy%stc(2)
-    print*, "energy%stc(3) = ", energy%stc(3)
-    print*, "energy%stc(4) = ", energy%stc(4)
-
     ! calculate 3L snow & 4L soil temperatures
     CALL TSNOSOI (parameters, levels, domain, options, forcing,                   & !in
                   energy%ICE, water%ISNOW, energy%SSOIL, energy%DF, energy%HCPCT, & !in
                   energy%SAG, water%SNOWH, energy%TG,                             & !in
                   energy%STC     )                                                  !inout
 
-    ! print the layer temperatures
-    print*, "energy%stc(-2) = ", energy%stc(-2)
-    print*, "energy%stc(-1) = ", energy%stc(-1)
-    print*, "energy%stc(0) = ", energy%stc(0)
-    print*, "energy%stc(1) = ", energy%stc(1)
-    print*, "energy%stc(2) = ", energy%stc(2)
-    print*, "energy%stc(3) = ", energy%stc(3)
-    print*, "energy%stc(4) = ", energy%stc(4)
+!     ! print the layer temperatures
+!     print*, "energy%stc(-2) = ", energy%stc(-2)
+!     print*, "energy%stc(-1) = ", energy%stc(-1)
+!     print*, "energy%stc(0) = ", energy%stc(0)
+!     print*, "energy%stc(1) = ", energy%stc(1)
+!     print*, "energy%stc(2) = ", energy%stc(2)
+!     print*, "energy%stc(3) = ", energy%stc(3)
+!     print*, "energy%stc(4) = ", energy%stc(4)
 
     ! AW:  need to decide what to do with STC if no subsurface will be simulated
     !      ie, should soil layers be 0C if there is snow and TGB if not?
