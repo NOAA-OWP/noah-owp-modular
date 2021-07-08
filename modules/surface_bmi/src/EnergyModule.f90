@@ -309,8 +309,6 @@ contains
       STOP
     END IF
 
-    print*, "FIRE = ", FIRE
-
     ! Compute a net emissivity
     energy%EMISSI = parameters%FVEG * (energy%EMG*(1-energy%EMV) + energy%EMV + energy%EMV*(1-energy%EMV)*(1-energy%EMG)) +&
                     (1-parameters%FVEG) * energy%EMG

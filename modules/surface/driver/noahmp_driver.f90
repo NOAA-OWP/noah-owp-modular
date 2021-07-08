@@ -44,11 +44,6 @@ program noahmp_driver
   integer, parameter :: iunit        = 10 ! Fortran unit number to attach to the opened file
   integer            :: forcing_timestep  ! integer time step (set to dt) for some subroutine calls
   integer            :: ntime        = 0  ! number of timesteps to run
-  integer            :: precip_steps = 0  ! number of timesteps in rain event
-  integer            :: dry_steps    = 0  ! number of timesteps between rain events
-  integer            :: precip_step  = 0  ! number of timesteps in current event
-  integer            :: dry_step     = 0  ! number of timesteps in current event
-  logical            :: precipitating     ! .true. if precipitating
   real               :: QV_CURR           ! water vapor mixing ratio (kg/kg)
 
 !---------------------------------------------------------------------
@@ -174,9 +169,6 @@ program noahmp_driver
 
   ! other variables
   ntime         =  nint(namelist%maxtime * 3600.0 / namelist%dt)
-  precip_steps  =  namelist%precip_duration * 3600.0 / namelist%dt
-  dry_steps     =  namelist%dry_duration * 3600.0 / namelist%dt
-  precipitating =  namelist%precipitating
 
   domain%IST = 1
   domain%zsnso(-namelist%nsnow+1:0) = 0.0
@@ -228,26 +220,6 @@ program noahmp_driver
     energy%TAH = forcing%SFCTMP                         ! assign canopy temp with forcing air temp (K) 
     QV_CURR    = forcing%Q2 / (1 - forcing%Q2)          ! mixing ratio, assuming input forcing Q2 is specific hum.
     energy%EAH = forcing%SFCPRS*QV_CURR/(0.622+QV_CURR) ! Initial guess only. (Pa)
-  
-   
-!     !---------------------------------------------------------------------
-!     ! calculate the input water by simulating a synthetic precip event
-!     !---------------------------------------------------------------------
-!     if(precipitating) then
-!       forcing%PRCPNONC    = namelist%preciprate/3600.0    ! input water [m/s]
-!       precip_step = precip_step + 1
-!       if(precip_step == precip_steps) then            ! event length met
-!         precip_step = 0
-!         precipitating   = .false.
-!       end if
-!     else
-!       forcing%PRCPNONC   = 0.0                        ! stop water input [m/s]
-!       dry_step = dry_step + 1
-!       if(dry_step == dry_steps) then              ! between event length met
-!         dry_step = 0
-!         precipitating  = .true.
-!       end if
-!     end if
 
   !---------------------------------------------------------------------
   ! call the main utility routines 
