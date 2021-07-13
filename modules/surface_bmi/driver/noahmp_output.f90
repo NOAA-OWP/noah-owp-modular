@@ -120,8 +120,8 @@ contains
      iret = nf90_put_var(ncid, time_id,    itime,                       start=(/itime+1/))
      iret = nf90_put_var(ncid, prcp_id,    water%rain*dt,               start=(/itime+1/))
      iret = nf90_put_var(ncid, qinsur_id,  water%qinsur*1000*dt,        start=(/itime+1/))
-     iret = nf90_put_var(ncid, evap_id,    water%qseva*1000.0*dt,       start=(/itime+1/))
-     iret = nf90_put_var(ncid, tran_id,    sum(water%etrani)*1000.0*dt, start=(/itime+1/))
+     iret = nf90_put_var(ncid, evap_id,    water%qseva*dt,              start=(/itime+1/))
+     iret = nf90_put_var(ncid, tran_id,    sum(water%etrani)*dt,        start=(/itime+1/))
      iret = nf90_put_var(ncid,  smc_id,    water%smc,   start=(/itime+1,1/), count=(/1,nsoil/))
 ! for canopy water
      iret = nf90_put_var(ncid, qintr_id,   water%qintr*dt,             start=(/itime+1/))

@@ -107,11 +107,10 @@ contains
     ELSE
        water%QINSUR = water%QINSUR+(water%QSNBOT + water%QSDEW) * 0.001
     ENDIF
-    water%QSEVA  = water%QSEVA * 0.001 
 
 ! For vegetation root
    DO IZ = 1, parameters%NROOT
-       water%ETRANI(IZ) = water%ETRAN * water%BTRANI(IZ) * 0.001
+       water%ETRANI(IZ) = water%ETRAN * water%BTRANI(IZ)
     ENDDO
 
 ! #ifdef WRF_HYDRO
@@ -122,7 +121,7 @@ contains
     IF (domain%IST == 2) THEN                                        ! lake
        water%RUNSRF = 0.
        IF(water%WSLAKE >= parameters%WSLMAX) water%RUNSRF = water%QINSUR*1000.             !mm/s
-       water%WSLAKE=water%WSLAKE+(water%QINSUR-water%QSEVA)*1000.*domain%DT -water%RUNSRF*domain%DT   !mm
+       water%WSLAKE = water%WSLAKE + (water%QINSUR *1000.*domain%DT) - (water%QSEVA*domain%DT) - water%RUNSRF*domain%DT   !mm
     ELSE
       ! For soil points
       !---------------------------------------------------------------------
