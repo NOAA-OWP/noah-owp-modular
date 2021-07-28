@@ -27,3 +27,7 @@ modules/main/driver/.ipynb_checkpoints/*
 # misc notes files
 LASTNEXT
 NOTES*
+
+
+# user configuration files
+user_build_options
