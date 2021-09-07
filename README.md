@@ -6,6 +6,6 @@ There are currently three modules that have been developed from the original cod
 
 - modules/full: The modularized NOAH-MP model with a full set of hydrologic subroutines and components (initially excluding crop and carbon)
 - modules/surface: All surface energy and water balance components, with a simplified hydrostatic subsurface instead of the original noah-mp subsurface
-- modules/surface_bmi: The surface module with an implementation of BMI, the (Basic Model Interface)[https://csdms.colorado.edu/wiki/BMI]
+- modules/surface_bmi: The surface module with an implementation of BMI, the [Basic Model Interface](https://csdms.colorado.edu/wiki/BMI)
 
 For further information on the modules, please see their respective directories.
