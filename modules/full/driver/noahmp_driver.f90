@@ -8,7 +8,8 @@ program noahmp_driver
   use NoahMPOutput
   use LevelsType
   use DomainType
-  use NamelistRead
+  use modelConfigRead
+  use ParametersRead, only: parametersNML
   use OptionsType
   use ParametersType
   use WaterType
@@ -26,7 +27,8 @@ program noahmp_driver
 !  types
 !---------------------------------------------------------------------
 
-  type (namelist_type)     :: namelist
+  type (modelConfig_type)  :: namelist
+  type (parametersNML)     :: paramNML
   type (levels_type)       :: levels
   type (domain_type)       :: domain
   type (parameters_type)   :: parameters
@@ -50,12 +52,14 @@ program noahmp_driver
   integer            :: dry_step     = 0  ! number of timesteps in current event
   logical            :: precipitating     ! .true. if precipitating
   real               :: QV_CURR           ! water vapor mixing ratio (kg/kg)
+  character(len=256) :: param_nml_file = '../parameters/param.namelist'
 
 !---------------------------------------------------------------------
 !  initialize
 !---------------------------------------------------------------------
 
   call namelist%ReadNamelist()
+  call paramNML%ReadNamelist(param_nml_file)
 
   call levels%Init
   call levels%InitTransfer(namelist)
@@ -67,7 +71,7 @@ program noahmp_driver
   call options%InitTransfer(namelist)
 
   call parameters%Init(namelist)
-  call parameters%InitTransfer(namelist)
+  call parameters%InitTransfer(namelist, paramNML)
 
   call forcing%Init(namelist)
   call forcing%InitTransfer(namelist)
