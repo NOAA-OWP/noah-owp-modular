@@ -67,7 +67,6 @@ program noahmp_driver
   call options%InitTransfer(namelist)
 
   call parameters%Init(namelist)
-print*, namelist%parameter_filename
   call parameters%paramRead(namelist%parameter_filename, namelist)
 
   call forcing%Init(namelist)
