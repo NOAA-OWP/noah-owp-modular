@@ -1,6 +1,6 @@
 module DomainType
 
-use modelConfigRead, only: modelConfig_type
+use NamelistRead, only: namelist_type
 
 implicit none
 save
@@ -40,7 +40,7 @@ contains
   subroutine Init(this, namelist)
 
     class(domain_type) :: this
-    type(modelConfig_type) :: namelist
+    type(namelist_type) :: namelist
 
     call this%InitAllocate(namelist)
     call this%InitDefault()
@@ -51,7 +51,7 @@ contains
   subroutine InitAllocate(this, namelist)
 
     class(domain_type) :: this
-    type(modelConfig_type) :: namelist
+    type(namelist_type) :: namelist
 
     allocate(this%zsoil (namelist%nsoil))  ; this%zsoil  (:)   = huge(1.0)
     allocate(this%dzsnso(-namelist%nsnow+1:namelist%nsoil))  ; this%dzsnso (:)   = huge(1.0)
@@ -83,7 +83,7 @@ contains
   subroutine InitTransfer(this, namelist)
 
     class(domain_type) :: this
-    type(modelConfig_type) :: namelist
+    type(namelist_type) :: namelist
 
     this%dt        = namelist%dt
     this%startdate = namelist%startdate

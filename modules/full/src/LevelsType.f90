@@ -1,6 +1,6 @@
 module LevelsType
 
-use modelConfigRead, only: modelConfig_type
+use NamelistRead, only: namelist_type
 
 implicit none
 save
@@ -42,8 +42,8 @@ contains
 
   subroutine InitTransfer(this, namelist)
 
-    class(levels_type)      :: this
-    type(modelConfig_type)  :: namelist
+    class(levels_type)   :: this
+    type(namelist_type)  :: namelist
 
     this%nsoil  = namelist%nsoil
     this%nsnow  = namelist%nsnow

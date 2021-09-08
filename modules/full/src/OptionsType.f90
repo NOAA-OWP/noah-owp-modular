@@ -1,6 +1,6 @@
 module OptionsType
 
-use modelConfigRead, only: modelConfig_type
+use NamelistRead, only: namelist_type
 
 implicit none
 save
@@ -88,7 +88,7 @@ contains
   subroutine InitTransfer(this, namelist)
 
     class(options_type) :: this
-    type(modelConfig_type) :: namelist
+    type(namelist_type) :: namelist
 
     this%opt_snf   = namelist%precip_phase_option
     this%opt_run   = namelist%runoff_option

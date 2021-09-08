@@ -1,6 +1,6 @@
 module EnergyType
 
-use modelConfigRead, only: modelConfig_type
+use NamelistRead, only: namelist_type
 
 implicit none
 save
@@ -168,7 +168,7 @@ contains
   subroutine Init(this, namelist)
 
     class(energy_type) :: this
-    type(modelConfig_type) :: namelist
+    type(namelist_type) :: namelist
 
     call this%InitAllocate(namelist)
     call this%InitDefault()
@@ -178,7 +178,7 @@ contains
   subroutine InitAllocate(this, namelist)
 
     class(energy_type) :: this
-    type(modelConfig_type) :: namelist
+    type(namelist_type) :: namelist
 
     allocate(this%IMELT (-namelist%nsnow+1:namelist%nsoil)); this%IMELT(:) = huge(1)
     allocate(this%STC   (-namelist%nsnow+1:namelist%nsoil)); this%STC(:)   = huge(1.0)
@@ -331,7 +331,7 @@ contains
   subroutine InitTransfer(this, namelist)
 
     class(energy_type) :: this
-    type(modelConfig_type) :: namelist
+    type(namelist_type) :: namelist
 
   end subroutine InitTransfer
 

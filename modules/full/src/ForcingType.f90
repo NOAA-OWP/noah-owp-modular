@@ -1,6 +1,6 @@
 module ForcingType
 
-use modelConfigRead, only: modelConfig_type
+use NamelistRead, only: namelist_type
 
 implicit none
 save
@@ -58,7 +58,7 @@ contains
   subroutine Init(this, namelist)
 
     class(forcing_type)    :: this
-    type(modelConfig_type) :: namelist
+    type(namelist_type) :: namelist
 
     call this%InitAllocate()
     call this%InitDefault()
@@ -113,7 +113,7 @@ contains
   subroutine InitTransfer(this, namelist)
 
     class(forcing_type) :: this
-    type(modelConfig_type) :: namelist
+    type(namelist_type) :: namelist
 
   end subroutine InitTransfer
 

@@ -1,6 +1,6 @@
 module WaterType
 
-use modelConfigRead, only: modelConfig_type
+use NamelistRead, only: namelist_type
 
 implicit none
 save
@@ -90,7 +90,7 @@ contains
   subroutine Init(this, namelist)
 
     class(water_type) :: this
-    type(modelConfig_type) :: namelist
+    type(namelist_type) :: namelist
 
     call this%InitAllocate(namelist)
     call this%InitDefault()
@@ -100,7 +100,7 @@ contains
   subroutine InitAllocate(this, namelist)
 
     class(water_type) :: this
-    type(modelConfig_type) :: namelist
+    type(namelist_type) :: namelist
 
     allocate(this%smc   (namelist%nsoil))  ; this%smc   (:) = huge(1.0)
     allocate(this%sice  (namelist%nsoil))  ; this%sice  (:) = huge(1.0)
@@ -181,7 +181,7 @@ contains
   subroutine InitTransfer(this, namelist)
 
     class(water_type) :: this
-    type(modelConfig_type) :: namelist
+    type(namelist_type) :: namelist
 
     if(namelist%initial_uniform) then
       this%sh2o = namelist%initial_sh2o_value
