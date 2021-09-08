@@ -1,10 +1,10 @@
-module modelConfigRead
+module NamelistRead
 
 implicit none
 save
 private
 
-type, public :: modelConfig_type
+type, public :: namelist_type
 
   real               :: dt                 ! model timestep (s)
   integer            :: maxtime
@@ -12,6 +12,7 @@ type, public :: modelConfig_type
   character(len=12)  :: enddate            ! End date of the model run ( YYYYMMDDHHmm )
   character(len=256) :: input_filename     ! name of the input/forcing file
   character(len=256) :: output_filename    ! name of the output file
+  character(len=256) :: parameter_filename ! name of the parameter file
   real               :: lat                ! latitude (°)
   real               :: lon                ! longitude (°)
   real               :: preciprate         ! precipitation rate
@@ -65,13 +66,13 @@ type, public :: modelConfig_type
 
     procedure, public  :: ReadNamelist
 
-end type modelConfig_type
+end type namelist_type
 
 contains
 
   subroutine ReadNamelist(this)
 
-    class(modelConfig_type) :: this
+    class(namelist_type) :: this
 
     integer            :: iz
 
@@ -81,6 +82,7 @@ contains
     character(len=12)  :: enddate
     character(len=256) :: input_filename
     character(len=256) :: output_filename
+    character(len=256) :: parameter_filename
     real               :: lat
     real               :: lon
     real               :: preciprate
@@ -130,7 +132,7 @@ contains
     integer       :: stomatal_resistance_option
     integer       :: evap_srfc_resistance_option
 
-    namelist / timing          / dt,maxtime,startdate,enddate,input_filename,output_filename
+    namelist / timing          / dt,maxtime,startdate,enddate,input_filename,output_filename,parameter_filename
     namelist / location        / lat,lon
     namelist / forcing         / preciprate,precip_duration,dry_duration,&
                                  precipitating,ZREF
@@ -183,19 +185,20 @@ contains
 !  transfer to structure
 !---------------------------------------------------------------------
 
-    this%dt               = dt
-    this%maxtime          = maxtime
-    this%startdate        = startdate
-    this%enddate          = enddate
-    this%input_filename   = input_filename
-    this%output_filename  = output_filename
-    this%lat              = lat
-    this%lon              = lon
-    this%preciprate       = preciprate
-    this%precip_duration  = precip_duration
-    this%dry_duration     = dry_duration
-    this%precipitating    = precipitating
-    this%ZREF             = ZREF
+    this%dt                 = dt
+    this%maxtime            = maxtime
+    this%startdate          = startdate
+    this%enddate            = enddate
+    this%input_filename     = input_filename
+    this%output_filename    = output_filename
+    this%parameter_filename = parameter_filename
+    this%lat                = lat
+    this%lon                = lon
+    this%preciprate         = preciprate
+    this%precip_duration    = precip_duration
+    this%dry_duration       = dry_duration
+    this%precipitating      = precipitating
+    this%ZREF               = ZREF
 
     this%isltyp           = isltyp
     this%nsoil            = nsoil
@@ -236,4 +239,4 @@ contains
 
   end subroutine ReadNamelist
 
-end module modelConfigRead
+end module NamelistRead
