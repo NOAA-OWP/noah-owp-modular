@@ -5,8 +5,7 @@
 
 include ../user_build_options
 
-OBJS = modelConfigRead.o \
-       ParametersRead.o \
+OBJS = NamelistRead.o \
        LevelsType.o   \
        DomainType.o   \
        OptionsType.o  \
@@ -53,13 +52,13 @@ clean:
 # Dependencies:
 #
 
-LevelsType.o: modelConfigRead.o
-DomainType.o: modelConfigRead.o LevelsType.o
-OptionsType.o: modelConfigRead.o
-ParametersType.o: ParametersRead.o modelConfigRead.o
-ForcingType.o: modelConfigRead.o
-EnergyType.o: modelConfigRead.o
-WaterType.o: modelConfigRead.o
+LevelsType.o: NamelistRead.o
+DomainType.o: NamelistRead.o LevelsType.o
+OptionsType.o: NamelistRead.o
+ParametersType.o: NamelistRead.o
+ForcingType.o: NamelistRead.o
+EnergyType.o: NamelistRead.o
+WaterType.o: NamelistRead.o
 WaterModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
                ForcingType.o WaterType.o SoilWaterModule.o CanopyWaterModule.o SnowWaterModule.o
 CanopyWaterModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \

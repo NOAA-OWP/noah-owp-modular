@@ -6,8 +6,7 @@
 include ../user_build_options
 
 OBJS = \
-        ../src/modelConfigRead.o \
-        ../src/ParametersRead.o \
+        ../src/NamelistRead.o \
         ../src/LevelsType.o \
         ../src/DomainType.o \
         ../src/OptionsType.o \
