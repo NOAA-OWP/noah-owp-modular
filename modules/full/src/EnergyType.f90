@@ -1,6 +1,6 @@
 module EnergyType
 
-use NamelistRead
+use NamelistRead, only: namelist_type
 
 implicit none
 save

@@ -1,4 +1,4 @@
-# Makefile 
+# Makefile
 #
 .SUFFIXES:
 .SUFFIXES: .o .f90
@@ -11,15 +11,15 @@ all:	$(OBJS)
 
 noahmp_driver.o: noahmp_driver.f90
 
-	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../src -I./ $(*).f90 
+	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../src -I./ $(*).f90
 
 noahmp_output.o: noahmp_output.f90
 
-	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../src -I./ $(*).f90 
+	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../src -I./ $(*).f90
 
 noahmp_ascii_read.o: noahmp_ascii_read.f90
 
-	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../src -I./ $(*).f90 
+	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../src -I./ $(*).f90
 
 #
 # This command cleans up object (etc) files:
@@ -33,7 +33,7 @@ clean:
 #
 
 noahmp_output.o: ../src/WaterType.o \
-               ../src/EnergyType.o 
+               ../src/EnergyType.o
 noahmp_driver.o: noahmp_output.o \
                  noahmp_ascii_read.o \
                ../src/NamelistRead.o \

@@ -1,4 +1,4 @@
-# Makefile 
+# Makefile
 #
 .SUFFIXES:
 .SUFFIXES: .o .f90
@@ -39,7 +39,7 @@ OBJS = \
         ../driver/noahmp_output.o \
         ../driver/noahmp_driver.o \
         ../driver/noahmp_ascii_read.o
-  
+
 
 CMD = noahmp_refac.exe
 all:	$(CMD)
