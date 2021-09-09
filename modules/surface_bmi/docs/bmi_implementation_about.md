@@ -26,7 +26,7 @@ A key tenet of BMI is that it does not affect the underlying model source code, 
 
 ### 2) Add the BMI Source Code
 
-Next, we added a subdirectory to `modules/surface_bmi` called `bmi`. We then copied the [Fortran 2003 BMI specification](https://github.com/csdms/bmi-fortran/blob/master/bmi.f90) from CSDMS into our `bmi` folder. Our project directory structure now looks like this:
+Next, we added a subdirectory to `modules/surface_bmi` called `bmi`. We then copied the [Fortran 2003 BMI specification](https://github.com/csdms/bmi-fortran/blob/master/bmi.f90) from CSDMS into our `bmi` folder. Our project directory structure now looks like this (subdirectories only shown for `surface_bmi`):
 
 ```
 noah-mp-modular
@@ -47,10 +47,51 @@ noah-mp-modular
         │   Makefile
         │   readme.md
         │   user_build_options
-
+        
 ```
 
+### 3) Create and Modify `bmi_noahmp.f90`
+
+The `bmi.f90` file contains the `bmif_2_0` module which defines the abstract type `bmi` and its associated functions. Because the functions are deferred, they have to be implemented with a derived type that extends `bmi`. This is just a complex way of saying that we need to make a derived type that tailors the generalized `bmi` functions to Noah-MP-Surface.
+
+We start with a new file in the `surface_bmi/bmi` subdirectory called `bmi_noahmp.f90`. For this step, we followed the [heat model example](https://github.com/csdms/bmi-example-fortran/) from CSDMS and copied over the [`bmi_heat.f90` file](https://github.com/csdms/bmi-example-fortran/blob/master/bmi_heat/bmi_heat.f90). We then modified the file to change _heat_ references to _noahmp_. Thus begins the implementation of the `bminoahmp` module and the derived type `bmi_noahmp` that extends the `bmi` type from `bmi.f90`.
+
+### 4) Update the BMI Functions Part I
+
+The BMI functions from `get_component_name` through `get_output_var_names` are straightforward to modify for Noah-MP-Surface. These functions require the user to enter the descriptive component name of their choice ("Noah-MP Surface Module") along with the input and output variables names and counts. These and all subsequent edits are made in the relevant sections of `bmi_noahmp.f90` that follow `end type bmi_noahmp`.
+
+The `initialize` function is more complex to implement, as this often requires a slight refactoring of how the model state is initialized. For Noah-MP-Surface without BMI, model intialization is handled by the driver. (The driver also handles other important model functionalities that move under BMI control, but these will be discussed later.) We move most of this code to a new file under `src/` called `NoahMPSurfaceModule.f90`. We based this functionality on the heat example from CSDMS and the [PRMS BMI implementation](https://github.com/nhm-usgs/bmi-prms6-surface) from the USGS.
+
+### 5) Create and Modify `NoahMPSurfaceModule.f90` for `initialize`
+
+The `initialize` BMI function calls the `initialize_from_file()` subroutine in the newly created `src/NoahMPSurfaceModule.f90`. This file contains the subroutines for the BMI functions `initialize`, `update`, and `finalize` based on the original driver code. This file also includes the definition of the derived type `noahmp_type` that contains the derived types that are created and modified as Noah-MP-Surface runs:
+
+```
+  type :: noahmp_type
+    type(namelist_type)   :: namelist   ! model configuration info
+    type(levels_type)     :: levels     ! snow and soils layer info
+    type(domain_type)     :: domain     ! geospatial info
+    type(options_type)    :: options    ! model options
+    type(parameters_type) :: parameters ! parameters
+    type(water_type)      :: water      ! water flux and state values
+    type(forcing_type)    :: forcing    ! raw and derived forcing data 
+    type(energy_type)     :: energy     ! energy flux and state values
+  end type noahmp_type
+  
+```
+
+The `initialize_from_file()` subroutine includes all the previously driver-level code that handles model initialization: the reading of the namelist configuration file, the creation of the derived types shown above and the initialization of all values within, the initialization of other model values needed by BMI, and the opening of the forcing and output files.
+
+### 6) Update the BMI Functions Part II
+
+We next add a `cleanup()` subroutine in `NoahMPSurfaceModule.f90`, which is called by the BMI `finalize` function. For Noah-MP-Surface, `cleanup()` closes the output file and that's it.
+
+The next five BMI functions (`get_start_time` through `get_time_units`) all deal with model time. BMI functions consider start, end, and current time as `double precision` variables, so we add a `domain%time_dbl` var to `initialize_from_file()`. The non-BMI Noah-MP-Surface tracks time with a `real` variable. 
+
+After the time functions comes the implementation of the all-important `update` function, which controls the execution of Noah-MP-Surface through the `advance_in_time()` and `solve_noahmp()` subroutines in `NoahMPSurfaceModule.f90`. The former subroutine advances the integer time step by 1 and the double precision time by the change in time per time step (DT, in seconds). The latter subroutine includes all the previously driver-level code that reads in one time step of forcing data and then runs the model for one time step. For Noah-MP-Surface, this is done through the calling of various subroutines. 
+
+The `update_until` function currently allows the execution of n integer time steps through the `update` function, but we have not yet implemented the fractional time step functionality.
+
+The next functions (`get_var_grid` through `get_grid_nodes_per_face`) correspond to the spatial discretization of Noah-MP-Surface and its input/output variables. Because we have implemented only a simple 1D driver, we followed the BMI specification for the "scalar" spatial discretization. Functions that rely on different spatial discretizations return `BMI_FAILURE` at this point as they are not valid for our current implementation.
 
 
-
-### 3) 
