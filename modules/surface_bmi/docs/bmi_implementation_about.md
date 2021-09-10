@@ -65,7 +65,7 @@ We start with a new file in the `surface_bmi/bmi` subdirectory called `bmi_noahm
 The BMI functions from `get_component_name` through `get_output_var_names` are straightforward to modify for Noah-MP-Surface. These functions require the user to enter the descriptive component name of their choice ("Noah-MP Surface Module") along with the input and output variables names and counts. These and all subsequent edits are made in the relevant sections of `bmi_noahmp.f90` that follow `end type bmi_noahmp`.
 
 #### Initialize Function
-The `initialize` function is more complex to implement, as this often requires a slight refactoring of how the model state is initialized. For Noah-MP-Surface without BMI, model intialization is handled by the driver. (The driver also handles other important model functionalities that move under BMI control, but these will be discussed later.) We moved most of this code to a new file under `src/` called `NoahMPSurfaceModule.f90`. We based this functionality on the heat example from CSDMS and the [PRMS BMI implementation](https://github.com/nhm-usgs/bmi-prms6-surface) from the USGS.
+The `initialize` function is more complex to implement, as it often requires a slight refactoring of how the model state is initialized. For Noah-MP-Surface without BMI, model intialization is handled by the driver. (The driver also handles other important model functionalities that move under BMI control, but these will be discussed later.) We moved most of the driver code to a new file under `src/` called `NoahMPSurfaceModule.f90`. We based this functionality on the heat example from CSDMS and the [PRMS BMI implementation](https://github.com/nhm-usgs/bmi-prms6-surface) from the USGS.
 
 ### 5) Create and Modify `NoahMPSurfaceModule.f90` for `initialize`
 
@@ -90,10 +90,10 @@ The `initialize_from_file()` subroutine includes all the previously driver-level
 ### 6) Update the BMI Functions Part II
 
 #### Finalize Function
-We next add a `cleanup()` subroutine in `NoahMPSurfaceModule.f90`, which is called by the BMI `finalize` function. For Noah-MP-Surface, `cleanup()` closes the output file and that's it.
+We next added a `cleanup()` subroutine in `NoahMPSurfaceModule.f90`, which is called by the BMI `finalize` function. For Noah-MP-Surface, `cleanup()` closes the output file and that's it.
 
 #### Model Time Functions
-The next five BMI functions (`get_start_time` through `get_time_units`) all deal with model time. BMI functions consider start, end, and current time as `double precision` variables, so we add a `domain%time_dbl` var to `initialize_from_file()`. The non-BMI Noah-MP-Surface tracks time with a `real` variable. 
+The next five BMI functions (`get_start_time` through `get_time_units`) all deal with model time. Fortran BMI functions consider start, end, and current time as `double precision` variables, so we added a `domain%time_dbl` var to `initialize_from_file()`. The non-BMI Noah-MP-Surface tracks time with a `real` variable. 
 
 #### Model Run (Update) Functions
 After the time functions comes the implementation of the all-important `update` function, which controls the execution of Noah-MP-Surface through the `advance_in_time()` and `solve_noahmp()` subroutines in `NoahMPSurfaceModule.f90`. The former subroutine advances the integer time step by 1 and the double precision time by the change in time per time step (DT, in seconds). The latter subroutine includes all the previously driver-level code that reads in one time step of forcing data and then runs the model for one time step. For Noah-MP-Surface, this is done through the calling of various subroutines. 
@@ -104,13 +104,13 @@ The `update_until` function currently allows the execution of n integer time ste
 The next functions (`get_var_grid` through `get_grid_nodes_per_face`) correspond to the spatial discretization of Noah-MP-Surface and its input/output variables. Because we have implemented only a simple 1D driver, we followed the BMI specification for the "scalar" spatial discretization. Functions that rely on different spatial discretizations return `BMI_FAILURE` at this point as they are not valid for our current implementation.
 
 #### Variable Info Functions
-Subsequent BMI functions deal with variable information (`get_var_type`, `get_var_units`, `get_var_itemsize`, `get_var_nbytes`). For the first two functions, we specified the Fortran type (currently all vars are `real`) and SI unit (e.g., "K" for `SFCTMP`) for each input and output variable. The latter two functions automatically compute the number of bytes each variable occupies in memory. Because we have a 1D implementation of Noah-MP-Surface presently, `get_var_itemsize` and `get_var_nbytes` return the same value. The `get_var_location` functions returns where a variable is located within its spatial discretization. By default, we set this to return "node" for all vars.
+Subsequent BMI functions deal with variable information (`get_var_type`, `get_var_units`, `get_var_itemsize`, `get_var_nbytes`). For the first two functions, we specified the Fortran type (currently all vars are `real`) and SI unit (e.g., "K" for `SFCTMP`) for each input and output variable. The latter two functions automatically compute the number of bytes each variable occupies in memory. Because we have a 1D implementation of Noah-MP-Surface presently, `get_var_itemsize` and `get_var_nbytes` return the same value. The `get_var_location` function returns where a variable is located within its spatial discretization. By default, we set this to return "node" for all vars.
 
 #### Variable Get and Set Value Functions
 The last BMI functions we implemented were `get_value` and `set_value`, which allow the user to access a specified variable's value and change it, respectively. In Fortran BMI, there are specific `get_value_*` and `set_value_*` functions for different variable types: `integer`, `float` or `real`, and `double`. These are then grouped into generic `get_value` and `set_value` procedures that can access values for the three variable types. (All current input/output vars are `real` variables, so only the `*_float` functions are implemented.) For these functions to work, we provided where in the structure of the derived `noahmp_type` they are located (e.g., "SFCTMP" can be found at `this%model%forcing%sfctmp`). We implemented these functions for all input and output vars.
 
 #### Other Functions
-We have not implemented the `get_value_ptr` or the `get_value_at_indices` and `set_value_at_indices` functions. These require variables to have the `pointer` or `target` attribute in Fortran. None of our variable have these attributes, and it would require a rewriting of the Noah-MP-Surface code to do so.
+We have not implemented the `get_value_ptr` or the `get_value_at_indices` and `set_value_at_indices` functions. These require variables to have the `pointer` or `target` attribute in Fortran. None of our variables have these attributes, and it would require a rewriting of the Noah-MP-Surface code to do so.
 
 ### 7) Running Noah-MP-Surface with BMI
 
