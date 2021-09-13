@@ -65,11 +65,11 @@ We start with a new file in the `surface_bmi/bmi` subdirectory called `bmi_noahm
 The BMI functions from `get_component_name` through `get_output_var_names` are straightforward to modify for Noah-MP-Surface. These functions require the user to enter the descriptive component name of their choice ("Noah-MP Surface Module") along with the input and output variables names and counts. These and all subsequent edits are made in the relevant sections of `bmi_noahmp.f90` that follow `end type bmi_noahmp`.
 
 #### Initialize Function
-The `initialize` function is more complex to implement, as it often requires a slight refactoring of how the model state is initialized. For Noah-MP-Surface without BMI, model intialization is handled by the driver. (The driver also handles other important model functionalities that move under BMI control, but these will be discussed later.) We moved most of the driver code to a new file under `src/` called `NoahMPSurfaceModule.f90`. We based this functionality on the heat example from CSDMS and the [PRMS BMI implementation](https://github.com/nhm-usgs/bmi-prms6-surface) from the USGS.
+The `initialize` function is more complex to implement, as it often requires a slight refactoring of how the model state is initialized. For Noah-MP-Surface without BMI, model initialization is handled by the driver. (The driver also handles other important model functionalities that move under BMI control, but these will be discussed later.) We moved most of the driver code to a new file under `src/` called `NoahMPSurfaceModule.f90`. We based this functionality on the heat example from CSDMS and the [PRMS BMI implementation](https://github.com/nhm-usgs/bmi-prms6-surface) from the USGS.
 
 ### 5) Create and Modify `NoahMPSurfaceModule.f90` for `initialize`
 
-The `initialize` BMI function calls the `initialize_from_file()` subroutine in the newly created `src/NoahMPSurfaceModule.f90`. This file contains the subroutines for the BMI functions `initialize`, `update`, and `finalize` based on the original driver code. This file also includes the definition of the derived type `noahmp_type` that contains the derived types that are created and modified as Noah-MP-Surface runs:
+The `initialize` BMI function calls the `initialize_from_file` subroutine in the newly created `src/NoahMPSurfaceModule.f90`. This file contains the subroutines for the BMI functions `initialize`, `update`, and `finalize` based on the original driver code. This file also includes the definition of the derived type `noahmp_type` that contains the derived types that are created and modified as Noah-MP-Surface runs:
 
 ```
   type :: noahmp_type
@@ -85,18 +85,18 @@ The `initialize` BMI function calls the `initialize_from_file()` subroutine in t
   
 ```
 
-The `initialize_from_file()` subroutine includes all the previously driver-level code that handles model initialization: the reading of the namelist configuration file, the creation of the derived types shown above and the initialization of all values within, the initialization of other model values needed by BMI, and the opening of the forcing and output files.
+The `initialize_from_file` subroutine includes all the previously driver-level code that handles model initialization: the reading of the namelist configuration file, the creation of the derived types shown above and the initialization of all values within, the initialization of other model values needed by BMI, and the opening of the forcing and output files.
 
 ### 6) Update the BMI Functions Part II
 
 #### Finalize Function
-We next added a `cleanup()` subroutine in `NoahMPSurfaceModule.f90`, which is called by the BMI `finalize` function. For Noah-MP-Surface, `cleanup()` closes the output file and that's it.
+We next added a `cleanup` subroutine in `NoahMPSurfaceModule.f90`, which is called by the BMI `finalize` function. For Noah-MP-Surface, `cleanup` closes the output file and that's it.
 
 #### Model Time Functions
-The next five BMI functions (`get_start_time` through `get_time_units`) all deal with model time. Fortran BMI functions consider start, end, and current time as `double precision` variables, so we added a `domain%time_dbl` var to `initialize_from_file()`. The non-BMI Noah-MP-Surface tracks time with a `real` variable. 
+The next five BMI functions (`get_start_time` through `get_time_units`) all deal with model time. Fortran BMI functions consider start, end, and current time as `double precision` variables, so we added a `domain%time_dbl` var to `initialize_from_file`. The non-BMI Noah-MP-Surface tracks time with a `real` variable. 
 
 #### Model Run (Update) Functions
-After the time functions comes the implementation of the all-important `update` function, which controls the execution of Noah-MP-Surface through the `advance_in_time()` and `solve_noahmp()` subroutines in `NoahMPSurfaceModule.f90`. The former subroutine advances the integer time step by 1 and the double precision time by the change in time per time step (DT, in seconds). The latter subroutine includes all the previously driver-level code that reads in one time step of forcing data and then runs the model for one time step. For Noah-MP-Surface, this is done through the calling of various subroutines. 
+After the time functions comes the implementation of the all-important `update` function, which controls the execution of Noah-MP-Surface through the `advance_in_time` and `solve_noahmp` subroutines in `NoahMPSurfaceModule.f90`. The former subroutine advances the integer time step by 1 and the double precision time by the change in time per time step (DT, in seconds). The latter subroutine includes all the previously driver-level code that reads in one time step of forcing data and then runs the model for one time step. For Noah-MP-Surface, this is done through the calling of various subroutines. 
 
 The `update_until` function currently allows the execution of n integer time steps through the `update` function, but we have not yet implemented the fractional time step functionality.
 
