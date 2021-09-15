@@ -28,6 +28,8 @@ modules/main/driver/.ipynb_checkpoints/*
 LASTNEXT
 NOTES*
 
+# temporary development soft link files
+tmpdev*
 
 # user configuration files
 user_build_options

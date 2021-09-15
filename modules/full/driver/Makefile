@@ -65,5 +65,6 @@ noahmp_driver.o: noahmp_output.o \
                ../src/EtFluxModule.o \
                ../src/SnowSoilTempModule.o \
                ../src/EnergyModule.o \
-               ../src/UtilitiesModule.o
+               ../src/UtilitiesModule.o \
+               ../src/DateTimeUtilsModule.o
 

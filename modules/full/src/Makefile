@@ -34,7 +34,8 @@ OBJS = NamelistRead.o \
        EtFluxModule.o \
        SnowSoilTempModule.o \
        EnergyModule.o \
-       UtilitiesModule.o
+       UtilitiesModule.o \
+       DateTimeUtilsModule.o
 
 all:	$(OBJS)
 
@@ -53,7 +54,7 @@ clean:
 #
 
 LevelsType.o: NamelistRead.o
-DomainType.o: NamelistRead.o LevelsType.o
+DomainType.o: NamelistRead.o LevelsType.o DateTimeUtilsModule.o
 OptionsType.o: NamelistRead.o
 ParametersType.o: NamelistRead.o
 ForcingType.o: NamelistRead.o

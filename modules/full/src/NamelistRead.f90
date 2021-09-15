@@ -7,7 +7,7 @@ private
 type, public :: namelist_type
 
   real               :: dt                 ! model timestep (s)
-  integer            :: maxtime
+  integer            :: maxtime            ! length of run (hours)
   character(len=12)  :: startdate          ! Start date of the model run ( YYYYMMDDHHmm )
   character(len=12)  :: enddate            ! End date of the model run ( YYYYMMDDHHmm )
   character(len=256) :: input_filename     ! name of the input/forcing file

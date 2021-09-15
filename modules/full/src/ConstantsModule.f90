@@ -1,28 +1,31 @@
-!WRF:MODEL_LAYER:CONSTANTS
-! AW: copied from SUMMA code 
+! Module for assigning constants used in noah-mp-modular
+! AW: copied from SUMMA code and modified; added 'type' declaration
+!     originally from WRF:MODEL_LAYER:CONSTANTS
 
- MODULE ConstantsModule
 
-   !  2. Following are constants for use in defining real number bounds.
+MODULE ConstantsModule
 
-   !  A really small number.
+   !  other constants related to data types
+   integer, parameter :: i4b       = selected_int_kind (9)
+   integer, parameter :: sp        = kind (1.0)
+   integer, parameter :: dp        = kind (1.0D0)
 
-   REAL    , PARAMETER :: epsilon         = 1.E-15
+!  2. Following are constants for use in defining real number bounds.
+   REAL    , PARAMETER :: epsilon  = 1.E-15   !  A really small number.
+   real (dp), parameter :: tiny    = 0.00000000000000000000000000000001D0
 
    !  4. Following is information related to the physical constants.
 
-   !  These are the physical constants used within the model.
-
-! JM NOTE -- can we name this grav instead?
+   ! JM NOTE -- can we name this grav instead?
    REAL    , PARAMETER :: g = 9.81  ! acceleration due to gravity (m {s}^-2)
 
-#if ( NMM_CORE == 1 )
-   REAL    , PARAMETER :: r_d          = 287.04
-   REAL    , PARAMETER :: cp           = 1004.6
-#else
+!#if ( NMM_CORE == 1 )
+!   REAL    , PARAMETER :: r_d          = 287.04
+!   REAL    , PARAMETER :: cp           = 1004.6
+!#else
    REAL    , PARAMETER :: r_d          = 287.
    REAL    , PARAMETER :: cp           = 7.*r_d/2.
-#endif
+!#endif
 
    REAL    , PARAMETER :: r_v          = 461.6
    REAL    , PARAMETER :: cv           = cp-r_d
@@ -48,7 +51,6 @@
    REAL    , PARAMETER :: reradius     = 1./6370.0e03
 
    REAL    , PARAMETER :: asselin      = .025
-!   REAL    , PARAMETER :: asselin      = .0
    REAL    , PARAMETER :: cb           = 25.
 
    REAL    , PARAMETER :: XLV0         = 3.15E6
@@ -103,14 +105,15 @@
        REAL , PARAMETER ::  epsfc=1./1.05
        REAL , PARAMETER ::  epswet=0.0
        REAL , PARAMETER ::  fcdif=1./3.
-#ifdef HWRF
-       REAL , PARAMETER ::  fcm=0.0
-#else
+!#ifdef HWRF
+!       REAL , PARAMETER ::  fcm=0.0
+!#else
        REAL , PARAMETER ::  fcm=0.00003
-#endif
+!#endif
        REAL , PARAMETER ::  gma=-r_d*(1.-rcp)*0.5
        REAL , PARAMETER ::  p400=40000.0
        REAL , PARAMETER ::  phitp=15000.0
+       real (dp), parameter :: pi      = 3.141592653589793238462643383279502884197D0
        REAL , PARAMETER ::  pi2=2.*3.1415926
        REAL , PARAMETER ::  plbtm=105000.0
        REAL , PARAMETER ::  plomd=64200.0
@@ -128,17 +131,14 @@
        REAL , PARAMETER ::  wght=0.35
        REAL , PARAMETER ::  wpc=0.075
        REAL , PARAMETER ::  z0land=0.10
-#ifdef HWRF
-       REAL , PARAMETER ::  z0max=0.01
-#else
+!#ifdef HWRF
+!       REAL , PARAMETER ::  z0max=0.01
+!#else
        REAL , PARAMETER ::  z0max=0.008
-#endif
-       REAL , PARAMETER ::  z0sea=0.001
 !#endif
+       REAL , PARAMETER ::  z0sea=0.001
 
-
-   !  Earth
-
+   !  ==== Earth ====
    !  The value for P2SI *must* be set to 1.0 for Earth
    !  Although, now we may not need this declaration here (see above)
    !REAL    , PARAMETER :: P2SI         = 1.0
