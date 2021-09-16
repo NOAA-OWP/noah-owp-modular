@@ -435,7 +435,7 @@ contains
 !---------------------------------------------------------------------
 
     if(structure_option == 1) then       ! user-defined levels
-      open(30, file="namelist.input", form="formatted")
+      open(30, file=config_file, form="formatted")
        read(30, fixed_initial)
       close(30)
     else if(structure_option == 2) then  ! fixed levels
