@@ -1,7 +1,12 @@
 module bminoahmp
 
+#ifdef NGEN_ACTIVE
+   use bmif_2_0_iso
+#else
+   use bmif_2_0
+#endif
+
   use NoahMPSurfaceModule 
-  use bmif_2_0
   use, intrinsic :: iso_c_binding, only: c_ptr, c_loc, c_f_pointer
   implicit none
 
@@ -1037,27 +1042,33 @@ contains
 !
 !     call print_info(this%model)
 !   end subroutine print_model_info
-
+#ifdef NGEN_ACTIVE
   function register_bmi(this) result(bmi_status) bind(C, name="register_bmi")
    use, intrinsic:: iso_c_binding, only: c_ptr, c_loc, c_int
    use iso_c_bmif_2_0
    implicit none
    type(c_ptr) :: this ! If not value, then from the C perspective `this` is a void**
    integer(kind=c_int) :: bmi_status
-   !Create the momdel instance to use
-   !Definitely need to carefully undertand and document the semantics of the save attribute here
-   type(bmi_noahmp), target, save :: bmi_model !need to ensure scope/lifetime, use save attribute
+   !Create the model instance to use
+   type(bmi_noahmp), pointer :: bmi_model
    !Create a simple pointer wrapper
    type(box), pointer :: bmi_box
 
+   !allocate model
+   allocate(bmi_noahmp::bmi_model)
    !allocate the pointer box
    allocate(bmi_box)
-   !allocate(bmi_box%ptr, source=bmi_model)
+
    !associate the wrapper pointer the created model instance
    bmi_box%ptr => bmi_model
-   !Return the pointer to box
-   this = c_loc(bmi_box)
-   bmi_status = BMI_SUCCESS
+
+   if( .not. associated( bmi_box ) .or. .not. associated( bmi_box%ptr ) ) then
+    bmi_status = BMI_FAILURE
+   else
+    !Return the pointer to box
+    this = c_loc(bmi_box)
+    bmi_status = BMI_SUCCESS
+   endif
  end function register_bmi
- 
+#endif
 end module bminoahmp
