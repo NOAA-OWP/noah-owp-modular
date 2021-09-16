@@ -1,7 +1,3 @@
-!
-! compile:
-!
-
 program noahmp_driver
 
   use NoahMPAsciiRead
@@ -207,17 +203,17 @@ program noahmp_driver
   !---------------------------------------------------------------------
   
   ! --- AWW:  calculate start and end utimes & records for requested station data read period ---
-  call get_utime_list (domain%start_datetime, domain%end_datetime, domain%dt, sim_datetimes)  ! makes unix-time list for desired records (start of period)
-  ntime = size (sim_datetimes)
+  call get_utime_list (domain%start_datetime, domain%end_datetime, domain%dt, sim_datetimes)  ! makes unix-time list for desired records (end-of-timestep)
+  ntime = size (sim_datetimes)   
   print *, "---------"; 
   print *, 'Simulation startdate = ', domain%startdate, ' enddate = ', domain%enddate, ' dt(sec) = ', domain%dt, ' ntimes = ', ntime  ! YYYYMMDD dates
-  print *, "---------"; print*, ' '
+  print *, "---------"
 
   !---------------------------------------------------------------------
-  ! create output file and add initial values
+  ! create output file
   !---------------------------------------------------------------------
-  call initialize_output(namelist%output_filename, ntime+1, levels%nsoil, levels%nsnow)
-  call add_to_output(0,levels%nsoil,levels%nsnow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)
+  call initialize_output(namelist%output_filename, ntime, levels%nsoil, levels%nsnow)
+  !call add_to_output(domain, water, energy, 0,levels%nsoil,levels%nsnow)   ! do not add initial values
 
   !---------------------------------------------------------------------
   ! Open the forcing file
@@ -231,13 +227,13 @@ program noahmp_driver
   print*, 'Simulating ...'
   do itime = 1, ntime
 
-    call unix_to_date (sim_datetimes(itime), curr_yr, curr_mo, curr_dy, curr_hr, curr_min, curr_sec)
+    domain%curr_datetime = sim_datetimes(itime)     ! use end-of-timestep datetimes  because initial var values are being written
+    call unix_to_date (domain%curr_datetime, curr_yr, curr_mo, curr_dy, curr_hr, curr_min, curr_sec)
     print '(2x,I4,1x,I2,1x,I2,1x,I2,1x,I2)', curr_yr, curr_mo, curr_dy, curr_hr, curr_min
     
     !---------------------------------------------------------------------
     ! Read in the forcing data
     !---------------------------------------------------------------------
-
     call read_forcing_text(iunit, domain%nowdate, forcing_timestep, &
          forcing%UU, forcing%VV, forcing%SFCTMP, forcing%Q2, forcing%SFCPRS, forcing%SOLDN, forcing%LWDN, forcing%PRCPNONC, ierr)
 
@@ -282,46 +278,41 @@ program noahmp_driver
 !       end if
 !     end if
 
-  !---------------------------------------------------------------------
-  ! call the main utility routines
-  !---------------------------------------------------------------------
-
+    !---------------------------------------------------------------------
+    ! call the main utility routines
+    !---------------------------------------------------------------------
     call UtilitiesMain (itime, domain, forcing, energy)
     !print*, "Julian day = ", forcing%JULIAN
     !print*, "COSZ = ", energy%COSZ
 
-  !---------------------------------------------------------------------
-  ! call the main forcing routines
-  !---------------------------------------------------------------------
-
+    !---------------------------------------------------------------------
+    ! call the main forcing routines
+    !---------------------------------------------------------------------
     call ForcingMain (domain, levels, options, parameters, forcing, energy, water)
 
-  !---------------------------------------------------------------------
-  ! call the main interception routines
-  !---------------------------------------------------------------------
-
+    !---------------------------------------------------------------------
+    ! call the main interception routines
+    !---------------------------------------------------------------------
     call InterceptionMain (domain, levels, options, parameters, forcing, energy, water)
 
-  !---------------------------------------------------------------------
-  ! call the main energy balance routines
-  !---------------------------------------------------------------------
-
+    !---------------------------------------------------------------------
+    ! call the main energy balance routines
+    !---------------------------------------------------------------------
     call EnergyMain (domain, levels, options, parameters, forcing, energy, water)
 
-  !---------------------------------------------------------------------
-  ! call the main water routines (canopy + snow + soil water components)
-  !---------------------------------------------------------------------
-
+    !---------------------------------------------------------------------
+    ! call the main water routines (canopy + snow + soil water components)
+    !---------------------------------------------------------------------
     call WaterMain (domain, levels, options, parameters, forcing, energy, water)
 
-  !---------------------------------------------------------------------
-  ! add to output file
-  !---------------------------------------------------------------------
-
-    call add_to_output(itime,levels%nsoil,levels%nsnow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)
+    !---------------------------------------------------------------------
+    ! add to output file
+    !---------------------------------------------------------------------
+    !call add_to_output(itime, levels%nsoil, levels%nsnow, domain%dzsnso, domain%dt, domain%zsnso,water,energy)
+    call add_to_output(domain, water, energy, itime, levels%nsoil, levels%nsnow)
 
   end do ! time loop
 
-  call finalize_output()
+  call finalize_output()     ! close output file
 
 end program

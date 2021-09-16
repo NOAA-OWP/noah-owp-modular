@@ -961,6 +961,7 @@ contains
   
   subroutine get_utime_list (start_datetime, end_datetime, dt, times)
     ! makes a list of data times in secs since 1970-1-1 corresponding to requested period
+    ! reports end-of-timestep points
     implicit none
  
     real*8, intent (in)               :: start_datetime, end_datetime
@@ -981,9 +982,9 @@ contains
 
     utime = start_datetime  ! secs since 1970-1-1
     do t  = 1, ntimes, 1
-      if (utime > end_datetime) exit
-      times (t) = utime
       utime     = utime + dt
+      if (utime > (end_datetime + 1e-5)) exit     ! add tolerance
+      times (t) = utime
     end do
     !print *, 'ntimes= ',ntimes
     !print *, 'time list: ', times  !seconds since 1970-1-1
