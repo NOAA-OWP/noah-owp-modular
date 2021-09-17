@@ -12,7 +12,7 @@ type, public :: namelist_type
   character(len=12)  :: enddate            ! End date of the model run ( YYYYMMDDHHmm )
   character(len=256) :: input_filename     ! name of the input/forcing file
   character(len=256) :: output_filename    ! name of the output file
-  character(len=256) :: parameter_filename ! name of the parameter file
+  character(len=256) :: parameter_dir      ! name of the directory where TBLs reside
   real               :: lat                ! latitude (°)
   real               :: lon                ! longitude (°)
   real               :: preciprate         ! precipitation rate
@@ -82,7 +82,7 @@ contains
     character(len=12)  :: enddate
     character(len=256) :: input_filename
     character(len=256) :: output_filename
-    character(len=256) :: parameter_filename
+    character(len=256) :: parameter_dir
     real               :: lat
     real               :: lon
     real               :: preciprate
@@ -132,7 +132,7 @@ contains
     integer       :: stomatal_resistance_option
     integer       :: evap_srfc_resistance_option
 
-    namelist / timing          / dt,maxtime,startdate,enddate,input_filename,output_filename,parameter_filename
+    namelist / timing          / dt,maxtime,startdate,enddate,input_filename,output_filename,parameter_dir
     namelist / location        / lat,lon
     namelist / forcing         / preciprate,precip_duration,dry_duration,&
                                  precipitating,ZREF
@@ -191,7 +191,7 @@ contains
     this%enddate            = enddate
     this%input_filename     = input_filename
     this%output_filename    = output_filename
-    this%parameter_filename = parameter_filename
+    this%parameter_dir      = parameter_dir
     this%lat                = lat
     this%lon                = lon
     this%preciprate         = preciprate
