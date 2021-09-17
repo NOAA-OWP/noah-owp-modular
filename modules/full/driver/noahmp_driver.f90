@@ -308,7 +308,6 @@ program noahmp_driver
     !---------------------------------------------------------------------
     ! add to output file
     !---------------------------------------------------------------------
-    !call add_to_output(itime, levels%nsoil, levels%nsnow, domain%dzsnso, domain%dt, domain%zsnso,water,energy)
     call add_to_output(domain, water, energy, itime, levels%nsoil, levels%nsnow)
 
   end do ! time loop

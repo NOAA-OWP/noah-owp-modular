@@ -51,6 +51,11 @@ module NoahMPOutput
   integer           :: snliq_id
   integer           :: stc_id
   integer           :: zsnso_id
+  ! energy
+  integer           :: lh_id
+  integer           :: t2m_id
+  integer           :: t2mb_id
+  integer           :: t2mv_id
 
 contains
 
@@ -79,14 +84,14 @@ contains
     !if (error /= 0) return
         
     ! for soil water
-    iret = nf90_def_var(ncid, "precipitation",        NF90_FLOAT, (/time_dim/), prcp_id)
-    iret = nf90_def_var(ncid, "waterin_sfc",          NF90_FLOAT, (/time_dim/), qinsur_id)
-    iret = nf90_def_var(ncid, "surface_runoff",       NF90_FLOAT, (/time_dim/), sfrn_id)
-    iret = nf90_def_var(ncid, "subsurf_runoff",       NF90_FLOAT, (/time_dim/), ugrn_id)
+    iret = nf90_def_var(ncid, "RAINRATE",             NF90_FLOAT, (/time_dim/), prcp_id)
+    iret = nf90_def_var(ncid, "QINSUR",               NF90_FLOAT, (/time_dim/), qinsur_id)
+    iret = nf90_def_var(ncid, "SFCRNOFF",             NF90_FLOAT, (/time_dim/), sfrn_id)
+    iret = nf90_def_var(ncid, "UGDRNOFF",             NF90_FLOAT, (/time_dim/), ugrn_id)
     iret = nf90_def_var(ncid, "evaporation",          NF90_FLOAT, (/time_dim/), evap_id)
     iret = nf90_def_var(ncid, "transpiration",        NF90_FLOAT, (/time_dim/), tran_id)
     !iret = nf90_def_var(ncid, "soil_moisture_mm",     NF90_FLOAT, (/time_dim,soil_dim/), smcm_id)
-    iret = nf90_def_var(ncid, "soil_moisture",        NF90_FLOAT, (/time_dim,soil_dim/), smc_id)
+    iret = nf90_def_var(ncid, "SMC",                  NF90_FLOAT, (/time_dim,soil_dim/), smc_id)
     ! for canopy water
     iret = nf90_def_var(ncid, "rain_intercept",       NF90_FLOAT, (/time_dim/), qintr_id)
     iret = nf90_def_var(ncid, "snow_intercept",       NF90_FLOAT, (/time_dim/), qints_id)
@@ -116,13 +121,19 @@ contains
     iret = nf90_def_var(ncid, "SNLIQ",                NF90_FLOAT, (/time_dim,snow_dim/), snliq_id)
     iret = nf90_def_var(ncid, "STC",                  NF90_FLOAT, (/time_dim,snso_dim/), stc_id)
     iret = nf90_def_var(ncid, "ZSNSO",                NF90_FLOAT, (/time_dim,snso_dim/), zsnso_id)
+    
+    ! energy
+    iret = nf90_def_var(ncid, "LH",                   NF90_FLOAT, (/time_dim/), lh_id)  ! latent heat (W/m^2)
+    iret = nf90_def_var(ncid, "T2M",                  NF90_FLOAT, (/time_dim/), t2m_id)  ! 2 m height air temperature (K) 
+    iret = nf90_def_var(ncid, "T2MB",                 NF90_FLOAT, (/time_dim/), t2mb_id)  ! 2 m height air temperature (K) bare ground
+    iret = nf90_def_var(ncid, "T2MV",                 NF90_FLOAT, (/time_dim/), t2mv_id)  ! 2 m height air temperature (K) vegetated
+    
 
     iret = nf90_enddef(ncid)
   
   end subroutine initialize_output
 
   subroutine add_to_output(domain, water, energy, itime, nsoil, nsnow)
-  !subroutine add_to_output(domain, water,energy,domain,itime,nsoil,nsnow,dzsnso,dt,zsnso)
 
     type (domain_type), intent(in)    :: domain
     type (energy_type), intent(in)    :: energy
@@ -130,10 +141,6 @@ contains
     integer, intent(in)               :: itime
     integer, intent(in)               :: nsoil
     integer, intent(in)               :: nsnow
-    !real                              :: dt                ! timestep (s) for converting rates to amounts
-    !real, dimension(nsoil+nsnow)      :: dzsnso      ! model layer thickness [m] 
-    !real, dimension(nsoil)            :: smcmm            ! total soil water content [mm]
-    !real, dimension(nsoil+nsnow)      :: zsnso       ! layer depth [m] 
     
     ! associate variables to keep variable names intact in the code below  
     associate(&
@@ -145,7 +152,6 @@ contains
     ! === store current timestep variable data in output file ===
 
     ! time variable
-    !iret = nf90_put_var(ncid, time_id,    itime,                       start=(/itime+1/))
     iret = nf90_put_var(ncid, time_id,    domain%curr_datetime,        start=(/itime/))
 
     ! for soil water
@@ -185,8 +191,14 @@ contains
     iret = nf90_put_var(ncid, qsnsub_id,  water%qsnsub*dt,            start=(/itime/))
     iret = nf90_put_var(ncid, snice_id,   water%snice,                start=(/itime,1/), count=(/1,nsnow/))
     iret = nf90_put_var(ncid, snliq_id,   water%snliq,                start=(/itime,1/), count=(/1,nsnow/))
-    iret = nf90_put_var(ncid, stc_id,     energy%stc,           start=(/itime,1/), count=(/1,nsoil+nsnow/))
-    iret = nf90_put_var(ncid, zsnso_id,   zsnso,                start=(/itime,1/), count=(/1,nsoil+nsnow/))
+    iret = nf90_put_var(ncid, stc_id,     energy%stc,                 start=(/itime,1/), count=(/1,nsoil+nsnow/))
+    iret = nf90_put_var(ncid, zsnso_id,   zsnso,                      start=(/itime,1/), count=(/1,nsoil+nsnow/))
+    ! energy
+    iret = nf90_put_var(ncid, lh_id,      energy%lh,                  start=(/itime/))
+    iret = nf90_put_var(ncid, t2m_id,     energy%t2m,                 start=(/itime/))
+    iret = nf90_put_var(ncid, t2mb_id,    energy%t2mb,                start=(/itime/))
+    iret = nf90_put_var(ncid, t2mv_id,    energy%t2mv,                start=(/itime/))
+    
 
     end associate
   end subroutine add_to_output

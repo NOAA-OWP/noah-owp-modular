@@ -365,7 +365,10 @@ contains
     END IF
 
     ! Energy released or consumed by snow & frozen soil
-    CALL PHASECHANGE (parameters, domain, energy, water, options, levels%NSNOW, levels%NSOIL)!
+    CALL PHASECHANGE (parameters, domain, energy, water, options, levels%NSNOW, levels%NSOIL)
+    
+    ! derived diagnostic variables
+    energy%LH = energy%FCEV + energy%FGEV + energy%FCTR
 
   END SUBROUTINE EnergyMain   
 
