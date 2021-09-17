@@ -6,6 +6,7 @@
 include ../user_build_options
 
 OBJS = NamelistRead.o \
+       ParametersRead.o  \
        LevelsType.o   \
        DomainType.o   \
        OptionsType.o  \
@@ -55,7 +56,7 @@ clean:
 LevelsType.o: NamelistRead.o
 DomainType.o: NamelistRead.o LevelsType.o
 OptionsType.o: NamelistRead.o
-ParametersType.o: NamelistRead.o
+ParametersType.o: NamelistRead.o ParametersRead.o
 ForcingType.o: NamelistRead.o
 EnergyType.o: NamelistRead.o
 WaterType.o: NamelistRead.o
