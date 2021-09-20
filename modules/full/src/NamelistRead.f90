@@ -13,6 +13,9 @@ type, public :: namelist_type
   character(len=256) :: input_filename     ! name of the input/forcing file
   character(len=256) :: output_filename    ! name of the output file
   character(len=256) :: parameter_dir      ! name of the directory where TBLs reside
+  character(len=256) :: noahmp_table       ! name of noahmp parameter table
+  character(len=256) :: soil_table         ! name of soil parameter table
+  character(len=256) :: general_table      ! name of general parameter table
   real               :: lat                ! latitude (°)
   real               :: lon                ! longitude (°)
   real               :: preciprate         ! precipitation rate
@@ -83,6 +86,9 @@ contains
     character(len=256) :: input_filename
     character(len=256) :: output_filename
     character(len=256) :: parameter_dir
+    character(len=256) :: soil_table
+    character(len=256) :: general_table
+    character(len=256) :: noahmp_table
     real               :: lat
     real               :: lon
     real               :: preciprate
@@ -132,7 +138,8 @@ contains
     integer       :: stomatal_resistance_option
     integer       :: evap_srfc_resistance_option
 
-    namelist / timing          / dt,maxtime,startdate,enddate,input_filename,output_filename,parameter_dir
+    namelist / timing          / dt,maxtime,startdate,enddate,input_filename,output_filename
+    namelist / parameters      / parameter_dir, soil_table, general_table, noahmp_table
     namelist / location        / lat,lon
     namelist / forcing         / preciprate,precip_duration,dry_duration,&
                                  precipitating,ZREF
@@ -152,6 +159,7 @@ contains
 
     open(30, file="namelist.input", form="formatted")
      read(30, timing)
+     read(30, parameters)
      read(30, location)
      read(30, forcing)
      read(30, model_options)
@@ -192,6 +200,9 @@ contains
     this%input_filename     = input_filename
     this%output_filename    = output_filename
     this%parameter_dir      = parameter_dir
+    this%soil_table         = soil_table
+    this%general_table      = general_table
+    this%noahmp_table       = noahmp_table
     this%lat                = lat
     this%lon                = lon
     this%preciprate         = preciprate
