@@ -124,6 +124,7 @@ MODULE ParametersRead
     real, public :: FRZK_TABLE        !Frozen ground parameter
     real, public :: ZBOT_TABLE        !Depth [m] of lower boundary soil temperature
     real, public :: CZIL_TABLE        !Parameter used in the calculation of the roughness length for heat
+    real, public :: Z0_TABLE          !bare soil roughness length (m)
 
 ! MPTABLE.TBL radiation parameters
 
@@ -308,9 +309,10 @@ MODULE ParametersRead
 
 CONTAINS
 
-  SUBROUTINE read_mp_veg_parameters(param_dir, DATASET_IDENTIFIER)
+  SUBROUTINE read_mp_veg_parameters(param_dir, noahmp_table, DATASET_IDENTIFIER)
     implicit none
     character(len=*), intent(in) :: param_dir
+    character(len=*), intent(in) :: noahmp_table
     character(len=*), intent(in) :: DATASET_IDENTIFIER
     integer :: ierr
     integer :: IK,IM
@@ -441,9 +443,9 @@ CONTAINS
     LCZ_10_TABLE   = -99999
     LCZ_11_TABLE   = -99999
 
-    inquire( file=trim(param_dir)//'/'//'MPTABLE.TBL', exist=file_named )
+    inquire( file=trim(param_dir)//'/'//trim(noahmp_table), exist=file_named )
     if ( file_named ) then
-      open(15, file=trim(param_dir)//'/'//"MPTABLE.TBL", status='old', form='formatted', action='read', iostat=ierr)
+      open(15, file=trim(param_dir)//'/'//trim(noahmp_table), status='old', form='formatted', action='read', iostat=ierr)
     else
       open(15, status='old', form='formatted', action='read', iostat=ierr)
     end if
@@ -567,9 +569,11 @@ CONTAINS
 
   END SUBROUTINE read_mp_veg_parameters
 
-  SUBROUTINE read_mp_soil_parameters(param_dir)
+  SUBROUTINE read_mp_soil_parameters(param_dir, soil_table, general_table)
     implicit none
     character(len=*), intent(in) :: param_dir
+    character(len=*), intent(in) :: soil_table
+    character(len=*), intent(in) :: general_table
     integer             :: IERR
     character*4         :: SLTYPE
     integer             :: ITMP, NUM_SLOPE, LC
@@ -606,9 +610,9 @@ CONTAINS
 !
 !-----READ IN SOIL PROPERTIES FROM SOILPARM.TBL
 !
-    inquire( file=trim(param_dir)//'/'//'SOILPARM.TBL', exist=file_named )
+    inquire( file=trim(param_dir)//'/'//trim(soil_table), exist=file_named )
     if ( file_named ) then
-      open(21, file=trim(param_dir)//'/'//'SOILPARM.TBL',form='formatted',status='old',iostat=ierr)
+      open(21, file=trim(param_dir)//'/'//trim(soil_table),form='formatted',status='old',iostat=ierr)
     else
       open(21, form='formatted',status='old',iostat=ierr)
     end if
@@ -637,9 +641,9 @@ CONTAINS
 !
 !-----READ IN GENERAL PARAMETERS FROM GENPARM.TBL
 !
-    inquire( file=trim(param_dir)//'/'//'GENPARM.TBL', exist=file_named )
+    inquire( file=trim(param_dir)//'/'//trim(general_table), exist=file_named )
     if ( file_named ) then
-      open(22, file=trim(param_dir)//'/'//'GENPARM.TBL',form='formatted',status='old',iostat=ierr)
+      open(22, file=trim(param_dir)//'/'//trim(general_table),form='formatted',status='old',iostat=ierr)
     else
       open(22, form='formatted',status='old',iostat=ierr)
     end if
@@ -678,15 +682,20 @@ CONTAINS
     read (22,*)
     read (22,*)
     read (22,*)
+    read (22,*)
+    read (22,*)
+    read (22,*)
+    read (22,*) Z0_TABLE
 
     close (22)
 
   END SUBROUTINE read_mp_soil_parameters
 
 
-  SUBROUTINE read_mp_rad_parameters(param_dir)
+  SUBROUTINE read_mp_rad_parameters(param_dir, noahmp_table)
     implicit none
     character(len=*), intent(in) :: param_dir
+    character(len=*), intent(in) :: noahmp_table
     integer                      :: ierr
     logical                      :: file_named
 
@@ -708,9 +717,9 @@ CONTAINS
     BETAIS_TABLE     = -1.E36
     EG_TABLE         = -1.E36
 
-    inquire( file=trim(param_dir)//'/'//'MPTABLE.TBL', exist=file_named )
+    inquire( file=trim(param_dir)//'/'//trim(noahmp_table), exist=file_named )
     if ( file_named ) then
-      open(15, file=trim(param_dir)//'/'//"MPTABLE.TBL", status='old', form='formatted', action='read', iostat=ierr)
+      open(15, file=trim(param_dir)//'/'//trim(noahmp_table), status='old', form='formatted', action='read', iostat=ierr)
     else
       open(15, status='old', form='formatted', action='read', iostat=ierr)
     end if
@@ -735,9 +744,10 @@ CONTAINS
 
   end subroutine read_mp_rad_parameters
 
-  subroutine read_mp_global_parameters(param_dir)
+  subroutine read_mp_global_parameters(param_dir, noahmp_table)
     implicit none
     character(len=*), intent(in) :: param_dir
+    character(len=*), intent(in) :: noahmp_table
     integer                      :: ierr
     logical                      :: file_named
 
@@ -776,9 +786,9 @@ CONTAINS
     RSURF_SNOW_TABLE     = -1.E36
      RSURF_EXP_TABLE     = -1.E36
 
-    inquire( file=trim(param_dir)//'/'//'MPTABLE.TBL', exist=file_named )
+    inquire( file=trim(param_dir)//'/'//trim(noahmp_table), exist=file_named )
     if ( file_named ) then
-      open(15, file=trim(param_dir)//'/'//"MPTABLE.TBL", status='old', form='formatted', action='read', iostat=ierr)
+      open(15, file=trim(param_dir)//'/'//trim(noahmp_table), status='old', form='formatted', action='read', iostat=ierr)
     else
       open(15, status='old', form='formatted', action='read', iostat=ierr)
     end if
@@ -815,9 +825,10 @@ CONTAINS
 
   END SUBROUTINE read_mp_global_parameters
 
-  SUBROUTINE read_mp_crop_parameters(param_dir)
+  SUBROUTINE read_mp_crop_parameters(param_dir, noahmp_table)
     implicit none
     character(len=*), intent(in) :: param_dir
+    character(len=*), intent(in) :: noahmp_table
     integer                      :: ierr
     logical                      :: file_named
 
@@ -955,9 +966,9 @@ CONTAINS
             RTCT_TABLE = -1.E36 ! convert end
          BIO2LAI_TABLE = -1.E36
 
-    inquire( file=trim(param_dir)//'/'//'MPTABLE.TBL', exist=file_named )
+    inquire( file=trim(param_dir)//'/'//trim(noahmp_table), exist=file_named )
     if ( file_named ) then
-      open(15, file=trim(param_dir)//'/'//"MPTABLE.TBL", status='old', form='formatted', action='read', iostat=ierr)
+      open(15, file=trim(param_dir)//'/'//trim(noahmp_table), status='old', form='formatted', action='read', iostat=ierr)
     else
       open(15, status='old', form='formatted', action='read', iostat=ierr)
     end if
@@ -1109,9 +1120,10 @@ CONTAINS
 
   END SUBROUTINE read_mp_crop_parameters
 
-  SUBROUTINE read_mp_irrigation_parameters(param_dir)
+  SUBROUTINE read_mp_irrigation_parameters(param_dir, noahmp_table)
     implicit none
     character(len=*), intent(in) :: param_dir
+    character(len=*), intent(in) :: noahmp_table
     integer                      :: ierr
     logical                      :: file_named
 
@@ -1138,9 +1150,9 @@ CONTAINS
     FIRTFAC_TABLE    = -1.E36    ! flood application rate factor
     IR_RAIN_TABLE    = -1.E36    ! maximum precipitation to stop irrigation trigger
 
-    inquire( file=trim(param_dir)//'/'//'MPTABLE.TBL', exist=file_named )
+    inquire( file=trim(param_dir)//'/'//trim(noahmp_table), exist=file_named )
     if ( file_named ) then
-      open(15, file=trim(param_dir)//'/'//"MPTABLE.TBL", status='old', form='formatted', action='read', iostat=ierr)
+      open(15, file=trim(param_dir)//'/'//trim(noahmp_table), status='old', form='formatted', action='read', iostat=ierr)
     else
       open(15, status='old', form='formatted', action='read', iostat=ierr)
     end if
@@ -1164,9 +1176,10 @@ CONTAINS
 
   END SUBROUTINE read_mp_irrigation_parameters
 
-  SUBROUTINE read_tiledrain_parameters(param_dir)
+  SUBROUTINE read_tiledrain_parameters(param_dir, noahmp_table)
     implicit none
     character(len=*), intent(in)    :: param_dir
+    character(len=*), intent(in)    :: noahmp_table
     integer                         :: ierr
     logical                         :: file_named
     real, dimension(MAX_SOILTYP)    :: TDSMC_FAC
@@ -1197,9 +1210,9 @@ CONTAINS
     TD_DDRAIN_TABLE          = -99999
     KLAT_FAC_TABLE           = -99999
 
-    inquire( file=trim(param_dir)//'/'//'MPTABLE.TBL', exist=file_named )
+    inquire( file=trim(param_dir)//'/'//trim(noahmp_table), exist=file_named )
     if ( file_named ) then
-      open(15, file=trim(param_dir)//'/'//"MPTABLE.TBL", status='old', form='formatted', action='read', iostat=ierr)
+      open(15, file=trim(param_dir)//'/'//trim(noahmp_table), status='old', form='formatted', action='read', iostat=ierr)
     else
       open(15, status='old', form='formatted', action='read', iostat=ierr)
     end if
@@ -1224,9 +1237,10 @@ CONTAINS
   END SUBROUTINE read_tiledrain_parameters
 
 
-  SUBROUTINE read_mp_optional_parameters(param_dir)
+  SUBROUTINE read_mp_optional_parameters(param_dir, noahmp_table)
     implicit none
     character(len=*), intent(in) :: param_dir
+    character(len=*), intent(in) :: noahmp_table
     integer                      :: ierr
     logical                      :: file_named
 
@@ -1249,9 +1263,9 @@ CONTAINS
                sr2006_psi_e_a      , sr2006_psi_e_b      , sr2006_psi_e_c      , &
                sr2006_smcmax_a     , sr2006_smcmax_b
 
-    inquire( file=trim(param_dir)//'/'//'MPTABLE.TBL', exist=file_named )
+    inquire( file=trim(param_dir)//'/'//trim(noahmp_table), exist=file_named )
     if ( file_named ) then
-      open(15, file=trim(param_dir)//'/'//"MPTABLE.TBL", status='old', form='formatted', action='read', iostat=ierr)
+      open(15, file=trim(param_dir)//'/'//trim(noahmp_table), status='old', form='formatted', action='read', iostat=ierr)
     else
       open(15, status='old', form='formatted', action='read', iostat=ierr)
     end if
