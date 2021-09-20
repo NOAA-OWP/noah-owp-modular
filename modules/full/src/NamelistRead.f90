@@ -198,10 +198,15 @@ end type namelist_type
      
 contains   
 
-  subroutine ReadNamelist(this)
+  subroutine ReadNamelist(this, namelist_file)
   
     class(namelist_type) :: this
-    
+    ! Optional namelist_file path/filename to read
+    character(len=*), intent (in), optional :: namelist_file
+    ! Temporary var to hold the default, "namelist.input"
+    ! or the value of namelist_file, if passed
+    character(:), allocatable :: namelist_file_
+
     integer       :: iz
 
     real              :: dt
@@ -421,8 +426,13 @@ contains
 !---------------------------------------------------------------------
 !  read input file, part 1
 !---------------------------------------------------------------------
+    if( present(namelist_file) ) then
+      namelist_file_ = namelist_file
+    else
+      namelist_file_ = "namelist.input"
+    endif
 
-    open(30, file="namelist.input", form="formatted")
+    open(30, file=namelist_file_, form="formatted")
      read(30, timing)
      read(30, location)
      read(30, forcing)
@@ -446,7 +456,7 @@ contains
 !---------------------------------------------------------------------
 
     if(structure_option == 1) then       ! user-defined levels
-      open(30, file="namelist.input", form="formatted")
+      open(30, file=namelist_file_, form="formatted")
        read(30, fixed_initial)
       close(30)
     else if(structure_option == 2) then  ! fixed levels
