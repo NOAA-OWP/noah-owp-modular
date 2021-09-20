@@ -37,6 +37,7 @@ noahmp_output.o: ../src/WaterType.o \
 noahmp_driver.o: noahmp_output.o \
                  noahmp_ascii_read.o \
                ../src/NamelistRead.o \
+               ../src/ParametersRead.o \
                ../src/LevelsType.o \
                ../src/DomainType.o \
                ../src/OptionsType.o \
