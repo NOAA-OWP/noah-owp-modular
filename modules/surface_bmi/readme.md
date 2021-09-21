@@ -38,7 +38,7 @@ The NOAH-MP surface module with BMI presently requires only one external library
 
 If your system does not match one of the above options, you'll need to edit one of the files or create your own. If you do the latter, you'll need to add another option to the `configure` Perl script.
 
-Once you have a a `user_build_options` set, go to your terminal and run the following command from the `main` directory:
+Once you have a `user_build_options` set, go to your terminal and run the following command from the `main` directory:
 
 `./configure` 
 
