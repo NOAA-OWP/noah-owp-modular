@@ -24,6 +24,8 @@ program noahmp_driver_test
   !---------------------------------------------------------------------
   !  Local variable(s) for BMI testing
   !---------------------------------------------------------------------
+    character (len = 80)                              :: arg              ! command line argument for config file
+    integer                                           :: status           ! returning status values
     character (len = BMI_MAX_COMPONENT_NAME), pointer :: component_name   ! component name
     integer                                           :: count            ! var counts
     character (len = BMI_MAX_VAR_NAME), pointer       :: names(:)         ! var names
