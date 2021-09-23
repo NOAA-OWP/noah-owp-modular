@@ -107,7 +107,7 @@ program noahmp_driver_test
         status = m%get_var_units(trim(names_outputs(j - n_inputs)), var_units)
         status = m%get_var_itemsize(trim(names_outputs(j - n_inputs)), var_itemsize)
         status = m%get_var_nbytes(trim(names_outputs(j - n_inputs)), var_nbytes)
-        print*, "The variable ", trim(names_inputs(j - n_inputs))
+        print*, "The variable ", trim(names_outputs(j - n_inputs))
       end if
       print*, "    has a type of ", var_type
       print*, "    units of ", var_units

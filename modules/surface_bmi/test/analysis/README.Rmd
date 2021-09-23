@@ -53,14 +53,18 @@ library(ncdf4)
 
 Next, get the output files into R:
 
-```{r message = FALSE}
+```{r message=FALSE}
 # non-BMI output
 tmp_nc <- nc_open("../../../surface/run/output.nc")
 df_non <- data.frame(water_flux_surface = ncvar_get(tmp_nc, "waterin_sfc"),
                      evaporation        = ncvar_get(tmp_nc, "evaporation"),
                      transpiration      = ncvar_get(tmp_nc, "transpiration")) %>% 
   mutate(sim_hours = seq(from = 0.5, length.out = n(), by = 0.5),
-         mode      = "non")
+         mode      = "non") %>% 
+  # mutate vars to be mm/h
+  mutate(water_flux_surface = water_flux_surface / 1800 * 3600,
+         evaporation        = evaporation / 1800 * 3600,
+         transpiration      = transpiration / 1800 * 3600)
 
 # BMI output
 tmp_nc <- nc_open("../../../surface_bmi/data/output.nc")
@@ -68,7 +72,11 @@ df_bmi <- data.frame(water_flux_surface = ncvar_get(tmp_nc, "waterin_sfc"),
                      evaporation        = ncvar_get(tmp_nc, "evaporation"),
                      transpiration      = ncvar_get(tmp_nc, "transpiration")) %>% 
   mutate(sim_hours = seq(from = 0.5, length.out = n(), by = 0.5),
-         mode      = "bmi")
+         mode      = "bmi") %>% 
+  # mutate vars to be mm/h
+  mutate(water_flux_surface = water_flux_surface / 1800 * 3600,
+         evaporation        = evaporation / 1800 * 3600,
+         transpiration      = transpiration / 1800 * 3600)
 
 # Bind for plotting time series
 df_bind <- bind_rows(df_non, df_bmi) %>% 
@@ -86,17 +94,17 @@ df_join <- left_join(dplyr::select(df_non, -mode),
 
 ## Time series
 
-The following plots indicate a match between non-BMI and BMI output for:
+The following plots show time series examples of non-BMI and BMI output for:
 
 ### Liquid water flux to the land surface
 
-```{r echo = FALSE}
+```{r echo = FALSE, warning = FALSE}
 ggplot(df_bind, aes(sim_hours, water_flux_surface, color = mode, lty = mode)) +
   geom_line(lwd = 1) +
   labs(x = "Time Since Simulation Start (h)",
        y = "Surface Liquid Water Flux (mm/h)") + 
   xlim(3800, 3900) +
-  ylim(0, 16)+
+  ylim(0, 32)+
   scale_color_manual(values = c("purple", "orange"),
                      labels = c("non-BMI", "BMI")) +
   scale_linetype_manual(values = c("solid", "dashed"),
@@ -107,13 +115,13 @@ ggplot(df_bind, aes(sim_hours, water_flux_surface, color = mode, lty = mode)) +
 
 ### Evaporation
 
-```{r echo = FALSE}
+```{r echo = FALSE, warning = FALSE}
 ggplot(df_bind, aes(sim_hours, evaporation, color = mode, lty = mode)) +
   geom_line(lwd = 1) +
   labs(x = "Time Since Simulation Start (h)",
        y = "Evaporation (mm/h)") + 
   xlim(3800, 3900) +
-  ylim(0, 0.3)+
+  ylim(0, 0.6)+
   scale_color_manual(values = c("purple", "orange"),
                      labels = c("non-BMI", "BMI")) +
   scale_linetype_manual(values = c("solid", "dashed"),
@@ -124,17 +132,59 @@ ggplot(df_bind, aes(sim_hours, evaporation, color = mode, lty = mode)) +
 
 ### Transpiration
 
-```{r echo = FALSE}
+```{r echo = FALSE, warning = FALSE}
 ggplot(df_bind, aes(sim_hours, transpiration, color = mode, lty = mode)) +
   geom_line(lwd = 1) +
   labs(x = "Time Since Simulation Start (h)",
        y = "Transpiration (mm/h)") + 
   xlim(3800, 3900) +
-  ylim(0, 0.1)+
+  ylim(0, 0.2)+
   scale_color_manual(values = c("purple", "orange"),
                      labels = c("non-BMI", "BMI")) +
   scale_linetype_manual(values = c("solid", "dashed"),
                         labels = c("non-BMI", "BMI")) +
   theme(legend.position = c(0.2, 0.8),
         legend.title = element_blank())
+```
+
+## 1:1 comparisons
+
+Examining model results for the BMI output variables QINSUR (surface liquid water flux), QSEVA (evaporation), and ETRAN (transpiration), we find no difference between the non-BMI and BMI version of Noah-MP-Modular. 
+
+QINSUR has a mean difference of `r mean(df_join$water_flux_surface_non - df_join$water_flux_surface_bmi)` and a maximum difference of `r max(df_join$water_flux_surface_non - df_join$water_flux_surface_bmi)`. 
+
+QSEVA has a mean difference of `r mean(df_join$evaporation_non - df_join$evaporation_bmi)` and a maximum difference of `r max(df_join$evaporation_non - df_join$evaporation_bmi)`. 
+
+ETRAN has a mean difference of `r mean(df_join$transpiration_non - df_join$transpiration_bmi)` and a maximum difference of `r max(df_join$transpiration_non - df_join$transpiration_bmi)`. 
+
+The following plots show the 1:1 match between non-BMI and BMI output for:
+
+### Liquid water flux to the land surface
+
+```{r echo = FALSE, warning = FALSE, fig.dim= c(5,5)}
+ggplot(df_join, aes(water_flux_surface_non, water_flux_surface_bmi)) +
+  geom_point(size = 3, alpha = 0.5) +
+  geom_abline(slope = 1, intercept = 0, lty = "dashed", color = "red") +
+  labs(x = "Non-BMI Surface Liquid Water Flux (mm/h)",
+       y = "BMI Surface Liquid Water Flux (mm/h)") 
+```
+
+### Evaporation
+
+```{r echo = FALSE, warning = FALSE, fig.dim= c(5,5)}
+ggplot(df_join, aes(evaporation_non, evaporation_bmi)) +
+  geom_point(size = 3, alpha = 0.5) +
+  geom_abline(slope = 1, intercept = 0, lty = "dashed", color = "red") +
+  labs(x = "Non-BMI Evaporation (mm/h)",
+       y = "BMI Evaporation (mm/h)") 
+```
+
+### Transpiration
+
+```{r echo = FALSE, warning = FALSE, fig.dim= c(5,5)}
+ggplot(df_join, aes(transpiration_non, transpiration_bmi)) +
+  geom_point(size = 3, alpha = 0.5) +
+  geom_abline(slope = 1, intercept = 0, lty = "dashed", color = "red") +
+  labs(x = "Non-BMI Transpiration (mm/h)",
+       y = "BMI Transpiration (mm/h)") 
 ```

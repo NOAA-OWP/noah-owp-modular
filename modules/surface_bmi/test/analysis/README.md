@@ -64,7 +64,11 @@ df_non <- data.frame(water_flux_surface = ncvar_get(tmp_nc, "waterin_sfc"),
                      evaporation        = ncvar_get(tmp_nc, "evaporation"),
                      transpiration      = ncvar_get(tmp_nc, "transpiration")) %>% 
   mutate(sim_hours = seq(from = 0.5, length.out = n(), by = 0.5),
-         mode      = "non")
+         mode      = "non") %>% 
+  # mutate vars to be mm/h
+  mutate(water_flux_surface = water_flux_surface / 1800 * 3600,
+         evaporation        = evaporation / 1800 * 3600,
+         transpiration      = transpiration / 1800 * 3600)
 
 # BMI output
 tmp_nc <- nc_open("../../../surface_bmi/data/output.nc")
@@ -72,7 +76,11 @@ df_bmi <- data.frame(water_flux_surface = ncvar_get(tmp_nc, "waterin_sfc"),
                      evaporation        = ncvar_get(tmp_nc, "evaporation"),
                      transpiration      = ncvar_get(tmp_nc, "transpiration")) %>% 
   mutate(sim_hours = seq(from = 0.5, length.out = n(), by = 0.5),
-         mode      = "bmi")
+         mode      = "bmi") %>% 
+  # mutate vars to be mm/h
+  mutate(water_flux_surface = water_flux_surface / 1800 * 3600,
+         evaporation        = evaporation / 1800 * 3600,
+         transpiration      = transpiration / 1800 * 3600)
 
 # Bind for plotting time series
 df_bind <- bind_rows(df_non, df_bmi) %>% 
@@ -89,23 +97,45 @@ df_join <- left_join(dplyr::select(df_non, -mode),
 
 ## Time series
 
-The following plots indicate a match between non-BMI and BMI output
-    for:
+The following plots show time series examples of non-BMI and BMI output
+for:
 
 ### Liquid water flux to the land surface
 
-    ## Warning: Removed 33600 row(s) containing missing values (geom_path).
-
-![](model_comparison_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 ### Evaporation
 
-    ## Warning: Removed 33600 row(s) containing missing values (geom_path).
-
-![](model_comparison_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 ### Transpiration
 
-    ## Warning: Removed 33600 row(s) containing missing values (geom_path).
+![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
-![](model_comparison_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+## 1:1 comparisons
+
+Examining model results for the BMI output variables QINSUR (surface
+liquid water flux), QSEVA (evaporation), and ETRAN (transpiration), we
+find no difference between the non-BMI and BMI version of
+Noah-MP-Modular.
+
+QINSUR has a mean difference of 0 and a maximum difference of 0.
+
+QSEVA has a mean difference of 0 and a maximum difference of 0.
+
+ETRAN has a mean difference of 0 and a maximum difference of 0.
+
+The following plots show the 1:1 match between non-BMI and BMI output
+for:
+
+### Liquid water flux to the land surface
+
+![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+### Evaporation
+
+![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+### Transpiration
+
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
