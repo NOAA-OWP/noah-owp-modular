@@ -1,0 +1,140 @@
+---
+title: "BMI vs. non-BMI Model Output Comparison"
+author: "Keith Jennings"
+date: "9/23/2021"
+output: github_document
+---
+
+# Introduction
+
+The `analysis` directory includes R code to compare model output from two surface routines of Noah-MP-Modular: one with a Basic Model Interface (BMI) implementation and one without.
+
+BMI should have no effect on model output as it is a type of middleware that leaves the source code of hydrologic models untouched. Therefore, we expect model output to be identical.
+
+# Methods
+
+## Build the models
+
+Change into the directory for each model version to build the executable. (Note: R Markdown assumes the working directory is the file's host directory and needs to be switched for the code chunks.)
+
+```{r message = FALSE}
+# Build /surface
+setwd("../../../surface/")
+system("make clean") # in case a build already exists
+system("make")
+
+# Build /surface_bmi
+setwd("../surface_bmi")
+system("make clean") # in case a build already exists
+system("make")
+```
+
+## Run the models
+
+```{r message = FALSE}
+# Run /surface
+setwd("../../../surface/run")
+system("./noahmp_refac.exe")
+
+# Run /surface_bmi
+setwd("../../surface_bmi/run")
+system("./noahmp_refac.exe namelist.input")
+```
+
+## Import the output into R
+
+First load the packages we'll need for the analysis:
+
+```{r message = FALSE}
+library(tidyverse)
+library(cowplot); theme_set(theme_cowplot())
+library(ncdf4)
+```
+
+Next, get the output files into R:
+
+```{r message = FALSE}
+# non-BMI output
+tmp_nc <- nc_open("../../../surface/run/output.nc")
+df_non <- data.frame(water_flux_surface = ncvar_get(tmp_nc, "waterin_sfc"),
+                     evaporation        = ncvar_get(tmp_nc, "evaporation"),
+                     transpiration      = ncvar_get(tmp_nc, "transpiration")) %>% 
+  mutate(sim_hours = seq(from = 0.5, length.out = n(), by = 0.5),
+         mode      = "non")
+
+# BMI output
+tmp_nc <- nc_open("../../../surface_bmi/data/output.nc")
+df_bmi <- data.frame(water_flux_surface = ncvar_get(tmp_nc, "waterin_sfc"),
+                     evaporation        = ncvar_get(tmp_nc, "evaporation"),
+                     transpiration      = ncvar_get(tmp_nc, "transpiration")) %>% 
+  mutate(sim_hours = seq(from = 0.5, length.out = n(), by = 0.5),
+         mode      = "bmi")
+
+# Bind for plotting time series
+df_bind <- bind_rows(df_non, df_bmi) %>% 
+  mutate(mode = factor(mode, levels = c("non", "bmi")))
+
+# Join for plotting comparison
+df_join <- left_join(dplyr::select(df_non, -mode),
+                     dplyr::select(df_bmi, -mode),
+                     by = "sim_hours", 
+                     suffix = c("_non", "_bmi"))
+
+```
+
+# Results
+
+## Time series
+
+The following plots indicate a match between non-BMI and BMI output for:
+
+### Liquid water flux to the land surface
+
+```{r echo = FALSE}
+ggplot(df_bind, aes(sim_hours, water_flux_surface, color = mode, lty = mode)) +
+  geom_line(lwd = 1) +
+  labs(x = "Time Since Simulation Start (h)",
+       y = "Surface Liquid Water Flux (mm/h)") + 
+  xlim(3800, 3900) +
+  ylim(0, 16)+
+  scale_color_manual(values = c("purple", "orange"),
+                     labels = c("non-BMI", "BMI")) +
+  scale_linetype_manual(values = c("solid", "dashed"),
+                        labels = c("non-BMI", "BMI")) +
+  theme(legend.position = c(0.2, 0.7),
+        legend.title = element_blank())
+```
+
+### Evaporation
+
+```{r echo = FALSE}
+ggplot(df_bind, aes(sim_hours, evaporation, color = mode, lty = mode)) +
+  geom_line(lwd = 1) +
+  labs(x = "Time Since Simulation Start (h)",
+       y = "Evaporation (mm/h)") + 
+  xlim(3800, 3900) +
+  ylim(0, 0.3)+
+  scale_color_manual(values = c("purple", "orange"),
+                     labels = c("non-BMI", "BMI")) +
+  scale_linetype_manual(values = c("solid", "dashed"),
+                        labels = c("non-BMI", "BMI")) +
+  theme(legend.position = c(0.2, 0.7),
+        legend.title = element_blank())
+```
+
+### Transpiration
+
+```{r echo = FALSE}
+ggplot(df_bind, aes(sim_hours, transpiration, color = mode, lty = mode)) +
+  geom_line(lwd = 1) +
+  labs(x = "Time Since Simulation Start (h)",
+       y = "Transpiration (mm/h)") + 
+  xlim(3800, 3900) +
+  ylim(0, 0.1)+
+  scale_color_manual(values = c("purple", "orange"),
+                     labels = c("non-BMI", "BMI")) +
+  scale_linetype_manual(values = c("solid", "dashed"),
+                        labels = c("non-BMI", "BMI")) +
+  theme(legend.position = c(0.2, 0.8),
+        legend.title = element_blank())
+```
