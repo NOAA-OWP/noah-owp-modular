@@ -569,14 +569,16 @@ CONTAINS
 
   END SUBROUTINE read_mp_veg_parameters
 
-  SUBROUTINE read_mp_soil_parameters(param_dir, soil_table, general_table)
+  SUBROUTINE read_mp_soil_parameters(param_dir, soil_table, general_table, soil_class_name)
     implicit none
     character(len=*), intent(in) :: param_dir
     character(len=*), intent(in) :: soil_table
     character(len=*), intent(in) :: general_table
+    character(len=*), intent(in) :: soil_class_name
     integer             :: IERR
-    character*4         :: SLTYPE
+    character(len=20)   :: SLTYPE
     integer             :: ITMP, NUM_SLOPE, LC
+    integer             :: iLine               ! loop index
     character(len=256)  :: message
     logical             :: file_named
 
@@ -622,11 +624,15 @@ CONTAINS
       call handle_err(ierr, message)
     end if
 
-    READ (21,*)
-    READ (21,*) SLTYPE
+    do iLine = 1,100
+      READ (21,*) SLTYPE
+      if (trim(SLTYPE) == trim(soil_class_name)) exit
+    end do
+
     READ (21,*) SLCATS
-    WRITE( message , * ) 'SOIL TEXTURE CLASSIFICATION = ', TRIM ( SLTYPE ) , ' FOUND', &
-               SLCATS,' CATEGORIES'
+
+    WRITE( message , * ) 'SOIL TEXTURE CLASSIFICATION = ', TRIM ( SLTYPE ) , ' FOUND', SLCATS,' CATEGORIES'
+    print*, message
     !CALL wrf_message ( message )
 
     DO LC=1,SLCATS

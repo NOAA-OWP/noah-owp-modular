@@ -204,7 +204,7 @@ contains
 
     dataset_identifier = "MODIFIED_IGBP_MODIS_NOAH"   ! This can be in namelist
     call read_mp_veg_parameters(namelist%parameter_dir, namelist%noahmp_table, dataset_identifier)
-    call read_mp_soil_parameters(namelist%parameter_dir, namelist%soil_table, namelist%general_table)
+    call read_mp_soil_parameters(namelist%parameter_dir, namelist%soil_table, namelist%general_table, namelist%soil_class_name)
     call read_mp_rad_parameters(namelist%parameter_dir, namelist%noahmp_table)
     call read_mp_global_parameters(namelist%parameter_dir, namelist%noahmp_table)
 
