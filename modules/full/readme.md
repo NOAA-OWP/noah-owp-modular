@@ -18,13 +18,13 @@ Modular NOAH-MP presently requires only one external library: [NetCDF](https://w
 
 If your system does not match one of the above options, you'll need to edit one of the files or create your own. If you do the latter, you'll need to add another option to the `configure` Perl script.
 
-Once you have a a `user_build_options` set, go to your terminal and run the following command from the `main` directory:
+Once you have a `user_build_options` set, go to your terminal and run the following command from the `full` directory:
 
 `./configure` 
 
-Then enter the number matching your `user_build_options`. This copies over the correct set of options to the `user_build_options` file in the `main` directory.
+Then enter the number matching your `user_build_options`. This copies over the correct set of options to the `user_build_options` file in the `full` directory.
 
-Next, compile and link the model from the `main` directory:
+Next, compile and link the model from the `full` directory:
 
 `make`
 
@@ -34,7 +34,7 @@ After the model is finished compiling and linking, you can change into the `run`
 
 ```
 cd run/
-./snow_refac.exe
+./noahmp_refac.exe
 ```
 
 You can examine model output in the `output.nc` file (requires [Panoply](https://www.giss.nasa.gov/tools/panoply/) or other NetCDF viewer).

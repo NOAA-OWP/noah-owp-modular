@@ -8,6 +8,6 @@
  F90FLAGS       =       -g -fbacktrace -Wall -fcheck=all #-fdefault-real-8
  CPP            =       /usr/local/bin/cpp-10
  CPPFLAGS       =       -P -traditional -D_GFORTRAN_
- NETCDFMOD      =       -I/usr/local/Cellar/netcdf/4.7.4_2/include
- NETCDFLIB      =       -L/usr/local/Cellar/netcdf/4.7.4_2/lib -lnetcdf -lnetcdff
+ NETCDFMOD      =       -I/usr/local/Cellar/netcdf/4.8.0_2/include
+ NETCDFLIB      =       -L/usr/local/Cellar/netcdf/4.8.0_2/lib -lnetcdf -lnetcdff
 
