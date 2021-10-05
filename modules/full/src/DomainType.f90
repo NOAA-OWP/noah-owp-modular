@@ -1,6 +1,7 @@
 module DomainType
 
 use NamelistRead, only: namelist_type
+use DateTimeUtilsModule
 
 implicit none
 save
@@ -14,6 +15,7 @@ type, public :: domain_type
   character(len=12) :: startdate ! Start date of the model run ( YYYYMMDDHHmm ) 
   character(len=12) :: enddate   ! End date of the model run ( YYYYMMDDHHmm ) 
   character(len=12) :: nowdate   ! Current date of the model run ( YYYYMMDDHHmm ) 
+  real*8            :: start_datetime, end_datetime, curr_datetime  ! unix time (s since 1970-01-01 00:00:00) ?UTC? 
   real    :: lat
   real    :: lon
   real    :: ZREF
@@ -77,12 +79,15 @@ contains
     this%isltyp    = huge(1)
     this%sfctyp    = huge(1)
     this%IST       = huge(1)
+    this%start_datetime = huge(1)
+    this%end_datetime   = huge(1)
+    this%curr_datetime  = huge(1)
 
   end subroutine InitDefault
 
   subroutine InitTransfer(this, namelist)
 
-    class(domain_type) :: this
+    class(domain_type)  :: this
     type(namelist_type) :: namelist
 
     this%dt        = namelist%dt
@@ -97,7 +102,9 @@ contains
     this%croptype  = namelist%croptype
     this%isltyp    = namelist%isltyp
     this%sfctyp    = namelist%sfctyp
-
+    this%start_datetime = date_to_unix(namelist%startdate)  ! returns seconds-since-1970-01-01
+    this%end_datetime   = date_to_unix(namelist%enddate)
+  
   end subroutine InitTransfer
 
 end module DomainType

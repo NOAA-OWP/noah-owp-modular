@@ -7,7 +7,7 @@ private
 type, public :: namelist_type
 
   real               :: dt                 ! model timestep (s)
-  integer            :: maxtime
+  integer            :: maxtime            ! length of run (hours)
   character(len=12)  :: startdate          ! Start date of the model run ( YYYYMMDDHHmm )
   character(len=12)  :: enddate            ! End date of the model run ( YYYYMMDDHHmm )
   character(len=256) :: input_filename     ! name of the input/forcing file
@@ -17,6 +17,7 @@ type, public :: namelist_type
   character(len=256) :: soil_table         ! name of soil parameter table
   character(len=256) :: general_table      ! name of general parameter table
   character(len=256) :: soil_class_name    ! name of soil classification
+  character(len=256) :: veg_class_name     ! name of vegetation classification
   real               :: lat                ! latitude (°)
   real               :: lon                ! longitude (°)
   real               :: preciprate         ! precipitation rate
@@ -88,6 +89,7 @@ contains
     character(len=256) :: output_filename
     character(len=256) :: parameter_dir
     character(len=256) :: soil_table
+    character(len=256) :: veg_class_name
     character(len=256) :: general_table
     character(len=256) :: noahmp_table
     character(len=256) :: soil_class_name
@@ -141,7 +143,8 @@ contains
     integer       :: evap_srfc_resistance_option
 
     namelist / timing          / dt,maxtime,startdate,enddate,input_filename,output_filename
-    namelist / parameters      / parameter_dir, soil_table, general_table, noahmp_table, soil_class_name
+    namelist / parameters      / parameter_dir, soil_table, general_table, noahmp_table, soil_class_name, veg_class_name
+    !namelist / parameters      / parameter_dir, general_table, soil_table, noahmp_table, veg_class_name
     namelist / location        / lat,lon
     namelist / forcing         / preciprate,precip_duration,dry_duration,&
                                  precipitating,ZREF
@@ -206,6 +209,7 @@ contains
     this%general_table      = general_table
     this%noahmp_table       = noahmp_table
     this%soil_class_name    = soil_class_name
+    this%veg_class_name     = veg_class_name
     this%lat                = lat
     this%lon                = lon
     this%preciprate         = preciprate

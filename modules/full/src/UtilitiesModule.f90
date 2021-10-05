@@ -27,22 +27,25 @@ contains
     integer  :: idt ! change in time since beginning of run (in minutes)
     idt = itime * (domain%dt / 60)
 
+    ! calculate current 'nowdate' from start date + integer length of run to current time
     call geth_newdate(domain%startdate, idt, &  ! in
                       domain%nowdate)           ! out
-    
+
+    ! calculate current declination of direct solar radiation input
     call calc_declin(domain%nowdate(1:4)//"-"//domain%nowdate(5:6)//"-"//domain%nowdate(7:8)//"_"//domain%nowdate(9:10)//":"//domain%nowdate(11:12)//":00", & ! in
                      domain%lat, domain%lon, &                                                                                                                ! in
                      energy%cosz, forcing%yearlen, forcing%julian)                                                                                            ! out
     
   END SUBROUTINE UtilitiesMain
 
+  ! calculate current 'nowdate' from start date + integer length of run to current time
   subroutine geth_newdate (odate, idt, & ! in
                            ndate)        ! out
 
     IMPLICIT NONE
 
     character (len=*), intent(in)  :: odate ! start date
-    integer, intent(in)            :: idt   ! change in time (in minutes)
+    integer,           intent(in)  :: idt   ! change in time (in minutes)
     character (len=*), intent(out) :: ndate ! current 
 
     ! ------------------------ local variables ---------------------------
@@ -410,6 +413,8 @@ contains
 
   end subroutine geth_newdate
 
+  ! calculate integer day of year for current time
+  ! AW: not sure this is ever called in the code at present
   subroutine geth_idts (newdate, olddate, idt)
     
     implicit none
@@ -484,7 +489,7 @@ contains
     mday(11) = 30
     mday(12) = 31
 
-!  Determine if the date is "punctuated" or just a string of numbers.
+    !  Determine if the date is "punctuated" or just a string of numbers.
     if ( odate(5:5) == "-") then
        punctuated = .TRUE.
     else
@@ -492,9 +497,7 @@ contains
     endif
 
 
-!  Break down old and new hdates into parts
-
-
+    !  Break down old and new hdates into parts
     hrold = 0
     miold = 0
     scold = 0
@@ -510,8 +513,7 @@ contains
 
     if (punctuated) then
 
-      !  Break down old hdate into parts
-
+       ! Break down old hdate into parts
        read(odate(6:7),  '(i2)') moold
        read(odate(9:10), '(i2)') dyold
        if (olen >= 13) then
