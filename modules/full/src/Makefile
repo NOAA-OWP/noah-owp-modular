@@ -1,4 +1,4 @@
-# Makefile 
+# Makefile
 #
 .SUFFIXES:
 .SUFFIXES: .o .f90
@@ -6,6 +6,7 @@
 include ../user_build_options
 
 OBJS = NamelistRead.o \
+       ParametersRead.o  \
        LevelsType.o   \
        DomainType.o   \
        OptionsType.o  \
@@ -34,7 +35,8 @@ OBJS = NamelistRead.o \
        EtFluxModule.o \
        SnowSoilTempModule.o \
        EnergyModule.o \
-       UtilitiesModule.o
+       UtilitiesModule.o \
+       DateTimeUtilsModule.o
 
 all:	$(OBJS)
 
@@ -52,17 +54,17 @@ clean:
 # Dependencies:
 #
 
-LevelsType.o: NamelistRead.o 
-DomainType.o: NamelistRead.o LevelsType.o 
-OptionsType.o: NamelistRead.o 
-ParametersType.o: NamelistRead.o 
+LevelsType.o: NamelistRead.o
+DomainType.o: NamelistRead.o LevelsType.o DateTimeUtilsModule.o
+OptionsType.o: NamelistRead.o
+ParametersType.o: NamelistRead.o ParametersRead.o
 ForcingType.o: NamelistRead.o
 EnergyType.o: NamelistRead.o
 WaterType.o: NamelistRead.o
 WaterModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
                ForcingType.o WaterType.o SoilWaterModule.o CanopyWaterModule.o SnowWaterModule.o
 CanopyWaterModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
-                     ForcingType.o WaterType.o 
+                     ForcingType.o WaterType.o
 SnowLayerChange.o: LevelsType.o DomainType.o ParametersType.o EnergyType.o WaterType.o
 SnowWaterRenew.o: LevelsType.o DomainType.o ParametersType.o EnergyType.o WaterType.o SnowLayerChange.o
 SnowWaterModule.o: LevelsType.o DomainType.o ParametersType.o EnergyType.o WaterType.o \
@@ -88,7 +90,7 @@ InterceptionModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o E
 ThermalPropertiesModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
                ForcingType.o WaterType.o
 AlbedoModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
-               ForcingType.o WaterType.o 
+               ForcingType.o WaterType.o
 ShortwaveRadiationModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
                 ForcingType.o WaterType.o AlbedoModule.o
 PrecipHeatModule.o: ParametersType.o EnergyType.o ForcingType.o WaterType.o

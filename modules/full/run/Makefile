@@ -1,4 +1,4 @@
-# Makefile 
+# Makefile
 #
 .SUFFIXES:
 .SUFFIXES: .o .f90
@@ -7,6 +7,7 @@ include ../user_build_options
 
 OBJS = \
         ../src/NamelistRead.o \
+        ../src/ParametersRead.o \
         ../src/LevelsType.o \
         ../src/DomainType.o \
         ../src/OptionsType.o \
@@ -36,10 +37,11 @@ OBJS = \
         ../src/SnowSoilTempModule.o \
         ../src/EnergyModule.o \
         ../src/UtilitiesModule.o \
+        ../src/DateTimeUtilsModule.o \
         ../driver/noahmp_output.o \
         ../driver/noahmp_driver.o \
         ../driver/noahmp_ascii_read.o
-  
+
 
 CMD = noahmp_refac.exe
 all:	$(CMD)

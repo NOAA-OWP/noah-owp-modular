@@ -1,6 +1,6 @@
 module EnergyType
 
-use NamelistRead
+use NamelistRead, only: namelist_type
 
 implicit none
 save
@@ -148,7 +148,7 @@ type, public :: energy_type
   REAL                 :: APAR    ! total photosyn. active energy (w/m2)
   REAL                 :: QMELT   ! snowmelt [mm/s]
   
-  
+  REAL                 :: LH      ! latent heat (total) flux [W m-2]
   
 
   integer              :: ICE     ! 1 if sea ice, -1 if glacier, 0 if no land ice (seasonal snow)
@@ -321,6 +321,7 @@ contains
     this%APAR      = huge(1.0)
     this%QMELT     = huge(1.0)
 
+    this%LH        = huge(1)    
     
     this%ICE       = huge(1)    
     

@@ -1,7 +1,3 @@
-!
-! compile: 
-!
-
 program noahmp_driver
 
   use NoahMPAsciiRead
@@ -19,30 +15,29 @@ program noahmp_driver
   use InterceptionModule
   use EnergyModule
   use WaterModule
+  use DateTimeUtilsModule
 
   implicit none
 
-!---------------------------------------------------------------------
-!  types
-!---------------------------------------------------------------------
-
+  !---------------------------------------------------------------------
+  !  types
+  !---------------------------------------------------------------------
   type (namelist_type)     :: namelist
   type (levels_type)       :: levels
   type (domain_type)       :: domain
   type (parameters_type)   :: parameters
   type (options_type)      :: options
   type (water_type)        :: water
-  type (forcing_type)      :: forcing 
+  type (forcing_type)      :: forcing
   type (energy_type)       :: energy
 
-!---------------------------------------------------------------------
-!  local variables
-!---------------------------------------------------------------------
-
+  !---------------------------------------------------------------------
+  !  local variables
+  !---------------------------------------------------------------------
   integer            :: itime, iz         ! some loop counters
   integer            :: ierr              ! error code for reading forcing data
   integer, parameter :: iunit        = 10 ! Fortran unit number to attach to the opened file
-  integer            :: forcing_timestep  ! integer time step (set to dt) for some subroutine calls
+  integer            :: forcing_timestep  ! (s) integer time step (set to dt) for some subroutine calls
   integer            :: ntime        = 0  ! number of timesteps to run
   integer            :: precip_steps = 0  ! number of timesteps in rain event
   integer            :: dry_steps    = 0  ! number of timesteps between rain events
@@ -50,10 +45,14 @@ program noahmp_driver
   integer            :: dry_step     = 0  ! number of timesteps in current event
   logical            :: precipitating     ! .true. if precipitating
   real               :: QV_CURR           ! water vapor mixing ratio (kg/kg)
+  real*8, allocatable :: sim_datetimes (:)   ! vector of unix simulation times, start of period (given start, end dates and dt)
+  ! try 'ki8' type
+  integer             :: curr_yr, curr_mo, curr_dy, curr_hr, curr_min, curr_sec  ! current timestep details
 
-!---------------------------------------------------------------------
-!  initialize
-!---------------------------------------------------------------------
+
+  !---------------------------------------------------------------------
+  !  initialize
+  !---------------------------------------------------------------------
 
   call namelist%ReadNamelist()
 
@@ -67,7 +66,7 @@ program noahmp_driver
   call options%InitTransfer(namelist)
 
   call parameters%Init(namelist)
-  call parameters%InitTransfer(namelist)
+  call parameters%paramRead(namelist)
 
   call forcing%Init(namelist)
   call forcing%InitTransfer(namelist)
@@ -77,7 +76,7 @@ program noahmp_driver
 
   call water%Init(namelist)
   call water%InitTransfer(namelist)
-  
+
   ! note: check to see which initializations are done in the Init method for each type
 
 
@@ -87,18 +86,18 @@ program noahmp_driver
   water%zwt       = -100.0       ! should only be needed for run=1
   water%smcwtd    = 0.0          ! should only be needed for run=5
   water%deeprech  = 0.0          ! should only be needed for run=5
-  water%qinsur    = 0.0          ! 
-  water%runsrf    = 0.0          ! 
-  water%runsub    = 0.0          ! 
-  water%qdrain    = 0.0          ! 
-  water%wcnd      = 0.0          ! 
-  water%fcrmax    = 0.0          ! 
+  water%qinsur    = 0.0          !
+  water%runsrf    = 0.0          !
+  water%runsub    = 0.0          !
+  water%qdrain    = 0.0          !
+  water%wcnd      = 0.0          !
+  water%fcrmax    = 0.0          !
   water%snoflow   = 0.0          ! glacier outflow for all RUNSUB options, [mm/s]
   water%qseva     = 0.0          ! soil evaporation [mm/s]
   water%etrani    = 0.0          ! transpiration from each level[mm/s]
   water%btrani    = 0.0          ! soil water transpiration factor (0 to 1) by soil layer
   water%btran     = 0.0          ! soil water transpiration factor (0 to 1)
-  
+
   ! for canopy water
   water%RAIN      = 0.0          ! rainfall mm/s
   water%SNOW      = 0.0          ! snowfall mm/s
@@ -120,9 +119,9 @@ program noahmp_driver
   water%SNOWHIN  = 0.0           ! snow depth increasing rate (m/s)
   water%ECAN     = 0.0           ! evap of intercepted water (mm/s) [+]
   water%ETRAN    = 0.0           ! transpiration rate (mm/s) [+]
-  
+
   ! for snow water
-  water%QVAP     = 0.0           ! evaporation/sublimation rate mm/s 
+  water%QVAP     = 0.0           ! evaporation/sublimation rate mm/s
   water%ISNOW    = 0
   water%SNOWH    = 0.0
   water%SNEQV    = 0.0
@@ -139,7 +138,7 @@ program noahmp_driver
   water%SNLIQ    = 0.0
   water%FICEOLD  = 0.0
   water%FSNO     = 0.0
-  
+
   ! for energy-related variable
   energy%TV      = 298.0        ! leaf temperature [K]
   energy%TG      = 298.0        ! ground temperature [K]
@@ -149,13 +148,13 @@ program noahmp_driver
   energy%FCTR    = 5.0          ! constant transpiration (w/m2) [+ to atm]
   energy%FROZEN_CANOPY = .false. ! used to define latent heat pathway
   energy%IMELT = 1 ! freeze
-  energy%FROZEN_GROUND = .false. 
+  energy%FROZEN_GROUND = .false.
   energy%STC      = 298.0
   energy%COSZ     = 0.7        ! cosine of solar zenith angle
   energy%ICE      = 0          ! 1 if sea ice, -1 if glacier, 0 if no land ice (seasonal snow)
   energy%ALB      = 0.6        ! initialize snow albedo in CLASS routine
   energy%ALBOLD   = 0.6        ! initialize snow albedo in CLASS routine
-  
+
   ! forcing-related variables
   forcing%UU       = 3.0        ! wind speed in u direction (m s-1)
   forcing%VV       = 3.0        ! wind speed in v direction (m s-1)
@@ -177,12 +176,12 @@ program noahmp_driver
   forcing%SWDOWN   = 0.0        ! downward solar filtered by sun angle [w/m2]
   forcing%FPICE    = 0.0        ! fraction of ice                AJN
   forcing%JULIAN   = 45.0       ! Setting arbitrary julian day
-  forcing%YEARLEN  = 365        ! Setting year to be normal (i.e. not a leap year)  
+  forcing%YEARLEN  = 365        ! Setting year to be normal (i.e. not a leap year)
   forcing%FOLN     = 1.0        ! foliage nitrogen concentration (%); for now, set to nitrogen saturation
   forcing%TBOT     = 285.0      ! bottom condition for soil temperature [K]
 
   ! other variables
-  ntime         =  nint(namelist%maxtime * 3600.0 / namelist%dt)
+  ntime         =  nint(namelist%maxtime * 3600.0 / namelist%dt)  ! number of timesteps (len=dt) needed for maxtime hours
   precip_steps  =  namelist%precip_duration * 3600.0 / namelist%dt
   dry_steps     =  namelist%dry_duration * 3600.0 / namelist%dt
   precipitating =  namelist%precipitating
@@ -197,17 +196,27 @@ program noahmp_driver
   water%qseva     = 0.005/3600.0
   water%etrani    = 0.005/3600.0
   water%QVAP      = 0.000005
-  
-    
+
 
   !---------------------------------------------------------------------
-  ! create output file and add initial values
+  !--- set a time vector for simulation ---
   !---------------------------------------------------------------------
-  call initialize_output(namelist%output_filename, ntime+1, levels%nsoil, levels%nsnow)
-  call add_to_output(0,levels%nsoil,levels%nsnow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)  
   
+  ! --- AWW:  calculate start and end utimes & records for requested station data read period ---
+  call get_utime_list (domain%start_datetime, domain%end_datetime, domain%dt, sim_datetimes)  ! makes unix-time list for desired records (end-of-timestep)
+  ntime = size (sim_datetimes)   
+  print *, "---------"; 
+  print *, 'Simulation startdate = ', domain%startdate, ' enddate = ', domain%enddate, ' dt(sec) = ', domain%dt, ' ntimes = ', ntime  ! YYYYMMDD dates
+  print *, "---------"
+
   !---------------------------------------------------------------------
-  ! Open the forcing file 
+  ! create output file
+  !---------------------------------------------------------------------
+  call initialize_output(namelist%output_filename, ntime, levels%nsoil, levels%nsnow)
+  !call add_to_output(domain, water, energy, 0,levels%nsoil,levels%nsnow)   ! do not add initial values
+
+  !---------------------------------------------------------------------
+  ! Open the forcing file
   ! Code adapted from the ASCII_IO from NOAH-MP V1.1
   !---------------------------------------------------------------------
    call open_forcing_file(namelist%input_filename)
@@ -215,23 +224,27 @@ program noahmp_driver
   !---------------------------------------------------------------------
   ! start the time loop
   !---------------------------------------------------------------------
+  print*, 'Simulating ...'
   do itime = 1, ntime
-  
+
+    domain%curr_datetime = sim_datetimes(itime)     ! use end-of-timestep datetimes  because initial var values are being written
+    call unix_to_date (domain%curr_datetime, curr_yr, curr_mo, curr_dy, curr_hr, curr_min, curr_sec)
+    print '(2x,I4,1x,I2,1x,I2,1x,I2,1x,I2)', curr_yr, curr_mo, curr_dy, curr_hr, curr_min
+    
     !---------------------------------------------------------------------
     ! Read in the forcing data
     !---------------------------------------------------------------------
-
     call read_forcing_text(iunit, domain%nowdate, forcing_timestep, &
          forcing%UU, forcing%VV, forcing%SFCTMP, forcing%Q2, forcing%SFCPRS, forcing%SOLDN, forcing%LWDN, forcing%PRCPNONC, ierr)
-         
-         print*, "UU = ", forcing%UU
-         print*, "VV = ", forcing%VV
-         print*, "SFCTMP = ", forcing%SFCTMP
-         print*, "Q2 = ", forcing%Q2
-         print*, "SFCPRS = ", forcing%SFCPRS
-         print*, "SOLDN = ", forcing%SOLDN
-         print*, "LWDN = ", forcing%LWDN
-         print*, "PRCPNONC = ", forcing%PRCPNONC
+
+         !print*, "UU = ", forcing%UU
+         !print*, "VV = ", forcing%VV
+         !print*, "SFCTMP = ", forcing%SFCTMP
+         !print*, "Q2 = ", forcing%Q2
+         !print*, "SFCPRS = ", forcing%SFCPRS
+         !print*, "SOLDN = ", forcing%SOLDN
+         !print*, "LWDN = ", forcing%LWDN
+         !print*, "PRCPNONC = ", forcing%PRCPNONC
 
     !---------------------------------------------------------------------
     ! there is a need for a derived variables routine here
@@ -239,13 +252,13 @@ program noahmp_driver
     ! it would handle the following plus a lot of other conversions, reassignments, settings
     forcing%P_ML     = forcing%SFCPRS              ! surf press estimated at model level [Pa], can avg multi-level nwp
     forcing%O2PP     = parameters%O2 * forcing%P_ML        ! atmospheric co2 concentration partial pressure (Pa)
-    forcing%CO2PP    = parameters%CO2 * forcing%P_ML       ! atmospheric o2 concentration partial pressure (Pa) 
-     
-    energy%TAH = forcing%SFCTMP                         ! assign canopy temp with forcing air temp (K) 
+    forcing%CO2PP    = parameters%CO2 * forcing%P_ML       ! atmospheric o2 concentration partial pressure (Pa)
+
+    energy%TAH = forcing%SFCTMP                         ! assign canopy temp with forcing air temp (K)
     QV_CURR    = forcing%Q2 / (1 - forcing%Q2)          ! mixing ratio, assuming input forcing Q2 is specific hum.
     energy%EAH = forcing%SFCPRS*QV_CURR/(0.622+QV_CURR) ! Initial guess only. (Pa)
-  
-   
+
+
 !     !---------------------------------------------------------------------
 !     ! calculate the input water by simulating a synthetic precip event
 !     !---------------------------------------------------------------------
@@ -265,46 +278,40 @@ program noahmp_driver
 !       end if
 !     end if
 
-  !---------------------------------------------------------------------
-  ! call the main utility routines 
-  !--------------------------------------------------------------------- 
-
+    !---------------------------------------------------------------------
+    ! call the main utility routines
+    !---------------------------------------------------------------------
     call UtilitiesMain (itime, domain, forcing, energy)
-    print*, "Julian day = ", forcing%JULIAN
-    print*, "COSZ = ", energy%COSZ
+    !print*, "Julian day = ", forcing%JULIAN
+    !print*, "COSZ = ", energy%COSZ
 
-  !---------------------------------------------------------------------
-  ! call the main forcing routines 
-  !--------------------------------------------------------------------- 
-
+    !---------------------------------------------------------------------
+    ! call the main forcing routines
+    !---------------------------------------------------------------------
     call ForcingMain (domain, levels, options, parameters, forcing, energy, water)
-    
-  !---------------------------------------------------------------------
-  ! call the main interception routines 
-  !--------------------------------------------------------------------- 
 
+    !---------------------------------------------------------------------
+    ! call the main interception routines
+    !---------------------------------------------------------------------
     call InterceptionMain (domain, levels, options, parameters, forcing, energy, water)
 
-  !---------------------------------------------------------------------
-  ! call the main energy balance routines 
-  !--------------------------------------------------------------------- 
-
+    !---------------------------------------------------------------------
+    ! call the main energy balance routines
+    !---------------------------------------------------------------------
     call EnergyMain (domain, levels, options, parameters, forcing, energy, water)
 
-  !---------------------------------------------------------------------
-  ! call the main water routines (canopy + snow + soil water components)
-  !--------------------------------------------------------------------- 
-
+    !---------------------------------------------------------------------
+    ! call the main water routines (canopy + snow + soil water components)
+    !---------------------------------------------------------------------
     call WaterMain (domain, levels, options, parameters, forcing, energy, water)
 
-  !---------------------------------------------------------------------
-  ! add to output file
-  !---------------------------------------------------------------------
+    !---------------------------------------------------------------------
+    ! add to output file
+    !---------------------------------------------------------------------
+    call add_to_output(domain, water, energy, itime, levels%nsoil, levels%nsnow)
 
-    call add_to_output(itime,levels%nsoil,levels%nsnow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)
-   
   end do ! time loop
 
-  call finalize_output()
-   
+  call finalize_output()     ! close output file
+
 end program

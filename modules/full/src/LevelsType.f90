@@ -1,5 +1,7 @@
 module LevelsType
 
+use NamelistRead, only: namelist_type
+
 implicit none
 save
 private
@@ -40,11 +42,9 @@ contains
 
   subroutine InitTransfer(this, namelist)
 
-    use NamelistRead
+    class(levels_type)   :: this
+    type(namelist_type)  :: namelist
 
-    class(levels_type) :: this
-    type(namelist_type) :: namelist
-    
     this%nsoil  = namelist%nsoil
     this%nsnow  = namelist%nsnow
     this%nveg  = namelist%nveg    

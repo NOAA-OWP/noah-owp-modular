@@ -1,6 +1,6 @@
 module ForcingType
 
-use NamelistRead
+use NamelistRead, only: namelist_type
 
 implicit none
 save
@@ -57,7 +57,7 @@ contains
 
   subroutine Init(this, namelist)
 
-    class(forcing_type) :: this
+    class(forcing_type)    :: this
     type(namelist_type) :: namelist
 
     call this%InitAllocate()
