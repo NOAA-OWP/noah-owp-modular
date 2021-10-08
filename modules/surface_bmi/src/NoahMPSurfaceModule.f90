@@ -185,15 +185,23 @@ contains
       !---------------------------------------------------------------------
       ! Open the forcing file
       ! Code adapted from the ASCII_IO from NOAH-MP V1.1
+      ! Compiler directive NGEN_FORCING_ACTIVE to be defined if 
+      ! Nextgen forcing is being used (https://github.com/NOAA-OWP/ngen)
       !---------------------------------------------------------------------
+#ifndef NGEN_FORCING_ACTIVE
       call open_forcing_file(namelist%input_filename)
+#endif
       
       !---------------------------------------------------------------------
       ! create output file and add initial values
+      ! Compiler directive NGEN_OUTPUT_ACTIVE to be defined if 
+      ! Nextgen is writing model output (https://github.com/NOAA-OWP/ngen)
       !---------------------------------------------------------------------
+#ifndef NGEN_OUTPUT_ACTIVE
       call initialize_output(namelist%output_filename, ntime+1, levels%nsoil, levels%nsnow)
       call add_to_output(0,levels%nsoil,levels%nsnow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)
-      
+#endif
+    
     end associate ! terminate the associate block
 
   END SUBROUTINE initialize_from_file   
@@ -203,8 +211,14 @@ contains
   SUBROUTINE cleanup(model)
     implicit none
     type(noahmp_type), intent(inout) :: model
-
+      
+      !---------------------------------------------------------------------
+      ! Compiler directive NGEN_OUTPUT_ACTIVE to be defined if 
+      ! Nextgen is writing model output (https://github.com/NOAA-OWP/ngen)
+      !---------------------------------------------------------------------
+#ifndef NGEN_OUTPUT_ACTIVE
       call finalize_output()
+#endif
   
   END SUBROUTINE cleanup
 
@@ -236,12 +250,19 @@ contains
               water      => model%water, &
               forcing    => model%forcing, &
               energy     => model%energy)
+              
     !---------------------------------------------------------------------
     ! Read in the forcing data
+    ! Compiler directive NGEN_FORCING_ACTIVE to be defined if 
+    ! Nextgen forcing is being used (https://github.com/NOAA-OWP/ngen)
+    ! If it is defined, Nextgen MUST provide forcing
     !---------------------------------------------------------------------
     forcing_timestep = domain%dt
+    
+#ifndef NGEN_FORCING_ACTIVE
     call read_forcing_text(iunit, domain%nowdate, forcing_timestep, &
          forcing%UU, forcing%VV, forcing%SFCTMP, forcing%Q2, forcing%SFCPRS, forcing%SOLDN, forcing%LWDN, forcing%PRCPNONC, ierr)
+#endif
 
     !---------------------------------------------------------------------
     ! there is a need for a derived variables routine here
@@ -286,9 +307,12 @@ contains
 
     !---------------------------------------------------------------------
     ! add to output file
+    ! Compiler directive NGEN_OUTPUT_ACTIVE to be defined if 
+    ! Nextgen is writing model output (https://github.com/NOAA-OWP/ngen)
     !---------------------------------------------------------------------
-
+#ifndef NGEN_OUTPUT_ACTIVE
     call add_to_output(domain%itime,levels%nsoil,levels%nsnow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)
+#endif
     
     end associate ! terminate associate block
   END SUBROUTINE solve_noahmp
