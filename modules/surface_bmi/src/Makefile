@@ -5,6 +5,8 @@
 
 include ../user_build_options
 
+F90FLAGS := -cpp ${F90FLAGS}
+
 OBJS = NamelistRead.o \
        LevelsType.o   \
        DomainType.o   \
