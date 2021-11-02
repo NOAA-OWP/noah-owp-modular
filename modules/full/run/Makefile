@@ -40,7 +40,9 @@ OBJS = \
         ../src/DateTimeUtilsModule.o \
         ../driver/noahmp_output.o \
         ../driver/noahmp_driver.o \
-        ../driver/noahmp_ascii_read.o
+        ../driver/noahmp_ascii_read.o \
+        ../bmi/bmi_noahmp.o \
+        ../bmi/bmi.oß
 
 
 CMD = noahmp_refac.exe

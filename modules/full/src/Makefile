@@ -36,7 +36,8 @@ OBJS = NamelistRead.o \
        SnowSoilTempModule.o \
        EnergyModule.o \
        UtilitiesModule.o \
-       DateTimeUtilsModule.o
+       DateTimeUtilsModule.o \
+       RunModule.o
 
 all:	$(OBJS)
 
@@ -102,4 +103,8 @@ EnergyModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyT
                 ForcingType.o WaterType.o ThermalPropertiesModule.o ShortwaveRadiationModule.o \
                 PrecipHeatModule.o EtFluxModule.o SnowSoilTempModule.o
 UtilitiesModule.o: DomainType.o ForcingType.o EnergyType.o
+RunModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
+                ForcingType.o WaterType.o NamelistRead.o ../driver/noahmp_ascii_read.o \
+                ../driver/noahmp_output.o UtilitiesModule.o ForcingModule.o InterceptionModule.o \
+                EnergyModule.o WaterModule.o
 

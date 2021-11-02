@@ -15,7 +15,11 @@ type, public :: domain_type
   character(len=12) :: startdate ! Start date of the model run ( YYYYMMDDHHmm ) 
   character(len=12) :: enddate   ! End date of the model run ( YYYYMMDDHHmm ) 
   character(len=12) :: nowdate   ! Current date of the model run ( YYYYMMDDHHmm ) 
-  real*8            :: start_datetime, end_datetime, curr_datetime  ! unix time (s since 1970-01-01 00:00:00) ?UTC? 
+  real*8            :: start_datetime ! unix start datetime (s since 1970-01-01 00:00:00) ?UTC? 
+  real*8            :: end_datetime   ! unix end datetime (s since 1970-01-01 00:00:00) ?UTC? 
+  real*8            :: curr_datetime  ! unix current datetime (s since 1970-01-01 00:00:00) ?UTC? 
+  integer           :: itime     ! current integer time step of model run
+  double precision  :: time_dbl  ! current time of model run in seconds from beginning
   real    :: lat
   real    :: lon
   real    :: ZREF
@@ -71,6 +75,11 @@ contains
     this%startdate = 'EMPTYDATE999'
     this%enddate   = 'EMPTYDATE999'
     this%nowdate   = 'EMPTYDATE999'
+    this%start_datetime = huge(1)
+    this%end_datetime   = huge(1)
+    this%curr_datetime  = huge(1)
+    this%itime     = huge(1) 
+    this%time_dbl  = huge(1.d0)
     this%lat       = huge(1.0)
     this%lon       = huge(1.0)
     this%ZREF      = huge(1.0)
@@ -79,9 +88,7 @@ contains
     this%isltyp    = huge(1)
     this%sfctyp    = huge(1)
     this%IST       = huge(1)
-    this%start_datetime = huge(1)
-    this%end_datetime   = huge(1)
-    this%curr_datetime  = huge(1)
+
 
   end subroutine InitDefault
 
