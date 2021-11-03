@@ -8,7 +8,7 @@ module bminoahmp
    use bmif_2_0
 #endif
 
-  use NoahMPSurfaceModule 
+  use RunModule 
   use, intrinsic :: iso_c_binding, only: c_ptr, c_loc, c_f_pointer
   implicit none
 

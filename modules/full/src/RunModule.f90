@@ -17,7 +17,8 @@ module RunModule
   use InterceptionModule
   use EnergyModule
   use WaterModule
-
+  use DateTimeUtilsModule
+  
   implicit none
   type :: noahmp_type
     type(namelist_type)   :: namelist
@@ -39,8 +40,7 @@ contains
     type(noahmp_type), target, intent(out) :: model
     character(len=*), intent (in) :: config_file ! config file from command line argument
     
-    integer            :: forcing_timestep  ! integer time step (set to dt) for some subroutine calls
-    integer            :: ntime        = 0  ! number of timesteps to run
+    integer             :: forcing_timestep  ! integer time step (set to dt) for some subroutine calls
     
     associate(namelist   => model%namelist, &
               levels     => model%levels, &
@@ -67,7 +67,7 @@ contains
       call options%InitTransfer(namelist)
 
       call parameters%Init(namelist)
-      call parameters%InitTransfer(namelist)
+      call parameters%paramRead(namelist)
 
       call forcing%Init(namelist)
       call forcing%InitTransfer(namelist)
@@ -186,17 +186,16 @@ contains
       domain%nowdate   = domain%startdate ! start the model with nowdate = startdate
       forcing_timestep = domain%dt        ! integer timestep for some subroutine calls
       domain%itime     = 1                ! initialize the time loop counter at 1
-      domain%ntime     = nint(domain%nhours * 3600.0 / domain%dt) ! compute total number of integer time steps
       domain%time_dbl  = 0.d0             ! start model run at t = 0
       
       !---------------------------------------------------------------------
       !--- set a time vector for simulation ---
       !---------------------------------------------------------------------
       ! --- AWW:  calculate start and end utimes & records for requested station data read period ---
-      call get_utime_list (domain%start_datetime, domain%end_datetime, domain%dt, sim_datetimes)  ! makes unix-time list for desired records (end-of-timestep)
-      ntime = size (sim_datetimes)   
+      call get_utime_list (domain%start_datetime, domain%end_datetime, domain%dt, domain%sim_datetimes)  ! makes unix-time list for desired records (end-of-timestep)
+      domain%ntime = size (domain%sim_datetimes)   
       print *, "---------"; 
-      print *, 'Simulation startdate = ', domain%startdate, ' enddate = ', domain%enddate, ' dt(sec) = ', domain%dt, ' ntimes = ', ntime  ! YYYYMMDD dates
+      print *, 'Simulation startdate = ', domain%startdate, ' enddate = ', domain%enddate, ' dt(sec) = ', domain%dt, ' ntimes = ', domain%ntime  ! YYYYMMDD dates
       print *, "---------"
       
       !---------------------------------------------------------------------
@@ -208,7 +207,7 @@ contains
       !---------------------------------------------------------------------
       ! create output file and add initial values
       !---------------------------------------------------------------------
-      call initialize_output(namelist%output_filename, ntime, levels%nsoil, levels%nsnow)
+      call initialize_output(namelist%output_filename, domain%ntime, levels%nsoil, levels%nsnow)
       
     end associate ! terminate the associate block
 
@@ -243,6 +242,7 @@ contains
     integer            :: forcing_timestep  ! integer time step (set to dt) for some subroutine calls
     integer            :: ierr              ! error code for reading forcing data
     real               :: QV_CURR           ! water vapor mixing ratio (kg/kg)
+    integer            :: curr_yr, curr_mo, curr_dy, curr_hr, curr_min, curr_sec  ! current UNIX timestep details
 
     associate(namelist => model%namelist, &
               levels     => model%levels, &
@@ -252,6 +252,11 @@ contains
               water      => model%water, &
               forcing    => model%forcing, &
               energy     => model%energy)
+    
+    ! Compute the current UNIX datetime
+    domain%curr_datetime = domain%sim_datetimes(domain%itime)     ! use end-of-timestep datetimes  because initial var values are being written
+    call unix_to_date (domain%curr_datetime, curr_yr, curr_mo, curr_dy, curr_hr, curr_min, curr_sec)
+    
     !---------------------------------------------------------------------
     ! Read in the forcing data
     !---------------------------------------------------------------------
@@ -304,7 +309,7 @@ contains
     ! add to output file
     !---------------------------------------------------------------------
 
-    call add_to_output(domain%itime,levels%nsoil,levels%nsnow,domain%dzsnso,domain%dt,domain%zsnso,water,energy)
+    call add_to_output(domain, water, energy, domain%itime, levels%nsoil,levels%nsnow)
     
     end associate ! terminate associate block
   END SUBROUTINE solve_noahmp

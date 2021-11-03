@@ -38,12 +38,14 @@ program noahmp_driver
     ! get the current and end time for running the execution loop
     status = m%get_current_time(current_time)
     status = m%get_end_time(end_time)
+    print*, end_time
   
     ! loop through while current time <= end time
     print*, "Running..."
     do while (current_time <= end_time)
       status = m%update()                       ! run the model one time step
       status = m%get_current_time(current_time) ! update current_time
+      print*, current_time
     end do
 
   !---------------------------------------------------------------------
