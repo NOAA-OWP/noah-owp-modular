@@ -982,9 +982,9 @@ contains
 
     utime = start_datetime  ! secs since 1970-1-1
     do t  = 1, ntimes, 1
-      utime     = utime + dt
       if (utime > (end_datetime + 1e-5)) exit     ! add tolerance
       times (t) = utime
+      utime     = utime + dt
     end do
     !print *, 'ntimes= ',ntimes
     !print *, 'time list: ', times  !seconds since 1970-1-1
