@@ -977,7 +977,7 @@ contains
       stop 
     end if
 
-    ntimes = int((end_datetime - start_datetime)/dt)
+    ntimes = int((end_datetime - start_datetime)/dt) + 1
     allocate (times(ntimes))
 
     utime = start_datetime  ! secs since 1970-1-1
