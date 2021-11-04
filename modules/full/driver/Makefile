@@ -5,6 +5,8 @@
 
 include ../user_build_options
 
+F90FLAGS := -cpp ${F90FLAGS}
+
 OBJS = noahmp_output.o noahmp_driver.o noahmp_ascii_read.o
 
 all:	$(OBJS)

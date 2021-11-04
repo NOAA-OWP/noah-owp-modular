@@ -1,5 +1,10 @@
 module NoahMPOutput
 
+!---------------------------------------------------------------------
+! Compiler directive NGEN_OUTPUT_ACTIVE to be defined if 
+! Nextgen is writing model output (https://github.com/NOAA-OWP/ngen)
+!---------------------------------------------------------------------
+#ifndef NGEN_OUTPUT_ACTIVE
   use netcdf
   use WaterType
   use EnergyType
@@ -222,6 +227,6 @@ contains
     end if
   end subroutine check  
   
-   
+#endif 
 end module NoahMPOutput
 
