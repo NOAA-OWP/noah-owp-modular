@@ -84,9 +84,9 @@ SoilWaterModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o Wate
                    SurfaceRunoffModule.o SoilWaterMovement.o SubsurfaceRunoffModule.o
 WaterModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
                ForcingType.o WaterType.o SoilWaterModule.o CanopyWaterModule.o SnowWaterModule.o
-ForcingModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
+ForcingModule.o: OptionsType.o ParametersType.o EnergyType.o \
                ForcingType.o WaterType.o AtmProcessing.o
-AtmProcessing.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
+AtmProcessing.o: OptionsType.o ParametersType.o EnergyType.o \
                ForcingType.o WaterType.o
 InterceptionModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
                ForcingType.o WaterType.o

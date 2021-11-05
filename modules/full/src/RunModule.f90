@@ -304,7 +304,7 @@ contains
     ! call the main forcing routines
     !---------------------------------------------------------------------
 
-    call ForcingMain (domain, levels, options, parameters, forcing, energy, water)
+    call ForcingMain (options, parameters, forcing, energy, water)
 
     !---------------------------------------------------------------------
     ! call the main interception routines
