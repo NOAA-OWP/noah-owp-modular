@@ -38,9 +38,12 @@ OBJS = \
         ../src/EnergyModule.o \
         ../src/UtilitiesModule.o \
         ../src/DateTimeUtilsModule.o \
+        ../src/RunModule.o \
         ../driver/noahmp_output.o \
         ../driver/noahmp_driver.o \
-        ../driver/noahmp_ascii_read.o
+        ../driver/noahmp_ascii_read.o \
+        ../bmi/bmi_noahmp.o \
+        ../bmi/bmi.o
 
 
 CMD = noahmp_refac.exe

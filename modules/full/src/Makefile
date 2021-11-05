@@ -5,6 +5,8 @@
 
 include ../user_build_options
 
+F90FLAGS := -cpp ${F90FLAGS}
+
 OBJS = NamelistRead.o \
        ParametersRead.o  \
        LevelsType.o   \
@@ -36,12 +38,13 @@ OBJS = NamelistRead.o \
        SnowSoilTempModule.o \
        EnergyModule.o \
        UtilitiesModule.o \
-       DateTimeUtilsModule.o
+       DateTimeUtilsModule.o \
+       RunModule.o
 
 all:	$(OBJS)
 
 .f90.o:
-	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(*).f90
+	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../driver $(*).f90
 
 #
 # This command cleans up object (etc) files:
@@ -102,4 +105,8 @@ EnergyModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyT
                 ForcingType.o WaterType.o ThermalPropertiesModule.o ShortwaveRadiationModule.o \
                 PrecipHeatModule.o EtFluxModule.o SnowSoilTempModule.o
 UtilitiesModule.o: DomainType.o ForcingType.o EnergyType.o
+RunModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
+                ForcingType.o WaterType.o NamelistRead.o ../driver/noahmp_ascii_read.o \
+                ../driver/noahmp_output.o UtilitiesModule.o ForcingModule.o InterceptionModule.o \
+                EnergyModule.o WaterModule.o DateTimeUtilsModule.o
 
