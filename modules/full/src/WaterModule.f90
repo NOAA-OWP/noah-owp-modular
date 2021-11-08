@@ -43,22 +43,33 @@ contains
   real, dimension(1:levels%nsoil) :: smcold        !previous timestep smc
 !---------------------------------------------------------------------
 
-! determine frozen canopy and/or ground
-  IF (energy%TV .GT. parameters%TFRZ) THEN 
-     energy%frozen_canopy = .false.
-  ELSE
-     energy%frozen_canopy = .true.
-  END IF
+    ! Below 4 computations moved from main level of noahmp_sflx to WaterModule
+    
+    ! Compute layer ice content and previous time step's snow water equivalent
+    water%SICE(:) = MAX(0.0, water%SMC(:) - water%SH2O(:))   
+    water%SNEQVO  = water%SNEQV
+    
+    ! Convert energy flux FGEV (w/m2) to evaporation/dew rate (mm/s)
+    water%QVAP = MAX( energy%FGEV/energy%LATHEAG, 0.)       ! positive part of fgev; Barlage change to ground v3.6
+    water%QDEW = ABS( MIN(energy%FGEV/energy%LATHEAG, 0.))  ! negative part of fgev
 
-  IF (energy%TG .GT. parameters%TFRZ) THEN
-     energy%frozen_ground = .false.
-  ELSE
-     energy%frozen_ground = .true.
-  END IF
+    ! determine frozen canopy and/or ground
+    IF (energy%TV .GT. parameters%TFRZ) THEN 
+       energy%frozen_canopy = .false.
+    ELSE
+       energy%frozen_canopy = .true.
+    END IF
 
-  ! total soil  water at last timestep, used for soil water budget check
-  tw0 = sum(domain%dzsnso(1:)*water%smc*1000.0) ! [mm]
-  smcold = 0.0
+    IF (energy%TG .GT. parameters%TFRZ) THEN
+       energy%frozen_ground = .false.
+    ELSE
+       energy%frozen_ground = .true.
+    END IF
+ 
+
+    ! total soil  water at last timestep, used for soil water budget check
+    tw0 = sum(domain%dzsnso(1:)*water%smc*1000.0) ! [mm]
+    smcold = 0.0
 
   !---------------------------------------------------------------------
   ! call the canopy water routines

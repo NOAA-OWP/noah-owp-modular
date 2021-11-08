@@ -45,6 +45,7 @@ type, public :: water_type
   real                            :: QSNSUB      ! snow surface sublimation rate[mm/s]
   real                            :: SNOWH       ! snow height [m]
   real                            :: SNEQV       ! snow water eqv. [mm]
+  real                            :: SNEQVO      ! snow water eqv. of previous time step [mm]
   real                            :: BDSNO       ! bulk density of snowpack (kg/m3)
   real                            :: QSNBOT      ! melting water out of snow bottom [mm/s]
   real                            :: PONDING
@@ -161,6 +162,7 @@ contains
     this%QSNSUB   = huge(1.0)
     this%SNOWH    = huge(1.0)
     this%SNEQV    = huge(1.0)
+    this%SNEQVO   = huge(1.0)
     this%BDSNO    = huge(1.0)
     this%QSNBOT   = huge(1.0)
     this%PONDING  = huge(1.0)

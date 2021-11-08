@@ -122,6 +122,7 @@ contains
       water%ISNOW    = 0
       water%SNOWH    = 0.0
       water%SNEQV    = 0.0
+      water%SNEQVO   = 0.0
       water%BDSNO    = 0.0
       water%PONDING  = 0.0
       water%PONDING1 = 0.0

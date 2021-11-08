@@ -142,7 +142,7 @@ contains
       AGE3  = parameters%DIRT_SOOT
       TAGE  = AGE1 + AGE2 + AGE3
       DELA  = DELA0 * TAGE
-      DELS  = (water%QSNOW * domain%dt) / parameters%SWEMX
+      DELS  = MAX(0.0, water%SNEQV - water%SNEQVO) / parameters%SWEMX
       SGE   = (energy%TAUSS + DELA) * (1.0 - DELS)
       energy%TAUSS = MAX(0.,SGE)
     ENDIF
@@ -167,6 +167,10 @@ contains
     REAL :: SL2                  ! temporary variable in zenith angle correction
     REAL :: CF1                  ! temporary variable in zenith angle correction
     ! --------------------------------------------------------------------
+
+    ! zero albedos for all points
+    energy%ALBSND(1: parameters%NBAND) = 0.
+    energy%ALBSNI(1: parameters%NBAND) = 0.
 
     ! Compute zenith angle correction 
     SL1 = 1.0 / parameters%BATS_COSZ
@@ -195,6 +199,10 @@ contains
     type (    energy_type)             :: energy
     type (     water_type), intent(in) :: water
 
+    ! zero albedos for all points
+    energy%ALBSND(1: parameters%NBAND) = 0.
+    energy%ALBSNI(1: parameters%NBAND) = 0.
+    
     ! Compute albedo as function of time and albedo at previous time step
     energy%ALB = 0.55 + (energy%ALBOLD - 0.55) * EXP(-0.01 * domain%DT / 3600.)
 

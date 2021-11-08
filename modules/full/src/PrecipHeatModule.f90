@@ -31,6 +31,7 @@ contains
     energy%PAHV    = 0.
     energy%PAHG    = 0.
     energy%PAHB    = 0.
+    energy%PAH     = 0.
 
 
     ! --------------------------- liquid water ------------------------------

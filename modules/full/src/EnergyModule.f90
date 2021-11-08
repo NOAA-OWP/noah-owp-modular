@@ -47,8 +47,28 @@ contains
     REAL                                 :: FIRE   !emitted IR (w/m2)
     !---------------------------------------------------------------------
 
-    ! Determine whether grid cell is vegetated or not
+    ! Initialize the the fluxes from the vegetated fraction
+    energy%TAUXV     = 0.
+    energy%TAUYV     = 0.
+    energy%IRC       = 0.
+    energy%SHC       = 0.
+    energy%IRG       = 0.
+    energy%SHG       = 0.
+    energy%EVG       = 0.
+    energy%EVC       = 0.
+    energy%TR        = 0.
+    energy%GHV       = 0.
+    energy%PSNSUN    = 0.
+    energy%PSNSHA    = 0.
+    energy%T2MV      = 0.
+    energy%Q2V       = 0.
+    energy%CHV       = 0.
+    energy%CHLEAF    = 0.
+    energy%CHUC      = 0.
+    energy%CHV2      = 0.
+    energy%RB        = 0.
 
+    ! Determine whether grid cell is vegetated or not
     parameters%VAI = parameters%ELAI + parameters%ESAI
     IF(parameters%VAI > 0.0) THEN
       parameters%VEG = .TRUE.
@@ -57,7 +77,7 @@ contains
     ENDIF
 
     ! Compute fraction of grid cell with snow cover [Niu and Yang, 2007, JGR]
-    ! Note: MFSNO (m in Niu and Yang) is set to 2.5 for all vegtypes in NOAH-MP
+    ! TO DO: MFSNO (m in Niu and Yang) is set to 2.5 for all vegtypes in NOAH-MP
     ! Reference paper indicates MFSNO varies in space (values of 1.0, 1.6, 1.8)
     ! KSJ 2021-04-06
 
@@ -213,26 +233,6 @@ contains
       ! Calculate canopy energy fluxes
       CALL VegeFluxMain (domain, levels, options, parameters, forcing, energy, water)
 
-    ELSE
-      energy%TAUXV     = 0.
-      energy%TAUYV     = 0.
-      energy%IRC       = 0.
-      energy%SHC       = 0.
-      energy%IRG       = 0.
-      energy%SHG       = 0.
-      energy%EVG       = 0.
-      energy%EVC       = 0.
-      energy%TR        = 0.
-      energy%GHV       = 0.
-      energy%PSNSUN    = 0.
-      energy%PSNSHA    = 0.
-      energy%T2MV      = 0.
-      energy%Q2V       = 0.
-      energy%CHV       = 0.
-      energy%CHLEAF    = 0.
-      energy%CHUC      = 0.
-      energy%CHV2      = 0.
-      energy%RB        = 0.
     END IF
     
     !print*, "CHV = ", energy%CHV
