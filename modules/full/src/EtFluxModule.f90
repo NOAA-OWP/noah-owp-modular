@@ -285,6 +285,7 @@ contains
       ! calculate stomatal resistance and photosynthesis (two options available)
       IF(ITER == 1) THEN
         IF (options%OPT_CRS == 1) then  ! Ball-Berry
+          ! sun
           CALL STOMATA (parameters, domain%VEGTYP, energy%PARSUN, forcing%FOLN, TV, &  ! in
                         ESTV, EAH, SFCTMP, forcing%SFCPRS, forcing%O2PP,            &  ! in
                         forcing%CO2PP, energy%IGS, water%BTRAN, RB,                 &  ! in
@@ -298,6 +299,7 @@ contains
 
         ! calculate sunlit and shaded resistances and leaf photosynthesis
         IF (options%OPT_CRS == 2) then  ! Jarvis
+          ! sun
           CALL  CANRES (parameters, energy%PARSUN, TV, water%BTRAN, EAH, forcing%SFCPRS, &  ! in
                         energy%RSSUN, energy%PSNSUN )                                       ! out
           ! shade
@@ -1031,7 +1033,7 @@ contains
     !Q2SAT = Q2SAT / 1.E3
     
     ! DQSDT2 is calculated using Q2SAT converted to specific humidity (g/kg) from mix. ratio (g/g)
-    DQSDT2 = (Q2SAT/1.E3)/(1+(Q2SAT/1.E3)) * A23M4/(TV-A4)**2
+    DQSDT2 = ((Q2SAT*1.E3)/(1+(Q2SAT*1.E3))) * A23M4/(TV-A4)**2
 
   END SUBROUTINE CALHUM
   
@@ -1376,9 +1378,6 @@ contains
     !-----------------------------------------------------------------------
     RLMO = RLMA
 
-    !       write(*,'(a20,10f15.6)')'SFCDIF: RLMO=',RLMO,RLMN,ELFC , AKHS , DTHV , USTAR
-    !    END DO
-    ! ----------------------------------------------------------------------
   END SUBROUTINE SFCDIF2
 
   

@@ -223,7 +223,7 @@ contains
     !  energy%LATHEA = parameters%HSUB
     !END IF
     !energy%GAMMA = CPAIR*SFCPRS/(0.622*energy%LATHEA)
-!
+
     ! Calculate surface temperatures of the ground and canopy and energy fluxes
     IF (parameters%VEG .AND. parameters%FVEG > 0) THEN
       energy%TGV = energy%TG
@@ -234,11 +234,6 @@ contains
       CALL VegeFluxMain (domain, levels, options, parameters, forcing, energy, water)
 
     END IF
-    
-    !print*, "CHV = ", energy%CHV
-    !print*, "IRC = ", energy%IRC
-    !print*, "SHC = ", energy%SHC
-    !print*, "GHV = " ,energy%GHV
 
     energy%TGB = energy%TG
     energy%CMB = energy%CM
@@ -294,11 +289,6 @@ contains
 
     FIRE = forcing%LWDN + energy%FIRA
     IF(FIRE <=0.) THEN
-      !WRITE(6,*) 'emitted longwave <0; skin T may be wrong due to inconsistent'
-      !WRITE(6,*) 'input of SHDFAC with LAI'
-      !WRITE(6,*) domain%ILOC, domain%JLOC, 'SHDFAC=',FVEG,'parameters%VAI=',parameters%VAI,'TV=',TV,'TG=',TG
-      !WRITE(6,*) 'LWDN=',LWDN,'energy%FIRA=',energy%FIRA,'water%SNOWH=',water%SNOWH
-      ! call wrf_error_fatal("STOP in Noah-MP")
       WRITE(*,*) 'emitted longwave <0; skin T may be wrong due to inconsistent'
       WRITE(*,*) 'input of SHDFAC with LAI'
       WRITE(*,*) domain%ILOC, domain%JLOC, 'SHDFAC=',parameters%FVEG,'parameters%VAI=',parameters%VAI,'TV=',energy%TV,'TG=',energy%TG
@@ -306,8 +296,6 @@ contains
       WRITE(*,*) 'Exiting ...'
       STOP
     END IF
-
-    !print*, "FIRE = ", FIRE
 
     ! Compute a net emissivity
     energy%EMISSI = parameters%FVEG * (energy%EMG*(1-energy%EMV) + energy%EMV + energy%EMV*(1-energy%EMV)*(1-energy%EMG)) +&
@@ -317,34 +305,15 @@ contains
     ! reflected portion of the incoming LWDN, so we're just
     ! considering the IR originating in the canopy/ground system.
     energy%TRAD = ( ( FIRE - (1 - energy%EMISSI) * forcing%LWDN ) / (energy%EMISSI * parameters%SB) ) ** 0.25
-    !energy%TRAD = (FIRE/SB)**0.25          Old TRAD calculation not taking into account Emissivity
 
     energy%APAR = energy%PARSUN * energy%LAISUN + energy%PARSHA * energy%LAISHA
     energy%PSN  = energy%PSNSUN * energy%LAISUN + energy%PSNSHA * energy%LAISHA
-
-    ! print the layer temperatures
-    !print*, "energy%stc(-2) = ", energy%stc(-2)
-    !print*, "energy%stc(-1) = ", energy%stc(-1)
-    !print*, "energy%stc(0) = ", energy%stc(0)
-    !print*, "energy%stc(1) = ", energy%stc(1)
-    !print*, "energy%stc(2) = ", energy%stc(2)
-    !print*, "energy%stc(3) = ", energy%stc(3)
-    !print*, "energy%stc(4) = ", energy%stc(4)
 
     ! calculate 3L snow & 4L soil temperatures
     CALL TSNOSOI (parameters, levels, domain, options, forcing,                   & !in
                   energy%ICE, water%ISNOW, energy%SSOIL, energy%DF, energy%HCPCT, & !in
                   energy%SAG, water%SNOWH, energy%TG,                             & !in
                   energy%STC     )                                                  !inout
-
-    ! print the layer temperatures
-    !print*, "energy%stc(-2) = ", energy%stc(-2)
-    !print*, "energy%stc(-1) = ", energy%stc(-1)
-    !print*, "energy%stc(0) = ", energy%stc(0)
-    !print*, "energy%stc(1) = ", energy%stc(1)
-    !print*, "energy%stc(2) = ", energy%stc(2)
-    !print*, "energy%stc(3) = ", energy%stc(3)
-    !print*, "energy%stc(4) = ", energy%stc(4)
 
     ! AW:  need to decide what to do with STC if no subsurface will be simulated
     !      ie, should soil layers be 0C if there is snow and TGB if not?
