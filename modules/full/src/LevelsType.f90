@@ -8,9 +8,9 @@ private
 
 type, public :: levels_type
 
-  integer :: nsoil
-  integer :: nsnow
-  integer :: nveg    
+  integer :: nsoil  ! number of soil layers
+  integer :: nsnow  ! number of snow layers
+  integer :: nveg   ! number of vegetation types in chosen table
 
   contains
 

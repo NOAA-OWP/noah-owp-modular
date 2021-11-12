@@ -9,27 +9,26 @@ private
 
 type, public :: domain_type
 
-  integer             :: iloc
-  integer             :: jloc
-  real                :: DT    ! ? run timestep (unit?)
-  character(len=12)   :: startdate ! Start date of the model run ( YYYYMMDDHHmm ) 
-  character(len=12)   :: enddate   ! End date of the model run ( YYYYMMDDHHmm ) 
-  character(len=12)   :: nowdate   ! Current date of the model run ( YYYYMMDDHHmm ) 
-  real*8              :: start_datetime ! unix start datetime (s since 1970-01-01 00:00:00) ?UTC? 
-  real*8              :: end_datetime   ! unix end datetime (s since 1970-01-01 00:00:00) ?UTC? 
-  real*8              :: curr_datetime  ! unix current datetime (s since 1970-01-01 00:00:00) ?UTC? 
+  integer             :: iloc              ! i index in grid  
+  integer             :: jloc              ! j index in grid
+  real                :: DT                ! run timestep (s)
+  character(len=12)   :: startdate         ! Start date of the model run ( YYYYMMDDHHmm ) 
+  character(len=12)   :: enddate           ! End date of the model run ( YYYYMMDDHHmm ) 
+  character(len=12)   :: nowdate           ! Current date of the model run ( YYYYMMDDHHmm ) 
+  real*8              :: start_datetime    ! unix start datetime (s since 1970-01-01 00:00:00) ?UTC? 
+  real*8              :: end_datetime      ! unix end datetime (s since 1970-01-01 00:00:00) ?UTC? 
+  real*8              :: curr_datetime     ! unix current datetime (s since 1970-01-01 00:00:00) ?UTC? 
   real*8, allocatable :: sim_datetimes (:) ! vector of unix sim times given start/end dates and dt (try 'ki8' type)
-  integer             :: itime     ! current integer time step of model run
-  integer             :: ntime     ! total number of integer time steps in model run
-  double precision    :: time_dbl  ! current time of model run in seconds from beginning
-  real    :: lat
-  real    :: lon
-  real    :: ZREF
-  integer :: vegtyp
-  integer :: croptype
-  integer :: isltyp
-  integer :: sfctyp
-  integer :: IST    !surface type 1-soil; 2-lake
+  integer             :: itime             ! current integer time step of model run
+  integer             :: ntime             ! total number of integer time steps in model run
+  double precision    :: time_dbl          ! current time of model run in seconds from beginning
+  real                :: lat               ! latitude (°)
+  real                :: lon               ! longitude (°)
+  real                :: ZREF              ! measurement height of wind speed (m)
+  integer             :: vegtyp            ! land cover type
+  integer             :: croptype          ! crop type
+  integer             :: isltyp            ! soil type
+  integer             :: IST               ! surface type 1-soil; 2-lake
   real, allocatable, dimension(:) :: zsoil   ! depth of layer-bottom from soil surface
   real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
   real, allocatable, dimension(:) :: zsnso   ! depth of snow/soil layer-bottom
@@ -89,7 +88,6 @@ contains
     this%vegtyp    = huge(1)
     this%croptype  = huge(1)
     this%isltyp    = huge(1)
-    this%sfctyp    = huge(1)
     this%IST       = huge(1)
 
 
@@ -111,7 +109,7 @@ contains
     this%vegtyp    = namelist%vegtyp
     this%croptype  = namelist%croptype
     this%isltyp    = namelist%isltyp
-    this%sfctyp    = namelist%sfctyp
+    this%IST       = namelist%sfctyp
     this%start_datetime = date_to_unix(namelist%startdate)  ! returns seconds-since-1970-01-01
     this%end_datetime   = date_to_unix(namelist%enddate)
   

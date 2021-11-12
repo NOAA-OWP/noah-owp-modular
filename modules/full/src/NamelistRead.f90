@@ -7,30 +7,30 @@ private
 type, public :: namelist_type
 
   real               :: dt                 ! model timestep (s)
-  character(len=12)  :: startdate          ! Start date of the model run ( YYYYMMDDHHmm )
-  character(len=12)  :: enddate            ! End date of the model run ( YYYYMMDDHHmm )
-  character(len=256) :: input_filename     ! name of the input/forcing file
-  character(len=256) :: output_filename    ! name of the output file
-  character(len=256) :: parameter_dir      ! name of the directory where TBLs reside
+  character(len=12)  :: startdate          ! UTC start datetime of the model run ( YYYYMMDDHHmm )
+  character(len=12)  :: enddate            ! UTC end datetime of the model run ( YYYYMMDDHHmm )
+  character(len=256) :: input_filename     ! directory/name of the input/forcing file
+  character(len=256) :: output_filename    ! directory/name of the output file
+  character(len=256) :: parameter_dir      ! name of the directory where parameter TBLs reside
   character(len=256) :: noahmp_table       ! name of noahmp parameter table
   character(len=256) :: soil_table         ! name of soil parameter table
   character(len=256) :: general_table      ! name of general parameter table
-  character(len=256) :: soil_class_name    ! name of soil classification
-  character(len=256) :: veg_class_name     ! name of vegetation classification
+  character(len=256) :: soil_class_name    ! name of soil classification (STAS or STAS-RUC)
+  character(len=256) :: veg_class_name     ! name of vegetation classification (MODIFIED_IGBP_MODIS_NOAH or USGS)
   real               :: lat                ! latitude (°)
   real               :: lon                ! longitude (°)
   real               :: ZREF               ! measurement height for wind speed (m)
 
-  integer       :: isltyp
-  integer       :: nsoil
-  integer       :: nsnow
-  integer       :: nveg               ! number of vegetation types
-  integer       :: structure_option
-  real          :: soil_depth
-  integer       :: vegtyp
-  integer       :: croptype
-  integer       :: sfctyp
-  integer       :: soilcolor
+  integer            :: isltyp             ! soil type
+  integer            :: nsoil              ! number of soil layers
+  integer            :: nsnow              ! number of snow layers
+  integer            :: nveg               ! number of vegetation types
+  integer            :: structure_option   ! use pre-set (1) or uniform (2) soil layer thicknesses
+  real               :: soil_depth         ! soil layer thicknesses if structure_option = 2
+  integer            :: vegtyp             ! land cover type
+  integer            :: croptype           ! crop type (SET TO 0, no crops currently supported)
+  integer            :: sfctyp             ! surface type (1 = land, 2 = lake)
+  integer            :: soilcolor          ! soil color code
 
   real, allocatable, dimension(:) :: zsoil   ! depth of layer-bottom from soil surface
   real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
@@ -45,22 +45,22 @@ type, public :: namelist_type
   !   model options    !
   !--------------------!
 
-  integer       :: precip_phase_option
-  integer       :: runoff_option
-  integer       :: drainage_option
-  integer       :: frozen_soil_option
-  integer       :: dynamic_vic_option
-  integer       :: dynamic_veg_option
-  integer       :: snow_albedo_option
-  integer       :: radiative_transfer_option
-  integer       :: sfc_drag_coeff_option
-  integer       :: crop_model_option
-  integer       :: canopy_stom_resist_option
-  integer       :: snowsoil_temp_time_option
-  integer       :: soil_temp_boundary_option
-  integer       :: supercooled_water_option
-  integer       :: stomatal_resistance_option
-  integer       :: evap_srfc_resistance_option
+  integer       :: precip_phase_option       ! options for determining precipitation phase (opt_snf)
+  integer       :: runoff_option ! options for runoff (opt_run)
+  integer       :: drainage_option ! options for drainage from bottom of soil column (opt_drn)
+  integer       :: frozen_soil_option ! options for modifying frozen soil permeability (opt_inf)
+  integer       :: dynamic_vic_option ! options for infiltration in dynamic VIC runoff (opt_infdv)
+  integer       :: dynamic_veg_option ! options for dynamic vegetation scheme (dveg)
+  integer       :: snow_albedo_option ! options for snow albedo (opt_alb)
+  integer       :: radiative_transfer_option ! options for radiative transfer (opt_rad)
+  integer       :: sfc_drag_coeff_option ! options for computing surface draf coefficient (opt_sfc)
+  integer       :: canopy_stom_resist_option ! options for canopy stomatal resistance (opt_crs)
+  integer       :: crop_model_option ! options for crop model (opt_crop, NOT SUPPORTED)
+  integer       :: snowsoil_temp_time_option ! options for layer 1 snow/soil temperature time scheme (opt_stc)
+  integer       :: soil_temp_boundary_option ! options for soil temp lower boundary condition (opt_tbot)
+  integer       :: supercooled_water_option ! options for supercooled liquid water (opt_frz)
+  integer       :: stomatal_resistance_option ! options for soil moisture factor for stomatal resistance (opt_btr)
+  integer       :: evap_srfc_resistance_option ! options for surface resistance to evaporation/sublimation (opt_rsf)
 
   contains
 
@@ -128,8 +128,8 @@ contains
     integer       :: snow_albedo_option
     integer       :: radiative_transfer_option
     integer       :: sfc_drag_coeff_option
-    integer       :: crop_model_option
     integer       :: canopy_stom_resist_option
+    integer       :: crop_model_option
     integer       :: snowsoil_temp_time_option
     integer       :: soil_temp_boundary_option
     integer       :: supercooled_water_option

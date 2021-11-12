@@ -239,7 +239,7 @@ contains
     water%QRAIN   = water%QDRIPR + water%QTHROR
     water%QSNOW   = water%QDRIPS + water%QTHROS
     water%SNOWHIN = water%QSNOW / water%bdfall
-    IF (domain%sfctyp == 2 .AND. energy%TG > parameters%TFRZ) THEN
+    IF (domain%ist == 2 .AND. energy%TG > parameters%TFRZ) THEN
        water%QSNOW   = 0.
        water%SNOWHIN = 0.
     END IF

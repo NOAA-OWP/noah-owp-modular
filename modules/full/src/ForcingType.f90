@@ -11,17 +11,16 @@ type, public :: forcing_type
   ! atmospheric inputs (meteorology, chemistry)
   real    :: SFCPRS       ! surface pressure (pa)
   real    :: SFCTMP       ! surface air temperature [k]
-  real    :: Q2           ! mixing ratio (kg/kg)
-  real    :: PRCPCONV     ! convective precipitation entering  [mm/s]    ! MB/AN : v3.7
-  real    :: PRCPNONC     ! non-convective precipitation entering [mm/s] ! MB/AN : v3.7
-  real    :: PRCPSHCV     ! shallow convective precip entering  [mm/s]   ! MB/AN : v3.7
-  real    :: PRCPSNOW     ! snow entering land model [mm/s]              ! MB/AN : v3.7
-  real    :: PRCPGRPL     ! graupel entering land model [mm/s]           ! MB/AN : v3.7
-  real    :: PRCPHAIL     ! hail entering land model [mm/s]              ! MB/AN : v3.7
+  real    :: Q2           ! specific humidity (note: in some Noah-MP versions Q2 is mixing ratio)
+  real    :: PRCPCONV     ! convective precipitation entering  [mm/s]
+  real    :: PRCPNONC     ! non-convective precipitation entering [mm/s]
+  real    :: PRCPSHCV     ! shallow convective precip entering  [mm/s]
+  real    :: PRCPSNOW     ! snow entering land model [mm/s] 
+  real    :: PRCPGRPL     ! graupel entering land model [mm/s]
+  real    :: PRCPHAIL     ! hail entering land model [mm/s]             
   real    :: SOLDN        ! downward shortwave radiation (w/m2)
-  real    :: LWDN    ! atmospheric longwave radiation (w/m2)
+  real    :: LWDN         ! atmospheric longwave radiation (w/m2)
   real    :: FOLN         ! foliage nitrogen concentration (%)
-  real    :: P_ML         ! surf press estimated at model level [Pa], can avg multi-level nwp
   real    :: O2PP         ! atmospheric co2 concentration partial pressure (pa)
   real    :: CO2PP        ! atmospheric o2 concentration partial pressure (pa) 
   real    :: UU           ! wind speed in eastward dir (m/s)  
@@ -31,15 +30,15 @@ type, public :: forcing_type
   real    :: TBOT         ! bottom condition for soil temperature [K]
 
   ! outputs
-  real    :: UR     ! wind speed at reference height
-  real    :: THAIR  !potential temperature (k)
-  real    :: QAIR   !specific humidity (kg/kg) (q2/(1+q2))
-  real    :: EAIR   !vapor pressure air (pa)
-  real    :: RHOAIR !density air (kg/m3)
-  real    :: FPICE   !fraction of ice                AJN
-  real    :: SWDOWN !downward solar filtered by sun angle [w/m2]
-  real    :: JULIAN
-  integer :: YEARLEN
+  real    :: UR           ! wind speed at reference height (m/s)
+  real    :: THAIR        ! potential temperature (k)
+  real    :: QAIR         ! specific humidity (kg/kg) (q2/(1+q2))
+  real    :: EAIR         ! vapor pressure air (pa)
+  real    :: RHOAIR       ! density air (kg/m3)
+  real    :: FPICE        ! fraction of ice in precipitation (-)
+  real    :: SWDOWN       ! downward solar filtered by sun angle [w/m2]
+  real    :: JULIAN       ! julian day of year
+  integer :: YEARLEN      ! year length (days)
 
   real, allocatable, dimension(:) :: SOLAD  !incoming direct solar radiation (w/m2)
   real, allocatable, dimension(:) :: SOLAI  !incoming diffuse solar radiation (w/m2)
@@ -104,7 +103,6 @@ contains
     this%JULIAN    = huge(1.0)
     this%YEARLEN   = huge(1)
     this%FOLN      = huge(1.0)
-    this%P_ML      = huge(1.0)
     this%O2PP      = huge(1.0)
     this%CO2PP     = huge(1.0)
         

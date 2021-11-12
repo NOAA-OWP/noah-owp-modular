@@ -29,6 +29,7 @@ contains
     real                                        :: QPRECL            !total non-convective precipitation [mm/s] (used to compute FP-maybe delete)
     real, parameter                             :: RHO_GRPL = 500.0  ! graupel bulk density [kg/m3] ! MB/AN : v3.7
     real, parameter                             :: RHO_HAIL = 917.0  ! hail bulk density [kg/m3]    ! MB/AN : v3.7
+    real                                        :: QV_CURR           ! water vapor mixing ratio (kg/kg)
 ! --------------------------------------------------------------------------------------------------
 
     ! Compute derived variables from forcing data
@@ -37,6 +38,15 @@ contains
     forcing%QAIR   = forcing%Q2                       ! In WRF, driver converts to specific humidity
     forcing%EAIR   = forcing%QAIR * forcing%SFCPRS / (0.622 + (0.378 * forcing%QAIR))
     forcing%RHOAIR = (forcing%SFCPRS - (0.378 * forcing%EAIR)) / (parameters%RAIR * forcing%SFCTMP)
+    
+    ! O2 and C02 partial pressures
+    forcing%O2PP  = parameters%O2 * PAIR   ! atmospheric co2 concentration partial pressure (Pa)
+    forcing%CO2PP = parameters%CO2 * PAIR  ! atmospheric o2 concentration partial pressure (Pa)
+
+    ! Starting canopy temp and vapor pressure
+    energy%TAH = forcing%SFCTMP                         ! assign canopy temp with forcing air temp (K)
+    QV_CURR    = forcing%Q2 / (1 - forcing%Q2)          ! mixing ratio, assuming input forcing Q2 is specific hum.
+    energy%EAH = forcing%SFCPRS*QV_CURR/(0.622+QV_CURR) ! Initial guess only. (Pa)
 
     ! Set incoming shortwave to 0 if cosine of solar zenith angle < 0
     IF(energy%COSZ <= 0.0) THEN
