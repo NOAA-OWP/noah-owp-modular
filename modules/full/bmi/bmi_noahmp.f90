@@ -578,7 +578,7 @@ contains
        units = "K"
        bmi_status = BMI_SUCCESS
     case("SOLDN", "LWDN")
-       units = "w/m2"
+       units = "W/m2"
        bmi_status = BMI_SUCCESS
     case("UU", "VV")
        units = "m/s"
@@ -586,10 +586,10 @@ contains
     case("Q2")
        units = "kg/kg"
        bmi_status = BMI_SUCCESS
-    case("QINSUR")
+    case("QINSUR","ETRAN", "QSEVA")
        units = "m/s"
        bmi_status = BMI_SUCCESS
-    case("PRCPNONC", "ETRAN", "QSEVA")
+    case("PRCPNONC")
        units = "mm/s"
        bmi_status = BMI_SUCCESS
     case default

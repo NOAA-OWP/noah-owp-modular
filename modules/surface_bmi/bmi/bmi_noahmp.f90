@@ -578,7 +578,7 @@ contains
        units = "K"
        bmi_status = BMI_SUCCESS
     case("SOLDN", "LWDN")
-       units = "w/m2"
+       units = "W/m2"
        bmi_status = BMI_SUCCESS
     case("UU", "VV")
        units = "m/s"

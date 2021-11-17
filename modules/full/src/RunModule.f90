@@ -80,7 +80,7 @@ contains
 
       ! Initializations
       ! for soil water
-      water%zwt       = -100.0       ! should only be needed for run=1
+      !water%zwt       = -100.0       ! should only be needed for run=1
       water%smcwtd    = 0.0          ! should only be needed for run=5
       water%deeprech  = 0.0          ! should only be needed for run=5
       water%qinsur    = 0.0          !
