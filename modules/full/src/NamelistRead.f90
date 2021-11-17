@@ -36,10 +36,12 @@ type, public :: namelist_type
   real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
   real, allocatable, dimension(:) :: sice    ! soil ice content [m3/m3]
   real, allocatable, dimension(:) :: sh2o    ! soil liquid water content [m3/m3]
+  real                            :: zwt     ! initial water table depth [m]
 
   logical :: initial_uniform                 ! initial all levels the same
-  real    :: initial_sh2o_value              ! constant sh2o value
-  real    :: initial_sice_value              ! constant sice value
+  real    :: initial_sh2o_value              ! initial uniform sh2o value
+  real    :: initial_sice_value              ! initial uniform sice value
+  real    :: initial_zwt                     ! initial water table depth [m]
 
   !--------------------!
   !   model options    !
@@ -61,6 +63,7 @@ type, public :: namelist_type
   integer       :: supercooled_water_option ! options for supercooled liquid water (opt_frz)
   integer       :: stomatal_resistance_option ! options for soil moisture factor for stomatal resistance (opt_btr)
   integer       :: evap_srfc_resistance_option ! options for surface resistance to evaporation/sublimation (opt_rsf)
+  integer       :: subsurface_option ! options for subsurface realization (opt_sub)
 
   contains
 
@@ -110,10 +113,12 @@ contains
     real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
     real, allocatable, dimension(:) :: sice    ! soil ice content [m3/m3]
     real, allocatable, dimension(:) :: sh2o    ! soil liquid water content [m3/m3]
+    real                            :: zwt     ! initial water table depth [m]
 
     logical :: initial_uniform                 ! initial all levels the same
-    real    :: initial_sh2o_value              ! constant sh2o value
-    real    :: initial_sice_value              ! constant sice value
+    real    :: initial_sh2o_value              ! initial uniform sh2o value
+    real    :: initial_sice_value              ! initial uniform sice value
+    real    :: initial_zwt                     ! initial water table depth [m]
 
     !--------------------!
     !   model options    !
@@ -135,6 +140,7 @@ contains
     integer       :: supercooled_water_option
     integer       :: stomatal_resistance_option
     integer       :: evap_srfc_resistance_option
+    integer       :: subsurface_option
 
     namelist / timing          / dt,startdate,enddate,input_filename,output_filename
     namelist / parameters      / parameter_dir, soil_table, general_table, noahmp_table, soil_class_name, veg_class_name
@@ -143,12 +149,13 @@ contains
     namelist / model_options   / precip_phase_option,runoff_option,drainage_option,frozen_soil_option,dynamic_vic_option,&
                                  dynamic_veg_option,snow_albedo_option,radiative_transfer_option,sfc_drag_coeff_option,&
                                  canopy_stom_resist_option,crop_model_option,snowsoil_temp_time_option,soil_temp_boundary_option,&
-                                 supercooled_water_option,stomatal_resistance_option,evap_srfc_resistance_option
+                                 supercooled_water_option,stomatal_resistance_option,evap_srfc_resistance_option,&
+                                 subsurface_option
     namelist / structure       / isltyp,nsoil,nsnow,nveg,structure_option,soil_depth,&
                                  vegtyp,croptype,sfctyp,soilcolor
-    namelist / fixed_initial   / zsoil,dzsnso,sice,sh2o
+    namelist / fixed_initial   / zsoil,dzsnso,sice,sh2o,zwt
     namelist / uniform_initial / initial_uniform,initial_sh2o_value,&
-                                 initial_sice_value
+                                 initial_sice_value,initial_zwt
 
 !---------------------------------------------------------------------
 !  read input file, part 1
@@ -225,10 +232,12 @@ contains
     this%dzsnso = dzsnso
     this%sice   = sice
     this%sh2o   = sh2o
+    this%zwt    = zwt
 
     this%initial_uniform    = initial_uniform
     this%initial_sh2o_value = initial_sh2o_value
     this%initial_sice_value = initial_sice_value
+    this%initial_zwt        = initial_zwt
 
     this%precip_phase_option = precip_phase_option
     this%runoff_option       = runoff_option
@@ -246,6 +255,7 @@ contains
     this%supercooled_water_option   = supercooled_water_option
     this%stomatal_resistance_option = stomatal_resistance_option
     this%evap_srfc_resistance_option= evap_srfc_resistance_option
+    this%subsurface_option          = subsurface_option
 
   end subroutine ReadNamelist
 

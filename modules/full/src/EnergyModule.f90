@@ -147,15 +147,25 @@ contains
     IF(domain%IST ==1 ) THEN
       DO IZ = 1, parameters%NROOT
         IF(options%OPT_BTR == 1) then                  ! Noah
-          GX    = (water%SH2O(IZ)-parameters%SMCWLT(IZ)) / (parameters%SMCREF(IZ)-parameters%SMCWLT(IZ))
+          GX = (water%SH2O(IZ)-parameters%SMCWLT(IZ)) / (parameters%SMCREF(IZ)-parameters%SMCWLT(IZ))
         END IF
         IF(options%OPT_BTR == 2) then                  ! CLM
-          PSI   = MAX(parameters%PSIWLT,-parameters%PSISAT(IZ)*(MAX(0.01,water%SH2O(IZ))/parameters%SMCMAX(IZ))**(-parameters%BEXP(IZ)) )
-          GX    = (1.-PSI/parameters%PSIWLT)/(1.+parameters%PSISAT(IZ)/parameters%PSIWLT)
+          IF(options%OPT_SUB == 1) then                ! Noah-MP subsurface
+            PSI = MAX(parameters%PSIWLT,-parameters%PSISAT(IZ)*(MAX(0.01,water%SH2O(IZ))/parameters%SMCMAX(IZ))**(-parameters%BEXP(IZ)) )
+          END IF
+          IF(options%OPT_SUB == 2) then                ! one-way coupled subsurface
+            PSI = water%ZWT - (domain%zsoil(IZ) + (domain%dzsnso(IZ) / 2)) ! set PSI to be midpoint of layer above water table
+          END IF
+          GX = (1.-PSI/parameters%PSIWLT)/(1.+parameters%PSISAT(IZ)/parameters%PSIWLT)
         END IF
         IF(options%OPT_BTR == 3) then                  ! SSiB
-          PSI   = MAX(parameters%PSIWLT,-parameters%PSISAT(IZ)*(MAX(0.01,water%SH2O(IZ))/parameters%SMCMAX(IZ))**(-parameters%BEXP(IZ)) )
-          GX    = 1.-EXP(-5.8*(LOG(parameters%PSIWLT/PSI)))
+          IF(options%OPT_SUB == 1) then                ! Noah-MP subsurface
+            PSI = MAX(parameters%PSIWLT,-parameters%PSISAT(IZ)*(MAX(0.01,water%SH2O(IZ))/parameters%SMCMAX(IZ))**(-parameters%BEXP(IZ)) )
+          END IF
+          IF(options%OPT_SUB == 2) then                ! one-way coupled subsurface
+            PSI = water%ZWT - (domain%zsoil(IZ) + (domain%dzsnso(IZ) / 2)) ! set PSI to be midpoint of layer above water table
+          END IF
+          GX = 1.-EXP(-5.8*(LOG(parameters%PSIWLT/PSI)))
         END IF
         GX = MIN(1.,MAX(0.,GX))
         water%BTRANI(IZ) = MAX(parameters%MPE, domain%DZSNSO(IZ) / (-domain%ZSOIL(parameters%NROOT)) * GX)

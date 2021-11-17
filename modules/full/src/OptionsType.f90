@@ -92,11 +92,16 @@ type, public :: options_type
                         !   2 -> CLM  (matric potential)
                         !   3 -> SSiB (matric potential)
   integer :: opt_rsf    ! evap_srfc_resistance_option
-                        ! options for surface resistent to evaporation/sublimation
+                        ! options for surface resistance to evaporation/sublimation
                         !   1 -> Sakaguchi and Zeng, 2009
                         !   2 -> Sellers (1992)
                         !   3 -> adjusted Sellers to decrease RSURF for wet soil
                         !   4 -> option 1 for non-snow; rsurf = rsurf_snow for snow (set in MPTABLE); AD v3.8
+  integer :: opt_sub    ! subsurface_option
+                        ! options for subsurface realization
+                        !   1 -> full Noah-MP subsurface
+                        !   2 -> one-way coupled hydrostatic
+                        !   3 -> two-way coupled (NOT IMPLEMENTED YET)
 
   contains
 
@@ -136,6 +141,7 @@ contains
     this%opt_frz    = huge(1)    
     this%opt_btr    = huge(1)    
     this%opt_rsf    = huge(1)    
+    this%opt_sub    = huge(1)    
 
   end subroutine InitDefault
 
@@ -160,6 +166,7 @@ contains
     this%opt_frz   = namelist%supercooled_water_option
     this%opt_btr   = namelist%stomatal_resistance_option
     this%opt_rsf   = namelist%evap_srfc_resistance_option
+    this%opt_sub   = namelist%subsurface_option
 
   end subroutine InitTransfer
 
