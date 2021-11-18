@@ -9,7 +9,8 @@ private
 type, public :: water_type
 
   real                            :: qinsur      ! water input on soil surface [m/s]
-  real                            :: qseva       ! soil surface evap rate [mm/s]
+  real                            :: qseva       ! soil surface evap rate [m/s]
+  real                            :: EVAPOTRANS  ! evapotranspiration, sum of QSEVA + ETRAN [m/s]
   real                            :: runsrf      ! surface runoff [mm/s] 
   real                            :: runsub      ! baseflow (sturation excess) [mm/s]
   real                            :: qdrain      ! soil-bottom free drainage [mm/s] 
@@ -128,6 +129,7 @@ contains
 
     this%qinsur   = huge(1.0)
     this%qseva    = huge(1.0)
+    this%evapotrans = huge(1.0)
     this%runsrf   = huge(1.0)
     this%runsub   = huge(1.0)
     this%qdrain   = huge(1.0)

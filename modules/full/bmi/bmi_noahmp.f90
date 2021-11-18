@@ -98,7 +98,7 @@ module bminoahmp
 
   ! Exchange items
   integer, parameter :: input_item_count = 8
-  integer, parameter :: output_item_count = 3
+  integer, parameter :: output_item_count = 4
   character (len=BMI_MAX_VAR_NAME), target, &
        dimension(input_item_count) :: input_items
   character (len=BMI_MAX_VAR_NAME), target, &
@@ -162,9 +162,10 @@ contains
     character (*), pointer, intent(out) :: names(:)
     integer :: bmi_status
 
-    output_items(1) = 'QINSUR'  ! total liquid water input to surface rate (m/s)
-    output_items(2) = 'ETRAN'   ! transpiration rate (mm/s)
-    output_items(3) = 'QSEVA'   ! evaporation rate (mm/s)
+    output_items(1) = 'QINSUR'     ! total liquid water input to surface rate (m/s)
+    output_items(2) = 'ETRAN'      ! transpiration rate (mm/s)
+    output_items(3) = 'QSEVA'      ! evaporation rate (m/s)
+    output_items(4) = 'EVAPOTRANS' ! evapotranspiration rate (m/s)
 
     names => output_items
     bmi_status = BMI_SUCCESS
@@ -283,7 +284,7 @@ contains
 
     select case(name)
     case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! input vars
-         'QINSUR', 'ETRAN', 'QSEVA')                              ! output vars
+         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS')                            ! output vars
        grid = 0
        bmi_status = BMI_SUCCESS
     case default
@@ -554,7 +555,7 @@ contains
 
     select case(name)
     case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! input vars
-         'QINSUR', 'ETRAN', 'QSEVA')                              ! output vars
+         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS')                            ! output vars
        type = "real"
        bmi_status = BMI_SUCCESS
     case default
@@ -586,10 +587,10 @@ contains
     case("Q2")
        units = "kg/kg"
        bmi_status = BMI_SUCCESS
-    case("QINSUR","ETRAN", "QSEVA")
+    case("QINSUR", "QSEVA", "EVAPOTRANS")
        units = "m/s"
        bmi_status = BMI_SUCCESS
-    case("PRCPNONC")
+    case("PRCPNONC", "ETRAN")
        units = "mm/s"
        bmi_status = BMI_SUCCESS
     case default
@@ -638,6 +639,9 @@ contains
        bmi_status = BMI_SUCCESS
     case("QSEVA")
        size = sizeof(this%model%water%qseva)                ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("EVAPOTRANS")
+       size = sizeof(this%model%water%evapotrans)            ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case default
        size = -1
@@ -738,6 +742,9 @@ contains
        bmi_status = BMI_SUCCESS
     case("QSEVA")
        dest = [this%model%water%qseva]
+       bmi_status = BMI_SUCCESS
+    case("EVAPOTRANS")
+       dest = [this%model%water%evapotrans]
        bmi_status = BMI_SUCCESS
     case default
        dest(:) = -1.0
@@ -940,6 +947,9 @@ contains
        bmi_status = BMI_SUCCESS
     case("QSEVA")
        this%model%water%qseva = src(1)
+       bmi_status = BMI_SUCCESS
+    case("EVAPOTRANS")
+       this%model%water%evapotrans = src(1)
        bmi_status = BMI_SUCCESS
     case default
        bmi_status = BMI_FAILURE

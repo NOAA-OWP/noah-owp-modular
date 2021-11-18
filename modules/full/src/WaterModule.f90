@@ -139,8 +139,12 @@ contains
       call SoilWater (domain, levels, options, parameters, water )   
 !!!!! did not include groundwater part
     ENDIF
-
+    
+    ! Compute total soil moisture content
     water%smc = water%sh2o + water%sice
+    
+    ! Compute evapotranspiration
+    water%evapotrans = water%QSEVA + (water%ETRAN * 0.001)
    
   !---------------------------------------------------------------------
   ! accumulate some fields and error checks when opt_sub == 1
