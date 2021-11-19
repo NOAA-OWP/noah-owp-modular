@@ -34,7 +34,7 @@ After the model is finished compiling and linking, you can change into the `run`
 
 ```
 cd run/
-./noahmp_refac.exe
+./noahmp_refac.exe namelist.input
 ```
 
 You can examine model output in the `output.nc` file (requires [Panoply](https://www.giss.nasa.gov/tools/panoply/) or other NetCDF viewer).
