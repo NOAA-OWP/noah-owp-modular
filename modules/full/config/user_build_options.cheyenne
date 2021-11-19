@@ -4,7 +4,7 @@
 
  COMPILERF90	=	pgf90
  FREESOURCE	=	-Mfree
- F90FLAGS	=       -g -byteswapio -Kieee
+ F90FLAGS	=       -g -byteswapio -Kieee -Mbackslash
  MODFLAG	=	
  HYDRO_LIB      =       
  LDFLAGS	=	
