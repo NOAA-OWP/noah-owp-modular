@@ -9,7 +9,8 @@ private
 type, public :: water_type
 
   real                            :: qinsur      ! water input on soil surface [m/s]
-  real                            :: qseva       ! soil surface evap rate [mm/s]
+  real                            :: qseva       ! soil surface evap rate [m/s]
+  real                            :: EVAPOTRANS  ! evapotranspiration, sum of QSEVA + ETRAN [m/s]
   real                            :: runsrf      ! surface runoff [mm/s] 
   real                            :: runsub      ! baseflow (sturation excess) [mm/s]
   real                            :: qdrain      ! soil-bottom free drainage [mm/s] 
@@ -45,6 +46,7 @@ type, public :: water_type
   real                            :: QSNSUB      ! snow surface sublimation rate[mm/s]
   real                            :: SNOWH       ! snow height [m]
   real                            :: SNEQV       ! snow water eqv. [mm]
+  real                            :: SNEQVO      ! snow water eqv. of previous time step [mm]
   real                            :: BDSNO       ! bulk density of snowpack (kg/m3)
   real                            :: QSNBOT      ! melting water out of snow bottom [mm/s]
   real                            :: PONDING
@@ -59,6 +61,7 @@ type, public :: water_type
   
   integer                         :: ISNOW       ! actual no. of snow layers 
   real, allocatable, dimension(:) :: smc         ! total soil water content [m3/m3]
+  real, allocatable, dimension(:) :: smc_init    ! initial total soil water content [m3/m3]
   real, allocatable, dimension(:) :: sice        ! total soil ice content [m3/m3]
   real, allocatable, dimension(:) :: sh2o        ! total soil liquid content [m3/m3]
   real, allocatable, dimension(:) :: etrani      ! transpiration rate (mm/s) [+]
@@ -102,13 +105,14 @@ contains
     class(water_type) :: this
     type(namelist_type) :: namelist
 
-    allocate(this%smc   (namelist%nsoil))  ; this%smc   (:) = huge(1.0)
-    allocate(this%sice  (namelist%nsoil))  ; this%sice  (:) = huge(1.0)
-    allocate(this%sh2o  (namelist%nsoil))  ; this%sh2o  (:) = huge(1.0)
-    allocate(this%etrani(namelist%nsoil))  ; this%etrani(:) = huge(1.0)
-    allocate(this%btrani(namelist%nsoil))  ; this%btrani(:) = huge(1.0)
-    allocate(this%wcnd  (namelist%nsoil))  ; this%wcnd  (:) = huge(1.0)
-    allocate(this%fcr   (namelist%nsoil))  ; this%fcr   (:) = huge(1.0)
+    allocate(this%smc     (namelist%nsoil)); this%smc     (:) = huge(1.0)
+    allocate(this%smc_init(namelist%nsoil)); this%smc_init(:) = huge(1.0)
+    allocate(this%sice    (namelist%nsoil)); this%sice    (:) = huge(1.0)
+    allocate(this%sh2o    (namelist%nsoil)); this%sh2o    (:) = huge(1.0)
+    allocate(this%etrani  (namelist%nsoil)); this%etrani  (:) = huge(1.0)
+    allocate(this%btrani  (namelist%nsoil)); this%btrani  (:) = huge(1.0)
+    allocate(this%wcnd    (namelist%nsoil)); this%wcnd    (:) = huge(1.0)
+    allocate(this%fcr     (namelist%nsoil)); this%fcr     (:) = huge(1.0)
     allocate(this%FICEOLD(-namelist%nsnow+1:0)); this%FICEOLD (:) = huge(1.0)
     allocate(this%SNICE  (-namelist%nsnow+1:0)); this%SNICE   (:) = huge(1.0)
     allocate(this%SNLIQ  (-namelist%nsnow+1:0)); this%SNLIQ   (:) = huge(1.0)
@@ -125,6 +129,7 @@ contains
 
     this%qinsur   = huge(1.0)
     this%qseva    = huge(1.0)
+    this%evapotrans = huge(1.0)
     this%runsrf   = huge(1.0)
     this%runsub   = huge(1.0)
     this%qdrain   = huge(1.0)
@@ -161,6 +166,7 @@ contains
     this%QSNSUB   = huge(1.0)
     this%SNOWH    = huge(1.0)
     this%SNEQV    = huge(1.0)
+    this%SNEQVO   = huge(1.0)
     this%BDSNO    = huge(1.0)
     this%QSNBOT   = huge(1.0)
     this%PONDING  = huge(1.0)
@@ -191,8 +197,15 @@ contains
       this%sice = namelist%sice
     end if
 
-    this%smc = this%sh2o + this%sice  ! initial volumetric soil water
-
+    this%smc = this%sh2o + this%sice  ! volumetric soil water
+    this%smc_init = this%smc          ! initial SMC
+    
+    if(namelist%initial_uniform) then
+      this%zwt = namelist%initial_zwt ! initialize zwt
+    else
+      this%zwt = namelist%zwt ! initialize zwt
+    end if
+    
   end subroutine InitTransfer
 
 end module WaterType

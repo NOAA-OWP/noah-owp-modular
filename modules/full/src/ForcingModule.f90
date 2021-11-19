@@ -1,7 +1,5 @@
 module ForcingModule
 
-  use LevelsType
-  use DomainType
   use OptionsType
   use ParametersType
   use WaterType
@@ -15,13 +13,11 @@ contains
 
 !== begin energy subroutine ================================================================================
 
-  SUBROUTINE ForcingMain (domain, levels, options, parameters, forcing, energy, water)
+  SUBROUTINE ForcingMain (options, parameters, forcing, energy, water)
 !---------------------------------------------------------------------
 ! Main module for all water components
 !---------------------------------------------------------------------
 
-  type (levels_type),     intent(in)   :: levels
-  type (domain_type)                   :: domain
   type (parameters_type)               :: parameters
   type (options_type),    intent(in)   :: options
   type (water_type)                    :: water
@@ -31,7 +27,7 @@ contains
     
     ! Call the ATM subroutine to process other variables such as
     ! air density and precipitation phase
-    call ATM(domain, levels, options, parameters, forcing, energy, water)
+    call ATM (options, parameters, forcing, energy, water)
 
   END SUBROUTINE ForcingMain   
 

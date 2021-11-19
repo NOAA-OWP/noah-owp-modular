@@ -8,13 +8,13 @@ private
 
 type, public :: energy_type
 
-  real    :: TV
-  real    :: TG
-  real    :: FCEV 
-  real    :: FCTR
+  real    :: TV                                ! vegetation temperature (k)
+  real    :: TG                                ! ground temperature (k)
+  real    :: FCEV                              ! canopy evaporation energy flux (w/m2)
+  real    :: FCTR                              ! canopy transpiration energy flux (w/m2)
   real    :: IGS                               ! growing season index (0=off, 1=on)
-  logical :: FROZEN_CANOPY
-  logical :: FROZEN_GROUND
+  logical :: FROZEN_CANOPY                     ! binary frozen canopy status (true when TV <= parameters%TFRZ)
+  logical :: FROZEN_GROUND                     ! binary frozen ground status (true when TG <= parameters%TFRZ)
   integer, allocatable, dimension(:) :: IMELT  ! snow layer melting state index [0-no melt;1-melt]
   real,    allocatable, dimension(:) :: STC    ! snow/soil layer temperature [k]
   real,    allocatable, dimension(:) :: DF     ! snow and soil layer thermal conductivity [w/m/k]
@@ -71,11 +71,9 @@ type, public :: energy_type
   REAL                 :: FSRV    ! reflected solar radiation by vegetation
   REAL                 :: FSRG    ! reflected solar radiation by ground
 
-
-
   ! Other, uncategorized
   REAL                 :: TAH     ! canopy air tmeperature (K)
-  REAL                 :: EAH     ! water vapor pressure (Pa)  
+  REAL                 :: EAH     ! canopy water vapor pressure (Pa)  
   REAL                 :: ZPD     ! zero plane displacement, ground (m)
   REAL                 :: Z0MG    ! z0 momentum, ground (m)
   REAL                 :: Z0M     ! roughness length, momentum (m)

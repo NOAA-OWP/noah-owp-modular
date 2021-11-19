@@ -34,6 +34,7 @@ type, public :: parameters_type
   real                            :: slope                     ! drainage parameter
   real                            :: timean
   real                            :: fsatmx
+  real                            :: ZWT_INIT                  ! initial water table depth below surface [m]
   logical                         :: urban_flag
   real, dimension(12)             :: LAIM                      ! monthly LAI
   real, dimension(12)             :: SAIM                      ! monthly SAI
@@ -355,6 +356,13 @@ contains
     this%O2        =  0.209      ! o2 partial pressure, from O2_TABLE var (set in MPTABLE.TBL)
     this%PSIWLT    = -150.0      ! originally a fixed parameter set in ENERGY()
     this%TBOT      = 263.0       ! (K) can be updated depending on option OPT_TBOT
+    
+    ! Assign initial soil moisture based on variable or uniform initial conditions
+    if(namelist%initial_uniform) then
+      this%zwt_init = namelist%initial_zwt
+    else
+      this%zwt_init = namelist%zwt
+    end if
 
   end subroutine paramRead
 

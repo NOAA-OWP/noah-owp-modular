@@ -24,9 +24,9 @@
   ZREF            = 10.0    ! measurement height for wind speed
 /
 
-&model_options
+&model_options ! see OptionsType.f90 for details
   precip_phase_option               = 1
-  snow_albedo_option                = 1 ! 1 = BATS, 2 = CLASS
+  snow_albedo_option                = 1 
   dynamic_veg_option                = 1
   runoff_option                     = 8
   drainage_option                   = 8
@@ -41,6 +41,7 @@
   supercooled_water_option          = 1
   stomatal_resistance_option        = 1
   evap_srfc_resistance_option       = 1
+  subsurface_option                 = 1
 /
 
 &structure
@@ -50,7 +51,7 @@
  nveg             = 20      ! number of vegetation types
  structure_option = 1       ! 1: use preset zsoil; 2: uniform levels
  soil_depth       = 2.0     ! total soil thickness [m] for structure_option > 1
- vegtyp           = 1       ! vegetation type modis
+ vegtyp           = 1       ! vegetation type
  croptype         = 0       ! crop type (0 = no crops)
  sfctyp           = 1       ! land surface type, 1:soil, 2:lake
  soilcolor        = 4       ! soil color code
@@ -61,10 +62,12 @@
  dzsnso    =  0.0,  0.0,  0.0,  0.1,  0.3,  0.6,  1.0  ! level thickness [m]
  sice      =  0.0,  0.0,  0.0,  0.0  ! initial soil ice profile [vol]
  sh2o      =  0.3,  0.3,  0.3,  0.3  ! initial soil liquid profile [vol]
+ zwt       =  -2.0                   ! initial water table depth below surface [m]
 /
 
 &uniform_initial
  initial_uniform    = .true.         ! initial all levels the same
  initial_sh2o_value = 0.3            ! constant soil liquid value [vol]
  initial_sice_value = 0.0            ! constant soil ice value [vol]
+ initial_zwt        =  -2.0          ! initial water table depth below surface [m]
 /

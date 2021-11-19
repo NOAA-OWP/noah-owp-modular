@@ -80,7 +80,7 @@ contains
 
       ! Initializations
       ! for soil water
-      water%zwt       = -100.0       ! should only be needed for run=1
+      !water%zwt       = -100.0       ! should only be needed for run=1
       water%smcwtd    = 0.0          ! should only be needed for run=5
       water%deeprech  = 0.0          ! should only be needed for run=5
       water%qinsur    = 0.0          !
@@ -122,6 +122,7 @@ contains
       water%ISNOW    = 0
       water%SNOWH    = 0.0
       water%SNEQV    = 0.0
+      water%SNEQVO   = 0.0
       water%BDSNO    = 0.0
       water%PONDING  = 0.0
       water%PONDING1 = 0.0
@@ -178,7 +179,6 @@ contains
       forcing%TBOT     = 285.0      ! bottom condition for soil temperature [K]
 
       ! domain variables
-      domain%IST = 1
       domain%zsnso(-namelist%nsnow+1:0) = 0.0
       domain%zsnso(1:namelist%nsoil) = namelist%zsoil
      
@@ -255,7 +255,6 @@ contains
     integer, parameter :: iunit        = 10 ! Fortran unit number to attach to the opened file
     integer            :: forcing_timestep  ! integer time step (set to dt) for some subroutine calls
     integer            :: ierr              ! error code for reading forcing data
-    real               :: QV_CURR           ! water vapor mixing ratio (kg/kg)
     integer            :: curr_yr, curr_mo, curr_dy, curr_hr, curr_min, curr_sec  ! current UNIX timestep details
 
     associate(namelist => model%namelist, &
@@ -283,18 +282,7 @@ contains
     call read_forcing_text(iunit, domain%nowdate, forcing_timestep, &
          forcing%UU, forcing%VV, forcing%SFCTMP, forcing%Q2, forcing%SFCPRS, forcing%SOLDN, forcing%LWDN, forcing%PRCPNONC, ierr)
 #endif
-    !---------------------------------------------------------------------
-    ! there is a need for a derived variables routine here
-    !---------------------------------------------------------------------
-    ! it would handle the following plus a lot of other conversions, reassignments, settings
-    forcing%P_ML     = forcing%SFCPRS              ! surf press estimated at model level [Pa], can avg multi-level nwp
-    forcing%O2PP     = parameters%O2 * forcing%P_ML        ! atmospheric co2 concentration partial pressure (Pa)
-    forcing%CO2PP    = parameters%CO2 * forcing%P_ML       ! atmospheric o2 concentration partial pressure (Pa)
-
-    energy%TAH = forcing%SFCTMP                         ! assign canopy temp with forcing air temp (K)
-    QV_CURR    = forcing%Q2 / (1 - forcing%Q2)          ! mixing ratio, assuming input forcing Q2 is specific hum.
-    energy%EAH = forcing%SFCPRS*QV_CURR/(0.622+QV_CURR) ! Initial guess only. (Pa)
-
+   
     !---------------------------------------------------------------------
     ! call the main utility routines
     !---------------------------------------------------------------------
@@ -304,7 +292,7 @@ contains
     ! call the main forcing routines
     !---------------------------------------------------------------------
 
-    call ForcingMain (domain, levels, options, parameters, forcing, energy, water)
+    call ForcingMain (options, parameters, forcing, energy, water)
 
     !---------------------------------------------------------------------
     ! call the main interception routines

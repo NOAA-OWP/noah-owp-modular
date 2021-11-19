@@ -29,6 +29,15 @@ contains
     INTEGER                                      :: IZ      ! do-loop index
     ! ----------------------------------------------------------------------
 
+    ! snow/soil layer thickness (m)
+    DO IZ = water%ISNOW+1, levels%NSOIL
+        IF(IZ == water%ISNOW+1) THEN
+          domain%DZSNSO(IZ) = - domain%ZSNSO(IZ)
+        ELSE
+          domain%DZSNSO(IZ) = domain%ZSNSO(IZ-1) - domain%ZSNSO(IZ)
+        END IF
+    END DO
+    
     ! compute snow thermal conductivity and heat capacity
 
     CALL CSNOW(domain, levels, options, parameters, forcing, energy, water)

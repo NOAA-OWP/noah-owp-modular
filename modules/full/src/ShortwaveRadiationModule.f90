@@ -39,7 +39,6 @@ contains
 
     ! Compute net solar radiation
     CALL NetSolarRadiation(domain, levels, options, parameters, forcing, energy, water)
-    !print*, "Combined SW flux = ", energy%SAV + energy%SAG + energy%FSRV + energy%FSRG
 
   END SUBROUTINE ShortwaveRadiationMain
   

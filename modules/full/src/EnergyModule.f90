@@ -47,8 +47,28 @@ contains
     REAL                                 :: FIRE   !emitted IR (w/m2)
     !---------------------------------------------------------------------
 
-    ! Determine whether grid cell is vegetated or not
+    ! Initialize the the fluxes from the vegetated fraction
+    energy%TAUXV     = 0.
+    energy%TAUYV     = 0.
+    energy%IRC       = 0.
+    energy%SHC       = 0.
+    energy%IRG       = 0.
+    energy%SHG       = 0.
+    energy%EVG       = 0.
+    energy%EVC       = 0.
+    energy%TR        = 0.
+    energy%GHV       = 0.
+    energy%PSNSUN    = 0.
+    energy%PSNSHA    = 0.
+    energy%T2MV      = 0.
+    energy%Q2V       = 0.
+    energy%CHV       = 0.
+    energy%CHLEAF    = 0.
+    energy%CHUC      = 0.
+    energy%CHV2      = 0.
+    energy%RB        = 0.
 
+    ! Determine whether grid cell is vegetated or not
     parameters%VAI = parameters%ELAI + parameters%ESAI
     IF(parameters%VAI > 0.0) THEN
       parameters%VEG = .TRUE.
@@ -57,7 +77,7 @@ contains
     ENDIF
 
     ! Compute fraction of grid cell with snow cover [Niu and Yang, 2007, JGR]
-    ! Note: MFSNO (m in Niu and Yang) is set to 2.5 for all vegtypes in NOAH-MP
+    ! TO DO: MFSNO (m in Niu and Yang) is set to 2.5 for all vegtypes in NOAH-MP
     ! Reference paper indicates MFSNO varies in space (values of 1.0, 1.6, 1.8)
     ! KSJ 2021-04-06
 
@@ -127,15 +147,25 @@ contains
     IF(domain%IST ==1 ) THEN
       DO IZ = 1, parameters%NROOT
         IF(options%OPT_BTR == 1) then                  ! Noah
-          GX    = (water%SH2O(IZ)-parameters%SMCWLT(IZ)) / (parameters%SMCREF(IZ)-parameters%SMCWLT(IZ))
+          GX = (water%SH2O(IZ)-parameters%SMCWLT(IZ)) / (parameters%SMCREF(IZ)-parameters%SMCWLT(IZ))
         END IF
         IF(options%OPT_BTR == 2) then                  ! CLM
-          PSI   = MAX(parameters%PSIWLT,-parameters%PSISAT(IZ)*(MAX(0.01,water%SH2O(IZ))/parameters%SMCMAX(IZ))**(-parameters%BEXP(IZ)) )
-          GX    = (1.-PSI/parameters%PSIWLT)/(1.+parameters%PSISAT(IZ)/parameters%PSIWLT)
+          IF(options%OPT_SUB == 1) then                ! Noah-MP subsurface
+            PSI = MAX(parameters%PSIWLT,-parameters%PSISAT(IZ)*(MAX(0.01,water%SH2O(IZ))/parameters%SMCMAX(IZ))**(-parameters%BEXP(IZ)) )
+          END IF
+          IF(options%OPT_SUB == 2) then                ! one-way coupled subsurface
+            PSI = water%ZWT - (domain%zsoil(IZ) + (domain%dzsnso(IZ) / 2)) ! set PSI to be midpoint of layer above water table
+          END IF
+          GX = (1.-PSI/parameters%PSIWLT)/(1.+parameters%PSISAT(IZ)/parameters%PSIWLT)
         END IF
         IF(options%OPT_BTR == 3) then                  ! SSiB
-          PSI   = MAX(parameters%PSIWLT,-parameters%PSISAT(IZ)*(MAX(0.01,water%SH2O(IZ))/parameters%SMCMAX(IZ))**(-parameters%BEXP(IZ)) )
-          GX    = 1.-EXP(-5.8*(LOG(parameters%PSIWLT/PSI)))
+          IF(options%OPT_SUB == 1) then                ! Noah-MP subsurface
+            PSI = MAX(parameters%PSIWLT,-parameters%PSISAT(IZ)*(MAX(0.01,water%SH2O(IZ))/parameters%SMCMAX(IZ))**(-parameters%BEXP(IZ)) )
+          END IF
+          IF(options%OPT_SUB == 2) then                ! one-way coupled subsurface
+            PSI = water%ZWT - (domain%zsoil(IZ) + (domain%dzsnso(IZ) / 2)) ! set PSI to be midpoint of layer above water table
+          END IF
+          GX = 1.-EXP(-5.8*(LOG(parameters%PSIWLT/PSI)))
         END IF
         GX = MIN(1.,MAX(0.,GX))
         water%BTRANI(IZ) = MAX(parameters%MPE, domain%DZSNSO(IZ) / (-domain%ZSOIL(parameters%NROOT)) * GX)
@@ -203,7 +233,7 @@ contains
     !  energy%LATHEA = parameters%HSUB
     !END IF
     !energy%GAMMA = CPAIR*SFCPRS/(0.622*energy%LATHEA)
-!
+
     ! Calculate surface temperatures of the ground and canopy and energy fluxes
     IF (parameters%VEG .AND. parameters%FVEG > 0) THEN
       energy%TGV = energy%TG
@@ -213,32 +243,7 @@ contains
       ! Calculate canopy energy fluxes
       CALL VegeFluxMain (domain, levels, options, parameters, forcing, energy, water)
 
-    ELSE
-      energy%TAUXV     = 0.
-      energy%TAUYV     = 0.
-      energy%IRC       = 0.
-      energy%SHC       = 0.
-      energy%IRG       = 0.
-      energy%SHG       = 0.
-      energy%EVG       = 0.
-      energy%EVC       = 0.
-      energy%TR        = 0.
-      energy%GHV       = 0.
-      energy%PSNSUN    = 0.
-      energy%PSNSHA    = 0.
-      energy%T2MV      = 0.
-      energy%Q2V       = 0.
-      energy%CHV       = 0.
-      energy%CHLEAF    = 0.
-      energy%CHUC      = 0.
-      energy%CHV2      = 0.
-      energy%RB        = 0.
     END IF
-    
-    !print*, "CHV = ", energy%CHV
-    !print*, "IRC = ", energy%IRC
-    !print*, "SHC = ", energy%SHC
-    !print*, "GHV = " ,energy%GHV
 
     energy%TGB = energy%TG
     energy%CMB = energy%CM
@@ -294,11 +299,6 @@ contains
 
     FIRE = forcing%LWDN + energy%FIRA
     IF(FIRE <=0.) THEN
-      !WRITE(6,*) 'emitted longwave <0; skin T may be wrong due to inconsistent'
-      !WRITE(6,*) 'input of SHDFAC with LAI'
-      !WRITE(6,*) domain%ILOC, domain%JLOC, 'SHDFAC=',FVEG,'parameters%VAI=',parameters%VAI,'TV=',TV,'TG=',TG
-      !WRITE(6,*) 'LWDN=',LWDN,'energy%FIRA=',energy%FIRA,'water%SNOWH=',water%SNOWH
-      ! call wrf_error_fatal("STOP in Noah-MP")
       WRITE(*,*) 'emitted longwave <0; skin T may be wrong due to inconsistent'
       WRITE(*,*) 'input of SHDFAC with LAI'
       WRITE(*,*) domain%ILOC, domain%JLOC, 'SHDFAC=',parameters%FVEG,'parameters%VAI=',parameters%VAI,'TV=',energy%TV,'TG=',energy%TG
@@ -306,8 +306,6 @@ contains
       WRITE(*,*) 'Exiting ...'
       STOP
     END IF
-
-    !print*, "FIRE = ", FIRE
 
     ! Compute a net emissivity
     energy%EMISSI = parameters%FVEG * (energy%EMG*(1-energy%EMV) + energy%EMV + energy%EMV*(1-energy%EMV)*(1-energy%EMG)) +&
@@ -317,34 +315,15 @@ contains
     ! reflected portion of the incoming LWDN, so we're just
     ! considering the IR originating in the canopy/ground system.
     energy%TRAD = ( ( FIRE - (1 - energy%EMISSI) * forcing%LWDN ) / (energy%EMISSI * parameters%SB) ) ** 0.25
-    !energy%TRAD = (FIRE/SB)**0.25          Old TRAD calculation not taking into account Emissivity
 
     energy%APAR = energy%PARSUN * energy%LAISUN + energy%PARSHA * energy%LAISHA
     energy%PSN  = energy%PSNSUN * energy%LAISUN + energy%PSNSHA * energy%LAISHA
-
-    ! print the layer temperatures
-    !print*, "energy%stc(-2) = ", energy%stc(-2)
-    !print*, "energy%stc(-1) = ", energy%stc(-1)
-    !print*, "energy%stc(0) = ", energy%stc(0)
-    !print*, "energy%stc(1) = ", energy%stc(1)
-    !print*, "energy%stc(2) = ", energy%stc(2)
-    !print*, "energy%stc(3) = ", energy%stc(3)
-    !print*, "energy%stc(4) = ", energy%stc(4)
 
     ! calculate 3L snow & 4L soil temperatures
     CALL TSNOSOI (parameters, levels, domain, options, forcing,                   & !in
                   energy%ICE, water%ISNOW, energy%SSOIL, energy%DF, energy%HCPCT, & !in
                   energy%SAG, water%SNOWH, energy%TG,                             & !in
                   energy%STC     )                                                  !inout
-
-    ! print the layer temperatures
-    !print*, "energy%stc(-2) = ", energy%stc(-2)
-    !print*, "energy%stc(-1) = ", energy%stc(-1)
-    !print*, "energy%stc(0) = ", energy%stc(0)
-    !print*, "energy%stc(1) = ", energy%stc(1)
-    !print*, "energy%stc(2) = ", energy%stc(2)
-    !print*, "energy%stc(3) = ", energy%stc(3)
-    !print*, "energy%stc(4) = ", energy%stc(4)
 
     ! AW:  need to decide what to do with STC if no subsurface will be simulated
     !      ie, should soil layers be 0C if there is snow and TGB if not?

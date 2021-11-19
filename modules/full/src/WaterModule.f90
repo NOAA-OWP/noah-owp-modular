@@ -43,22 +43,33 @@ contains
   real, dimension(1:levels%nsoil) :: smcold        !previous timestep smc
 !---------------------------------------------------------------------
 
-! determine frozen canopy and/or ground
-  IF (energy%TV .GT. parameters%TFRZ) THEN 
-     energy%frozen_canopy = .false.
-  ELSE
-     energy%frozen_canopy = .true.
-  END IF
+    ! Below 4 computations moved from main level of noahmp_sflx to WaterModule
+    
+    ! Compute layer ice content and previous time step's snow water equivalent
+    water%SICE(:) = MAX(0.0, water%SMC(:) - water%SH2O(:))   
+    water%SNEQVO  = water%SNEQV
+    
+    ! Convert energy flux FGEV (w/m2) to evaporation/dew rate (mm/s)
+    water%QVAP = MAX( energy%FGEV/energy%LATHEAG, 0.)       ! positive part of fgev; Barlage change to ground v3.6
+    water%QDEW = ABS( MIN(energy%FGEV/energy%LATHEAG, 0.))  ! negative part of fgev
 
-  IF (energy%TG .GT. parameters%TFRZ) THEN
-     energy%frozen_ground = .false.
-  ELSE
-     energy%frozen_ground = .true.
-  END IF
+    ! determine frozen canopy and/or ground
+    IF (energy%TV .GT. parameters%TFRZ) THEN 
+       energy%frozen_canopy = .false.
+    ELSE
+       energy%frozen_canopy = .true.
+    END IF
 
-  ! total soil  water at last timestep, used for soil water budget check
-  tw0 = sum(domain%dzsnso(1:)*water%smc*1000.0) ! [mm]
-  smcold = 0.0
+    IF (energy%TG .GT. parameters%TFRZ) THEN
+       energy%frozen_ground = .false.
+    ELSE
+       energy%frozen_ground = .true.
+    END IF
+ 
+
+    ! total soil  water at last timestep, used for soil water budget check
+    tw0 = sum(domain%dzsnso(1:)*water%smc*1000.0) ! [mm]
+    smcold = 0.0
 
   !---------------------------------------------------------------------
   ! call the canopy water routines
@@ -70,7 +81,7 @@ contains
   ! call the snow water routines
   !---------------------------------------------------------------------
 
-  ! sublimation, frost, evaporation, and dew
+    ! sublimation, frost, evaporation, and dew
      water%QSNSUB = 0.0
      IF (water%SNEQV > 0.) THEN
         water%QSNSUB = MIN(water%QVAP, water%SNEQV/domain%DT)
@@ -94,10 +105,10 @@ contains
       END IF
    END IF
 
-! convert units (mm/s -> m/s)
+    ! convert units (mm/s -> m/s)
     !PONDING: melting water from snow when there is no layer
     water%QINSUR = (water%PONDING+water%PONDING1+water%PONDING2)/domain%DT * 0.001
-!    QINSUR = PONDING/DT * 0.001
+    !    QINSUR = PONDING/DT * 0.001
     IF(water%ISNOW == 0) THEN
        water%QINSUR = water%QINSUR+(water%QSNBOT + water%QSDEW + water%QRAIN) * 0.001
     ELSE
@@ -105,8 +116,8 @@ contains
     ENDIF
     water%QSEVA  = water%QSEVA * 0.001 
 
-! For vegetation root
-   DO IZ = 1, parameters%NROOT
+    ! For vegetation root
+    DO IZ = 1, parameters%NROOT
        water%ETRANI(IZ) = water%ETRAN * water%BTRANI(IZ) * 0.001
     ENDDO
 
@@ -114,40 +125,42 @@ contains
 !       water%QINSUR = water%QINSUR+water%sfcheadrt/domain%DT*0.001  !sfcheadrt units (m)
 ! #endif
 
-! For lake points
+    ! For lake points
     IF (domain%IST == 2) THEN                                        ! lake
        water%RUNSRF = 0.
        IF(water%WSLAKE >= parameters%WSLMAX) water%RUNSRF = water%QINSUR*1000.             !mm/s
        water%WSLAKE=water%WSLAKE+(water%QINSUR-water%QSEVA)*1000.*domain%DT -water%RUNSRF*domain%DT   !mm
     ELSE                                                      ! soil
-
-! For soil points
-  !---------------------------------------------------------------------
-  ! call the soil water routines
-  !---------------------------------------------------------------------
-
-    smcold = water%smc
-    call SoilWater (domain, levels, options, parameters, water )   
-
+      ! For soil points
+      !---------------------------------------------------------------------
+      ! call the soil water routines
+      !---------------------------------------------------------------------
+      smcold = water%smc
+      call SoilWater (domain, levels, options, parameters, water )   
 !!!!! did not include groundwater part
     ENDIF
-
+    
+    ! Compute total soil moisture content
     water%smc = water%sh2o + water%sice
+    
+    ! Compute evapotranspiration
+    water%evapotrans = water%QSEVA + (water%ETRAN * 0.001)
    
   !---------------------------------------------------------------------
-  ! accumulate some fields and error checks
+  ! accumulate some fields and error checks when opt_sub == 1
   !---------------------------------------------------------------------
-
+  IF (options%opt_sub == 1) THEN
     water%runsub = water%runsub + water%snoflow      ! add glacier outflow to subsurface runoff [mm/s]
     acsrf  = water%runsrf * domain%dt          ! accumulated surface runoff [mm]
     acsub  = water%runsub * domain%dt          ! accumulated drainage [mm]
     acpcp  = water%qinsur * domain%dt * 1000.0 ! accumulated precipitation [mm]
    
     dtheta_max = maxval(abs(water%smc-smcold))
-!    if (dtheta_max .lt. 0.00001) done = .true.
+    !    if (dtheta_max .lt. 0.00001) done = .true.
    
     totalwat = sum(domain%dzsnso(1:levels%nsoil)*water%smc*1000.0)         ! total soil water [mm]
     errwat = acpcp - acsrf - acsub - (totalwat - tw0)  ! accum error [mm]
+  END IF
 
   END SUBROUTINE WaterMain   
 

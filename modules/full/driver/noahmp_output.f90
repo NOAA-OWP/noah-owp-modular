@@ -21,6 +21,7 @@ module NoahMPOutput
   integer           :: time_id
   integer           :: evap_id
   integer           :: tran_id
+  integer           :: evapotrans_id
   integer           :: smc_id
   !integer           :: smcm_id
   integer           :: prcp_id
@@ -95,6 +96,7 @@ contains
     iret = nf90_def_var(ncid, "UGDRNOFF",             NF90_FLOAT, (/time_dim/), ugrn_id)
     iret = nf90_def_var(ncid, "evaporation",          NF90_FLOAT, (/time_dim/), evap_id)
     iret = nf90_def_var(ncid, "transpiration",        NF90_FLOAT, (/time_dim/), tran_id)
+    iret = nf90_def_var(ncid, "evapotranspiration",   NF90_FLOAT, (/time_dim/), evapotrans_id)
     !iret = nf90_def_var(ncid, "soil_moisture_mm",     NF90_FLOAT, (/time_dim,soil_dim/), smcm_id)
     iret = nf90_def_var(ncid, "SMC",                  NF90_FLOAT, (/time_dim,soil_dim/), smc_id)
     ! for canopy water
@@ -167,6 +169,7 @@ contains
     iret = nf90_put_var(ncid, ugrn_id,    water%runsub*dt,             start=(/itime/))
     iret = nf90_put_var(ncid, evap_id,    water%qseva*1000.0*dt,       start=(/itime/))
     iret = nf90_put_var(ncid, tran_id,    sum(water%etrani)*1000.0*dt, start=(/itime/))
+    iret = nf90_put_var(ncid, evapotrans_id, water%evapotrans*1000.0*dt, start=(/itime/))
     !iret = nf90_put_var(ncid, smcm_id,    smcmm,       start=(/itime+1,1/), count=(/1,nsoil/))
     iret = nf90_put_var(ncid,  smc_id,    water%smc,                   start=(/itime,1/), count=(/1,nsoil/))
     ! for canopy water
