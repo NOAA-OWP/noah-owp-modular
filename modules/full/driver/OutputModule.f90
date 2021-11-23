@@ -1,4 +1,4 @@
-module NoahMPOutput
+module OutputModule
 
 !---------------------------------------------------------------------
 ! Compiler directive NGEN_OUTPUT_ACTIVE to be defined if 
@@ -9,6 +9,7 @@ module NoahMPOutput
   use WaterType
   use EnergyType
   use DomainType
+  use ForcingType  
 
   implicit none
 
@@ -72,7 +73,7 @@ contains
     integer, intent(in)          :: nsoil
     integer, intent(in)          :: nsnow
     ! local
-    character (len=*), parameter :: time_units = "seconds since 1970-01-01 00:00:00.0 0:00"
+    character (len=*), parameter :: time_units = "seconds since 1970-01-01 00:00:00"
     integer                      :: iret   ! error code
 
     ! create output file and define structure (dimensions)
@@ -140,11 +141,13 @@ contains
   
   end subroutine initialize_output
 
-  subroutine add_to_output(domain, water, energy, itime, nsoil, nsnow)
+  subroutine add_to_output(domain, water, energy, forcing, itime, nsoil, nsnow)
 
     type (domain_type), intent(in)    :: domain
     type (energy_type), intent(in)    :: energy
     type ( water_type), intent(in)    :: water
+    type (forcing_type), intent(in)   :: forcing
+    
     integer, intent(in)               :: itime
     integer, intent(in)               :: nsoil
     integer, intent(in)               :: nsnow
@@ -163,7 +166,8 @@ contains
 
     ! for soil water
     !smcmm = water%smc*dzsnso*1000.0 ! issues with this conversion
-    iret = nf90_put_var(ncid, prcp_id,    water%rain*dt,               start=(/itime/))
+    !iret = nf90_put_var(ncid, prcp_id,    water%rain*dt,               start=(/itime/))
+    iret = nf90_put_var(ncid, prcp_id,    forcing%prcp*dt,               start=(/itime/))
     iret = nf90_put_var(ncid, qinsur_id,  water%qinsur*1000*dt,        start=(/itime/))
     iret = nf90_put_var(ncid, sfrn_id,    water%runsrf*dt,             start=(/itime/))
     iret = nf90_put_var(ncid, ugrn_id,    water%runsub*dt,             start=(/itime/))
@@ -230,6 +234,7 @@ contains
     end if
   end subroutine check  
   
-#endif 
-end module NoahMPOutput
+#endif     ! end of block to remove output if NGEN_OUTPUT_ACTIVE directive is True
+
+end module OutputModule
 

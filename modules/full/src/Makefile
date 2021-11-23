@@ -84,10 +84,8 @@ SoilWaterModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o Wate
                    SurfaceRunoffModule.o SoilWaterMovement.o SubsurfaceRunoffModule.o
 WaterModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
                ForcingType.o WaterType.o SoilWaterModule.o CanopyWaterModule.o SnowWaterModule.o
-ForcingModule.o: OptionsType.o ParametersType.o EnergyType.o \
-               ForcingType.o WaterType.o AtmProcessing.o
-AtmProcessing.o: OptionsType.o ParametersType.o EnergyType.o \
-               ForcingType.o WaterType.o
+ForcingModule.o: OptionsType.o ParametersType.o EnergyType.o ForcingType.o WaterType.o AtmProcessing.o
+AtmProcessing.o: OptionsType.o ParametersType.o EnergyType.o ForcingType.o WaterType.o
 InterceptionModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
                ForcingType.o WaterType.o
 ThermalPropertiesModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
@@ -106,7 +104,7 @@ EnergyModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyT
                 PrecipHeatModule.o EtFluxModule.o SnowSoilTempModule.o
 UtilitiesModule.o: DomainType.o ForcingType.o EnergyType.o
 RunModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
-                ForcingType.o WaterType.o NamelistRead.o ../driver/noahmp_ascii_read.o \
-                ../driver/noahmp_output.o UtilitiesModule.o ForcingModule.o InterceptionModule.o \
+                ForcingType.o WaterType.o NamelistRead.o ../driver/AsciiReadModule.o \
+                ../driver/OutputModule.o UtilitiesModule.o ForcingModule.o InterceptionModule.o \
                 EnergyModule.o WaterModule.o DateTimeUtilsModule.o
 

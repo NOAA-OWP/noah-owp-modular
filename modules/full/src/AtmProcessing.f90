@@ -21,19 +21,19 @@ contains
     type (   forcing_type)             :: forcing
     type (   options_type)             :: options
 
-  ! ------------------------ local variables ---------------------------
-    real                                        :: PAIR              !atm bottom level pressure (pa)
-    real                                        :: PRCP              !total precipitation (mm/s)
-    real                                        :: PRCP_FROZEN       !total frozen precipitation [mm/s] ! MB/AN : v3.7
-    real                                        :: QPRECC            !total convective precipitation [mm/s] (used to compute FP-maybe delete)
-    real                                        :: QPRECL            !total non-convective precipitation [mm/s] (used to compute FP-maybe delete)
-    real, parameter                             :: RHO_GRPL = 500.0  ! graupel bulk density [kg/m3] ! MB/AN : v3.7
-    real, parameter                             :: RHO_HAIL = 917.0  ! hail bulk density [kg/m3]    ! MB/AN : v3.7
-    real                                        :: QV_CURR           ! water vapor mixing ratio (kg/kg)
-! --------------------------------------------------------------------------------------------------
+    ! ------------------------ local variables ---------------------------
+    real                    :: PAIR              !atm bottom level pressure (pa)
+    !real                    :: PRCP              !total precipitation (mm/s)
+    real                    :: PRCP_FROZEN       !total frozen precipitation [mm/s] ! MB/AN : v3.7
+    real                    :: QPRECC            !total convective precipitation [mm/s] (used to compute FP-maybe delete)
+    real                    :: QPRECL            !total non-convective precipitation [mm/s] (used to compute FP-maybe delete)
+    real, parameter         :: RHO_GRPL = 500.0  ! graupel bulk density [kg/m3] ! MB/AN : v3.7
+    real, parameter         :: RHO_HAIL = 917.0  ! hail bulk density [kg/m3]    ! MB/AN : v3.7
+    real                    :: QV_CURR           ! water vapor mixing ratio (kg/kg)
+    ! --------------------------------------------------------------------------------------------------
 
     ! Compute derived variables from forcing data
-    PAIR   = forcing%SFCPRS                   ! atm bottom level pressure (pa)
+    PAIR           = forcing%SFCPRS                   ! atm bottom level pressure (pa)
     forcing%THAIR  = forcing%SFCTMP * (forcing%SFCPRS / PAIR)**(parameters%RAIR / parameters%CPAIR) 
     forcing%QAIR   = forcing%Q2                       ! In WRF, driver converts to specific humidity
     forcing%EAIR   = forcing%QAIR * forcing%SFCPRS / (0.622 + (0.378 * forcing%QAIR))
@@ -62,7 +62,8 @@ contains
     forcing%SOLAI(2) = forcing%SWDOWN*0.3*0.5  ! diffuse nir
 
     ! sum different precip types to get total
-    PRCP = forcing%PRCPCONV + forcing%PRCPNONC + forcing%PRCPSHCV
+    !PRCP = forcing%PRCPCONV + forcing%PRCPNONC + forcing%PRCPSHCV
+    forcing%PRCPNONC = forcing%PRCP    ! this assumption on type of prcp is from noah-mp driver
 
     !---------------- TO DO 2021-03-23 ---------------------
     !---------------- I think we need to get rid of FP because it is
@@ -76,8 +77,8 @@ contains
       QPRECC = forcing%PRCPCONV + forcing%PRCPSHCV
       QPRECL = forcing%PRCPNONC
     ELSE
-      QPRECC = 0.10 * prcp          ! should be from the atmospheric model
-      QPRECL = 0.90 * prcp          ! should be from the atmospheric model
+      QPRECC = 0.10 * forcing%PRCP          ! should be from the atmospheric model
+      QPRECL = 0.90 * forcing%PRCP          ! should be from the atmospheric model
     END IF
         
     ! Fraction of grid cell receiving precipitation
@@ -133,8 +134,8 @@ contains
     ENDIF
 
     ! Calculate rain and snow as function of FPICE
-    water%RAIN   = PRCP * (1. - forcing%FPICE)
-    water%SNOW   = PRCP * forcing%FPICE
+    water%RAIN   = forcing%PRCP * (1. - forcing%FPICE)
+    water%SNOW   = forcing%PRCP * forcing%FPICE
 
     ! Compute the density of new snow
 

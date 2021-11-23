@@ -39,9 +39,9 @@ OBJS = \
         ../src/UtilitiesModule.o \
         ../src/DateTimeUtilsModule.o \
         ../src/RunModule.o \
-        ../driver/noahmp_output.o \
-        ../driver/noahmp_driver.o \
-        ../driver/noahmp_ascii_read.o \
+        ../driver/OutputModule.o \
+        ../driver/NoahModularDriver.o \
+        ../driver/AsciiReadModule.o \
         ../bmi/bmi_noahmp.o \
         ../bmi/bmi.o
 
