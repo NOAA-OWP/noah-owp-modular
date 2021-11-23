@@ -18,11 +18,9 @@ Thumbs.db
 output.nc
 
 
-# python notebook checkpoint files
-modules/main/src/.ipynb_checkpoints/
-modules/main/driver/.ipynb_checkpoints/
-modules/main/src/.ipynb_checkpoints/*
-modules/main/driver/.ipynb_checkpoints/*
+# python notebook checkpoint files & dirs
+modules/full/src/.ipynb_checkpoints/
+modules/full/driver/.ipynb_checkpoints/
 
 # misc notes files
 LASTNEXT

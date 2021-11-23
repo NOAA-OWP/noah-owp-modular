@@ -10,8 +10,9 @@ type, public :: forcing_type
 
   ! atmospheric inputs (meteorology, chemistry)
   real    :: SFCPRS       ! surface pressure (pa)
-  real    :: SFCTMP       ! surface air temperature [k]
+  real    :: SFCTMP       ! surface air temperature [K]
   real    :: Q2           ! specific humidity (note: in some Noah-MP versions Q2 is mixing ratio)
+  real    :: PRCP         ! total input precipitation[mm/s]
   real    :: PRCPCONV     ! convective precipitation entering  [mm/s]
   real    :: PRCPNONC     ! non-convective precipitation entering [mm/s]
   real    :: PRCPSHCV     ! shallow convective precip entering  [mm/s]
@@ -81,6 +82,7 @@ contains
     this%SFCPRS    = huge(1.0)
     this%SFCTMP    = huge(1.0)
     this%Q2        = huge(1.0)
+    this%PRCP      = huge(1.0)
     this%PRCPCONV  = huge(1.0)
     this%PRCPNONC  = huge(1.0)
     this%PRCPSHCV  = huge(1.0)

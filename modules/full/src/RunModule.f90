@@ -1,5 +1,5 @@
-! module for executing the NOAH-MP model in a streamlined way
-! this adapts code from the old NOAH-MP driver 
+! module for executing the NOAH-Modular model in a streamlined way
+! this adapts and expands code from the old NOAH-MP driver 
 module RunModule
   
   use NamelistRead
@@ -10,8 +10,8 @@ module RunModule
   use WaterType
   use ForcingType
   use EnergyType
-  use NoahMPAsciiRead
-  use NoahMPOutput
+  use AsciiReadModule
+  use OutputModule
   use UtilitiesModule
   use ForcingModule
   use InterceptionModule
@@ -32,7 +32,7 @@ module RunModule
   end type noahmp_type
 contains
 
-!== Initialize the model ================================================================================
+  !== Initialize the model ================================================================================
 
   SUBROUTINE initialize_from_file (model, config_file)
     implicit none
@@ -51,10 +51,9 @@ contains
               forcing    => model%forcing, &
               energy     => model%energy)
         
-    !---------------------------------------------------------------------
-    !  initialize
-    !---------------------------------------------------------------------
-
+      !---------------------------------------------------------------------
+      !  initialize
+      !---------------------------------------------------------------------
       call namelist%ReadNamelist(config_file)
 
       call levels%Init
@@ -144,43 +143,48 @@ contains
       energy%CH      = 0.0          ! heat drag coefficient
       energy%FCEV    = 5.0          ! constant canopy evaporation (w/m2) [+ to atm ]
       energy%FCTR    = 5.0          ! constant transpiration (w/m2) [+ to atm]
+      energy%IMELT   = 1 ! freeze
+      energy%STC     = 298.0
+      energy%COSZ    = 0.7        ! cosine of solar zenith angle
+      energy%ICE     = 0          ! 1 if sea ice, -1 if glacier, 0 if no land ice (seasonal snow)
+      energy%ALB     = 0.6        ! initialize snow albedo in CLASS routine
+      energy%ALBOLD  = 0.6        ! initialize snow albedo in CLASS routine
       energy%FROZEN_CANOPY = .false. ! used to define latent heat pathway
-      energy%IMELT = 1 ! freeze
       energy%FROZEN_GROUND = .false. 
-      energy%STC      = 298.0
-      energy%COSZ     = 0.7        ! cosine of solar zenith angle
-      energy%ICE      = 0          ! 1 if sea ice, -1 if glacier, 0 if no land ice (seasonal snow)
-      energy%ALB      = 0.6        ! initialize snow albedo in CLASS routine
-      energy%ALBOLD   = 0.6        ! initialize snow albedo in CLASS routine
-  
+
+      ! -- forcings 
+      ! these are initially set to huge(1) -- to trap errors may want to set to a recognizable flag if they are
+      !   supposed to be assigned below (eg -9999)
+      !forcing%UU       = 0.0        ! wind speed in u direction (m s-1)
+      !forcing%VV       = 0.0        ! wind speed in v direction (m s-1)
+      !forcing%SFCPRS   = 0.0        ! pressure (pa)
+      !forcing%SFCTMP   = 0.0        ! surface air temperature [k]
+      !forcing%Q2       = 0.0        ! mixing ratio (kg/kg)
+      !forcing%PRCP     = 0.0        ! convective precipitation entering  [mm/s]    ! MB/AN : v3.7
+      !forcing%SOLDN    = 0.0        ! downward shortwave radiation (w/m2)
+      !forcing%LWDN     = 0.0        ! downward longwave radiation (w/m2)
+      
       ! forcing-related variables
-      forcing%UU       = 0.0        ! wind speed in u direction (m s-1)
-      forcing%VV       = 0.0        ! wind speed in v direction (m s-1)
-      forcing%SFCPRS   = 0.0        ! pressure (pa)
-      forcing%SFCTMP   = 0.0        ! surface air temperature [k]
-      forcing%Q2       = 0.0        ! mixing ratio (kg/kg)
       forcing%PRCPCONV = 0.0        ! convective precipitation entering  [mm/s]    ! MB/AN : v3.7
       forcing%PRCPNONC = 0.0        ! non-convective precipitation entering [mm/s] ! MB/AN : v3.7
       forcing%PRCPSHCV = 0.0        ! shallow convective precip entering  [mm/s]   ! MB/AN : v3.7
       forcing%PRCPSNOW = 0.0        ! snow entering land model [mm/s]              ! MB/AN : v3.7
       forcing%PRCPGRPL = 0.0        ! graupel entering land model [mm/s]           ! MB/AN : v3.7
       forcing%PRCPHAIL = 0.0        ! hail entering land model [mm/s]              ! MB/AN : v3.7
-      forcing%SOLDN    = 0.0        ! downward shortwave radiation (w/m2)
-      forcing%LWDN     = 0.0        ! downward longwave radiation (w/m2)
       forcing%THAIR    = 0.0        ! potential temperature (k)
       forcing%QAIR     = 0.0        ! specific humidity (kg/kg) (q2/(1+q2))
       forcing%EAIR     = 0.0        ! vapor pressure air (pa)
       forcing%RHOAIR   = 0.0        ! density air (kg/m3)
       forcing%SWDOWN   = 0.0        ! downward solar filtered by sun angle [w/m2]
       forcing%FPICE    = 0.0        ! fraction of ice                AJN
-      forcing%JULIAN   = 0.0       ! Setting arbitrary julian day
+      forcing%JULIAN   = 0.0        ! Setting arbitrary julian day
       forcing%YEARLEN  = 365        ! Setting year to be normal (i.e. not a leap year)  
       forcing%FOLN     = 1.0        ! foliage nitrogen concentration (%); for now, set to nitrogen saturation
       forcing%TBOT     = 285.0      ! bottom condition for soil temperature [K]
 
       ! domain variables
       domain%zsnso(-namelist%nsnow+1:0) = 0.0
-      domain%zsnso(1:namelist%nsoil) = namelist%zsoil
+      domain%zsnso(1:namelist%nsoil)    = namelist%zsoil
      
       ! time variables
       domain%nowdate   = domain%startdate ! start the model with nowdate = startdate
@@ -221,7 +225,7 @@ contains
 
   END SUBROUTINE initialize_from_file   
   
-!== Finalize the model ================================================================================
+  !== Finalize the model ================================================================================
 
   SUBROUTINE cleanup(model)
     implicit none
@@ -237,7 +241,7 @@ contains
   
   END SUBROUTINE cleanup
 
-!== Move the model ahead one time step ================================================================
+  !== Move the model ahead one time step ================================================================
 
   SUBROUTINE advance_in_time(model)
     type (noahmp_type), intent (inout) :: model
@@ -248,7 +252,7 @@ contains
     model%domain%time_dbl = dble(model%domain%time_dbl + model%domain%dt) ! increment model time in seconds by DT
   END SUBROUTINE advance_in_time
   
-!== Run one time step of the model ================================================================
+  !== Run one time step of the model ================================================================
 
   SUBROUTINE solve_noahmp(model)
     type (noahmp_type), intent (inout) :: model
@@ -280,7 +284,7 @@ contains
     forcing_timestep = domain%dt
 #ifndef NGEN_FORCING_ACTIVE
     call read_forcing_text(iunit, domain%nowdate, forcing_timestep, &
-         forcing%UU, forcing%VV, forcing%SFCTMP, forcing%Q2, forcing%SFCPRS, forcing%SOLDN, forcing%LWDN, forcing%PRCPNONC, ierr)
+         forcing%UU, forcing%VV, forcing%SFCTMP, forcing%Q2, forcing%SFCPRS, forcing%SOLDN, forcing%LWDN, forcing%PRCP, ierr)
 #endif
    
     !---------------------------------------------------------------------
@@ -318,7 +322,7 @@ contains
     ! Nextgen is writing model output (https://github.com/NOAA-OWP/ngen)
     !---------------------------------------------------------------------
 #ifndef NGEN_OUTPUT_ACTIVE
-    call add_to_output(domain, water, energy, domain%itime, levels%nsoil,levels%nsnow)
+    call add_to_output(domain, water, energy, forcing, domain%itime, levels%nsoil,levels%nsnow)
 #endif
     
     end associate ! terminate associate block

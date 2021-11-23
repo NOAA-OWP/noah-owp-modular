@@ -46,7 +46,6 @@ type, public :: namelist_type
   !--------------------!
   !   model options    !
   !--------------------!
-
   integer       :: precip_phase_option       ! options for determining precipitation phase (opt_snf)
   integer       :: runoff_option ! options for runoff (opt_run)
   integer       :: drainage_option ! options for drainage from bottom of soil column (opt_drn)
@@ -123,7 +122,6 @@ contains
     !--------------------!
     !   model options    !
     !--------------------!
-
     integer       :: precip_phase_option
     integer       :: runoff_option
     integer       :: drainage_option
@@ -157,23 +155,25 @@ contains
     namelist / uniform_initial / initial_uniform,initial_sh2o_value,&
                                  initial_sice_value,initial_zwt
 
-!---------------------------------------------------------------------
-!  read input file, part 1
-!---------------------------------------------------------------------
+    !---------------------------------------------------------------------
+    !  read input file, part 1
+    !---------------------------------------------------------------------
     if( present(namelist_file) ) then
       namelist_file_ = namelist_file
+      print*, 'Reading namelist: ', trim(namelist_file_)
     else
       namelist_file_ = "namelist.input"
+      print*, 'No namelist filename supplied -- attempting to read namelist.input (default)'
     endif
 
     open(30, file=namelist_file_, form="formatted")
-     read(30, timing)
-     read(30, parameters)
-     read(30, location)
-     read(30, forcing)
-     read(30, model_options)
-     read(30, structure)
-     read(30, uniform_initial)
+      read(30, timing)
+      read(30, parameters)
+      read(30, location)
+      read(30, forcing)
+      read(30, model_options)
+      read(30, structure)
+      read(30, uniform_initial)
     close(30)
 
     allocate (zsoil (       1:nsoil))   ! depth of layer-bottom from soil surface
@@ -181,10 +181,9 @@ contains
     allocate (sice  (       1:nsoil))   ! soil ice content [m3/m3]
     allocate (sh2o  (       1:nsoil))   ! soil liquid water content [m3/m3]
 
-!---------------------------------------------------------------------
-!  read input file, part 2: initialize
-!---------------------------------------------------------------------
-
+    !---------------------------------------------------------------------
+    !  read input file, part 2: initialize
+    !---------------------------------------------------------------------
     if(structure_option == 1) then       ! user-defined levels
       open(30, file=namelist_file_, form="formatted")
        read(30, fixed_initial)
@@ -198,10 +197,9 @@ contains
         stop "structure_option > 1 must have initial_uniform == .true."
     end if
 
-!---------------------------------------------------------------------
-!  transfer to structure
-!---------------------------------------------------------------------
-
+    !---------------------------------------------------------------------
+    !  transfer to structure
+    !---------------------------------------------------------------------
     this%dt                 = dt
     this%startdate          = startdate
     this%enddate            = enddate

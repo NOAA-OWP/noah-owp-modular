@@ -1,4 +1,4 @@
-module NoahMPAsciiRead
+module AsciiReadModule
   
   use UtilitiesModule
   
@@ -304,4 +304,4 @@ contains
 
   end function upcase
   
-end module NoahMPAsciiRead
+end module AsciiReadModule
