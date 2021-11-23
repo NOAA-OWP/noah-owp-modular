@@ -91,7 +91,7 @@ contains
     !if (error /= 0) return
         
     ! for soil water
-    iret = nf90_def_var(ncid, "RAINRATE",             NF90_FLOAT, (/time_dim/), prcp_id)
+    iret = nf90_def_var(ncid, "Precipitation",        NF90_FLOAT, (/time_dim/), prcp_id)
     iret = nf90_def_var(ncid, "QINSUR",               NF90_FLOAT, (/time_dim/), qinsur_id)
     iret = nf90_def_var(ncid, "SFCRNOFF",             NF90_FLOAT, (/time_dim/), sfrn_id)
     iret = nf90_def_var(ncid, "UGDRNOFF",             NF90_FLOAT, (/time_dim/), ugrn_id)
