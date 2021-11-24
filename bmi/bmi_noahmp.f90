@@ -98,7 +98,7 @@ module bminoahmp
 
   ! Exchange items
   integer, parameter :: input_item_count = 8
-  integer, parameter :: output_item_count = 4
+  integer, parameter :: output_item_count = 6
   character (len=BMI_MAX_VAR_NAME), target, &
        dimension(input_item_count) :: input_items
   character (len=BMI_MAX_VAR_NAME), target, &
@@ -166,6 +166,8 @@ contains
     output_items(2) = 'ETRAN'      ! transpiration rate (mm/s)
     output_items(3) = 'QSEVA'      ! evaporation rate (m/s)
     output_items(4) = 'EVAPOTRANS' ! evapotranspiration rate (m/s)
+    output_items(5) = 'TG'         ! surface/ground temperature (K)
+    output_items(6) = 'SNEQV'      ! snow water equivalent (mm)
 
     names => output_items
     bmi_status = BMI_SUCCESS
@@ -284,7 +286,7 @@ contains
 
     select case(name)
     case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! input vars
-         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS')                            ! output vars
+         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV')             ! output vars
        grid = 0
        bmi_status = BMI_SUCCESS
     case default
@@ -555,7 +557,7 @@ contains
 
     select case(name)
     case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! input vars
-         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS')                            ! output vars
+         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV')             ! output vars
        type = "real"
        bmi_status = BMI_SUCCESS
     case default
@@ -575,7 +577,7 @@ contains
     case("SFCPRS")
        units = "Pa"
        bmi_status = BMI_SUCCESS
-    case("SFCTMP")
+    case("SFCTMP", "TG")
        units = "K"
        bmi_status = BMI_SUCCESS
     case("SOLDN", "LWDN")
@@ -592,6 +594,9 @@ contains
        bmi_status = BMI_SUCCESS
     case("PRCPNONC", "ETRAN")
        units = "mm/s"
+       bmi_status = BMI_SUCCESS
+    case("SNEQV")
+       units = "mm"
        bmi_status = BMI_SUCCESS
     case default
        units = "-"
@@ -642,6 +647,12 @@ contains
        bmi_status = BMI_SUCCESS
     case("EVAPOTRANS")
        size = sizeof(this%model%water%evapotrans)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("TG")
+       size = sizeof(this%model%energy%tg)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("SNEQV")
+       size = sizeof(this%model%water%sneqv)            ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case default
        size = -1
@@ -745,6 +756,12 @@ contains
        bmi_status = BMI_SUCCESS
     case("EVAPOTRANS")
        dest = [this%model%water%evapotrans]
+       bmi_status = BMI_SUCCESS
+    case("TG")
+       dest = [this%model%energy%tg]
+       bmi_status = BMI_SUCCESS
+    case("SNEQV")
+       dest = [this%model%water%sneqv]
        bmi_status = BMI_SUCCESS
     case default
        dest(:) = -1.0
@@ -950,6 +967,12 @@ contains
        bmi_status = BMI_SUCCESS
     case("EVAPOTRANS")
        this%model%water%evapotrans = src(1)
+       bmi_status = BMI_SUCCESS
+    case("TG")
+       this%model%energy%tg = src(1)
+       bmi_status = BMI_SUCCESS
+    case("SNEQV")
+       this%model%water%sneqv = src(1)
        bmi_status = BMI_SUCCESS
     case default
        bmi_status = BMI_FAILURE
