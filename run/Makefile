@@ -46,10 +46,10 @@ OBJS = \
         ../bmi/bmi.o
 
 
-CMD = noahmp_refac.exe
+CMD = noah_owp_modular.exe
 all:	$(CMD)
 
-noahmp_refac.exe: $(OBJS)
+noah_owp_modular.exe: $(OBJS)
 	$(COMPILERF90) -o $(@) -I../driver -I../src $(OBJS) $(NETCDFLIB)
 
 # This command cleans up
