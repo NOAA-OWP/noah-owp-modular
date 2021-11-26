@@ -20,7 +20,7 @@ We are currently working on detailed instructions for model setup and execution 
 
 ## Getting help
 
-If you have questions, concerns, bug reports, etc., please file an issue in this repository's [Issue Tracker](./issues).
+If you have questions, concerns, bug reports, etc., please file an issue in this repository's [Issue Tracker](https://github.com/NOAA-OWP/noah-owp-modular/issues).
 
 ## Getting involved
 
