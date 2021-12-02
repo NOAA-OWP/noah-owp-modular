@@ -631,8 +631,8 @@ CONTAINS
 
     READ (21,*) SLCATS
 
-    WRITE( message , * ) 'SOIL TEXTURE CLASSIFICATION = ', TRIM ( SLTYPE ) , ' FOUND', SLCATS,' CATEGORIES'
-    print*, message
+    !WRITE( message , * ) 'SOIL TEXTURE CLASSIFICATION = ', TRIM ( SLTYPE ) , ' FOUND', SLCATS,' CATEGORIES'
+    !print*, message
     !CALL wrf_message ( message )
 
     DO LC=1,SLCATS
