@@ -198,9 +198,9 @@ contains
       ! --- AWW:  calculate start and end utimes & records for requested station data read period ---
       call get_utime_list (domain%start_datetime, domain%end_datetime, domain%dt, domain%sim_datetimes)  ! makes unix-time list for desired records (end-of-timestep)
       domain%ntime = size (domain%sim_datetimes)   
-      print *, "---------"; 
-      print *, 'Simulation startdate = ', domain%startdate, ' enddate = ', domain%enddate, ' dt(sec) = ', domain%dt, ' ntimes = ', domain%ntime  ! YYYYMMDD dates
-      print *, "---------"
+      !print *, "---------"; 
+      !print *, 'Simulation startdate = ', domain%startdate, ' enddate = ', domain%enddate, ' dt(sec) = ', domain%dt, ' ntimes = ', domain%ntime  ! YYYYMMDD dates
+      !print *, "---------"
       
       !---------------------------------------------------------------------
       ! Open the forcing file
