@@ -63,8 +63,13 @@ contains
 
     ! sum different precip types to get total
     !PRCP = forcing%PRCPCONV + forcing%PRCPNONC + forcing%PRCPSHCV
-    forcing%PRCPNONC = forcing%PRCP    ! this assumption on type of prcp is from noah-mp driver
 
+    ! Change below allows Noah-OWP-Modular to be run in Nextgen where PRCPNONC is exposed via BMI
+#ifndef NGEN_FORCING_ACTIVE
+    forcing%PRCPNONC = forcing%PRCP    
+#else
+    forcing%PRCP = forcing%PRCPNONC   
+#endif
     !---------------- TO DO 2021-03-23 ---------------------
     !---------------- I think we need to get rid of FP because it is
     !---------------- designed for LSMs with massive grid spacing
