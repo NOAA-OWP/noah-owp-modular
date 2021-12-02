@@ -204,13 +204,11 @@ contains
     character(len=50)                :: dataset_identifier
 
     !dataset_identifier = "MODIFIED_IGBP_MODIS_NOAH"   ! This can be in namelist
-    !call read_mp_veg_parameters(namelist%parameter_dir, namelist%noahmp_table, dataset_identifier)
-    call read_mp_soil_parameters(namelist%parameter_dir, namelist%soil_table, namelist%general_table, namelist%soil_class_name)
-    call read_mp_veg_parameters(namelist%parameter_dir, namelist%noahmp_table, namelist%veg_class_name)
-    !call read_mp_soil_parameters(namelist%parameter_dir, namelist%soil_table, namelist%general_table)
+    call read_mpt_soil_parameters(namelist%parameter_dir, namelist%soil_table, namelist%general_table, namelist%soil_class_name)
+    call read_mpt_veg_parameters(namelist%parameter_dir, namelist%mpt_table, namelist%veg_class_name)
 
-    call read_mp_rad_parameters(namelist%parameter_dir, namelist%noahmp_table)
-    call read_mp_global_parameters(namelist%parameter_dir, namelist%noahmp_table)
+    call read_mpt_rad_parameters(namelist%parameter_dir, namelist%mpt_table)
+    call read_mpt_global_parameters(namelist%parameter_dir, namelist%mpt_table)
 
 !---------------------------------------------------------------------
 !  transfer to structure
@@ -277,7 +275,7 @@ contains
     this%refdk        = REFDK_TABLE
     this%kdt          = this%refkdt * this%dksat(1) / this%refdk
     this%csoil        = CSOIL_TABLE
-    this%Z0           = Z0_TABLE     ! bare soil roughness length (m). in GENPARM.TBL.  NOTE: This is hard-coded in f90 in hrldas version noahmp
+    this%Z0           = Z0_TABLE     ! bare soil roughness length (m). in GENPARM.TBL.  NOTE: This is hard-coded in f90 in hrldas noahmp
     this%CZIL         = CZIL_TABLE
     this%ZBOT         = ZBOT_TABLE
     this%frzx         = 0.15 * (this%smcmax(1) / this%smcref(1)) * (0.412 / 0.468)

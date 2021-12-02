@@ -4,15 +4,15 @@ program model_driver
   !  Modules
   !  Only the BMI modules need to be exposed
   !---------------------------------------------------------------------
-  use bminoahmp
+  use bmi_noah_owp
   use bmif_2_0
 
   implicit none
 
   !---------------------------------------------------------------------
-  !  Types (only the bmi_noahmp type needed)
+  !  Types (only the bmi_noah_owp type needed)
   !---------------------------------------------------------------------
-  type (bmi_noahmp)  :: m
+  type (bmi_noah_owp)  :: m
   
   !---------------------------------------------------------------------
   !  Local variable(s) 

@@ -20,7 +20,7 @@ module RunModule
   use DateTimeUtilsModule
   
   implicit none
-  type :: noahmp_type
+  type :: noah_owp_type
     type(namelist_type)   :: namelist
     type(levels_type)     :: levels
     type(domain_type)     :: domain
@@ -29,7 +29,7 @@ module RunModule
     type(water_type)      :: water
     type(forcing_type)    :: forcing
     type(energy_type)     :: energy
-  end type noahmp_type
+  end type noah_owp_type
 contains
 
   !== Initialize the model ================================================================================
@@ -37,7 +37,7 @@ contains
   SUBROUTINE initialize_from_file (model, config_file)
     implicit none
     
-    type(noahmp_type), target, intent(out) :: model
+    type(noah_owp_type), target, intent(out) :: model
     character(len=*), intent (in) :: config_file ! config file from command line argument
     
     integer             :: forcing_timestep  ! integer time step (set to dt) for some subroutine calls
@@ -229,7 +229,7 @@ contains
 
   SUBROUTINE cleanup(model)
     implicit none
-    type(noahmp_type), intent(inout) :: model
+    type(noah_owp_type), intent(inout) :: model
       
       !---------------------------------------------------------------------
       ! Compiler directive NGEN_OUTPUT_ACTIVE to be defined if 
@@ -244,9 +244,9 @@ contains
   !== Move the model ahead one time step ================================================================
 
   SUBROUTINE advance_in_time(model)
-    type (noahmp_type), intent (inout) :: model
+    type (noah_owp_type), intent (inout) :: model
 
-    call solve_noahmp(model)
+    call solve_noah_owp(model)
 
     model%domain%itime    = model%domain%itime + 1 ! increment the integer time by 1
     model%domain%time_dbl = dble(model%domain%time_dbl + model%domain%dt) ! increment model time in seconds by DT
@@ -254,8 +254,8 @@ contains
   
   !== Run one time step of the model ================================================================
 
-  SUBROUTINE solve_noahmp(model)
-    type (noahmp_type), intent (inout) :: model
+  SUBROUTINE solve_noah_owp(model)
+    type (noah_owp_type), intent (inout) :: model
     integer, parameter :: iunit        = 10 ! Fortran unit number to attach to the opened file
     integer            :: forcing_timestep  ! integer time step (set to dt) for some subroutine calls
     integer            :: ierr              ! error code for reading forcing data
@@ -326,6 +326,6 @@ contains
 #endif
     
     end associate ! terminate associate block
-  END SUBROUTINE solve_noahmp
+  END SUBROUTINE solve_noah_owp
 
 end module RunModule
