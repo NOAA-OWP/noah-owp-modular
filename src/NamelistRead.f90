@@ -160,10 +160,10 @@ contains
     !---------------------------------------------------------------------
     if( present(namelist_file) ) then
       namelist_file_ = namelist_file
-      print*, 'Reading namelist: ', trim(namelist_file_)
+      !print*, 'Reading namelist: ', trim(namelist_file_)
     else
       namelist_file_ = "namelist.input"
-      print*, 'No namelist filename supplied -- attempting to read namelist.input (default)'
+      !print*, 'No namelist filename supplied -- attempting to read namelist.input (default)'
     endif
 
     open(30, file=namelist_file_, form="formatted")
