@@ -16,7 +16,7 @@ Detailed instructions on how to install, configure, and run Noah-OWP-Modular can
 
 ## Usage
 
-We are currently working on detailed instructions for model setup and execution in our [Wiki](./wiki). For now, you can run the example data used in our [INSTALL](INSTALL.md) guide.
+We are currently working on detailed instructions for model setup and execution in our [Wiki](https://github.com/NOAA-OWP/noah-owp-modular/wiki). For now, you can run the example data used in our [INSTALL](INSTALL.md) guide.
 
 ## Getting help
 
