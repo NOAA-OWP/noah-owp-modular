@@ -17,7 +17,7 @@ P8W -- xyz input forcing, where z is 2 levels if coming from wrf.  often the avg
 TAH -- comes from TAHXY, assigned from T_PHY (3d variable) in readforc_hrldas, where it just takes the temperature forcing. 
        it's really the temperature above the canopy but could start with air temp
 
-EAH -- comes from EAHXY, ready from, which is estimated from P8W ... in hte i/o noahmp driver
+EAH -- comes from EAHXY, ready from, which is estimated from P8W ... in hte i/o driver
        EAHXY = (P8W(:,1,:)*QV_CURR(:,1,:))/(0.622+QV_CURR(:,1,:)) ! Initial guess only.
 
        P8W is basically surface pressure (Pa)
@@ -50,6 +50,6 @@ Thus, water vapor mixing ratio and specific humidity are the same to within a fe
 more than zero.
 
 # ======= ICE =======
-set in driver -- 1 if sea ice (do nothing), -1 if land ice point (calls noahmp_glacier), 0 if neither sea ice or land ice (call SFLX)
+set in driver -- 1 if sea ice (do nothing), -1 if land ice point (calls glacier), 0 if neither sea ice or land ice (call SFLX)
   use 0 
 

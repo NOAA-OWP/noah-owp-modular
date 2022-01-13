@@ -42,7 +42,7 @@ OBJS = \
         ../driver/OutputModule.o \
         ../driver/NoahModularDriver.o \
         ../driver/AsciiReadModule.o \
-        ../bmi/bmi_noahmp.o \
+        ../bmi/bmi_noahowp.o \
         ../bmi/bmi.o
 
 

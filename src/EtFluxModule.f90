@@ -207,22 +207,16 @@ contains
     UC = UR*LOG((HCAN-energy%ZPD+Z0M)/Z0M)/LOG(ZLVL/Z0M)   ! MB: add ZPD v3.7
     IF((HCAN-energy%ZPD) <= 0.) THEN
       WRITE(message,*) "CRITICAL PROBLEM: HCAN <= ZPD"
-      !call wrf_message ( message )
       WRITE(message,*) 'i,j point=',domain%ILOC, domain%JLOC
-      !call wrf_message ( message )
       WRITE(message,*) 'HCAN  =', HCAN
-      !call wrf_message ( message )
       WRITE(message,*) 'ZPD   =', energy%ZPD
-      !call wrf_message ( message )
       write (message, *) 'SNOWH =', water%SNOWH
-      !call wrf_message ( message )
-      !call wrf_error_fatal ( "CRITICAL PROBLEM IN MODULE_SF_NOAHMPLSM:VEGEFLUX" )
       WRITE(*,*) "CRITICAL PROBLEM: HCAN <= ZPD"
       WRITE(*,*) 'i,j point=', domain%ILOC, domain%JLOC
       WRITE(*,*) 'HCAN  = ', HCAN
       WRITE(*,*) 'ZPD   = ', energy%ZPD
       write(*,*) 'SNOWH = ', water%SNOWH      
-      write(*,*) "CRITICAL PROBLEM IN MODULE_SF_NOAHMPLSM:VEGEFLUX"
+      write(*,*) "CRITICAL PROBLEM IN VEGEFLUX"
     END IF
 
     ! prepare for longwave rad.
@@ -1006,11 +1000,10 @@ contains
     ! --------------------------------------------------------------------------------------------------
     IMPLICIT NONE
 
-    !  type (noahmp_parameters), intent(in) :: parameters   (not used)
     REAL, INTENT(IN)       :: TV        ! canopy air temperature
     REAL, INTENT(IN)       :: SFCPRS    ! surface temperature and pressure (from forcing%SFCTMP, forcing%SFCPRS)
     REAL, INTENT(OUT)      :: Q2SAT     ! saturated mixing ratio (g/g)
-    REAL, INTENT(OUT)      :: DQSDT2    ! derivative of Q2SAT with Temperature (is not used anywhere in NOAHMP)
+    REAL, INTENT(OUT)      :: DQSDT2    ! derivative of Q2SAT with Temperature (is not used anywhere in original Noah-MP--delete?)
     
     ! local
     REAL, PARAMETER        :: A2=17.67,A3=273.15,A4=29.65, ELWV=2.501E6,         &
@@ -1097,7 +1090,6 @@ contains
   
     IF(ZLVL <= ZPD) THEN
        write(*,*) 'WARNING: critical problem: ZLVL <= ZPD; model stops'
-       !call wrf_error_fatal("STOP in Noah-MP")
     ENDIF
 
     TMPCM = LOG((ZLVL-ZPD) / Z0M)

@@ -1,4 +1,4 @@
-! Module for assigning constants used in noah-mp-modular
+! Module for assigning constants used in noah-owp-modular
 ! AW: copied from SUMMA code and modified; added 'type' declaration
 !     originally from WRF:MODEL_LAYER:CONSTANTS
 

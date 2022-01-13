@@ -55,7 +55,7 @@ contains
   REAL, PARAMETER :: A = 4.0
 ! ----------------------------------------------------------------------
 
-  ! Call the full Noah-MP subsurface when opt_sub == 1
+  ! Call the full Noah-MP style subsurface when opt_sub == 1
   IF (options%OPT_SUB == 1) THEN
   
     water%RUNSRF = 0.0

@@ -1,5 +1,5 @@
-! This module includes calculations required by NOAH-MP that are NOT part
-! of the traditional column model (i.e., the old monolith module_sf_noahmplsm.F)
+! This module includes required calculations that are not part
+! of the traditional column model
 
 ! Output variables include:
 ! COSZ = cosine of the solar zenith angle

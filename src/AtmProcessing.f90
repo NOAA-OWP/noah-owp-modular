@@ -75,7 +75,6 @@ contains
     !---------------- designed for LSMs with massive grid spacing
     !---------------- not hydrologic models at 1 km
     ! fractional area that receives precipitation (see, Niu et al. 2005)
-    ! A simple TOPMODEL‐based runoff parameterization (SIMTOP) for use in global climate models
 
     ! Split precip into convective and large-scale fractions (used for computing FP below)
     IF(options%OPT_SNF == 4) THEN

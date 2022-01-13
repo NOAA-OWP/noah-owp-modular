@@ -43,7 +43,7 @@ contains
   real, dimension(1:levels%nsoil) :: smcold        !previous timestep smc
 !---------------------------------------------------------------------
 
-    ! Below 4 computations moved from main level of noahmp_sflx to WaterModule
+    ! Below 4 computations moved from main level of noahmp_sflx in old model to WaterModule here
     
     ! Compute layer ice content and previous time step's snow water equivalent
     water%SICE(:) = MAX(0.0, water%SMC(:) - water%SH2O(:))   

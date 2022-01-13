@@ -1,8 +1,8 @@
-&noahmp_usgs_veg_categories
+&usgs_veg_categories
  VEG_DATASET_DESCRIPTION = "USGS"
  NVEG = 27
 /
-&noahmp_usgs_parameters
+&usgs_veg_parameters
  ! NVEG = 27
  !  1: Urban and Built-Up Land
  !  2: Dryland Cropland and Pasture
@@ -163,12 +163,12 @@ MFSNO =  2.50,  2.50,  2.50,  2.50,  2.50,  2.50,  2.50,  2.50,  2.50,  2.50,  2
  EPS5   =   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,
 /
 
-&noahmp_modis_veg_categories
+&modis_veg_categories
  VEG_DATASET_DESCRIPTION = "modified igbp modis noah"
  NVEG = 20
 /
 
-&noahmp_modis_parameters
+&modis_veg_parameters
 ! 1          'Evergreen Needleleaf Forest'                       -> USGS 14
 ! 2,         'Evergreen Broadleaf Forest'                        -> USGS 13
 ! 3,         'Deciduous Needleleaf Forest'                       -> USGS 12
@@ -321,7 +321,7 @@ MFSNO =  2.50,   2.50,   2.50,   2.50,   2.50,   2.50,   2.50,   2.50,   2.50,  
 
 /
 
-&noahmp_rad_parameters
+&rad_parameters
  !------------------------------------------------------------------------------
  !                1       2       3       4       5       6       7       8     soil color index for soil albedo
  !------------------------------------------------------------------------------
@@ -338,7 +338,7 @@ MFSNO =  2.50,   2.50,   2.50,   2.50,   2.50,   2.50,   2.50,   2.50,   2.50,  
 
 /
 
-&noahmp_global_parameters
+&global_parameters
 
 ! atmospheric constituants
 
@@ -374,7 +374,7 @@ MFSNO =  2.50,   2.50,   2.50,   2.50,   2.50,   2.50,   2.50,   2.50,   2.50,  
 
 /
 
-&noahmp_irrigation_parameters
+&irrigation_parameters
 IRR_FRAC   = 0.10       ! irrigation Fraction
 IRR_HAR    = 20         ! number of days before harvest date to stop irrigation 
 IRR_LAI    = 0.50       ! Minimum lai to trigger irrigation
@@ -386,7 +386,7 @@ FIRTFAC    = 1.00       ! flood application rate factor
 IR_RAIN    = 1.00       ! maximum precipitation to stop irrigation trigger
 /
 
-&noahmp_crop_parameters
+&crop_parameters
 
  ! NCROP = 5
  !  1: Corn
@@ -557,7 +557,7 @@ BIO2LAI    =  0.015,  0.030,  0.015,  0.015,  0.015,  ! leaf are per living leaf
 
 /
 
-&noahmp_tiledrain_parameters
+&tiledrain_parameters
 !-----------------------------------!
 ! For simple drainage model         !
 !-----------------------------------!
@@ -591,7 +591,7 @@ KLAT_FAC   =   1.30,   1.80,   2.10,   2.60,   2.90,   2.50,   2.30,   3.00,   2
 
 /
  
-&noahmp_optional_parameters
+&optional_parameters
 
  !------------------------------------------------------------------------------
  ! Saxton and Rawls 2006 Pedo-transfer function coefficients
