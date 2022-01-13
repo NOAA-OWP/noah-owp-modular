@@ -12,7 +12,7 @@ type, public :: namelist_type
   character(len=256) :: input_filename     ! directory/name of the input/forcing file
   character(len=256) :: output_filename    ! directory/name of the output file
   character(len=256) :: parameter_dir      ! name of the directory where parameter TBLs reside
-  character(len=256) :: noahmp_table       ! name of noahmp parameter table
+  character(len=256) :: noahowp_table       ! name of noahowp parameter table
   character(len=256) :: soil_table         ! name of soil parameter table
   character(len=256) :: general_table      ! name of general parameter table
   character(len=256) :: soil_class_name    ! name of soil classification (STAS or STAS-RUC)
@@ -91,7 +91,7 @@ contains
     character(len=256) :: soil_table
     character(len=256) :: veg_class_name
     character(len=256) :: general_table
-    character(len=256) :: noahmp_table
+    character(len=256) :: noahowp_table
     character(len=256) :: soil_class_name
     real               :: lat
     real               :: lon
@@ -141,7 +141,7 @@ contains
     integer       :: subsurface_option
 
     namelist / timing          / dt,startdate,enddate,input_filename,output_filename
-    namelist / parameters      / parameter_dir, soil_table, general_table, noahmp_table, soil_class_name, veg_class_name
+    namelist / parameters      / parameter_dir, soil_table, general_table, noahowp_table, soil_class_name, veg_class_name
     namelist / location        / lat,lon
     namelist / forcing         / ZREF
     namelist / model_options   / precip_phase_option,runoff_option,drainage_option,frozen_soil_option,dynamic_vic_option,&
@@ -208,7 +208,7 @@ contains
     this%parameter_dir      = parameter_dir
     this%soil_table         = soil_table
     this%general_table      = general_table
-    this%noahmp_table       = noahmp_table
+    this%noahowp_table       = noahowp_table
     this%soil_class_name    = soil_class_name
     this%veg_class_name     = veg_class_name
     this%lat                = lat

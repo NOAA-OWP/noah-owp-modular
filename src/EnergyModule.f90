@@ -77,7 +77,7 @@ contains
     ENDIF
 
     ! Compute fraction of grid cell with snow cover [Niu and Yang, 2007, JGR]
-    ! TO DO: MFSNO (m in Niu and Yang) is set to 2.5 for all vegtypes in NOAH-MP
+    ! TO DO: MFSNO (m in Niu and Yang) is set to 2.5 for all vegtypes
     ! Reference paper indicates MFSNO varies in space (values of 1.0, 1.6, 1.8)
     ! KSJ 2021-04-06
 
@@ -150,7 +150,7 @@ contains
           GX = (water%SH2O(IZ)-parameters%SMCWLT(IZ)) / (parameters%SMCREF(IZ)-parameters%SMCWLT(IZ))
         END IF
         IF(options%OPT_BTR == 2) then                  ! CLM
-          IF(options%OPT_SUB == 1) then                ! Noah-MP subsurface
+          IF(options%OPT_SUB == 1) then                ! Noah-MP style subsurface
             PSI = MAX(parameters%PSIWLT,-parameters%PSISAT(IZ)*(MAX(0.01,water%SH2O(IZ))/parameters%SMCMAX(IZ))**(-parameters%BEXP(IZ)) )
           END IF
           IF(options%OPT_SUB == 2) then                ! one-way coupled subsurface
@@ -159,7 +159,7 @@ contains
           GX = (1.-PSI/parameters%PSIWLT)/(1.+parameters%PSISAT(IZ)/parameters%PSIWLT)
         END IF
         IF(options%OPT_BTR == 3) then                  ! SSiB
-          IF(options%OPT_SUB == 1) then                ! Noah-MP subsurface
+          IF(options%OPT_SUB == 1) then                ! Noah-MP style subsurface
             PSI = MAX(parameters%PSIWLT,-parameters%PSISAT(IZ)*(MAX(0.01,water%SH2O(IZ))/parameters%SMCMAX(IZ))**(-parameters%BEXP(IZ)) )
           END IF
           IF(options%OPT_SUB == 2) then                ! one-way coupled subsurface

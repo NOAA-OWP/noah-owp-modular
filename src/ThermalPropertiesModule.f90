@@ -139,14 +139,14 @@ contains
 
     ! ------------------------ local variables ---------------------------
     INTEGER :: IZ       ! do-loop index
-    REAL    :: AKE      ! kersten number? (undefined in previous NOAH-MP)
-    REAL    :: GAMMD    ! undefined in previous NOAH-MP
-    REAL    :: THKDRY   ! thermal conductivity for dry soil? (undefined in previous NOAH-MP)
-    REAL    :: THKSAT   ! undefined in previous NOAH-MP
+    REAL    :: AKE      ! kersten number? (undefined in previous versions)
+    REAL    :: GAMMD    ! undefined in previous versions
+    REAL    :: THKDRY   ! thermal conductivity for dry soil? (undefined in previous versions)
+    REAL    :: THKSAT   ! undefined in previous versions
     REAL    :: THKS     ! thermal conductivity for the solids
     REAL    :: SATRATIO ! ratio of soil moisture content to max soil moisture
-    REAL    :: XU       ! undefined in previous NOAH-MP
-    REAL    :: XUNFROZ  ! undefined in previous NOAH-MP
+    REAL    :: XU       ! undefined in previous versions
+    REAL    :: XUNFROZ  ! undefined in previous versions
     ! --------------------------------------------------------------------------------------------------
 
     ! --------------------------------------------------------------------------------------------------

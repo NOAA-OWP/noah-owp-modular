@@ -99,7 +99,7 @@ type, public :: options_type
                         !   4 -> option 1 for non-snow; rsurf = rsurf_snow for snow (set in MPTABLE); AD v3.8
   integer :: opt_sub    ! subsurface_option
                         ! options for subsurface realization
-                        !   1 -> full Noah-MP subsurface
+                        !   1 -> full Noah-MP style subsurface
                         !   2 -> one-way coupled hydrostatic
                         !   3 -> two-way coupled (NOT IMPLEMENTED YET)
 

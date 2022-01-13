@@ -10,7 +10,7 @@
   parameter_dir      = "../parameters"
   general_table      = "GENPARM.TBL"                    ! general param tables and misc params
   soil_table         = "SOILPARM.TBL"                   ! soil param table
-  noahmp_table       = "MPTABLE.TBL"                    ! noah-mp related param tables
+  noahowp_table      = "MPTABLE.TBL"                    ! model param tables (includes veg)
   soil_class_name    = "STAS"                           ! soil class data source - "STAS" or "STAS-RUC"
   veg_class_name     = "MODIFIED_IGBP_MODIS_NOAH"       ! vegetation class data source - "MODIFIED_IGBP_MODIS_NOAH" or "USGS"
 /

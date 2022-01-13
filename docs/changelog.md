@@ -1,4 +1,4 @@
-# Changelog for NOAH-MP modularized snow model
+# Changelog for Noah-OWP-Modular 
 
 ## Major changes:
 - Removed PGS from PHENOLOGY because we’re not implementing CARBON_CROP
@@ -6,10 +6,10 @@
     - Removed call from WaterModule and added to InterceptionModule
 - Kept heat advected by precipitation calculations in PRECIP_HEAT (now called by EnergyModule)
     - Moved interception and throughfall calculations from old PRECIP_HEAT into CanopyWaterIntercept in the InterceptionModule
-- Removed TROOT computation from main level of NOAHMP_SFLX
+- Removed TROOT computation from main level of the old NOAHMP_SFLX routine
     - TROOT only used in CARBON, which we are not implementing
     - Can easily be added if wanted
-- Moved computation of DZSNSO from main level of NOAHMP_SFLX to THERMOPROP
+- Moved computation of DZSNSO from main level of old NOAHMP_SFLX routine to THERMOPROP
 - Moved setting of VEGE_FLUX output to 0 from top of ENERGY to IF ELSE statement that includes call to VEGE_FLUX
 - Moved computation of UR (wind speed at reference height to ATM)
     - Not sure why it wasn’t there in the first place
@@ -23,7 +23,6 @@
     - Not sure why NCAR changed them in the first place. I find the N qualifier to be quite useful.
     - The new SNOW (referring to NSNOW, the number of snow layers) also conflicted with SNOW (referring to the liquid depth of snowfall per timestep)
 - Moved do loop from main level of THERMOPROP to within TDFCND
-    - This is more consistent with looping in NOAH- MP
 - Moved THKW, THKO, and THKQTZ from locally defined in TDFCND to ParametersType
 - QUARTZ given its own line in namelist.input
     - Then moved to parameters based on 
@@ -40,8 +39,6 @@
 - C3PSN is a constant 1.0 for all vegtypes in MPTABLE, but has 20 (MODIS) and 27 (USGS) table entries. Parameter is changed to be a single value (i.e., no need to read in a table if the value only has 1 option). Same for KC25 and KO25. Similarly, CZIL is a single value formerly read in as a "table" from GENPARM.TBL, but it's now set to a single value (same with ZBOT).
 - Changed RS to RSMIN in veg_parameters to be consistent with use in model
 - The subroutines calc_declin, geth_newdate, and geth_idts are now in UtilitiesModule.f90. Similar to the other high-level modules, the driver calls UtilitiesMain from the time loop.
-- Modifed the noahmp_driver to read in ASCII forcing data as in NOAH-MP V1.1.
-    - *IMPORTANT NOTE* The driver is specific to the forcing data variables, units, and order found in the bondville.dat example. It will need to be modified to accept AORC data.
 
 ## Bug fixes:
 - Albedo for direct shortwave radiation in the NIR (ALBSND(2)) was incorrectly computed using parameters%BATS_VIS_DIR
@@ -101,8 +98,8 @@
 - Namelist and Parameter types
     - Model is only setup to read in MODIS land cover categories, NOT USGS
         - This follows the lead of what Cenlin had set up but should be adapted to incorporate USGS land cover codes
-    - FVEG computation pulled from main level of noahmp_sflx and moved into PHENOLOGY
-        - SHDFAC values from an old NOAH- MP veg param table (couldn’t find in HRLDAS version)
+    - FVEG computation pulled from main level of old noahmp_sflx routine and moved into PHENOLOGY
+        - SHDFAC values from an old veg param table (couldn’t find in HRLDAS version)
         - SHDMAX is implemented as a hack currently
     - It looks like HRLDAS can read this as gvfmax from land cover data, but implementation is not straightforward
     - SHDMAX values are in namelist and are identical to SHDFAC

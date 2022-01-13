@@ -1,8 +1,8 @@
 MODULE ParametersRead
 
-! noahmp TBLs read routines:
-!  Adapted from module_sf_noahmplsm.F: NOAHMP_TABLES module with several modifications
-!  1. made _TABLE varialbes public.
+!  Parameter table read routines:
+!  Adapted from the original module_sf_noahmplsm.F module with several modifications
+!  1. made _TABLE variables public.
 !  2. added directory argment in subroutines to enable to read TBLs from a desired location
 !  3. replace error handle routine ("wrf_error_fatal") with "handle_err"
 
@@ -303,16 +303,16 @@ MODULE ParametersRead
 
 ! Public subroutines/functions
 
-    public :: read_mp_veg_parameters
-    public :: read_mp_soil_parameters
-    public :: read_mp_rad_parameters
+    public :: read_veg_parameters
+    public :: read_soil_parameters
+    public :: read_rad_parameters
 
 CONTAINS
 
-  SUBROUTINE read_mp_veg_parameters(param_dir, noahmp_table, DATASET_IDENTIFIER)
+  SUBROUTINE read_veg_parameters(param_dir, noahowp_table, DATASET_IDENTIFIER)
     implicit none
     character(len=*), intent(in) :: param_dir
-    character(len=*), intent(in) :: noahmp_table
+    character(len=*), intent(in) :: noahowp_table
     character(len=*), intent(in) :: DATASET_IDENTIFIER
     integer :: ierr
     integer :: IK,IM
@@ -351,9 +351,9 @@ CONTAINS
                             BP, MP, QE25, RMS25, RMR25, ARM, FOLNMX, WDPOOL, WRRAT, MRP, SHDFAC, NROOT, RGL, RS, HS, TOPT, RSMAX, &
                             SLAREA, EPS1, EPS2, EPS3, EPS4, EPS5
 
-    namelist / noahmp_usgs_veg_categories / VEG_DATASET_DESCRIPTION, NVEG
+    namelist / usgs_veg_categories / VEG_DATASET_DESCRIPTION, NVEG
 
-    namelist / noahmp_usgs_parameters / ISURBAN, ISWATER, ISBARREN, ISICE, ISCROP, EBLFOREST, NATURAL, &
+    namelist / usgs_veg_parameters / ISURBAN, ISWATER, ISBARREN, ISICE, ISCROP, EBLFOREST, NATURAL, &
          LCZ_1,LCZ_2,LCZ_3,LCZ_4,LCZ_5,LCZ_6,LCZ_7,LCZ_8,LCZ_9,LCZ_10,LCZ_11,&
          CH2OP, DLEAF, Z0MVT, HVT, HVB, DEN, RC, MFSNO, SCFFAC, XL, CWPVT, C3PSN, KC25, AKC, KO25, AKO, AVCMX, AQE, &
          LTOVRC,  DILEFC,  DILEFW,  RMF25 ,  SLA   ,  FRAGR ,  TMIN  ,  VCMX25,  TDLEF ,  BP, MP, QE25, RMS25, RMR25, ARM, &
@@ -362,9 +362,9 @@ CONTAINS
          LAI_JAN, LAI_FEB, LAI_MAR, LAI_APR, LAI_MAY, LAI_JUN,LAI_JUL,LAI_AUG,LAI_SEP,LAI_OCT,LAI_NOV,LAI_DEC, &
          RHOL_VIS, RHOL_NIR, RHOS_VIS, RHOS_NIR, TAUL_VIS, TAUL_NIR, TAUS_VIS, TAUS_NIR, SLAREA, EPS1, EPS2, EPS3, EPS4, EPS5
 
-    namelist / noahmp_modis_veg_categories / VEG_DATASET_DESCRIPTION, NVEG
+    namelist / modis_veg_categories / VEG_DATASET_DESCRIPTION, NVEG
 
-    namelist / noahmp_modis_parameters / ISURBAN, ISWATER, ISBARREN, ISICE, ISCROP, EBLFOREST, NATURAL, &
+    namelist / modis_veg_parameters / ISURBAN, ISWATER, ISBARREN, ISICE, ISCROP, EBLFOREST, NATURAL, &
          LCZ_1,LCZ_2,LCZ_3,LCZ_4,LCZ_5,LCZ_6,LCZ_7,LCZ_8,LCZ_9,LCZ_10,LCZ_11, &
          CH2OP, DLEAF, Z0MVT, HVT, HVB, DEN, RC, MFSNO, SCFFAC, XL, CWPVT, C3PSN, KC25, AKC, KO25, AKO, AVCMX, AQE, &
          LTOVRC,  DILEFC,  DILEFW,  RMF25 ,  SLA   ,  FRAGR ,  TMIN  ,  VCMX25,  TDLEF ,  BP, MP, QE25, RMS25, RMR25, ARM, &
@@ -443,26 +443,26 @@ CONTAINS
     LCZ_10_TABLE   = -99999
     LCZ_11_TABLE   = -99999
 
-    inquire( file=trim(param_dir)//'/'//trim(noahmp_table), exist=file_named )
+    inquire( file=trim(param_dir)//'/'//trim(noahowp_table), exist=file_named )
     if ( file_named ) then
-      open(15, file=trim(param_dir)//'/'//trim(noahmp_table), status='old', form='formatted', action='read', iostat=ierr)
+      open(15, file=trim(param_dir)//'/'//trim(noahowp_table), status='old', form='formatted', action='read', iostat=ierr)
     else
       open(15, status='old', form='formatted', action='read', iostat=ierr)
     end if
 
     if (ierr /= 0) then
-       call handle_err(ierr, "ParametersRead.f90: read_mp_veg_parameters: Cannot find file MPTABLE.TBL")
+       call handle_err(ierr, "ParametersRead.f90: read_veg_parameters: Cannot find file MPTABLE.TBL")
     endif
 
     if ( trim(DATASET_IDENTIFIER) == "USGS" ) then
-       read(15,noahmp_usgs_veg_categories)
-       read(15,noahmp_usgs_parameters)
+       read(15,usgs_veg_categories)
+       read(15,usgs_veg_parameters)
     else if ( trim(DATASET_IDENTIFIER) == "MODIFIED_IGBP_MODIS_NOAH" ) then
-       read(15,noahmp_modis_veg_categories)
-       read(15,noahmp_modis_parameters)
+       read(15,modis_veg_categories)
+       read(15,modis_veg_parameters)
     else
        write(*,'("WARNING: DATASET_IDENTIFIER = ''", A, "''")') trim(DATASET_IDENTIFIER)
-       call handle_err(ierr, 'ParametersRead.f90: read_mp_veg_parameters: Unrecognized DATASET_IDENTIFIER in subroutine READ_MP_VEG_PARAMETERS')
+       call handle_err(ierr, 'ParametersRead.f90: read_veg_parameters: Unrecognized DATASET_IDENTIFIER in subroutine read_VEG_PARAMETERS')
     endif
     close(15)
 
@@ -567,9 +567,9 @@ CONTAINS
     TAUS_TABLE(1:NVEG,1)  = TAUS_VIS(1:NVEG) !stem transmittance: 1=vis, 2=nir
     TAUS_TABLE(1:NVEG,2)  = TAUS_NIR(1:NVEG) !stem transmittance: 1=vis, 2=nir
 
-  END SUBROUTINE read_mp_veg_parameters
+  END SUBROUTINE read_veg_parameters
 
-  SUBROUTINE read_mp_soil_parameters(param_dir, soil_table, general_table, soil_class_name)
+  SUBROUTINE read_soil_parameters(param_dir, soil_table, general_table, soil_class_name)
     implicit none
     character(len=*), intent(in) :: param_dir
     character(len=*), intent(in) :: soil_table
@@ -620,7 +620,7 @@ CONTAINS
     end if
 
     if (ierr/=0) then
-      write(message,fmt='(A)') 'ParametersRead.f90: read_mp_soil_parameters: failure opening SOILPARM.TBL'
+      write(message,fmt='(A)') 'ParametersRead.f90: read_soil_parameters: failure opening SOILPARM.TBL'
       call handle_err(ierr, message)
     end if
 
@@ -655,7 +655,7 @@ CONTAINS
     end if
 
     if (ierr /= 0) then
-      call handle_err(ierr, 'ParametersRead.f90: read_mp_soil_parameters: failure opening GENPARM.TBL')
+      call handle_err(ierr, 'ParametersRead.f90: read_soil_parameters: failure opening GENPARM.TBL')
     end if
 
     read (22,*)
@@ -695,13 +695,13 @@ CONTAINS
 
     close (22)
 
-  END SUBROUTINE read_mp_soil_parameters
+  END SUBROUTINE read_soil_parameters
 
 
-  SUBROUTINE read_mp_rad_parameters(param_dir, noahmp_table)
+  SUBROUTINE read_rad_parameters(param_dir, noahowp_table)
     implicit none
     character(len=*), intent(in) :: param_dir
-    character(len=*), intent(in) :: noahmp_table
+    character(len=*), intent(in) :: noahowp_table
     integer                      :: ierr
     logical                      :: file_named
 
@@ -711,7 +711,7 @@ CONTAINS
     real :: ALBDRY_VIS(MSC)
     real :: ALBDRY_NIR(MSC)
 
-    namelist / noahmp_rad_parameters / ALBSAT_VIS,ALBSAT_NIR,ALBDRY_VIS,ALBDRY_NIR,ALBICE,ALBLAK,OMEGAS,BETADS,BETAIS,EG
+    namelist / rad_parameters / ALBSAT_VIS,ALBSAT_NIR,ALBDRY_VIS,ALBDRY_NIR,ALBICE,ALBLAK,OMEGAS,BETADS,BETAIS,EG
 
     ! Initialize our variables to bad values, so that if the namelist read fails, we come to a screeching halt as soon as we try to use anything.
     ALBSAT_TABLE     = -1.E36
@@ -723,18 +723,18 @@ CONTAINS
     BETAIS_TABLE     = -1.E36
     EG_TABLE         = -1.E36
 
-    inquire( file=trim(param_dir)//'/'//trim(noahmp_table), exist=file_named )
+    inquire( file=trim(param_dir)//'/'//trim(noahowp_table), exist=file_named )
     if ( file_named ) then
-      open(15, file=trim(param_dir)//'/'//trim(noahmp_table), status='old', form='formatted', action='read', iostat=ierr)
+      open(15, file=trim(param_dir)//'/'//trim(noahowp_table), status='old', form='formatted', action='read', iostat=ierr)
     else
       open(15, status='old', form='formatted', action='read', iostat=ierr)
     end if
 
     if (ierr /= 0) then
-       call handle_err(ierr, 'ParametersRead.f90: read_mp_rad_parameters: Cannot find file MPTABLE.TBL')
+       call handle_err(ierr, 'ParametersRead.f90: read_rad_parameters: Cannot find file MPTABLE.TBL')
     endif
 
-    read(15,noahmp_rad_parameters)
+    read(15,rad_parameters)
     close(15)
 
     ALBSAT_TABLE(:,1) = ALBSAT_VIS ! saturated soil albedos: 1=vis, 2=nir
@@ -748,12 +748,12 @@ CONTAINS
     BETAIS_TABLE      = BETAIS
     EG_TABLE          = EG
 
-  end subroutine read_mp_rad_parameters
+  end subroutine read_rad_parameters
 
-  subroutine read_mp_global_parameters(param_dir, noahmp_table)
+  subroutine read_global_parameters(param_dir, noahowp_table)
     implicit none
     character(len=*), intent(in) :: param_dir
-    character(len=*), intent(in) :: noahmp_table
+    character(len=*), intent(in) :: noahowp_table
     integer                      :: ierr
     logical                      :: file_named
 
@@ -762,7 +762,7 @@ CONTAINS
             BATS_COSZ,BATS_VIS_NEW,BATS_NIR_NEW,BATS_VIS_AGE,BATS_NIR_AGE,BATS_VIS_DIR,BATS_NIR_DIR,&
             RSURF_SNOW,RSURF_EXP
 
-    namelist / noahmp_global_parameters / CO2,O2,TIMEAN,FSATMX,Z0SNO,SSI,SNOW_RET_FAC,SNOW_EMIS,&
+    namelist / global_parameters / CO2,O2,TIMEAN,FSATMX,Z0SNO,SSI,SNOW_RET_FAC,SNOW_EMIS,&
             SWEMX,TAU0,GRAIN_GROWTH,EXTRA_GROWTH,DIRT_SOOT,&
             BATS_COSZ,BATS_VIS_NEW,BATS_NIR_NEW,BATS_VIS_AGE,BATS_NIR_AGE,BATS_VIS_DIR,BATS_NIR_DIR,&
             RSURF_SNOW,RSURF_EXP
@@ -792,18 +792,18 @@ CONTAINS
     RSURF_SNOW_TABLE     = -1.E36
      RSURF_EXP_TABLE     = -1.E36
 
-    inquire( file=trim(param_dir)//'/'//trim(noahmp_table), exist=file_named )
+    inquire( file=trim(param_dir)//'/'//trim(noahowp_table), exist=file_named )
     if ( file_named ) then
-      open(15, file=trim(param_dir)//'/'//trim(noahmp_table), status='old', form='formatted', action='read', iostat=ierr)
+      open(15, file=trim(param_dir)//'/'//trim(noahowp_table), status='old', form='formatted', action='read', iostat=ierr)
     else
       open(15, status='old', form='formatted', action='read', iostat=ierr)
     end if
 
     if (ierr /= 0) then
-       call handle_err(ierr, 'ParametersRead.f90: read_mp_global_parameters: Cannot find file MPTABLE.TBL')
+       call handle_err(ierr, 'ParametersRead.f90: read_global_parameters: Cannot find file MPTABLE.TBL')
     endif
 
-    read(15,noahmp_global_parameters)
+    read(15,global_parameters)
     close(15)
 
            CO2_TABLE     = CO2
@@ -829,12 +829,12 @@ CONTAINS
     RSURF_SNOW_TABLE     = RSURF_SNOW
      RSURF_EXP_TABLE     = RSURF_EXP
 
-  END SUBROUTINE read_mp_global_parameters
+  END SUBROUTINE read_global_parameters
 
-  SUBROUTINE read_mp_crop_parameters(param_dir, noahmp_table)
+  SUBROUTINE read_crop_parameters(param_dir, noahowp_table)
     implicit none
     character(len=*), intent(in) :: param_dir
-    character(len=*), intent(in) :: noahmp_table
+    character(len=*), intent(in) :: noahowp_table
     integer                      :: ierr
     logical                      :: file_named
 
@@ -893,11 +893,11 @@ CONTAINS
        real, dimension(NCROP) :: BIO2LAI
 
 
-!    namelist / noahmp_crop_parameters /DEFAULT_CROP,   PLTDAY,     HSDAY,  PLANTPOP,      IRRI,  GDDTBASE,   GDDTCUT,     GDDS1,     GDDS2, &
+!    namelist / crop_parameters /DEFAULT_CROP,   PLTDAY,     HSDAY,  PLANTPOP,      IRRI,  GDDTBASE,   GDDTCUT,     GDDS1,     GDDS2, &
 !                                             GDDS3,     GDDS4,     GDDS5,      C3C4,      AREF,     PSNRF,     I2PAR,   TASSIM0, &
 !                                           TASSIM1,   TASSIM2,         K,      EPSI,     Q10MR,   FOLN_MX,   LEFREEZ,            &
 ! Zhe Zhang 2020-07-13
-    namelist / noahmp_crop_parameters /DEFAULT_CROP,   PLTDAY,     HSDAY,  PLANTPOP,      IRRI,  GDDTBASE,   GDDTCUT,     GDDS1,  GDDS2,  GDDS3,     GDDS4,     GDDS5, & !
+    namelist / crop_parameters /DEFAULT_CROP,   PLTDAY,     HSDAY,  PLANTPOP,      IRRI,  GDDTBASE,   GDDTCUT,     GDDS1,  GDDS2,  GDDS3,     GDDS4,     GDDS5, & !
                                               C3PSN,     KC25,       AKC,      KO25,       AKO,     AVCMX,    VCMX25,        BP,     MP, FOLNMX,      QE25, &  ! parameters added from stomata
                                                C3C4,     AREF,     PSNRF,     I2PAR,   TASSIM0,                                               &
                                         TASSIM1,   TASSIM2,         K,      EPSI,     Q10MR,   FOLN_MX,   LEFREEZ,               &
@@ -972,18 +972,18 @@ CONTAINS
             RTCT_TABLE = -1.E36 ! convert end
          BIO2LAI_TABLE = -1.E36
 
-    inquire( file=trim(param_dir)//'/'//trim(noahmp_table), exist=file_named )
+    inquire( file=trim(param_dir)//'/'//trim(noahowp_table), exist=file_named )
     if ( file_named ) then
-      open(15, file=trim(param_dir)//'/'//trim(noahmp_table), status='old', form='formatted', action='read', iostat=ierr)
+      open(15, file=trim(param_dir)//'/'//trim(noahowp_table), status='old', form='formatted', action='read', iostat=ierr)
     else
       open(15, status='old', form='formatted', action='read', iostat=ierr)
     end if
 
     if (ierr /= 0) then
-       call handle_err(ierr, 'ParametersRead.f90: read_mp_crop_parameters: Cannot find file MPTABLE.TBL')
+       call handle_err(ierr, 'ParametersRead.f90: read_crop_parameters: Cannot find file MPTABLE.TBL')
     endif
 
-    read(15,noahmp_crop_parameters)
+    read(15,crop_parameters)
     close(15)
 
     DEFAULT_CROP_TABLE      = DEFAULT_CROP
@@ -1124,12 +1124,12 @@ CONTAINS
             RTCT_TABLE(:,8) = RTCT_S8
          BIO2LAI_TABLE      = BIO2LAI
 
-  END SUBROUTINE read_mp_crop_parameters
+  END SUBROUTINE read_crop_parameters
 
-  SUBROUTINE read_mp_irrigation_parameters(param_dir, noahmp_table)
+  SUBROUTINE read_irrigation_parameters(param_dir, noahowp_table)
     implicit none
     character(len=*), intent(in) :: param_dir
-    character(len=*), intent(in) :: noahmp_table
+    character(len=*), intent(in) :: noahowp_table
     integer                      :: ierr
     logical                      :: file_named
 
@@ -1143,7 +1143,7 @@ CONTAINS
     real    :: FIRTFAC               ! flood application rate factor
     real    :: IR_RAIN               ! maximum precipitation to stop irrigation trigger
 
-    namelist / noahmp_irrigation_parameters / IRR_FRAC, IRR_HAR, IRR_LAI, IRR_MAD, FILOSS, &
+    namelist / irrigation_parameters / IRR_FRAC, IRR_HAR, IRR_LAI, IRR_MAD, FILOSS, &
                                               SPRIR_RATE, MICIR_RATE, FIRTFAC, IR_RAIN
 
     IRR_FRAC_TABLE   = -1.E36    ! irrigation Fraction
@@ -1156,18 +1156,18 @@ CONTAINS
     FIRTFAC_TABLE    = -1.E36    ! flood application rate factor
     IR_RAIN_TABLE    = -1.E36    ! maximum precipitation to stop irrigation trigger
 
-    inquire( file=trim(param_dir)//'/'//trim(noahmp_table), exist=file_named )
+    inquire( file=trim(param_dir)//'/'//trim(noahowp_table), exist=file_named )
     if ( file_named ) then
-      open(15, file=trim(param_dir)//'/'//trim(noahmp_table), status='old', form='formatted', action='read', iostat=ierr)
+      open(15, file=trim(param_dir)//'/'//trim(noahowp_table), status='old', form='formatted', action='read', iostat=ierr)
     else
       open(15, status='old', form='formatted', action='read', iostat=ierr)
     end if
 
     if (ierr /= 0) then
-       call handle_err(ierr, 'ParametersRead.f90: read_mp_irrigation_parameters: Cannot find file MPTABLE.TBL')
+       call handle_err(ierr, 'ParametersRead.f90: read_irrigation_parameters: Cannot find file MPTABLE.TBL')
     endif
 
-    read(15,noahmp_irrigation_parameters)
+    read(15,irrigation_parameters)
     close(15)
 
     IRR_FRAC_TABLE   = IRR_FRAC    ! irrigation Fraction
@@ -1180,12 +1180,12 @@ CONTAINS
     FIRTFAC_TABLE    = FIRTFAC     ! flood application rate factor
     IR_RAIN_TABLE    = IR_RAIN     ! maximum precipitation to stop irrigation trigger
 
-  END SUBROUTINE read_mp_irrigation_parameters
+  END SUBROUTINE read_irrigation_parameters
 
-  SUBROUTINE read_tiledrain_parameters(param_dir, noahmp_table)
+  SUBROUTINE read_tiledrain_parameters(param_dir, noahowp_table)
     implicit none
     character(len=*), intent(in)    :: param_dir
-    character(len=*), intent(in)    :: noahmp_table
+    character(len=*), intent(in)    :: noahowp_table
     integer                         :: ierr
     logical                         :: file_named
     real, dimension(MAX_SOILTYP)    :: TDSMC_FAC
@@ -1200,7 +1200,7 @@ CONTAINS
     real, dimension(MAX_SOILTYP)    :: TD_DDRAIN
     real, dimension(MAX_SOILTYP)    :: KLAT_FAC
 
-    namelist / noahmp_tiledrain_parameters /DRAIN_LAYER_OPT,TDSMC_FAC,TD_DEPTH,TD_DC,&
+    namelist / tiledrain_parameters /DRAIN_LAYER_OPT,TDSMC_FAC,TD_DEPTH,TD_DC,&
                                            TD_DCOEF,TD_D,TD_ADEPTH,TD_RADI,TD_SPAC,TD_DDRAIN,&
                                            KLAT_FAC
     ! Initialize our variables to bad values, so that if the namelist read fails, we come to a screeching halt as soon as we try to use anything.
@@ -1216,16 +1216,16 @@ CONTAINS
     TD_DDRAIN_TABLE          = -99999
     KLAT_FAC_TABLE           = -99999
 
-    inquire( file=trim(param_dir)//'/'//trim(noahmp_table), exist=file_named )
+    inquire( file=trim(param_dir)//'/'//trim(noahowp_table), exist=file_named )
     if ( file_named ) then
-      open(15, file=trim(param_dir)//'/'//trim(noahmp_table), status='old', form='formatted', action='read', iostat=ierr)
+      open(15, file=trim(param_dir)//'/'//trim(noahowp_table), status='old', form='formatted', action='read', iostat=ierr)
     else
       open(15, status='old', form='formatted', action='read', iostat=ierr)
     end if
     if (ierr /= 0) then
-       call handle_err(ierr, 'ParametersRead.f90: read_mp_tiledrain_parameters: Cannot find file MPTABLE.TBL')
+       call handle_err(ierr, 'ParametersRead.f90: read_tiledrain_parameters: Cannot find file MPTABLE.TBL')
     endif
-    read(15,noahmp_tiledrain_parameters)
+    read(15,tiledrain_parameters)
     close(15)
     TDSMCFAC_TABLE           = TDSMC_FAC
     TD_DEPTH_TABLE           = TD_DEPTH
@@ -1243,14 +1243,14 @@ CONTAINS
   END SUBROUTINE read_tiledrain_parameters
 
 
-  SUBROUTINE read_mp_optional_parameters(param_dir, noahmp_table)
+  SUBROUTINE read_optional_parameters(param_dir, noahowp_table)
     implicit none
     character(len=*), intent(in) :: param_dir
-    character(len=*), intent(in) :: noahmp_table
+    character(len=*), intent(in) :: noahowp_table
     integer                      :: ierr
     logical                      :: file_named
 
-    namelist / noahmp_optional_parameters /                                      &
+    namelist / optional_parameters /                                      &
                sr2006_theta_1500t_a, sr2006_theta_1500t_b, sr2006_theta_1500t_c, &
                sr2006_theta_1500t_d, sr2006_theta_1500t_e, sr2006_theta_1500t_f, &
                sr2006_theta_1500t_g                                            , &
@@ -1269,21 +1269,21 @@ CONTAINS
                sr2006_psi_e_a      , sr2006_psi_e_b      , sr2006_psi_e_c      , &
                sr2006_smcmax_a     , sr2006_smcmax_b
 
-    inquire( file=trim(param_dir)//'/'//trim(noahmp_table), exist=file_named )
+    inquire( file=trim(param_dir)//'/'//trim(noahowp_table), exist=file_named )
     if ( file_named ) then
-      open(15, file=trim(param_dir)//'/'//trim(noahmp_table), status='old', form='formatted', action='read', iostat=ierr)
+      open(15, file=trim(param_dir)//'/'//trim(noahowp_table), status='old', form='formatted', action='read', iostat=ierr)
     else
       open(15, status='old', form='formatted', action='read', iostat=ierr)
     end if
 
     if (ierr /= 0) then
-       call handle_err(ierr, 'ParametersRead.f90: read_mp_optional_parameters: Cannot find file MPTABLE.TBL')
+       call handle_err(ierr, 'ParametersRead.f90: read_optional_parameters: Cannot find file MPTABLE.TBL')
     endif
 
-    read(15,noahmp_optional_parameters)
+    read(15,optional_parameters)
     close(15)
 
-  END SUBROUTINE read_mp_optional_parameters
+  END SUBROUTINE read_optional_parameters
 
 
   SUBROUTINE handle_err(err,message)
