@@ -59,13 +59,13 @@ module bminoahowp
           get_value_int, &
           get_value_float, &
           get_value_double
-!      procedure :: get_value_ptr_int => noahowp_get_ptr_int
-!      procedure :: get_value_ptr_float => noahowp_get_ptr_float
-!      procedure :: get_value_ptr_double => noahowp_get_ptr_double
-!      generic :: get_value_ptr => &
-!           get_value_ptr_int, &
-!           get_value_ptr_float, &
-!           get_value_ptr_double
+      procedure :: get_value_ptr_int => noahowp_get_ptr_int
+      procedure :: get_value_ptr_float => noahowp_get_ptr_float
+      procedure :: get_value_ptr_double => noahowp_get_ptr_double
+      generic :: get_value_ptr => &
+           get_value_ptr_int, &
+           get_value_ptr_float, &
+           get_value_ptr_double
 !      procedure :: get_value_at_indices_int => noahowp_get_at_indices_int
 !      procedure :: get_value_at_indices_float => noahowp_get_at_indices_float
 !      procedure :: get_value_at_indices_double => noahowp_get_at_indices_double
@@ -794,63 +794,106 @@ contains
     end select
   end function noahowp_get_double
 
-! !=================== get_value_ptr functions not implemented yet =================
+!=================== get_value_ptr functions not implemented yet =================
 
-!   ! Get a reference to an integer-valued variable, flattened.
-!   function noahowp_get_ptr_int(this, name, dest_ptr) result (bmi_status)
-!     class (bmi_noahowp), intent(in) :: this
-!     character (len=*), intent(in) :: name
-!     integer, pointer, intent(inout) :: dest_ptr(:)
-!     integer :: bmi_status
-!     type (c_ptr) :: src
-!     integer :: n_elements
-!
-! !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR INTEGER VARS =================
-!
-!     select case(name)
-!     case default
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahowp_get_ptr_int
-!
-!   ! Get a reference to a real-valued variable, flattened.
-!   function noahowp_get_ptr_float(this, name, dest_ptr) result (bmi_status)
-!     class (bmi_noahowp), intent(in) :: this
-!     character (len=*), intent(in) :: name
-!     real, pointer, intent(inout) :: dest_ptr(:)
-!     integer :: bmi_status, status
-!     type (c_ptr) :: src
-!     integer :: n_elements, gridid
-!
-!     select case(name)
-!     case("SFCPRS")
-!        src = c_loc(this%model%forcing%sfcprs)
-!        status = this%get_var_grid(name,gridid)
-!        status = this%get_grid_size(gridid, n_elements)
-!        call c_f_pointer(src, dest_ptr, [n_elements])
-!        bmi_status = BMI_SUCCESS
-!     case default
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahowp_get_ptr_float
-!
-!   ! Get a reference to an double-valued variable, flattened.
-!   function noahowp_get_ptr_double(this, name, dest_ptr) result (bmi_status)
-!     class (bmi_noahowp), intent(in) :: this
-!     character (len=*), intent(in) :: name
-!     double precision, pointer, intent(inout) :: dest_ptr(:)
-!     integer :: bmi_status
-!     type (c_ptr) :: src
-!     integer :: n_elements
-!
-! !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR DOUBLE VARS =================\
-!
-!     select case(name)
-!     case default
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahowp_get_ptr_double
-!
+   ! Get a reference to an integer-valued variable, flattened.
+   function noahowp_get_ptr_int(this, name, dest_ptr) result (bmi_status)
+     class (bmi_noahowp), intent(in), target :: this
+     character (len=*), intent(in) :: name
+     integer, pointer, intent(inout) :: dest_ptr(:)
+     integer :: bmi_status
+     type (c_ptr) :: src
+     integer :: n_elements
+
+!==================== UPDATE IMPLEMENTATION IF NECESSARY FOR INTEGER VARS =================
+
+     select case(name)
+     case default
+        bmi_status = BMI_FAILURE
+     end select
+   end function noahowp_get_ptr_int
+
+   ! Get a reference to a real-valued variable, flattened.
+   function noahowp_get_ptr_float(this, name, dest_ptr) result (bmi_status)
+     class (bmi_noahowp), intent(in), target :: this
+     character (len=*), intent(in) :: name
+     real, pointer, intent(inout) :: dest_ptr(:)
+     integer :: bmi_status, status
+     type (c_ptr) :: src
+     integer :: n_elements, gridid
+
+     !get gridid and the number of elements
+     status = this%get_var_grid(name,gridid)
+     if ( status .eq. BMI_FAILURE ) then
+         bmi_status = BMI_FAILURE
+         return
+     endif
+     status = this%get_grid_size(gridid, n_elements)
+     if ( status .eq. BMI_FAILURE ) then
+         bmi_status = BMI_FAILURE
+         return
+     endif
+
+     bmi_status = BMI_SUCCESS
+
+     select case(name)
+     case("SFCPRS")
+        src = c_loc(this%model%forcing%sfcprs)
+     case("SFCTMP")
+        src = c_loc(this%model%forcing%sfctmp)
+     case("SOLDN")
+        src = c_loc(this%model%forcing%soldn)
+     case("LWDN")
+        src = c_loc(this%model%forcing%lwdn)
+     case("UU")
+        src = c_loc(this%model%forcing%uu)
+     case("VV")
+        src = c_loc(this%model%forcing%vv)
+     case("Q2")
+        src = c_loc(this%model%forcing%q2)
+     case("PRCPNONC")
+        src = c_loc(this%model%forcing%prcpnonc)
+     case("QINSUR")
+        src = c_loc(this%model%water%qinsur)
+     case("ETRAN")
+        src = c_loc(this%model%water%etran)
+     case("QSEVA")
+        src = c_loc(this%model%water%qseva)
+     case("EVAPOTRANS")
+        src = c_loc(this%model%water%evapotrans)
+     case("TG")
+        src = c_loc(this%model%energy%tg)
+     case("SNEQV")
+        src = c_loc(this%model%water%sneqv)
+     case default
+        bmi_status = BMI_FAILURE
+     end select
+
+     if ( bmi_status .eq. BMI_FAILURE ) then
+         return
+     endif
+
+     call c_f_pointer(src, dest_ptr, [n_elements])
+
+   end function noahowp_get_ptr_float
+
+   ! Get a reference to an double-valued variable, flattened.
+   function noahowp_get_ptr_double(this, name, dest_ptr) result (bmi_status)
+     class (bmi_noahowp), intent(in), target :: this
+     character (len=*), intent(in) :: name
+     double precision, pointer, intent(inout) :: dest_ptr(:)
+     integer :: bmi_status
+     type (c_ptr) :: src
+     integer :: n_elements
+
+!==================== UPDATE IMPLEMENTATION IF NECESSARY FOR DOUBLE VARS =================\
+
+     select case(name)
+     case default
+        bmi_status = BMI_FAILURE
+     end select
+   end function noahowp_get_ptr_double
+
 !   ! Get values of an integer variable at the given locations.
 !   function noahowp_get_at_indices_int(this, name, dest, inds) &
 !        result (bmi_status)
