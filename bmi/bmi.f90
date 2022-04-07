@@ -51,9 +51,9 @@ module bmif_2_0
       procedure(bmif_get_value_int), deferred :: get_value_int
       procedure(bmif_get_value_float), deferred :: get_value_float
       procedure(bmif_get_value_double), deferred :: get_value_double
-!       procedure(bmif_get_value_ptr_int), deferred :: get_value_ptr_int
-!       procedure(bmif_get_value_ptr_float), deferred :: get_value_ptr_float
-!       procedure(bmif_get_value_ptr_double), deferred :: get_value_ptr_double
+      procedure(bmif_get_value_ptr_int), deferred :: get_value_ptr_int
+      procedure(bmif_get_value_ptr_float), deferred :: get_value_ptr_float
+      procedure(bmif_get_value_ptr_double), deferred :: get_value_ptr_double
 !       procedure(bmif_get_value_at_indices_int), deferred :: &
 !            get_value_at_indices_int
 !       procedure(bmif_get_value_at_indices_float), deferred :: &
@@ -290,34 +290,34 @@ module bmif_2_0
       double precision, intent(inout) :: dest(:)
       integer :: bmi_status
     end function bmif_get_value_double
-!
-!     ! Get a reference to the given integer variable.
-!     function bmif_get_value_ptr_int(this, name, dest_ptr) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       character(len=*), intent(in) :: name
-!       integer, pointer, intent(inout) :: dest_ptr(:)
-!       integer :: bmi_status
-!     end function bmif_get_value_ptr_int
-!
-!     ! Get a reference to the given real variable.
-!     function bmif_get_value_ptr_float(this, name, dest_ptr) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       character(len=*), intent(in) :: name
-!       real, pointer, intent(inout) :: dest_ptr(:)
-!       integer :: bmi_status
-!     end function bmif_get_value_ptr_float
-!
-!     ! Get a reference to the given double variable.
-!     function bmif_get_value_ptr_double(this, name, dest_ptr) result(bmi_status)
-!       import :: bmi
-!       class(bmi), intent(in) :: this
-!       character(len=*), intent(in) :: name
-!       double precision, pointer, intent(inout) :: dest_ptr(:)
-!       integer :: bmi_status
-!     end function bmif_get_value_ptr_double
-!
+
+     ! Get a reference to the given integer variable.
+     function bmif_get_value_ptr_int(this, name, dest_ptr) result(bmi_status)
+       import :: bmi
+       class(bmi), intent(in), target :: this
+       character(len=*), intent(in) :: name
+       integer, pointer, intent(inout) :: dest_ptr(:)
+       integer :: bmi_status
+     end function bmif_get_value_ptr_int
+
+     ! Get a reference to the given real variable.
+     function bmif_get_value_ptr_float(this, name, dest_ptr) result(bmi_status)
+       import :: bmi
+       class(bmi), intent(in), target :: this
+       character(len=*), intent(in) :: name
+       real, pointer, intent(inout) :: dest_ptr(:)
+       integer :: bmi_status
+     end function bmif_get_value_ptr_float
+
+     ! Get a reference to the given double variable.
+     function bmif_get_value_ptr_double(this, name, dest_ptr) result(bmi_status)
+       import :: bmi
+       class(bmi), intent(in), target :: this
+       character(len=*), intent(in) :: name
+       double precision, pointer, intent(inout) :: dest_ptr(:)
+       integer :: bmi_status
+     end function bmif_get_value_ptr_double
+
 !     ! Get integer values at particular (one-dimensional) indices.
 !     function bmif_get_value_at_indices_int(this, name, dest, inds) &
 !       result(bmi_status)
