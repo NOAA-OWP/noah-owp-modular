@@ -19,6 +19,8 @@ type, public :: namelist_type
   character(len=256) :: veg_class_name     ! name of vegetation classification (MODIFIED_IGBP_MODIS_NOAH or USGS)
   real               :: lat                ! latitude (°)
   real               :: lon                ! longitude (°)
+  real               :: terrain_slope      ! terrain slope (°)
+  real               :: azimuth            ! terrain azimuth or aspect (° clockwise from north)
   real               :: ZREF               ! measurement height for wind speed (m)
 
   integer            :: isltyp             ! soil type
@@ -95,6 +97,8 @@ contains
     character(len=256) :: soil_class_name
     real               :: lat
     real               :: lon
+    real               :: terrain_slope
+    real               :: azimuth
     real               :: ZREF               ! measurement height for wind speed (m)
 
     integer       :: isltyp
@@ -142,7 +146,7 @@ contains
 
     namelist / timing          / dt,startdate,enddate,input_filename,output_filename
     namelist / parameters      / parameter_dir, soil_table, general_table, noahowp_table, soil_class_name, veg_class_name
-    namelist / location        / lat,lon
+    namelist / location        / lat,lon,terrain_slope,azimuth
     namelist / forcing         / ZREF
     namelist / model_options   / precip_phase_option,runoff_option,drainage_option,frozen_soil_option,dynamic_vic_option,&
                                  dynamic_veg_option,snow_albedo_option,radiative_transfer_option,sfc_drag_coeff_option,&
@@ -213,6 +217,8 @@ contains
     this%veg_class_name     = veg_class_name
     this%lat                = lat
     this%lon                = lon
+    this%terrain_slope      = terrain_slope
+    this%azimuth            = azimuth
     this%ZREF               = ZREF
 
     this%isltyp           = isltyp
