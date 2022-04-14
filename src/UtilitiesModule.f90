@@ -33,7 +33,7 @@ contains
 
     ! calculate current declination of direct solar radiation input
     call calc_declin(domain%nowdate(1:4)//"-"//domain%nowdate(5:6)//"-"//domain%nowdate(7:8)//"_"//domain%nowdate(9:10)//":"//domain%nowdate(11:12)//":00", & ! in
-                     domain%lat, domain%lon, &                                                                                                                ! in
+                     domain%lat, domain%lon, domain%terrain_slope, domain%azimuth,&                                                                           ! in
                      energy%cosz, forcing%yearlen, forcing%julian)                                                                                            ! out
     
   END SUBROUTINE UtilitiesMain
@@ -805,9 +805,9 @@ contains
     endif
   end function nmdays
 
-  SUBROUTINE calc_declin (nowdate, &              ! in
-                          latitude, longitude, &  ! in
-                          cosz, yearlen, julian)  ! out
+  SUBROUTINE calc_declin (nowdate, &                             ! in
+                          latitude, longitude, slope, azimuth, & ! in
+                          cosz, yearlen, julian)                 ! out
   !---------------------------------------------------------------------
     IMPLICIT NONE
   !---------------------------------------------------------------------
@@ -816,6 +816,8 @@ contains
     character(len=19), intent(in)  :: nowdate    ! YYYY-MM-DD_HH:mm:ss
     real,              intent(in)  :: latitude
     real,              intent(in)  :: longitude
+    real,              intent(in)  :: slope
+    real,              intent(in)  :: azimuth
     real,              intent(out) :: cosz
     integer,           intent(out) :: yearlen
     real,              intent(out) :: JULIAN
@@ -831,6 +833,8 @@ contains
     REAL            :: SINOB
     REAL            :: SXLONG
     REAL            :: ARG
+    REAL            :: lat_eq    ! equivalent latitude of horizontal slope when adjusting for slope & aspect
+    REAL            :: lon_shift ! shift in apparent longitude when adjusting for slope & aspect
     integer         :: iyear
     integer         :: iday
     integer         :: ihour
@@ -880,7 +884,23 @@ contains
     TLOCTIM = REAL(IHOUR) + REAL(IMINUTE)/60.0 + REAL(ISECOND)/3600.0 + LONGITUDE/15.0 ! Local time in hours
     TLOCTIM = MOD(TLOCTIM+24.0, 24.0)
     HRANG=15. * (TLOCTIM-12.) * DEGRAD
-    COSZ = SIN(LATITUDE * DEGRAD) * SIN(DECLIN) + COS(LATITUDE * DEGRAD) * COS(DECLIN) * COS(HRANG)
+    
+    ! Calculate the equivalent latitude for a horizontal slope, adjusting for slope & aspect
+    lat_eq = asin((sin(slope*DEGRAD) * cos(azimuth*DEGRAD) * cos(lat*DEGRAD)) + &
+                  (cos(slope*DEGRAD) *sin(lat*DEGRAD))) *                       &
+                  1/DEGRAD
+    
+    ! Calculate the shift in longitude when adjusting for slope & aspect
+    lon_shift = atan((sin(azimuth*DEGRAD) * sin(slope*DEGRAD)) /                          &
+                       ((cos(slope*DEGRAD) * cos(lat*DEGRAD)) -                           &
+                          (cos(azimuth*DEGRAD) * sin(slope*DEGRAD) * sin(lat*DEGRAD)))) * &
+                          1/DEGRAD
+    
+    ! Modify the hour angle to account for shift in apparent longitude
+    HRANG = HRANG + (lon_shift * DEGRAD)
+    
+    ! Calculate the cosine of the solar zenith angle
+    COSZ = SIN(lat_eq * DEGRAD) * SIN(DECLIN) + COS(lat_eq * DEGRAD) * COS(DECLIN) * COS(HRANG)
 
   !KWM   write(wrf_err_message,10)DECDEG/DEGRAD
   !KWM10 FORMAT(1X,'*** SOLAR DECLINATION ANGLE = ',F6.2,' DEGREES.',' ***')
