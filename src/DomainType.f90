@@ -25,6 +25,8 @@ type, public :: domain_type
   real                :: lat               ! latitude (°)
   real                :: lon               ! longitude (°)
   real                :: ZREF              ! measurement height of wind speed (m)
+  real                :: terrain_slope     ! terrain slope (°)
+  real                :: azimuth           ! terrain azimuth or aspect (° clockwise from north)
   integer             :: vegtyp            ! land cover type
   integer             :: croptype          ! crop type
   integer             :: isltyp            ! soil type
@@ -70,25 +72,27 @@ contains
 
     class(domain_type) :: this
 
-    this%iloc      = huge(1)
-    this%jloc      = huge(1)
-    this%dt        = huge(1.0)
-    this%startdate = 'EMPTYDATE999'
-    this%enddate   = 'EMPTYDATE999'
-    this%nowdate   = 'EMPTYDATE999'
+    this%iloc           = huge(1)
+    this%jloc           = huge(1)
+    this%dt             = huge(1.0)
+    this%startdate      = 'EMPTYDATE999'
+    this%enddate        = 'EMPTYDATE999'
+    this%nowdate        = 'EMPTYDATE999'
     this%start_datetime = huge(1)
     this%end_datetime   = huge(1)
     this%curr_datetime  = huge(1)
-    this%itime     = huge(1) 
-    this%ntime     = huge(1) 
-    this%time_dbl  = huge(1.d0)
-    this%lat       = huge(1.0)
-    this%lon       = huge(1.0)
-    this%ZREF      = huge(1.0)
-    this%vegtyp    = huge(1)
-    this%croptype  = huge(1)
-    this%isltyp    = huge(1)
-    this%IST       = huge(1)
+    this%itime          = huge(1) 
+    this%ntime          = huge(1) 
+    this%time_dbl       = huge(1.d0)
+    this%lat            = huge(1.0)
+    this%lon            = huge(1.0)
+    this%terrain_slope  = huge(1.0)
+    this%azimuth        = huge(1.0)
+    this%ZREF           = huge(1.0)
+    this%vegtyp         = huge(1)
+    this%croptype       = huge(1)
+    this%isltyp         = huge(1)
+    this%IST            = huge(1)
 
 
   end subroutine InitDefault
@@ -98,18 +102,20 @@ contains
     class(domain_type)  :: this
     type(namelist_type) :: namelist
 
-    this%dt        = namelist%dt
-    this%startdate = namelist%startdate
-    this%enddate   = namelist%enddate
-    this%lat       = namelist%lat
-    this%lon       = namelist%lon
-    this%ZREF      = namelist%ZREF
-    this%zsoil     = namelist%zsoil
-    this%dzsnso    = namelist%dzsnso
-    this%vegtyp    = namelist%vegtyp
-    this%croptype  = namelist%croptype
-    this%isltyp    = namelist%isltyp
-    this%IST       = namelist%sfctyp
+    this%dt             = namelist%dt
+    this%startdate      = namelist%startdate
+    this%enddate        = namelist%enddate
+    this%lat            = namelist%lat
+    this%lon            = namelist%lon
+    this%terrain_slope  = namelist%terrain_slope
+    this%azimuth        = namelist%azimuth
+    this%ZREF           = namelist%ZREF
+    this%zsoil          = namelist%zsoil
+    this%dzsnso         = namelist%dzsnso
+    this%vegtyp         = namelist%vegtyp
+    this%croptype       = namelist%croptype
+    this%isltyp         = namelist%isltyp
+    this%IST            = namelist%sfctyp
     this%start_datetime = date_to_unix(namelist%startdate)  ! returns seconds-since-1970-01-01
     this%end_datetime   = date_to_unix(namelist%enddate)
   
