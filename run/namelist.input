@@ -18,6 +18,8 @@
 &location ! for point runs, needs to be modified for gridded
   lat              = 40.01    ! latitude [degrees]
   lon              = -88.37  ! longitude [degrees]
+  terrain_slope    = 0.0      ! terrain slope [degrees]
+  azimuth          = 0.0      ! terrain azimuth or aspect [degrees clockwise from north]
 /
 
 &forcing
