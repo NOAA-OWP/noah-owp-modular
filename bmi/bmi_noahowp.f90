@@ -787,18 +787,14 @@ contains
     end select
   end function noahowp_get_double
 
-!=================== get_value_ptr functions not implemented yet =================
-
    ! Get a reference to an integer-valued variable, flattened.
    function noahowp_get_ptr_int(this, name, dest_ptr) result (bmi_status)
-     class (bmi_noahowp), intent(in), target :: this
+     class (bmi_noahowp), intent(in) :: this
      character (len=*), intent(in) :: name
      integer, pointer, intent(inout) :: dest_ptr(:)
      integer :: bmi_status
      type (c_ptr) :: src
      integer :: n_elements
-
-!==================== UPDATE IMPLEMENTATION IF NECESSARY FOR INTEGER VARS =================
 
      select case(name)
      case default
@@ -808,63 +804,17 @@ contains
 
    ! Get a reference to a real-valued variable, flattened.
    function noahowp_get_ptr_float(this, name, dest_ptr) result (bmi_status)
-     class (bmi_noahowp), intent(in), target :: this
+     class (bmi_noahowp), intent(in) :: this
      character (len=*), intent(in) :: name
      real, pointer, intent(inout) :: dest_ptr(:)
-     integer :: bmi_status, status
+     integer :: bmi_status
      type (c_ptr) :: src
-     integer :: n_elements, gridid
-
-     !get gridid and the number of elements
-     status = this%get_var_grid(name,gridid)
-     if ( status .eq. BMI_FAILURE ) then
-         bmi_status = BMI_FAILURE
-         return
-     endif
-     status = this%get_grid_size(gridid, n_elements)
-     if ( status .eq. BMI_FAILURE ) then
-         bmi_status = BMI_FAILURE
-         return
-     endif
-
-     bmi_status = BMI_SUCCESS
+     integer :: n_elements
 
      select case(name)
-     case("SFCPRS")
-        src = c_loc(this%model%forcing%sfcprs)
-     case("SFCTMP")
-        src = c_loc(this%model%forcing%sfctmp)
-     case("SOLDN")
-        src = c_loc(this%model%forcing%soldn)
-     case("LWDN")
-        src = c_loc(this%model%forcing%lwdn)
-     case("UU")
-        src = c_loc(this%model%forcing%uu)
-     case("VV")
-        src = c_loc(this%model%forcing%vv)
-     case("Q2")
-        src = c_loc(this%model%forcing%q2)
-     case("PRCPNONC")
-        src = c_loc(this%model%forcing%prcpnonc)
-     case("QINSUR")
-        src = c_loc(this%model%water%qinsur)
-     case("ETRAN")
-        src = c_loc(this%model%water%etran)
-     case("QSEVA")
-        src = c_loc(this%model%water%qseva)
-     case("EVAPOTRANS")
-        src = c_loc(this%model%water%evapotrans)
-     case("TG")
-        src = c_loc(this%model%energy%tg)
-     case("SNEQV")
-        src = c_loc(this%model%water%sneqv)
      case default
         bmi_status = BMI_FAILURE
      end select
-
-     if ( bmi_status .eq. BMI_FAILURE ) then
-         return
-     endif
 
      call c_f_pointer(src, dest_ptr, [n_elements])
 
@@ -872,14 +822,12 @@ contains
 
    ! Get a reference to an double-valued variable, flattened.
    function noahowp_get_ptr_double(this, name, dest_ptr) result (bmi_status)
-     class (bmi_noahowp), intent(in), target :: this
+     class (bmi_noahowp), intent(in) :: this
      character (len=*), intent(in) :: name
      double precision, pointer, intent(inout) :: dest_ptr(:)
      integer :: bmi_status
      type (c_ptr) :: src
      integer :: n_elements
-
-!==================== UPDATE IMPLEMENTATION IF NECESSARY FOR DOUBLE VARS =================\
 
      select case(name)
      case default
