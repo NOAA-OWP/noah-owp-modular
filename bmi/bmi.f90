@@ -294,7 +294,7 @@ module bmif_2_0
      ! Get a reference to the given integer variable.
      function bmif_get_value_ptr_int(this, name, dest_ptr) result(bmi_status)
        import :: bmi
-       class(bmi), intent(in), target :: this
+       class(bmi), intent(in) :: this
        character(len=*), intent(in) :: name
        integer, pointer, intent(inout) :: dest_ptr(:)
        integer :: bmi_status
@@ -303,7 +303,7 @@ module bmif_2_0
      ! Get a reference to the given real variable.
      function bmif_get_value_ptr_float(this, name, dest_ptr) result(bmi_status)
        import :: bmi
-       class(bmi), intent(in), target :: this
+       class(bmi), intent(in) :: this
        character(len=*), intent(in) :: name
        real, pointer, intent(inout) :: dest_ptr(:)
        integer :: bmi_status
@@ -312,7 +312,7 @@ module bmif_2_0
      ! Get a reference to the given double variable.
      function bmif_get_value_ptr_double(this, name, dest_ptr) result(bmi_status)
        import :: bmi
-       class(bmi), intent(in), target :: this
+       class(bmi), intent(in) :: this
        character(len=*), intent(in) :: name
        double precision, pointer, intent(inout) :: dest_ptr(:)
        integer :: bmi_status
