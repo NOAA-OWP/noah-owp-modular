@@ -814,32 +814,38 @@ contains
 
   ! !ARGUMENTS:
     character(len=19), intent(in)  :: nowdate    ! YYYY-MM-DD_HH:mm:ss
-    real,              intent(in)  :: latitude
-    real,              intent(in)  :: longitude
-    real,              intent(in)  :: slope
-    real,              intent(in)  :: azimuth
-    real,              intent(out) :: cosz
-    integer,           intent(out) :: yearlen
-    real,              intent(out) :: JULIAN
+    real,              intent(in)  :: latitude   ! latitude (degrees)
+    real,              intent(in)  :: longitude  ! longitude (degrees)
+    real,              intent(in)  :: slope      ! slope (degrees)
+    real,              intent(in)  :: azimuth    ! azimuth (degrees)
+    real,              intent(out) :: cosz       ! cosine of solar zenith angle
+    integer,           intent(out) :: yearlen    ! year length
+    real,              intent(out) :: JULIAN     ! julian day
 
     ! ------------------------ local variables ---------------------------
     REAL, PARAMETER :: DEGRAD = 3.14159265/180. ! convert degrees to radians 
     REAL, PARAMETER :: DPD    = 360./365.
 
-    REAL            :: hrang
-    real            :: DECLIN
-    real            :: tloctim ! local time in hours
-    REAL            :: OBECL
-    REAL            :: SINOB
-    REAL            :: SXLONG
-    REAL            :: ARG
-    REAL            :: lat_eq    ! equivalent latitude of horizontal slope when adjusting for slope & aspect
-    REAL            :: lon_shift ! shift in apparent longitude when adjusting for slope & aspect
-    integer         :: iyear
-    integer         :: iday
-    integer         :: ihour
-    integer         :: iminute
-    integer         :: isecond
+    REAL            :: hrang    ! hour angle (radians)
+    real            :: DECLIN   ! solar declination (radians)
+    real            :: tloctim  ! local time in hours
+    REAL            :: OBECL    ! obliquity (radians)
+    REAL            :: SINOB    ! sine of obliquity
+    REAL            :: SXLONG   ! longitude of sun from vernal equinox (radians)
+    REAL            :: ARG      ! temporary var for computing declination
+    integer         :: iyear    ! year of timestep
+    integer         :: iday     ! day of timestep
+    integer         :: ihour    ! hour of timestep
+    integer         :: iminute  ! minute of timestep
+    integer         :: isecond  ! second of timestep
+    
+    REAL            :: nvx     ! x value of normal vector
+    REAL            :: nvy     ! y value of normal vector
+    REAL            :: nvz     ! z value of normal vector
+    REAL            :: svx     ! x value of solar vector
+    REAL            :: svy     ! y value of solar vector
+    REAL            :: svz     ! z value of solar vector
+    
     ! ------------------------ end local variables ---------------------------
 
     ! Determine the number of days in the year
@@ -885,27 +891,25 @@ contains
     TLOCTIM = MOD(TLOCTIM+24.0, 24.0)
     HRANG=15. * (TLOCTIM-12.) * DEGRAD
     
-    ! Calculate the equivalent latitude for a horizontal slope, adjusting for slope & aspect
-    lat_eq = asin((sin(slope*DEGRAD) * cos(azimuth*DEGRAD) * cos(lat*DEGRAD)) + &
-                  (cos(slope*DEGRAD) *sin(lat*DEGRAD))) *                       &
-                  1/DEGRAD
+    ! The below code is new to adjust COSZ for slope and aspect
+    ! It uses the approach of Corripio (2003), "Vectorial algebra algorithms for calculating terrain parameters from
+    ! DEMs and solar radiation modelling in mountainous terrain", Int. J. Geographical Information Science
+    ! Also implemented in Corripio's 'insol' R package 
     
-    ! Calculate the shift in longitude when adjusting for slope & aspect
-    lon_shift = atan((sin(azimuth*DEGRAD) * sin(slope*DEGRAD)) /                          &
-                       ((cos(slope*DEGRAD) * cos(lat*DEGRAD)) -                           &
-                          (cos(azimuth*DEGRAD) * sin(slope*DEGRAD) * sin(lat*DEGRAD)))) * &
-                          1/DEGRAD
+    ! First compute the normal vector for the slope and azimuth
+    nvx = sin(azimuth*DEGRAD) * sin(slope*DEGRAD)
+    nvy = -cos(azimuth*DEGRAD) * sin(slope*DEGRAD)
+    nvz = cos(slope*DEGRAD)
     
-    ! Modify the hour angle to account for shift in apparent longitude
-    HRANG = HRANG + (lon_shift * DEGRAD)
+    ! Next compute the unit vector for the sun 
+    svx = -sin(HRANG) * cos(DECLIN)
+    svy = (sin(latitude*DEGRAD) * cos(HRANG) * cos(DECLIN)) - (cos(latitude*DEGRAD) * sin(DECLIN))
+    svz = (cos(latitude*DEGRAD) * cos(HRANG) * cos(DECLIN)) + (sin(latitude*DEGRAD) * sin(DECLIN))
     
-    ! Calculate the cosine of the solar zenith angle
-    COSZ = SIN(lat_eq * DEGRAD) * SIN(DECLIN) + COS(lat_eq * DEGRAD) * COS(DECLIN) * COS(HRANG)
-
-  !KWM   write(wrf_err_message,10)DECDEG/DEGRAD
-  !KWM10 FORMAT(1X,'*** SOLAR DECLINATION ANGLE = ',F6.2,' DEGREES.',' ***')
-  !KWM   CALL wrf_debug (50, wrf_err_message)
-
+    ! Compute COSZ using the dot product of the two vectors
+    ! Simplified here algebraically
+    COSZ = (nvx * svx) + (nvy * svy) + (nvz * svz)
+    
   END SUBROUTINE calc_declin
   
 end module UtilitiesModule
