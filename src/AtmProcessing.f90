@@ -30,6 +30,10 @@ contains
     real, parameter         :: RHO_GRPL = 500.0  ! graupel bulk density [kg/m3] ! MB/AN : v3.7
     real, parameter         :: RHO_HAIL = 917.0  ! hail bulk density [kg/m3]    ! MB/AN : v3.7
     real                    :: QV_CURR           ! water vapor mixing ratio (kg/kg)
+    real                    :: rs_thresh         ! local var for rain-snow threshold (takes user-defined or hardcoded value, depending on option)
+    real                    :: temp              ! temperature (can be air or wet bulb depending on opt_snf option)
+    real                    :: rh                ! relative humidity (computed for opt_snf 6 and 7)
+    
     ! --------------------------------------------------------------------------------------------------
 
     ! Compute derived variables from forcing data
@@ -47,6 +51,7 @@ contains
     energy%TAH = forcing%SFCTMP                         ! assign canopy temp with forcing air temp (K)
     QV_CURR    = forcing%Q2 / (1 - forcing%Q2)          ! mixing ratio, assuming input forcing Q2 is specific hum.
     energy%EAH = forcing%SFCPRS*QV_CURR/(0.622+QV_CURR) ! Initial guess only. (Pa)
+    
 
     ! Set incoming shortwave to 0 if cosine of solar zenith angle < 0
     IF(energy%COSZ <= 0.0) THEN
@@ -92,50 +97,85 @@ contains
     !---------------- END TO DO
 
     ! partition precipitation into rain and snow. Moved from CANWAT MB/AN: v3.7
+  
+    ! First compute relative humidity for options that need it
+    ! Used in opt_snf 6 and 7
+    IF(options%OPT_SNF == 6 .or. options%OPT_SNF == 7)
+      rh = 0.263 * forcing%SFCPRS * forcing%Q2 * &
+           ((exp((17.67 * (forcing%SFCTMP - 273.15)) / (forcing%SFCTMP - 29.65)))**-1)
+      rh = min(rh, 100) ! in case estimated rh > 100     
+    ENDIF
     
-    ! OPT_SNF == 1: Jordan (1991)
-    IF(options%OPT_SNF == 1) THEN
-      IF(forcing%SFCTMP > parameters%TFRZ + 2.5) THEN
-        forcing%FPICE = 0.
-        ELSE 
-          IF(forcing%SFCTMP <= parameters%TFRZ + 0.5) THEN
-            forcing%FPICE = 1.0
-          ELSE IF(forcing%SFCTMP <= parameters%TFRZ + 2.) THEN
-            forcing%FPICE = 1. - (-54.632 + 0.2 * forcing%SFCTMP)
-          ELSE
-            forcing%FPICE = 0.6
-        ENDIF
-      ENDIF
-    ENDIF
-
-    ! OPT_SNF == 2: rain-snow air temperature threshold of 2.2°C
-    IF(options%OPT_SNF == 2) THEN
-      IF(forcing%SFCTMP >= parameters%TFRZ + 2.2) THEN
-        forcing%FPICE = 0.
-      ELSE
-        forcing%FPICE = 1.0
-      ENDIF
-    ENDIF
+    ! select the precipitation phase partitioning method and compute FPICE
+    select case(options%OPT_SNF)
+      
+      case(1)
+        ! opt_snf = 1 is the Jordan (1991) SNTHERM equation 
+        IF(forcing%SFCTMP > parameters%TFRZ + 2.5) THEN
+          forcing%FPICE = 0.
+          ELSE 
+            IF(forcing%SFCTMP <= parameters%TFRZ + 0.5) THEN
+              forcing%FPICE = 1.0
+              ELSE IF(forcing%SFCTMP <= parameters%TFRZ + 2.) THEN
+                forcing%FPICE = 1. - (-54.632 + 0.2 * forcing%SFCTMP)
+              ELSE
+                forcing%FPICE = 0.6
+              ENDIF
+            ENDIF
+      
+      case(2, 3, 5, 6) 
+        ! Options 2, 3, 5, and 6 all use a rain-snow temperature threshold
+        ! opt_snf = 2 uses a 2.2°C air temperature threshold
+        ! opt_snf = 3 uses a 0°C air temperature threshold
+        ! opt_snf = 5 uses a user-defined air temperature threshold
+        ! opt_snf = 6 uses a user defined air temperature threshold
         
-    ! OPT_SNF == 3: rain-snow air temperature threshold of 0°C
-    IF(options%OPT_SNF == 3) THEN
-      IF(forcing%SFCTMP >= parameters%TFRZ) THEN
-        forcing%FPICE = 0.
-      ELSE
-        forcing%FPICE = 1.0
-      ENDIF
-    ENDIF
+        ! Here we'll set the threshold value based on the option
+        IF(options%OPT_SNF == 2) THEN
+          rs_thresh = parameters%TFRZ + 2.2
+        ELSE IF(options%OPT_SNF == 3) THEN
+          rs_thresh = parameters%TFRZ
+        ELSE IF(options%OPT_SNF == 5 .or. options%OPT_SNF == 6)
+          rs_thresh = parameters%TFRZ + parameters%rain_snow_thresh
+        ELSE 
+          rs_thresh = parameters%TFRZ ! set to TFRZ as a backup
+        ENDIF
+        
+        ! define surface temperature as air or wet bulb
+        IF(options%OPT_SNF == 6) THEN
+          ! opt 6 uses wet bulb temperature
+          tair_C = forcing%SFCTMP - parameters%TFRZ
+          twet_C = tair_C * atan(0.151977 * ((rh + 8.313659)**0.5)) + &
+                      atan(tair_C + rh) - atan(rh - 1.676331) + &
+                      ((0.00391838 * (rh**1.5)) * atan(0.023101 * rh)) - 4.86035
+          temp = twet_C + tfrz_K
+        ELSE
+          temp = forcing%SFCTMP
+        ENDIF
+        
+        ! Compute FPICE with surface temp and threshold
+        IF(temp >= rs_thresh) THEN
+          forcing%FPICE = 0.
+        ELSE
+          forcing%FPICE = 1.0
+        ENDIF
+      
+      case(4)
+        ! OPT_SNF == 4: precipitation phase from weather model
+        prcp_frozen = forcing%PRCPSNOW + forcing%PRCPGRPL + forcing%PRCPHAIL
+        IF(forcing%PRCPNONC > 0. .and. prcp_frozen > 0.) THEN
+          forcing%FPICE = MIN(1.0, prcp_frozen / forcing%PRCPNONC)
+          forcing%FPICE = MAX(0.0, forcing%FPICE)
+        ELSE
+          forcing%FPICE = 0.0
+        ENDIF
+      
+      case(7)
+      
+      
+      case default
 
-    ! OPT_SNF == 4: precipitation phase from weather model
-    IF(options%OPT_SNF == 4) THEN
-      prcp_frozen = forcing%PRCPSNOW + forcing%PRCPGRPL + forcing%PRCPHAIL
-      IF(forcing%PRCPNONC > 0. .and. prcp_frozen > 0.) THEN
-        forcing%FPICE = MIN(1.0, prcp_frozen / forcing%PRCPNONC)
-        forcing%FPICE = MAX(0.0, forcing%FPICE)
-      ELSE
-        forcing%FPICE = 0.0
-      ENDIF
-    ENDIF
+    end select
 
     ! Calculate rain and snow as function of FPICE
     water%RAIN   = forcing%PRCP * (1. - forcing%FPICE)
