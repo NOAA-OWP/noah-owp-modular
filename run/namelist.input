@@ -23,7 +23,8 @@
 /
 
 &forcing
-  ZREF            = 10.0    ! measurement height for wind speed
+  ZREF             = 10.0    ! measurement height for wind speed
+  rain_snow_thresh = 1.0     ! rain-snow temperature threshold (°C)
 /
 
 &model_options ! see OptionsType.f90 for details

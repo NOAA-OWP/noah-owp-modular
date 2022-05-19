@@ -141,6 +141,7 @@ type, public :: parameters_type
   real                            :: PSIWLT                    ! matric potential for wilting point (m)  (orig a fixed param.)
   real                            :: TBOT                      ! bottom condition for soil temp. (k)
   real                            :: GRAV                      ! acceleration due to gravity (m/s2)
+  real                            :: rain_snow_thresh          ! user-defined rain-snow temperature threshold (°C)
 
   contains
 
@@ -356,6 +357,8 @@ contains
     this%O2        =  0.209      ! o2 partial pressure, from O2_TABLE var (set in MPTABLE.TBL)
     this%PSIWLT    = -150.0      ! originally a fixed parameter set in ENERGY()
     this%TBOT      = 263.0       ! (K) can be updated depending on option OPT_TBOT
+    
+    this%rain_snow_thresh = namelist%rain_snow_thresh ! assign threshold from namelist
     
     ! Assign initial soil moisture based on variable or uniform initial conditions
     if(namelist%initial_uniform) then

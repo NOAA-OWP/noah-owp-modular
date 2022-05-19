@@ -13,6 +13,9 @@ type, public :: options_type
                         !   2 -> rain-snow air temperature threshold of 2.2°C
                         !   3 -> rain-snow air temperature threshold of 0°C
                         !   4 -> precipitation phase from weather model
+                        !   5 -> user-defined air temperature threshold
+                        !   6 -> user-defined wet bulb temperature threshold
+                        !   7 -> binary logistic regression model from Jennings et al. (2018)
   integer :: opt_run    ! runoff_option: options for runoff
                         !   1 -> TOPMODEL with groundwater (Niu et al. 2007 JGR)
                         !   2 -> TOPMODEL with an equilibrium water table (Niu et al. 2005 JGR)
