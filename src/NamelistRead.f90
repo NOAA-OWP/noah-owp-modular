@@ -22,6 +22,7 @@ type, public :: namelist_type
   real               :: terrain_slope      ! terrain slope (°)
   real               :: azimuth            ! terrain azimuth or aspect (° clockwise from north)
   real               :: ZREF               ! measurement height for wind speed (m)
+  real               :: rain_snow_thresh   ! rain-snow temperature threshold (°C)
 
   integer            :: isltyp             ! soil type
   integer            :: nsoil              ! number of soil layers
@@ -100,6 +101,7 @@ contains
     real               :: terrain_slope
     real               :: azimuth
     real               :: ZREF               ! measurement height for wind speed (m)
+    real               :: rain_snow_thresh
 
     integer       :: isltyp
     integer       :: nsoil
@@ -147,7 +149,7 @@ contains
     namelist / timing          / dt,startdate,enddate,input_filename,output_filename
     namelist / parameters      / parameter_dir, soil_table, general_table, noahowp_table, soil_class_name, veg_class_name
     namelist / location        / lat,lon,terrain_slope,azimuth
-    namelist / forcing         / ZREF
+    namelist / forcing         / ZREF,rain_snow_thresh
     namelist / model_options   / precip_phase_option,runoff_option,drainage_option,frozen_soil_option,dynamic_vic_option,&
                                  dynamic_veg_option,snow_albedo_option,radiative_transfer_option,sfc_drag_coeff_option,&
                                  canopy_stom_resist_option,crop_model_option,snowsoil_temp_time_option,soil_temp_boundary_option,&
@@ -220,6 +222,7 @@ contains
     this%terrain_slope      = terrain_slope
     this%azimuth            = azimuth
     this%ZREF               = ZREF
+    this%rain_snow_thresh   = rain_snow_thresh
 
     this%isltyp           = isltyp
     this%nsoil            = nsoil
