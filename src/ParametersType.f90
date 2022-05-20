@@ -358,7 +358,16 @@ contains
     this%PSIWLT    = -150.0      ! originally a fixed parameter set in ENERGY()
     this%TBOT      = 263.0       ! (K) can be updated depending on option OPT_TBOT
     
-    this%rain_snow_thresh = namelist%rain_snow_thresh ! assign threshold from namelist
+    ! Assign rain-snow threshold based on option
+    IF(namelist%precip_phase_option == 2) THEN
+      this%rain_snow_thresh = this%TFRZ + 2.2
+    ELSE IF(namelist%precip_phase_option == 3) THEN
+      this%rain_snow_thresh = this%TFRZ
+    ELSE IF(namelist%precip_phase_option == 5 .or. namelist%precip_phase_option == 6)
+      this%rain_snow_thresh = this%TFRZ + namelist%rain_snow_thresh
+    ELSE 
+      rs_thresh = this%TFRZ ! set to TFRZ as a backup
+    ENDIF
     
     ! Assign initial soil moisture based on variable or uniform initial conditions
     if(namelist%initial_uniform) then
