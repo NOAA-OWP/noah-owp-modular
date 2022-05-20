@@ -30,9 +30,11 @@ contains
     real, parameter         :: RHO_GRPL = 500.0  ! graupel bulk density [kg/m3] ! MB/AN : v3.7
     real, parameter         :: RHO_HAIL = 917.0  ! hail bulk density [kg/m3]    ! MB/AN : v3.7
     real                    :: QV_CURR           ! water vapor mixing ratio (kg/kg)
-    real                    :: rs_thresh         ! local var for rain-snow threshold (takes user-defined or hardcoded value, depending on option)
-    real                    :: temp              ! temperature (can be air or wet bulb depending on opt_snf option)
+    real                    :: temp              ! temperature (Kelvin, can be air or wet bulb depending on opt_snf option)
     real                    :: rh                ! relative humidity (computed for opt_snf 6 and 7)
+    real                    :: tair_C            ! air temperature in °C
+    real                    :: twet_C            ! wet bulb temperature in °C
+    real                    :: snow_prob         ! snow probability calculated as f(tair_C, rh) when opt_snf == 7
     
     ! --------------------------------------------------------------------------------------------------
 
@@ -52,7 +54,6 @@ contains
     QV_CURR    = forcing%Q2 / (1 - forcing%Q2)          ! mixing ratio, assuming input forcing Q2 is specific hum.
     energy%EAH = forcing%SFCPRS*QV_CURR/(0.622+QV_CURR) ! Initial guess only. (Pa)
     
-
     ! Set incoming shortwave to 0 if cosine of solar zenith angle < 0
     IF(energy%COSZ <= 0.0) THEN
       forcing%SWDOWN = 0.0
@@ -129,32 +130,21 @@ contains
         ! opt_snf = 3 uses a 0°C air temperature threshold
         ! opt_snf = 5 uses a user-defined air temperature threshold
         ! opt_snf = 6 uses a user defined air temperature threshold
-        
-        ! Here we'll set the threshold value based on the option
-        IF(options%OPT_SNF == 2) THEN
-          rs_thresh = parameters%TFRZ + 2.2
-        ELSE IF(options%OPT_SNF == 3) THEN
-          rs_thresh = parameters%TFRZ
-        ELSE IF(options%OPT_SNF == 5 .or. options%OPT_SNF == 6)
-          rs_thresh = parameters%TFRZ + parameters%rain_snow_thresh
-        ELSE 
-          rs_thresh = parameters%TFRZ ! set to TFRZ as a backup
-        ENDIF
-        
+                
         ! define surface temperature as air or wet bulb
         IF(options%OPT_SNF == 6) THEN
           ! opt 6 uses wet bulb temperature
-          tair_C = forcing%SFCTMP - parameters%TFRZ
+          tair_C = forcing%SFCTMP - parameters%TFRZ ! get tair in celsius
           twet_C = tair_C * atan(0.151977 * ((rh + 8.313659)**0.5)) + &
                       atan(tair_C + rh) - atan(rh - 1.676331) + &
                       ((0.00391838 * (rh**1.5)) * atan(0.023101 * rh)) - 4.86035
-          temp = twet_C + tfrz_K
+          temp = twet_C + parameters%TFRZ ! convert back to Kelvin
         ELSE
           temp = forcing%SFCTMP
         ENDIF
         
         ! Compute FPICE with surface temp and threshold
-        IF(temp >= rs_thresh) THEN
+        IF(temp >= parameters%rain_snow_thresh) THEN
           forcing%FPICE = 0.
         ELSE
           forcing%FPICE = 1.0
@@ -171,7 +161,16 @@ contains
         ENDIF
       
       case(7)
-      
+        ! opt_snf == 7 uses the optimized binary logistic regression model from Jennings et al. (2018)
+        tair_C = forcing%SFCTMP - parameters%TFRZ ! get tair in celsius
+        snow_prob = 1/(1 + exp(-10.04 + 1.41 * tair_C + 0.09 * rh)) ! compute probability as f(tair, rh)
+        
+        ! Compute FPICE as function of probability
+        IF(snow_prob >= 0.5) THEN
+          forcing%FPICE = 1.0
+        ELSE
+          forcing%FPICE = 0.0
+        ENDIF
       
       case default
 
