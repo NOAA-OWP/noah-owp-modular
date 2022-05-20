@@ -363,10 +363,10 @@ contains
       this%rain_snow_thresh = this%TFRZ + 2.2
     ELSE IF(namelist%precip_phase_option == 3) THEN
       this%rain_snow_thresh = this%TFRZ
-    ELSE IF(namelist%precip_phase_option == 5 .or. namelist%precip_phase_option == 6)
+    ELSE IF(namelist%precip_phase_option == 5 .or. namelist%precip_phase_option == 6) THEN
       this%rain_snow_thresh = this%TFRZ + namelist%rain_snow_thresh
     ELSE 
-      rs_thresh = this%TFRZ ! set to TFRZ as a backup
+      this%rain_snow_thresh = this%TFRZ ! set to TFRZ as a backup
     ENDIF
     
     ! Assign initial soil moisture based on variable or uniform initial conditions
