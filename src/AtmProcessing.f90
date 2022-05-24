@@ -22,19 +22,21 @@ contains
     type (   options_type)             :: options
 
     ! ------------------------ local variables ---------------------------
-    real                    :: PAIR              !atm bottom level pressure (pa)
-    !real                    :: PRCP              !total precipitation (mm/s)
-    real                    :: PRCP_FROZEN       !total frozen precipitation [mm/s] ! MB/AN : v3.7
-    real                    :: QPRECC            !total convective precipitation [mm/s] (used to compute FP-maybe delete)
-    real                    :: QPRECL            !total non-convective precipitation [mm/s] (used to compute FP-maybe delete)
-    real, parameter         :: RHO_GRPL = 500.0  ! graupel bulk density [kg/m3] ! MB/AN : v3.7
-    real, parameter         :: RHO_HAIL = 917.0  ! hail bulk density [kg/m3]    ! MB/AN : v3.7
-    real                    :: QV_CURR           ! water vapor mixing ratio (kg/kg)
-    real                    :: temp              ! temperature (Kelvin, can be air or wet bulb depending on opt_snf option)
-    real                    :: rh                ! relative humidity (computed for opt_snf 6 and 7)
-    real                    :: tair_C            ! air temperature in °C
-    real                    :: twet_C            ! wet bulb temperature in °C
-    real                    :: snow_prob         ! snow probability calculated as f(tair_C, rh) when opt_snf == 7
+    real                    :: PAIR                 !atm bottom level pressure (pa)
+    !real                    :: PRCP                !total precipitation (mm/s)
+    real                    :: PRCP_FROZEN          !total frozen precipitation [mm/s] ! MB/AN : v3.7
+    real                    :: QPRECC               !total convective precipitation [mm/s] (used to compute FP-maybe delete)
+    real                    :: QPRECL               !total non-convective precipitation [mm/s] (used to compute FP-maybe delete)
+    real, parameter         :: RHO_GRPL = 500.0     ! graupel bulk density [kg/m3] ! MB/AN : v3.7
+    real, parameter         :: RHO_HAIL = 917.0     ! hail bulk density [kg/m3]    ! MB/AN : v3.7
+    real                    :: QV_CURR              ! water vapor mixing ratio (kg/kg)
+    real                    :: temp                 ! temperature (Kelvin, can be air or wet bulb depending on opt_snf option)
+    real                    :: rh                   ! relative humidity (computed for opt_snf 6 and 7)
+    real                    :: tair_C               ! air temperature in °C
+    real                    :: twet_C               ! wet bulb temperature in °C
+    real                    :: snow_prob            ! snow probability calculated as f(tair_C, rh) when opt_snf == 7
+    real, parameter         :: solar_const = 1360.0 ! solar constant for direct irradiance check (W m-2)
+    real                    :: dir_irr              ! direct irradiance computed as SOLDN/COSZ_HORIZ (W m-2)
     
     ! --------------------------------------------------------------------------------------------------
 
@@ -55,13 +57,23 @@ contains
     energy%EAH = forcing%SFCPRS*QV_CURR/(0.622+QV_CURR) ! Initial guess only. (Pa)
     
     ! Set incoming shortwave to 0 if cosine of solar zenith angle < 0
-    IF(energy%COSZ <= 0.0) THEN
+    ! And modify direct beam incoming shortwave to account for slope/aspect (e.g., Duguay 1993)
+    ! If-else guardrails are in place to account for sunrise-sunset timing issues with slopes
+    ! and to account for SW measurement timing versus model time
+    IF(energy%COSZ <= 0.0 .or. energy%COSZ_HORIZ <= 0.0) THEN
       forcing%SWDOWN = 0.0
-    ELSE
-      forcing%SWDOWN = forcing%SOLDN
+    ELSE 
+      dir_irr = forcing%SOLDN / energy%COSZ_HORIZ
+      IF(dir_irr > solar_const) THEN
+        forcing%SWDOWN = solar_const * energy%COSZ
+        !print*, "Direct irradiance too high, check incoming shortwave data"
+      ELSE 
+        forcing%SWDOWN = forcing%SOLDN * (energy%COSZ / energy%COSZ_HORIZ)
+      END IF
     END IF
-
+    
     ! Split incoming solar in direct and diffuse visible and near infrared
+    ! TODO: Improvements should be made to direct-diffuse split
     forcing%SOLAD(1) = forcing%SWDOWN*0.7*0.5  ! direct  vis
     forcing%SOLAD(2) = forcing%SWDOWN*0.7*0.5  ! direct  nir
     forcing%SOLAI(1) = forcing%SWDOWN*0.3*0.5  ! diffuse vis
