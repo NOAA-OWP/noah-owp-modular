@@ -56,6 +56,7 @@ type, public :: energy_type
   
   ! Shortwave radiation
   real                 :: COSZ    ! cosine solar zenith angle [0-1]
+  real                 :: COSZ_HORIZ ! cosine solar zenith angle for flat ground [0-1]
   real                 :: BGAP    ! between canopy gap fraction for beam (-)
   real                 :: WGAP    ! within canopy gap fraction for beam (-)
   REAL                 :: FSUN    ! sunlit fraction of canopy (-)
@@ -228,6 +229,7 @@ contains
     this%ALBOLD    = huge(1.0)
     
     this%COSZ      = huge(1.0)
+    this%COSZ_HORIZ= huge(1.0)
     this%BGAP      = huge(1.0)
     this%WGAP      = huge(1.0)
     this%FSUN      = huge(1.0)

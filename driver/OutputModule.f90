@@ -59,6 +59,7 @@ module OutputModule
   integer           :: stc_id
   integer           :: zsnso_id
   ! energy
+  integer           :: swin_id
   integer           :: lh_id
   integer           :: t2m_id
   integer           :: t2mb_id
@@ -131,6 +132,7 @@ contains
     iret = nf90_def_var(ncid, "ZSNSO",                NF90_FLOAT, (/time_dim,snso_dim/), zsnso_id)
     
     ! energy
+    iret = nf90_def_var(ncid, "SW_IN",                NF90_FLOAT, (/time_dim/), swin_id)  ! incoming shortwave, corrected for slope/aspect (W/m^2)
     iret = nf90_def_var(ncid, "LH",                   NF90_FLOAT, (/time_dim/), lh_id)  ! latent heat (W/m^2)
     iret = nf90_def_var(ncid, "T2M",                  NF90_FLOAT, (/time_dim/), t2m_id)  ! 2 m height air temperature (K) 
     iret = nf90_def_var(ncid, "T2MB",                 NF90_FLOAT, (/time_dim/), t2mb_id)  ! 2 m height air temperature (K) bare ground
@@ -206,6 +208,7 @@ contains
     iret = nf90_put_var(ncid, stc_id,     energy%stc,                 start=(/itime,1/), count=(/1,nsoil+nsnow/))
     iret = nf90_put_var(ncid, zsnso_id,   zsnso,                      start=(/itime,1/), count=(/1,nsoil+nsnow/))
     ! energy
+    iret = nf90_put_var(ncid, swin_id,    forcing%SWDOWN,             start=(/itime/))
     iret = nf90_put_var(ncid, lh_id,      energy%lh,                  start=(/itime/))
     iret = nf90_put_var(ncid, t2m_id,     energy%t2m,                 start=(/itime/))
     iret = nf90_put_var(ncid, t2mb_id,    energy%t2mb,                start=(/itime/))

@@ -34,7 +34,7 @@ contains
     ! calculate current declination of direct solar radiation input
     call calc_declin(domain%nowdate(1:4)//"-"//domain%nowdate(5:6)//"-"//domain%nowdate(7:8)//"_"//domain%nowdate(9:10)//":"//domain%nowdate(11:12)//":00", & ! in
                      domain%lat, domain%lon, domain%terrain_slope, domain%azimuth,&                                                                           ! in
-                     energy%cosz, forcing%yearlen, forcing%julian)                                                                                            ! out
+                     energy%cosz, energy%cosz_horiz,forcing%yearlen, forcing%julian)                                                                                            ! out
     
   END SUBROUTINE UtilitiesMain
 
@@ -807,7 +807,7 @@ contains
 
   SUBROUTINE calc_declin (nowdate, &                             ! in
                           latitude, longitude, slope, azimuth, & ! in
-                          cosz, yearlen, julian)                 ! out
+                          cosz, cosz_horiz, yearlen, julian)                 ! out
   !---------------------------------------------------------------------
     IMPLICIT NONE
   !---------------------------------------------------------------------
@@ -819,6 +819,7 @@ contains
     real,              intent(in)  :: slope      ! slope (degrees)
     real,              intent(in)  :: azimuth    ! azimuth (degrees)
     real,              intent(out) :: cosz       ! cosine of solar zenith angle
+    real,              intent(out) :: cosz_horiz ! cosine of solar zenith angle for flat ground
     integer,           intent(out) :: yearlen    ! year length
     real,              intent(out) :: JULIAN     ! julian day
 
@@ -909,6 +910,15 @@ contains
     ! Compute COSZ using the dot product of the two vectors
     ! Simplified here algebraically
     COSZ = (nvx * svx) + (nvy * svy) + (nvz * svz)
+    
+    ! We also need to know the flat ground COSZ to correct incoming solar radiation
+    ! which is typically assumed to be measured/modeled for a flat surface
+    ! for a horizontal plane, nvx = 0, nvy = 0, and nvz = 1 (svx, svy, svz are as calculated previously)
+    nvx = 0.0
+    nvy = 0.0
+    nvz = 1.0
+    COSZ_HORIZ = (nvx * svx) + (nvy * svy) + (nvz * svz)
+    
     
   END SUBROUTINE calc_declin
   

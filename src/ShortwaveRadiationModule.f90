@@ -39,7 +39,7 @@ contains
 
     ! Compute net solar radiation
     CALL NetSolarRadiation(domain, levels, options, parameters, forcing, energy, water)
-
+   
   END SUBROUTINE ShortwaveRadiationMain
   
   !== begin NetSolarRadiation, formerly SURRAD ===========================================
