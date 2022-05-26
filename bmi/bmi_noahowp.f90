@@ -166,8 +166,9 @@ contains
     output_items(2) = 'ETRAN'      ! transpiration rate (mm/s)
     output_items(3) = 'QSEVA'      ! evaporation rate (m/s)
     output_items(4) = 'EVAPOTRANS' ! evapotranspiration rate (m/s)
-    output_items(5) = 'TG'         ! surface/ground temperature (K)
+    output_items(5) = 'TG'         ! surface/ground temperature (K) (becomes snow surface temperature when snow is present)
     output_items(6) = 'SNEQV'      ! snow water equivalent (mm)
+    output_items(7) = 'TGS'        ! ground temperature (K) (is equal to TG when no snow and equal to bottom snow element temperature when there is snow)
 
     names => output_items
     bmi_status = BMI_SUCCESS
@@ -286,7 +287,7 @@ contains
 
     select case(name)
     case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! input vars
-         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV')             ! output vars
+         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS')             ! output vars
        grid = 0
        bmi_status = BMI_SUCCESS
     case default
@@ -557,7 +558,7 @@ contains
 
     select case(name)
     case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! input vars
-         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV')             ! output vars
+         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS')             ! output vars
        type = "real"
        bmi_status = BMI_SUCCESS
     case default
@@ -577,7 +578,7 @@ contains
     case("SFCPRS")
        units = "Pa"
        bmi_status = BMI_SUCCESS
-    case("SFCTMP", "TG")
+    case("SFCTMP", "TG", "TGS")
        units = "K"
        bmi_status = BMI_SUCCESS
     case("SOLDN", "LWDN")
@@ -653,6 +654,9 @@ contains
        bmi_status = BMI_SUCCESS
     case("SNEQV")
        size = sizeof(this%model%water%sneqv)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("TGS")
+       size = sizeof(this%model%energy%tgs)            ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case default
        size = -1
@@ -762,6 +766,9 @@ contains
        bmi_status = BMI_SUCCESS
     case("SNEQV")
        dest = [this%model%water%sneqv]
+       bmi_status = BMI_SUCCESS
+    case("TGS")
+       dest = [this%model%energy%tgs]
        bmi_status = BMI_SUCCESS
     case default
        dest(:) = -1.0
@@ -973,6 +980,9 @@ contains
        bmi_status = BMI_SUCCESS
     case("SNEQV")
        this%model%water%sneqv = src(1)
+       bmi_status = BMI_SUCCESS
+    case("TGS")
+       this%model%energy%tgs = src(1)
        bmi_status = BMI_SUCCESS
     case default
        bmi_status = BMI_FAILURE
