@@ -147,6 +147,9 @@ type, public :: energy_type
   REAL                 :: QMELT   ! snowmelt [mm/s]
   
   REAL                 :: LH      ! latent heat (total) flux [W m-2]
+  REAL                 :: TGS     ! ground surface temperature (K, takes value of TG when SNOWH <= 0.05 and STC[0] when SNOWH > 0.05) 
+                                  ! this is a temporary fix for when coupled to subsurface modules
+                                  ! TODO: further investigation
   
 
   integer              :: ICE     ! 1 if sea ice, -1 if glacier, 0 if no land ice (seasonal snow)
@@ -319,7 +322,8 @@ contains
     this%APAR      = huge(1.0)
     this%QMELT     = huge(1.0)
 
-    this%LH        = huge(1)    
+    this%LH        = huge(1.0)    
+    this%TGS       = huge(1.0)    
     
     this%ICE       = huge(1)    
     
