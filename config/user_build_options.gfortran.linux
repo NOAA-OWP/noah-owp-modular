@@ -1,0 +1,13 @@
+
+#=============================================================================================
+#  Options for Linux with gfortran, NETCDF via source
+#=============================================================================================
+
+ COMPILERF90    =       gfortran
+ FREESOURCE     =       -ffree-form  -ffree-line-length-none
+ F90FLAGS       =       -g -fbacktrace -Wall -fcheck=all #-fdefault-real-8
+ CPP            =       cpp
+ CPPFLAGS       =       -P -traditional -D_GFORTRAN_
+ NETCDFMOD      =       -I${NETCDF}/include
+ NETCDFLIB      =       -L${NETCDF}/lib -lnetcdf -lnetcdff
+

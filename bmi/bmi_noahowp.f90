@@ -59,20 +59,20 @@ module bminoahowp
           get_value_int, &
           get_value_float, &
           get_value_double
-!      procedure :: get_value_ptr_int => noahowp_get_ptr_int
-!      procedure :: get_value_ptr_float => noahowp_get_ptr_float
-!      procedure :: get_value_ptr_double => noahowp_get_ptr_double
-!      generic :: get_value_ptr => &
-!           get_value_ptr_int, &
-!           get_value_ptr_float, &
-!           get_value_ptr_double
-!      procedure :: get_value_at_indices_int => noahowp_get_at_indices_int
-!      procedure :: get_value_at_indices_float => noahowp_get_at_indices_float
-!      procedure :: get_value_at_indices_double => noahowp_get_at_indices_double
-!      generic :: get_value_at_indices => &
-!           get_value_at_indices_int, &
-!           get_value_at_indices_float, &
-!           get_value_at_indices_double
+     procedure :: get_value_ptr_int => noahowp_get_ptr_int
+     procedure :: get_value_ptr_float => noahowp_get_ptr_float
+     procedure :: get_value_ptr_double => noahowp_get_ptr_double
+     generic :: get_value_ptr => &
+           get_value_ptr_int, &
+           get_value_ptr_float, &
+           get_value_ptr_double
+     procedure :: get_value_at_indices_int => noahowp_get_at_indices_int
+     procedure :: get_value_at_indices_float => noahowp_get_at_indices_float
+     procedure :: get_value_at_indices_double => noahowp_get_at_indices_double
+     generic :: get_value_at_indices => &
+           get_value_at_indices_int, &
+           get_value_at_indices_float, &
+           get_value_at_indices_double
      procedure :: set_value_int => noahowp_set_int
      procedure :: set_value_float => noahowp_set_float
      procedure :: set_value_double => noahowp_set_double
@@ -80,14 +80,14 @@ module bminoahowp
           set_value_int, &
           set_value_float, &
           set_value_double
-!      procedure :: set_value_at_indices_int => noahowp_set_at_indices_int
-!      procedure :: set_value_at_indices_float => noahowp_set_at_indices_float
-!      procedure :: set_value_at_indices_double => noahowp_set_at_indices_double
-!      generic :: set_value_at_indices => &
-!           set_value_at_indices_int, &
-!           set_value_at_indices_float, &
-!           set_value_at_indices_double
-!      procedure :: print_model_info
+     procedure :: set_value_at_indices_int => noahowp_set_at_indices_int
+     procedure :: set_value_at_indices_float => noahowp_set_at_indices_float
+     procedure :: set_value_at_indices_double => noahowp_set_at_indices_double
+     generic :: set_value_at_indices => &
+           set_value_at_indices_int, &
+           set_value_at_indices_float, &
+           set_value_at_indices_double
+!     procedure :: print_model_info
   end type bmi_noahowp
 
   private
@@ -787,94 +787,85 @@ contains
     end select
   end function noahowp_get_double
 
-! !=================== get_value_ptr functions not implemented yet =================
+   ! Get a reference to an integer-valued variable, flattened.
+   function noahowp_get_ptr_int(this, name, dest_ptr) result (bmi_status)
+     class (bmi_noahowp), intent(in) :: this
+     character (len=*), intent(in) :: name
+     integer, pointer, intent(inout) :: dest_ptr(:)
+     integer :: bmi_status
+     type (c_ptr) :: src
+     integer :: n_elements
 
-!   ! Get a reference to an integer-valued variable, flattened.
-!   function noahowp_get_ptr_int(this, name, dest_ptr) result (bmi_status)
-!     class (bmi_noahowp), intent(in) :: this
-!     character (len=*), intent(in) :: name
-!     integer, pointer, intent(inout) :: dest_ptr(:)
-!     integer :: bmi_status
-!     type (c_ptr) :: src
-!     integer :: n_elements
-!
-! !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR INTEGER VARS =================
-!
-!     select case(name)
-!     case default
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahowp_get_ptr_int
-!
-!   ! Get a reference to a real-valued variable, flattened.
-!   function noahowp_get_ptr_float(this, name, dest_ptr) result (bmi_status)
-!     class (bmi_noahowp), intent(in) :: this
-!     character (len=*), intent(in) :: name
-!     real, pointer, intent(inout) :: dest_ptr(:)
-!     integer :: bmi_status, status
-!     type (c_ptr) :: src
-!     integer :: n_elements, gridid
-!
-!     select case(name)
-!     case("SFCPRS")
-!        src = c_loc(this%model%forcing%sfcprs)
-!        status = this%get_var_grid(name,gridid)
-!        status = this%get_grid_size(gridid, n_elements)
-!        call c_f_pointer(src, dest_ptr, [n_elements])
-!        bmi_status = BMI_SUCCESS
-!     case default
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahowp_get_ptr_float
-!
-!   ! Get a reference to an double-valued variable, flattened.
-!   function noahowp_get_ptr_double(this, name, dest_ptr) result (bmi_status)
-!     class (bmi_noahowp), intent(in) :: this
-!     character (len=*), intent(in) :: name
-!     double precision, pointer, intent(inout) :: dest_ptr(:)
-!     integer :: bmi_status
-!     type (c_ptr) :: src
-!     integer :: n_elements
-!
-! !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR DOUBLE VARS =================\
-!
-!     select case(name)
-!     case default
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahowp_get_ptr_double
-!
-!   ! Get values of an integer variable at the given locations.
-!   function noahowp_get_at_indices_int(this, name, dest, inds) &
-!        result (bmi_status)
-!     class (bmi_noahowp), intent(in) :: this
-!     character (len=*), intent(in) :: name
-!     integer, intent(inout) :: dest(:)
-!     integer, intent(in) :: inds(:)
-!     integer :: bmi_status
+     select case(name)
+     case default
+        bmi_status = BMI_FAILURE
+     end select
+   end function noahowp_get_ptr_int
+
+   ! Get a reference to a real-valued variable, flattened.
+   function noahowp_get_ptr_float(this, name, dest_ptr) result (bmi_status)
+     class (bmi_noahowp), intent(in) :: this
+     character (len=*), intent(in) :: name
+     real, pointer, intent(inout) :: dest_ptr(:)
+     integer :: bmi_status
+     type (c_ptr) :: src
+     integer :: n_elements
+
+     select case(name)
+     case default
+        bmi_status = BMI_FAILURE
+     end select
+
+     call c_f_pointer(src, dest_ptr, [n_elements])
+
+   end function noahowp_get_ptr_float
+
+   ! Get a reference to an double-valued variable, flattened.
+   function noahowp_get_ptr_double(this, name, dest_ptr) result (bmi_status)
+     class (bmi_noahowp), intent(in) :: this
+     character (len=*), intent(in) :: name
+     double precision, pointer, intent(inout) :: dest_ptr(:)
+     integer :: bmi_status
+     type (c_ptr) :: src
+     integer :: n_elements
+
+     select case(name)
+     case default
+        bmi_status = BMI_FAILURE
+     end select
+   end function noahowp_get_ptr_double
+
+   ! Get values of an integer variable at the given locations.
+   function noahowp_get_at_indices_int(this, name, dest, inds) &
+        result (bmi_status)
+     class (bmi_noahowp), intent(in) :: this
+     character (len=*), intent(in) :: name
+     integer, intent(inout) :: dest(:)
+     integer, intent(in) :: inds(:)
+     integer :: bmi_status
 !     type (c_ptr) src
 !     integer, pointer :: src_flattened(:)
 !     integer :: i, n_elements
-!
-!     select case(name)
-!     case default
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahowp_get_at_indices_int
-!
-!   ! Get values of a real variable at the given locations.
-!   function noahowp_get_at_indices_float(this, name, dest, inds) &
-!        result (bmi_status)
-!     class (bmi_noahowp), intent(in) :: this
-!     character (len=*), intent(in) :: name
-!     real, intent(inout) :: dest(:)
-!     integer, intent(in) :: inds(:)
-!     integer :: bmi_status
+
+     select case(name)
+     case default
+        bmi_status = BMI_FAILURE
+     end select
+   end function noahowp_get_at_indices_int
+
+   ! Get values of a real variable at the given locations.
+   function noahowp_get_at_indices_float(this, name, dest, inds) &
+        result (bmi_status)
+     class (bmi_noahowp), intent(in) :: this
+     character (len=*), intent(in) :: name
+     real, intent(inout) :: dest(:)
+     integer, intent(in) :: inds(:)
+     integer :: bmi_status
 !     type (c_ptr) src
 !     real, pointer :: src_flattened(:)
 !     integer :: i, n_elements
-!
-!     select case(name)
+
+     select case(name)
 !     case("plate_surface__temperature")
 !        src = c_loc(this%model%temperature(1,1))
 !        call c_f_pointer(src, src_flattened, [this%model%n_y * this%model%n_x])
@@ -883,29 +874,29 @@ contains
 !           dest(i) = src_flattened(inds(i))
 !        end do
 !        bmi_status = BMI_SUCCESS
-!     case default
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahowp_get_at_indices_float
-!
-!   ! Get values of a double variable at the given locations.
-!   function noahowp_get_at_indices_double(this, name, dest, inds) &
-!        result (bmi_status)
-!     class (bmi_noahowp), intent(in) :: this
-!     character (len=*), intent(in) :: name
-!     double precision, intent(inout) :: dest(:)
-!     integer, intent(in) :: inds(:)
-!     integer :: bmi_status
-!     type (c_ptr) src
-!     double precision, pointer :: src_flattened(:)
-!     integer :: i, n_elements
-!
-!     select case(name)
-!     case default
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahowp_get_at_indices_double
-!
+     case default
+        bmi_status = BMI_FAILURE
+     end select
+   end function noahowp_get_at_indices_float
+
+   ! Get values of a double variable at the given locations.
+   function noahowp_get_at_indices_double(this, name, dest, inds) &
+        result (bmi_status)
+     class (bmi_noahowp), intent(in) :: this
+     character (len=*), intent(in) :: name
+     double precision, intent(inout) :: dest(:)
+     integer, intent(in) :: inds(:)
+     integer :: bmi_status
+     type (c_ptr) src
+     double precision, pointer :: src_flattened(:)
+     integer :: i, n_elements
+
+     select case(name)
+     case default
+        bmi_status = BMI_FAILURE
+     end select
+   end function noahowp_get_at_indices_double
+
   ! Set new integer values.
   function noahowp_set_int(this, name, src) result (bmi_status)
     class (bmi_noahowp), intent(inout) :: this
@@ -995,38 +986,38 @@ contains
        bmi_status = BMI_FAILURE
     end select
   end function noahowp_set_double
-!
-!   ! Set integer values at particular locations.
-!   function noahowp_set_at_indices_int(this, name, inds, src) &
-!        result (bmi_status)
-!     class (bmi_noahowp), intent(inout) :: this
-!     character (len=*), intent(in) :: name
-!     integer, intent(in) :: inds(:)
-!     integer, intent(in) :: src(:)
-!     integer :: bmi_status
+
+   ! Set integer values at particular locations.
+   function noahowp_set_at_indices_int(this, name, inds, src) &
+        result (bmi_status)
+     class (bmi_noahowp), intent(inout) :: this
+     character (len=*), intent(in) :: name
+     integer, intent(in) :: inds(:)
+     integer, intent(in) :: src(:)
+     integer :: bmi_status
 !     type (c_ptr) dest
 !     integer, pointer :: dest_flattened(:)
 !     integer :: i
-!
-!     select case(name)
-!     case default
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahowp_set_at_indices_int
-!
-!   ! Set real values at particular locations.
-!   function noahowp_set_at_indices_float(this, name, inds, src) &
-!        result (bmi_status)
-!     class (bmi_noahowp), intent(inout) :: this
-!     character (len=*), intent(in) :: name
-!     integer, intent(in) :: inds(:)
-!     real, intent(in) :: src(:)
-!     integer :: bmi_status
+
+     select case(name)
+     case default
+        bmi_status = BMI_FAILURE
+     end select
+   end function noahowp_set_at_indices_int
+
+   ! Set real values at particular locations.
+   function noahowp_set_at_indices_float(this, name, inds, src) &
+        result (bmi_status)
+     class (bmi_noahowp), intent(inout) :: this
+     character (len=*), intent(in) :: name
+     integer, intent(in) :: inds(:)
+     real, intent(in) :: src(:)
+     integer :: bmi_status
 !     type (c_ptr) dest
 !     real, pointer :: dest_flattened(:)
 !     integer :: i
-!
-!     select case(name)
+
+     select case(name)
 !     case("plate_surface__temperature")
 !        dest = c_loc(this%model%temperature(1,1))
 !        call c_f_pointer(dest, dest_flattened, [this%model%n_y * this%model%n_x])
@@ -1034,30 +1025,30 @@ contains
 !           dest_flattened(inds(i)) = src(i)
 !        end do
 !        bmi_status = BMI_SUCCESS
-!     case default
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahowp_set_at_indices_float
-!
-!   ! Set double values at particular locations.
-!   function noahowp_set_at_indices_double(this, name, inds, src) &
-!        result (bmi_status)
-!     class (bmi_noahowp), intent(inout) :: this
-!     character (len=*), intent(in) :: name
-!     integer, intent(in) :: inds(:)
-!     double precision, intent(in) :: src(:)
-!     integer :: bmi_status
+     case default
+        bmi_status = BMI_FAILURE
+     end select
+   end function noahowp_set_at_indices_float
+
+   ! Set double values at particular locations.
+   function noahowp_set_at_indices_double(this, name, inds, src) &
+        result (bmi_status)
+     class (bmi_noahowp), intent(inout) :: this
+     character (len=*), intent(in) :: name
+     integer, intent(in) :: inds(:)
+     double precision, intent(in) :: src(:)
+     integer :: bmi_status
 !     type (c_ptr) dest
 !     double precision, pointer :: dest_flattened(:)
 !     integer :: i
-!
-!     select case(name)
-!     case default
-!        bmi_status = BMI_FAILURE
-!     end select
-!   end function noahowp_set_at_indices_double
-!
-!   ! A non-BMI helper routine to advance the model by a fractional time step.
+
+     select case(name)
+     case default
+        bmi_status = BMI_FAILURE
+     end select
+   end function noahowp_set_at_indices_double
+
+   ! A non-BMI helper routine to advance the model by a fractional time step.
 !   subroutine update_frac(this, time_frac)
 !     class (bmi_noahowp), intent(inout) :: this
 !     double precision, intent(in) :: time_frac
