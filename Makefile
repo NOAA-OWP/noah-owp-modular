@@ -14,13 +14,3 @@ clean:
 	(cd bmi;		make clean)
 	(cd driver;		make clean)
 	(cd run;		make clean)
-
-testBMI:
-	(cd src;		make)
-	(cd bmi;		make)
-	(cd test;		make)
-
-testBMI_clean:
-	(cd src;		make clean)
-	(cd bmi;		make clean)
-	(cd test;		make clean)
