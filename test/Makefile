@@ -40,21 +40,28 @@ OBJS = \
         ../src/DateTimeUtilsModule.o \
         ../src/RunModule.o \
         ../driver/OutputModule.o \
+        ./noahowp_driver_test.o \
         ../driver/AsciiReadModule.o \
         ../bmi/bmi_noahowp.o \
         ../bmi/bmi.o
 
 
-CMD = noah_owp_modular_test.exe
+CMD = noahowp_test.exe
 all:	$(CMD)
 
-$(CMD): $(OBJS)  noahowp_driver_test.o
-	$(COMPILERF90) -o $(@) -I../driver -I../src noahowp_driver_test.o $(OBJS) $(NETCDFLIB)
-
 noahowp_driver_test.o: noahowp_driver_test.f90
-	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../src -I../driver -I./ -I../bmi $(*).f90 
+	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../src -I./ -I../bmi $(*).f90 
+
+noahowp_test.exe: $(OBJS)
+	$(COMPILERF90) -o $(@) -I../driver -I../src $(OBJS) $(NETCDFLIB)
 
 # This command cleans up
 clean:
-	rm -f *.o $(CMD)
+	rm -f $(CMD)
+
+#
+# Dependencies:
+#
+noahowp_driver_test.o: ../bmi/bmi_noahowp.o \
+               ../bmi/bmi.o
 
