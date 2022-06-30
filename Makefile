@@ -18,9 +18,11 @@ clean:
 testBMI:
 	(cd src;		make)
 	(cd bmi;		make)
+	(cd driver;		make)
 	(cd test;		make)
 
 testBMI_clean:
 	(cd src;		make clean)
 	(cd bmi;		make clean)
+	(cd driver;		make clean)
 	(cd test;		make clean)
