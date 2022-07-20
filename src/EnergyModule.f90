@@ -352,10 +352,10 @@ contains
     ! Compute TGS, or ground surface temperature for passing to a subsurface module
     ! TGS is equal to TG when SNOWH <= 0.05 and equal to the temperature of the bottom snow
     ! element when SNOWH > 0.05
-    IF (water%SNOWH <= 0.05) THEN
-      energy%TGS = energy%TG
-    ELSE
+    IF (water%SNOWH > 0.05) THEN
       energy%TGS = energy%STC(0)
+    ELSE
+      energy%TGS = energy%TG
     END IF
 
   END SUBROUTINE EnergyMain   
