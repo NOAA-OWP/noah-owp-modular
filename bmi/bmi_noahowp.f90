@@ -98,7 +98,7 @@ module bminoahowp
 
   ! Exchange items
   integer, parameter :: input_item_count = 8
-  integer, parameter :: output_item_count = 6
+  integer, parameter :: output_item_count = 7
   character (len=BMI_MAX_VAR_NAME), target, &
        dimension(input_item_count) :: input_items
   character (len=BMI_MAX_VAR_NAME), target, &
