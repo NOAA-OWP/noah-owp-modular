@@ -1,5 +1,7 @@
 module NamelistRead
 
+use ErrorCheckModule, only: sys_abort
+
 implicit none
 save
 private
@@ -83,7 +85,7 @@ contains
     ! Temporary var to hold the default, "namelist.input"
     ! or the value of namelist_file, if passed
     character(:), allocatable :: namelist_file_
-    
+
     integer            :: iz
     real               :: dt
     character(len=12)  :: startdate
@@ -187,8 +189,31 @@ contains
     allocate (sice  (       1:nsoil))   ! soil ice content [m3/m3]
     allocate (sh2o  (       1:nsoil))   ! soil liquid water content [m3/m3]
 
+
     !---------------------------------------------------------------------
-    !  read input file, part 2: initialize
+    !  Check model option validity, part 2
+    !---------------------------------------------------------------------
+    if (precip_phase_option<1 .or. precip_phase_option>7) then; call sys_abort(1,'model options: precip_phase_option should be 1-7'); end if
+    if (runoff_option<1 .or. runoff_option>8) then; call sys_abort(1,'model options: runoff_option should be 1-8'); end if
+    if (drainage_option<1 .or. drainage_option>8) then; call sys_abort(1,'model options: drainage_option should be 1-8'); end if
+    if (frozen_soil_option<1 .or. frozen_soil_option>2) then; call sys_abort(1,'model options: frozen_soil_option should be 1-2'); end if
+    if (dynamic_vic_option<1 .or. dynamic_vic_option>3) then; call sys_abort(1,'model options: dynamic_vic_option should be 1-3'); end if
+    if (dynamic_veg_option<1 .or. dynamic_veg_option>9) then; call sys_abort(1,'model options: dynamic_veg_option should be 1-9'); end if
+    if (snow_albedo_option<1 .or. snow_albedo_option>2) then; call sys_abort(1,'model options: snow_albedo_option should be 1-2'); end if
+    if (radiative_transfer_option<1 .or. radiative_transfer_option>3) then; call sys_abort(1,'model options: radiative_transfer_option should be 1-3'); end if
+    if (sfc_drag_coeff_option<1 .or. sfc_drag_coeff_option>2) then; call sys_abort(1,'model options: sfc_drag_coeff_option should be 1-3'); end if
+    if (canopy_stom_resist_option<1 .or. canopy_stom_resist_option>2) then; call sys_abort(1,'model options: sfc_drag_coeff_option should be 1-2'); end if
+    if (crop_model_option/=0) then; call sys_abort(1,'model options: crop_model_option should be 0'); end if
+    if (snowsoil_temp_time_option<1 .or. snowsoil_temp_time_option>3) then; call sys_abort(1,'model options: snowsoil_temp_time_option should be 1-3'); end if
+    if (soil_temp_boundary_option<1 .or. soil_temp_boundary_option>2) then; call sys_abort(1,'model options: soil_temp_boundary_option should be 1-2'); end if
+    if (supercooled_water_option<1 .or. supercooled_water_option>2) then; call sys_abort(1,'model options: supercooled_water_option should be 1-2'); end if
+    if (stomatal_resistance_option<1 .or. stomatal_resistance_option>3) then; call sys_abort(1,'model options: stomatal_resistance_option should be 1-3'); end if
+    if (evap_srfc_resistance_option<1 .or. evap_srfc_resistance_option>4) then; call sys_abort(1,'model options: evap_srfc_resistance_option should be 1-4'); end if
+    if (subsurface_option<1 .or. subsurface_option>3) then; call sys_abort(1,'model options: subsurface_option should be 1-3'); end if
+
+
+    !---------------------------------------------------------------------
+    !  read input file, part 3: initialize
     !---------------------------------------------------------------------
     if(structure_option == 1) then       ! user-defined levels
       open(30, file=namelist_file_, form="formatted")
