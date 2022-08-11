@@ -370,11 +370,11 @@ contains
     ENDIF
     
     ! Assign initial soil moisture based on variable or uniform initial conditions
-    if(namelist%initial_uniform) then
-      this%zwt_init = namelist%initial_zwt
-    else
-      this%zwt_init = namelist%zwt
-    end if
+    !if(namelist%initial_uniform) then
+    !  this%zwt_init = namelist%initial_zwt
+    !else
+       this%zwt_init = namelist%zwt
+    !end if
 
   end subroutine paramRead
 

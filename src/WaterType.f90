@@ -179,7 +179,6 @@ contains
     this%runsrf_dt= huge(1.0)
     this%ASAT     = huge(1.0)
     this%ISNOW    = huge(1)
-
     this%FSNO     = huge(1.0)
 
   end subroutine InitDefault
@@ -189,22 +188,11 @@ contains
     class(water_type) :: this
     type(namelist_type) :: namelist
 
-    if(namelist%initial_uniform) then
-      this%sh2o = namelist%initial_sh2o_value
-      this%sice = namelist%initial_sice_value
-    else
-      this%sh2o = namelist%sh2o
-      this%sice = namelist%sice
-    end if
-
-    this%smc = this%sh2o + this%sice  ! volumetric soil water
-    this%smc_init = this%smc          ! initial SMC
-    
-    if(namelist%initial_uniform) then
-      this%zwt = namelist%initial_zwt ! initialize zwt
-    else
-      this%zwt = namelist%zwt ! initialize zwt
-    end if
+    this%sh2o     = namelist%sh2o
+    this%sice     = namelist%sice
+    this%smc      = this%sh2o + this%sice  ! volumetric soil water
+    this%smc_init = this%smc               ! initial SMC
+    this%zwt = namelist%zwt                ! initialize zwt
     
   end subroutine InitTransfer
 

@@ -34,27 +34,26 @@ contains
 
   !== Initialize the model ================================================================================
 
-  SUBROUTINE initialize_from_file (model, config_file)
+  SUBROUTINE initialize_from_file (model, config_filename)
     implicit none
     
     type(noahowp_type), target, intent(out) :: model
-    character(len=*), intent (in) :: config_file ! config file from command line argument
+    character(len=*), intent (in)           :: config_filename    ! config file from command line argument
+    integer             :: forcing_timestep         ! integer time step (set to dt) for some subroutine calls
     
-    integer             :: forcing_timestep  ! integer time step (set to dt) for some subroutine calls
-    
-    associate(namelist   => model%namelist, &
-              levels     => model%levels, &
-              domain     => model%domain, &
-              options    => model%options, &
+    associate(namelist   => model%namelist,   &
+              levels     => model%levels,     &
+              domain     => model%domain,     &
+              options    => model%options,    &
               parameters => model%parameters, &
-              water      => model%water, &
-              forcing    => model%forcing, &
+              water      => model%water,      &
+              forcing    => model%forcing,    &
               energy     => model%energy)
         
       !---------------------------------------------------------------------
       !  initialize
       !---------------------------------------------------------------------
-      call namelist%ReadNamelist(config_file)
+      call namelist%ReadNamelist(config_filename)
 
       call levels%Init
       call levels%InitTransfer(namelist)
@@ -209,7 +208,7 @@ contains
       ! Nextgen forcing is being used (https://github.com/NOAA-OWP/ngen)
       !---------------------------------------------------------------------
 #ifndef NGEN_FORCING_ACTIVE
-      call open_forcing_file(namelist%input_filename)
+      call open_forcing_file(namelist%forcing_filename)
 #endif
       
       !---------------------------------------------------------------------
