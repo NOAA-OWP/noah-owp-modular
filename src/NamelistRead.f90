@@ -82,7 +82,6 @@ contains
     integer                                 :: ierr
     character(len=480)                      :: line
     
-    
     integer            :: iz
     real               :: dt
     character(len=12)  :: startdate
