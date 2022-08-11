@@ -118,7 +118,7 @@ contains
 
   subroutine Init(this)
 
-    class(options_type) :: this
+    class(options_type), intent(out) :: this
 
     call this%InitDefault()
 
@@ -126,7 +126,7 @@ contains
 
   subroutine InitDefault(this)
 
-    class(options_type) :: this
+    class(options_type), intent(out) :: this
 
     this%opt_snf   = huge(1)
     this%opt_run   = huge(1)
@@ -150,8 +150,8 @@ contains
 
   subroutine InitTransfer(this, namelist)
 
-    class(options_type) :: this
-    type(namelist_type) :: namelist
+    class(options_type), intent(out) :: this
+    type(namelist_type), intent(in)  :: namelist
 
     this%opt_snf   = namelist%precip_phase_option
     this%opt_run   = namelist%runoff_option

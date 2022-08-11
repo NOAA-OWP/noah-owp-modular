@@ -10,6 +10,11 @@ MODULE ConstantsModule
    integer, parameter :: sp        = kind (1.0)
    integer, parameter :: dp        = kind (1.0D0)
 
+   ! missing values
+   real(rkind),     parameter :: nr_quadMissing=-9999._qp   ! missing quadruple precision number
+   real(rkind),     parameter :: nr_realMissing=-9999._rkind   ! missing double precision number
+   integer(i4b), parameter :: nr_integerMissing=-9999    ! missing integer
+
 !  2. Following are constants for use in defining real number bounds.
    REAL    , PARAMETER :: epsilon  = 1.E-15   !  A really small number.
    real (dp), parameter :: tiny    = 0.00000000000000000000000000000001D0
@@ -131,11 +136,7 @@ MODULE ConstantsModule
        REAL , PARAMETER ::  wght=0.35
        REAL , PARAMETER ::  wpc=0.075
        REAL , PARAMETER ::  z0land=0.10
-!#ifdef HWRF
-!       REAL , PARAMETER ::  z0max=0.01
-!#else
        REAL , PARAMETER ::  z0max=0.008
-!#endif
        REAL , PARAMETER ::  z0sea=0.001
 
    !  ==== Earth ====
