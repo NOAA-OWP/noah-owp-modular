@@ -79,9 +79,6 @@ contains
     class(namelist_type)                    :: this
     ! Optional namelist_file path/filename to read
     character(len=*), intent (in), optional :: namelist_file
-    ! Temporary var to hold the default, "namelist.input"
-    ! or the value of namelist_file, if passed
-    character(:), allocatable               :: namelist_file_     ! this is never allocated
     integer                                 :: ierr
     character(len=480)                      :: line
     
@@ -223,15 +220,17 @@ contains
     !---------------------------------------------------------------------
     !  read namelist
     !---------------------------------------------------------------------
-    if( present(namelist_file) ) then
-      namelist_file_ = namelist_file
-      !print*, 'Reading namelist: ', trim(namelist_file_)
+    ierr = 0
+    if( trim(namelist_file) .ne. '' ) then
+      open(30, file=namelist_file, form="formatted", status='old', iostat=ierr)
+      if(ierr /= 0) then; write(*,'(A)') 'ERROR: user specified namelist file not found: '//trim(namelist_file); stop; end if
+      !print*, 'Reading namelist: ', trim(namelist_file)
     else
-      namelist_file_ = "namelist.input"
+      open(30, file='./namelist.input', form="formatted", status='old', iostat=ierr)
+      if(ierr /= 0) then; write(*,'(A)') 'ERROR: default namelist file not found: ./namelist.input'; stop; end if
       !print*, 'No namelist filename supplied -- attempting to read namelist.input (default)'
     endif
 
-    open(30, file=namelist_file_, form="formatted")
     read(30, timing, iostat=ierr)
     if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; write(*,'(A)') 'ERROR: invalid line in namelist: '//trim(line); stop; end if      
     read(30, parameters, iostat=ierr)
