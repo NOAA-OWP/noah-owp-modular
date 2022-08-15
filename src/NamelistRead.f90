@@ -203,7 +203,6 @@ contains
     if (radiative_transfer_option<1 .or. radiative_transfer_option>3) then; call sys_abort(1,'model options: radiative_transfer_option should be 1-3'); end if
     if (sfc_drag_coeff_option<1 .or. sfc_drag_coeff_option>2) then; call sys_abort(1,'model options: sfc_drag_coeff_option should be 1-3'); end if
     if (canopy_stom_resist_option<1 .or. canopy_stom_resist_option>2) then; call sys_abort(1,'model options: sfc_drag_coeff_option should be 1-2'); end if
-    if (crop_model_option/=0) then; call sys_abort(1,'model options: crop_model_option should be 0'); end if
     if (snowsoil_temp_time_option<1 .or. snowsoil_temp_time_option>3) then; call sys_abort(1,'model options: snowsoil_temp_time_option should be 1-3'); end if
     if (soil_temp_boundary_option<1 .or. soil_temp_boundary_option>2) then; call sys_abort(1,'model options: soil_temp_boundary_option should be 1-2'); end if
     if (supercooled_water_option<1 .or. supercooled_water_option>2) then; call sys_abort(1,'model options: supercooled_water_option should be 1-2'); end if
@@ -225,7 +224,9 @@ contains
         zsoil(iz) = -1. * sum(dzsnso(1:iz))
       end do
       if(.not.initial_uniform) &
-        stop "structure_option > 1 must have initial_uniform == .true."
+        call sys_abort(1,'structure_option > 1 must have initial_uniform == .true.')
+    else
+      call sys_abort(1,'structure_option: must be 1 or 2')
     end if
 
     !---------------------------------------------------------------------
