@@ -8,6 +8,11 @@ module ErrorCheckModule
   public:: sys_abort
   public:: is_within_bound
 
+  interface is_within_bound
+    module procedure is_within_bound_int
+    module procedure is_within_bound_real
+  end interface
+
 contains
 
   subroutine sys_abort(err, message)
@@ -27,10 +32,9 @@ contains
 
   end subroutine sys_abort
 
+  function is_within_bound_int(lower_bound, upper_bound, var) result(withinbound)
 
-  function is_within_bound(lower_bound, upper_bound, var) result(withinbound)
-
-    ! check if a value is within specified bounds
+    ! check if a integer value is within specified bounds
 
     implicit none
 
@@ -44,6 +48,24 @@ contains
        withinbound = .false.
     end if
 
-  end function
+  end function is_within_bound_int
+
+  function is_within_bound_real(lower_bound, upper_bound, var) result(withinbound)
+
+    ! check if a real value is within specified bounds
+
+    implicit none
+
+    real, intent(in) :: lower_bound
+    real, intent(in) :: upper_bound
+    real, intent(in) :: var
+    logical :: withinbound
+
+    withinbound = .true.
+    if ( var < lower_bound .or. var > upper_bound ) then
+       withinbound = .false.
+    end if
+
+  end function is_within_bound_real
 
 end module ErrorCheckModule
