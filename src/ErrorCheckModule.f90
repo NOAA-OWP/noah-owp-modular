@@ -32,15 +32,15 @@ contains
 
   end subroutine sys_abort
 
-  function is_within_bound_int(lower_bound, upper_bound, var) result(withinbound)
+  function is_within_bound_int(var, lower_bound, upper_bound) result(withinbound)
 
     ! check if a integer value is within specified bounds
 
     implicit none
 
+    integer, intent(in) :: var
     integer, intent(in) :: lower_bound
     integer, intent(in) :: upper_bound
-    integer, intent(in) :: var
     logical :: withinbound
 
     withinbound = .true.
@@ -50,15 +50,15 @@ contains
 
   end function is_within_bound_int
 
-  function is_within_bound_real(lower_bound, upper_bound, var) result(withinbound)
+  function is_within_bound_real(var, lower_bound, upper_bound) result(withinbound)
 
     ! check if a real value is within specified bounds
 
     implicit none
 
+    real, intent(in) :: var
     real, intent(in) :: lower_bound
     real, intent(in) :: upper_bound
-    real, intent(in) :: var
     logical :: withinbound
 
     withinbound = .true.
