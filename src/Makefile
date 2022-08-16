@@ -7,7 +7,8 @@ include ../user_build_options
 
 F90FLAGS := -cpp ${F90FLAGS}
 
-OBJS = NamelistRead.o \
+OBJS = ErrorCheckModule.o \
+       NamelistRead.o \
        ParametersRead.o  \
        LevelsType.o   \
        DomainType.o   \
@@ -57,6 +58,7 @@ clean:
 # Dependencies:
 #
 
+NamelistRead.o: ErrorCheckModule.o
 LevelsType.o: NamelistRead.o
 DomainType.o: NamelistRead.o LevelsType.o DateTimeUtilsModule.o
 OptionsType.o: NamelistRead.o
