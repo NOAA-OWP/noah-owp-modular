@@ -10,6 +10,7 @@ Noah-OWP-Modular presently requires only one external library: [NetCDF](https://
 - `user_build_options.pgf90.linux`: Linux with pgf90 compiler, NetCDF installed via source (usr/local)
 - `user_build_options.macos.gfortran`: MacOS with gfortran compiler, NetCDF installed via source (opt/local)
 - `user_build_options.bigsur.gfortran`: MacOS Big Sur with gfortran compiler, NetCDF 4.8.0 installed via Brew (** this is the current tesiting environment **)
+- `user_build_options.gfortran.linux`: Linux with gfortran compiler, NetCDF installed via module. The $NETCDF environmental variable is defined, such as NOAA Hera.
 
 If your system does not match one of the above options, you'll need to edit one of the files or create your own. If you do the latter, you'll need to add another option to the `configure` Perl script.
 
@@ -39,3 +40,13 @@ cd run/
 The `namelist.input` file in `/run` includes all the setup and options info you need to run Noah-OWP-Modular. This is the file you'll modify when running Noah-OWP-Modular in different locations.
 
 You can examine model output in the `/data/output.nc` file (requires [Panoply](https://www.giss.nasa.gov/tools/panoply/) or other NetCDF viewer).
+
+## BMI unit tests
+
+To run unit tests, first compile and link the test program from the main-level directory:
+
+`make testBMI`
+
+This produces the Noah-OWP-Modular unit test executable in the `/test` subdirectory. See the `/test/README.md` for details.
+
+`make testBMI_clean` removes the test program as well as object files.

@@ -131,11 +131,7 @@ MODULE ConstantsModule
        REAL , PARAMETER ::  wght=0.35
        REAL , PARAMETER ::  wpc=0.075
        REAL , PARAMETER ::  z0land=0.10
-!#ifdef HWRF
-!       REAL , PARAMETER ::  z0max=0.01
-!#else
        REAL , PARAMETER ::  z0max=0.008
-!#endif
        REAL , PARAMETER ::  z0sea=0.001
 
    !  ==== Earth ====

@@ -6,6 +6,7 @@
 include ../user_build_options
 
 OBJS = \
+        ../src/ErrorCheckModule.o \
         ../src/NamelistRead.o \
         ../src/ParametersRead.o \
         ../src/LevelsType.o \
