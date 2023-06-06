@@ -1,6 +1,7 @@
 module NoahowpmpReadNamelistMod
 
     use NoahowpmpIOVarType
+    use NoahowpmpReadTableModule
   
     implicit none
   
@@ -290,6 +291,8 @@ module NoahowpmpReadNamelistMod
     NoahowpmpIO%integerMissing              = integerMissing 
     NoahowpmpIO%realMissing                 = realMissing
     NoahowpmpIO%stringMissing               = stringMissing 
+
+    call read_all_parameters(NoahowpmpIO)
 
   end subroutine
 
