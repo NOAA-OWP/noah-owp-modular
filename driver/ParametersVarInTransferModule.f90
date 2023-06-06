@@ -163,6 +163,20 @@ module ParametersVarInTransferModule
     noahowpmp%PSIWLT    = -150.0      ! originally a fixed parameter set in ENERGY()
     noahowpmp%TBOT      = 263.0       ! (K) can be updated depending on option OPT_TBOT
 
+    ! Assign rain-snow threshold based on option
+    IF(NoahowpmpIO%precip_phase_option(ix,iy) == 2) THEN
+      noahowpmp%rain_snow_thresh = NoahowpmpIO%TFRZ + 2.2
+    ELSE IF(NoahowpmpIO%precip_phase_option(ix,iy) == 3) THEN
+      noahowpmp%rain_snow_thresh = NoahowpmpIO%TFRZ
+    ELSE IF(NoahowpmpIO%precip_phase_option(ix,iy) == 5 .or. NoahowpmpIO%precip_phase_option(ix,iy) == 6) THEN
+      noahowpmp%rain_snow_thresh = NoahowpmpIO%TFRZ + NoahowpmpIO%rain_snow_thresh
+    ELSE 
+      noahowpmp%rain_snow_thresh = NoahowpmpIO%TFRZ ! set to TFRZ as a backup
+    ENDIF
+    
+    ! Assign initial soil moisture based on variable or uniform initial conditions
+    noahowpmp%zwt_init = NoahowpmpIO%zwt
+
     end associate
 
   end subroutine
