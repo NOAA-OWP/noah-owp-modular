@@ -776,6 +776,22 @@ module NoahowpmpIOType
   integer :: NCROP = 5
   integer :: NSTAGE = 8
 
+  contains
+
+  procedure, public  :: PrintNoahowpmpIO
+
   end type
+
+  contains
+
+    subroutine PrintNoahowpmpIO(this,filename)
+
+      class(NoahowpmpIO_type), intent(in) :: this
+      character(len=256)                  :: filename 
+
+      !print*,filename
+      !character (len=40), dimension(2) :: intvars 
+
+    end subroutine PrintNoahowpmpIO
 
 end module NoahowpmpIOType

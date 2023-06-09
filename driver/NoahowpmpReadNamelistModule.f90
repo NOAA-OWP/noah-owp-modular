@@ -232,11 +232,19 @@ module NoahowpmpReadNamelistModule
     ! n_x and n_y tobe read in via namelist.input but currently hardcode here
     n_x = 2
     n_y = 3
-    if(n_x        /= integerMissing) then; NoahowpmpIO%n_x = n_x; else; write(*,'(A)') 'ERROR: required entry n_x not found in namelist'; stop; end if
-    if(n_y        /= integerMissing) then; NoahowpmpIO%n_y = n_y; else; write(*,'(A)') 'ERROR: required entry n_y not found in namelist'; stop; end if
-    if(nsoil      /= integerMissing) then; NoahowpmpIO%nsoil = nsoil; else; write(*,'(A)') 'ERROR: required entry nsoil not found in namelist'; stop; end if
-    if(nsnow      /= integerMissing) then; NoahowpmpIO%nsnow = nsnow; else; write(*,'(A)') 'ERROR: required entry nsnow not found in namelist'; stop; end if
- 
+    if(n_x              /= integerMissing) then; NoahowpmpIO%n_x = n_x; else; write(*,'(A)') 'ERROR: required entry n_x not found in namelist'; stop; end if
+    if(n_y              /= integerMissing) then; NoahowpmpIO%n_y = n_y; else; write(*,'(A)') 'ERROR: required entry n_y not found in namelist'; stop; end if
+    if(nsoil            /= integerMissing) then; NoahowpmpIO%nsoil = nsoil; else; write(*,'(A)') 'ERROR: required entry nsoil not found in namelist'; stop; end if
+    if(nsnow            /= integerMissing) then; NoahowpmpIO%nsnow = nsnow; else; write(*,'(A)') 'ERROR: required entry nsnow not found in namelist'; stop; end if
+    if(forcing_filename /= stringMissing) then; NoahowpmpIO%forcing_filename = forcing_filename; else; write(*,'(A)') 'ERROR: required entry forcing_filename not found in namelist'; stop; end if
+    if(output_filename  /= stringMissing) then; NoahowpmpIO%output_filename = output_filename; else; write(*,'(A)') 'ERROR: required entry output_filename not found in namelist'; stop; end if
+    if(parameter_dir    /= stringMissing) then; NoahowpmpIO%parameter_dir = parameter_dir; else; write(*,'(A)') 'ERROR: required entry parameter_dir not found in namelist'; stop; end if
+    if(soil_table       /= stringMissing) then; NoahowpmpIO%soil_table = soil_table; else; write(*,'(A)') 'ERROR: required entry soil_table  not found in namelist'; stop; end if
+    if(general_table    /= stringMissing) then; NoahowpmpIO%general_table = general_table; else; write(*,'(A)') 'ERROR: required entry general_table not found in namelist'; stop; end if
+    if(noahowp_table    /= stringMissing) then; NoahowpmpIO%noahowp_table = noahowp_table; else; write(*,'(A)') 'ERROR: required entry noahowp_table not found in namelist'; stop; end if
+    if(soil_class_name  /= stringMissing) then; NoahowpmpIO%soil_class_name = soil_class_name; else; write(*,'(A)') 'ERROR: required entry soil_class_name not found in namelist'; stop; end if
+    if(veg_class_name   /= stringMissing) then; NoahowpmpIO%veg_class_name = veg_class_name; else; write(*,'(A)') 'ERROR: required entry veg_class_name not found in namelist'; stop; end if
+
     !---------------------------------------------------------------------
     !  allocate NoahowpmpIO arrays
     !---------------------------------------------------------------------
@@ -248,15 +256,7 @@ module NoahowpmpReadNamelistModule
     if(dt               /= realMissing)   then; NoahowpmpIO%dt = dt; else; write(*,'(A)') 'ERROR: required entry dt not found in namelist'; stop; end if 
     if(startdate        /= stringMissing) then; NoahowpmpIO%startdate = startdate; else; write(*,'(A)') 'ERROR: required entry startdate not found in namelist'; stop; end if
     if(enddate          /= stringMissing) then; NoahowpmpIO%enddate = enddate; else; write(*,'(A)') 'ERROR: required entry enddate not found in namelist'; stop; end if
-    if(forcing_filename /= stringMissing) then; NoahowpmpIO%forcing_filename = forcing_filename; else; write(*,'(A)') 'ERROR: required entry forcing_filename not found in namelist'; stop; end if
-    if(output_filename  /= stringMissing) then; NoahowpmpIO%output_filename = output_filename; else; write(*,'(A)') 'ERROR: required entry output_filename not found in namelist'; stop; end if
-    if(parameter_dir    /= stringMissing) then; NoahowpmpIO%parameter_dir = parameter_dir; else; write(*,'(A)') 'ERROR: required entry parameter_dir not found in namelist'; stop; end if
-    if(soil_table       /= stringMissing) then; NoahowpmpIO%soil_table = soil_table; else; write(*,'(A)') 'ERROR: required entry soil_table  not found in namelist'; stop; end if
-    if(general_table    /= stringMissing) then; NoahowpmpIO%general_table = general_table; else; write(*,'(A)') 'ERROR: required entry general_table not found in namelist'; stop; end if
-    if(noahowp_table    /= stringMissing) then; NoahowpmpIO%noahowp_table = noahowp_table; else; write(*,'(A)') 'ERROR: required entry noahowp_table not found in namelist'; stop; end if
-    if(soil_class_name  /= stringMissing) then; NoahowpmpIO%soil_class_name = soil_class_name; else; write(*,'(A)') 'ERROR: required entry soil_class_name not found in namelist'; stop; end if
-    if(veg_class_name   /= stringMissing) then; NoahowpmpIO%veg_class_name = veg_class_name; else; write(*,'(A)') 'ERROR: required entry veg_class_name not found in namelist'; stop; end if
-    
+
     if(lat              /= realMissing) then; NoahowpmpIO%lat(:,:) = lat; else; write(*,'(A)') 'ERROR: required entry lat not found in namelist'; stop; end if
     if(lon              /= realMissing) then; NoahowpmpIO%lon(:,:) = lon; else; write(*,'(A)') 'ERROR: required entry lon not found in namelist'; stop; end if
     if(terrain_slope    /= realMissing) then; NoahowpmpIO%terrain_slope(:,:) = terrain_slope; else; write(*,'(A)') 'ERROR: required entry terrain_slope not found in namelist'; stop; end if
