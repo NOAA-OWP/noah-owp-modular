@@ -1,4 +1,4 @@
-module NoahowpType
+module NoahowpmpType
   
   use NamelistRead
   use LevelsType
@@ -21,4 +21,4 @@ module NoahowpType
     type(energy_type)     :: energy
   end type noahowp_type
 
-end module NoahowpType
+end module NoahowpmpType
