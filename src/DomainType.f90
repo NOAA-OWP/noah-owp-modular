@@ -2,6 +2,7 @@ module DomainType
 
   use NamelistRead, only: namelist_type
   use DateTimeUtilsModule
+  use NoahowpmpIOType
   
   implicit none
   save
@@ -37,32 +38,32 @@ module DomainType
   
     contains
   
-      procedure, public  :: Init         
-      procedure, private :: InitAllocate 
-      procedure, private :: InitDefault     
+    procedure, public  :: Init         
+    procedure, private :: InitAllocate 
+    procedure, private :: InitDefault     
   
   end type domain_type
   
   contains   
   
-    subroutine Init(this, namelist)
+    subroutine Init(this, NoahowpmpIO)
   
-      class(domain_type) :: this
-      type(namelist_type) :: namelist
+      class(domain_type)                    :: this
+      type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
   
-      call this%InitAllocate(namelist)
+      call this%InitAllocate(NoahowpmpIO)
       call this%InitDefault()
   
     end subroutine Init
   
-    subroutine InitAllocate(this, namelist)
+    subroutine InitAllocate(this, NoahowpmpIO)
   
-      class(domain_type) :: this
-      type(namelist_type) :: namelist
+      class(domain_type)                    :: this
+      type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
   
-      allocate(this%zsoil (namelist%nsoil))
-      allocate(this%dzsnso(-namelist%nsnow+1:namelist%nsoil))
-      allocate(this%zsnso(-namelist%nsnow+1:namelist%nsoil))
+      allocate(this%zsoil (NoahowpmpIO%nsoil))
+      allocate(this%dzsnso(-NoahowpmpIO%nsnow+1:NoahowpmpIO%nsoil))
+      allocate(this%zsnso(-NoahowpmpIO%nsnow+1:NoahowpmpIO%nsoil))
   
     end subroutine InitAllocate
   
