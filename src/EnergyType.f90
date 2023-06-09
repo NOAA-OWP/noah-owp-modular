@@ -161,7 +161,6 @@ type, public :: energy_type
     procedure, public  :: Init
     procedure, private :: InitAllocate        
     procedure, private :: InitDefault     
-    procedure, public  :: InitTransfer
 
 end type energy_type
 
@@ -323,21 +322,10 @@ contains
     this%PSNSHA    = huge(1.0)    
     this%APAR      = huge(1.0)
     this%QMELT     = huge(1.0)
-
     this%LH        = huge(1.0)    
     this%TGS       = huge(1.0)    
-    
     this%ICE       = huge(1)    
     
-    
-    
   end subroutine InitDefault
-
-  subroutine InitTransfer(this, namelist)
-
-    class(energy_type) :: this
-    type(namelist_type) :: namelist
-
-  end subroutine InitTransfer
 
 end module EnergyType
