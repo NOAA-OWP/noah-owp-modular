@@ -148,29 +148,4 @@ contains
 
   end subroutine InitDefault
 
-  subroutine InitTransfer(this, namelist)
-
-    class(options_type), intent(out) :: this
-    type(namelist_type), intent(in)  :: namelist
-
-    this%opt_snf   = namelist%precip_phase_option
-    this%opt_run   = namelist%runoff_option
-    this%opt_drn   = namelist%drainage_option
-    this%opt_inf   = namelist%frozen_soil_option
-    this%opt_infdv = namelist%dynamic_vic_option
-    this%dveg      = namelist%dynamic_veg_option
-    this%opt_alb   = namelist%snow_albedo_option
-    this%opt_rad   = namelist%radiative_transfer_option
-    this%opt_sfc   = namelist%sfc_drag_coeff_option    
-    this%opt_crs   = namelist%canopy_stom_resist_option    
-    this%opt_crop  = namelist%crop_model_option    
-    this%opt_stc   = namelist%snowsoil_temp_time_option 
-    this%opt_tbot  = namelist%soil_temp_boundary_option 
-    this%opt_frz   = namelist%supercooled_water_option
-    this%opt_btr   = namelist%stomatal_resistance_option
-    this%opt_rsf   = namelist%evap_srfc_resistance_option
-    this%opt_sub   = namelist%subsurface_option
-
-  end subroutine InitTransfer
-
 end module OptionsType
