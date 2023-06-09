@@ -1,7 +1,9 @@
-module NoahowpmpReadNamelistMod
+module NoahowpmpReadNamelistModule
 
-    use NoahowpmpIOVarType
-    use NoahowpmpReadTableModule
+    use NoahowpmpIOType
+    use NoahowpmpIOTypeInitModule
+    use ErrorCheckModule, only: sys_abort
+    use ErrorCheckModule, only: is_within_bound
   
     implicit none
   
@@ -16,6 +18,7 @@ module NoahowpmpReadNamelistMod
     character(len=480)                      :: line
 
     integer            :: ix,iy,iz
+    integer            :: n_x, n_y
     real               :: dt
     character(len=12)  :: startdate
     character(len=12)  :: enddate
@@ -222,9 +225,25 @@ module NoahowpmpReadNamelistMod
     else 
       write(*,'(A)') 'ERROR: required entry dzsnso not found in namelist'; stop
     end if 
-    
+
     !---------------------------------------------------------------------
-    !  transfer values to namelist data structure
+    !  check xyz dimensions and move to NoahowpmpIO
+    !---------------------------------------------------------------------
+    ! n_x and n_y tobe read in via namelist.input but currently hardcode here
+    n_x = 2
+    n_y = 3
+    if(n_x        /= integerMissing) then; NoahowpmpIO%n_x = n_x; else; write(*,'(A)') 'ERROR: required entry n_x not found in namelist'; stop; end if
+    if(n_y        /= integerMissing) then; NoahowpmpIO%n_y = n_y; else; write(*,'(A)') 'ERROR: required entry n_y not found in namelist'; stop; end if
+    if(nsoil      /= integerMissing) then; NoahowpmpIO%nsoil = nsoil; else; write(*,'(A)') 'ERROR: required entry nsoil not found in namelist'; stop; end if
+    if(nsnow      /= integerMissing) then; NoahowpmpIO%nsnow = nsnow; else; write(*,'(A)') 'ERROR: required entry nsnow not found in namelist'; stop; end if
+ 
+    !---------------------------------------------------------------------
+    !  allocate NoahowpmpIO arrays
+    !---------------------------------------------------------------------
+    call NoahowpmpIOTypeInit(NoahowpmpIO)
+
+    !---------------------------------------------------------------------
+    !  transfer remaining values to NoahowpmpIO
     !---------------------------------------------------------------------
     if(dt               /= realMissing)   then; NoahowpmpIO%dt = dt; else; write(*,'(A)') 'ERROR: required entry dt not found in namelist'; stop; end if 
     if(startdate        /= stringMissing) then; NoahowpmpIO%startdate = startdate; else; write(*,'(A)') 'ERROR: required entry startdate not found in namelist'; stop; end if
@@ -243,36 +262,33 @@ module NoahowpmpReadNamelistMod
     if(terrain_slope    /= realMissing) then; NoahowpmpIO%terrain_slope(:,:) = terrain_slope; else; write(*,'(A)') 'ERROR: required entry terrain_slope not found in namelist'; stop; end if
     if(azimuth          /= realMissing) then; NoahowpmpIO%azimuth(:,:) = azimuth; else; write(*,'(A)') 'ERROR: required entry azimuth not found in namelist'; stop; end if
     if(zref             /= realMissing) then; NoahowpmpIO%ZREF(:,:) = ZREF; else; write(*,'(A)') 'ERROR: required entry ZREF not found in namelist'; stop; end if
-    if(rain_snow_thresh /= realMissing) then; NoahowpmpIO%rain_snow_thresh(:,:) = rain_snow_thresh; else; write(*,'(A)') 'ERROR: required entry rain_snow_thresh not found in namelist'; stop; end if
+    if(rain_snow_thresh /= realMissing) then; NoahowpmpIO%rain_snow_thresh = rain_snow_thresh; else; write(*,'(A)') 'ERROR: required entry rain_snow_thresh not found in namelist'; stop; end if
 
     if(isltyp     /= integerMissing) then; NoahowpmpIO%isltyp(:,:) = isltyp; else; write(*,'(A)') 'ERROR: required entry isltyp not found in namelist'; stop; end if
-    if(nsoil      /= integerMissing) then; NoahowpmpIO%nsoil(:,:) = nsoil; else; write(*,'(A)') 'ERROR: required entry nsoil not found in namelist'; stop; end if
-    if(nsnow      /= integerMissing) then; NoahowpmpIO%nsnow(:,:) = nsnow; else; write(*,'(A)') 'ERROR: required entry nsnow not found in namelist'; stop; end if
-    if(nveg       /= integerMissing) then; NoahowpmpIO%nveg(:,:) = nveg; else; write(*,'(A)') 'ERROR: required entry nveg not found in namelist'; stop; end if
-    if(soil_depth /= integerMissing) then; NoahowpmpIO%soil_depth(:,:) = soil_depth; else; write(*,'(A)') 'ERROR: required entry soil_depth not found in namelist'; stop; end if
+    if(nveg       /= integerMissing) then; NoahowpmpIO%nveg = nveg; else; write(*,'(A)') 'ERROR: required entry nveg not found in namelist'; stop; end if
     if(vegtyp     /= integerMissing) then; NoahowpmpIO%vegtyp(:,:) = vegtyp; else; write(*,'(A)') 'ERROR: required entry vegtyp not found in namelist'; stop; end if
     if(croptype   /= integerMissing) then; NoahowpmpIO%croptype(:,:) = croptype; else; write(*,'(A)') 'ERROR: required entry croptype not found in namelist'; stop; end if
-    if(sfctyp     /= integerMissing) then; NoahowpmpIO%sfctyp(:,:) = sfctyp; else; write(*,'(A)') 'ERROR: required entry sfctyp not found in namelist'; stop; end if
+    if(sfctyp     /= integerMissing) then; NoahowpmpIO%IST(:,:) = sfctyp; else; write(*,'(A)') 'ERROR: required entry sfctyp not found in namelist'; stop; end if
     if(soilcolor  /= integerMissing) then; NoahowpmpIO%soilcolor(:,:) = soilcolor; else; write(*,'(A)') 'ERROR: required entry soilcolor not found in namelist'; stop; end if
     if(zwt        /= realMissing) then; NoahowpmpIO%zwt(:,:) = zwt; else; write(*,'(A)') 'ERROR: required entry zwt not found in namelist'; stop; end if
 
-    if(precip_phase_option         /= integerMissing) then; NoahowpmpIO%precip_phase_option(:,:) = precip_phase_option; else; write(*,'(A)') 'ERROR: required entry precip_phase_option not found in namelist'; stop; end if
-    if(runoff_option               /= integerMissing) then; NoahowpmpIO%runoff_option(:,:) = runoff_option; else; write(*,'(A)') 'ERROR: required entry runoff_option not found in namelist'; stop; end if
-    if(drainage_option             /= integerMissing) then; NoahowpmpIO%drainage_option(:,:) = drainage_option; else; write(*,'(A)') 'ERROR: required entry drainage_option not found in namelist'; stop; end if
-    if(frozen_soil_option          /= integerMissing) then; NoahowpmpIO%frozen_soil_option(:,:) = frozen_soil_option; else; write(*,'(A)') 'ERROR: required entry frozen_soil_option not found in namelist'; stop; end if
-    if(dynamic_vic_option          /= integerMissing) then; NoahowpmpIO%dynamic_vic_option(:,:) = dynamic_vic_option; else; write(*,'(A)') 'ERROR: required entry dynamic_vic_option not found in namelist'; stop; end if
-    if(dynamic_veg_option          /= integerMissing) then; NoahowpmpIO%dynamic_veg_option(:,:) = dynamic_veg_option; else; write(*,'(A)') 'ERROR: required entry dynamic_veg_option not found in namelist'; stop; end if
-    if(snow_albedo_option          /= integerMissing) then; NoahowpmpIO%snow_albedo_option(:,:) = snow_albedo_option; else; write(*,'(A)') 'ERROR: required entry snow_albedo_option not found in namelist'; stop; end if
-    if(radiative_transfer_option   /= integerMissing) then; NoahowpmpIO%radiative_transfer_option(:,:) = radiative_transfer_option; else; write(*,'(A)') 'ERROR: required entry radiative_transfer_option not found in namelist'; stop; end if
-    if(sfc_drag_coeff_option       /= integerMissing) then; NoahowpmpIO%sfc_drag_coeff_option(:,:) = sfc_drag_coeff_option; else; write(*,'(A)') 'ERROR: required entry sfc_drag_coeff_option not found in namelist'; stop; end if
-    if(crop_model_option           /= integerMissing) then; NoahowpmpIO%crop_model_option(:,:) = crop_model_option; else; write(*,'(A)') 'ERROR: required entry crop_model_option not found in namelist'; stop; end if
-    if(canopy_stom_resist_option   /= integerMissing) then; NoahowpmpIO%canopy_stom_resist_option(:,:) = canopy_stom_resist_option; else; write(*,'(A)') 'ERROR: required entry canopy_stom_resist_option not found in namelist'; stop; end if
-    if(snowsoil_temp_time_option   /= integerMissing) then; NoahowpmpIO%snowsoil_temp_time_option(:,:) = snowsoil_temp_time_option; else; write(*,'(A)') 'ERROR: required entry snowsoil_temp_time_option not found in namelist'; stop; end if
-    if(soil_temp_boundary_option   /= integerMissing) then; NoahowpmpIO%soil_temp_boundary_option(:,:) = soil_temp_boundary_option; else; write(*,'(A)') 'ERROR: required entry soil_temp_boundary_option not found in namelist'; stop; end if
-    if(supercooled_water_option    /= integerMissing) then; NoahowpmpIO%supercooled_water_option(:,:) = supercooled_water_option; else; write(*,'(A)') 'ERROR: required entry supercooled_water_option not found in namelist'; stop; end if
-    if(stomatal_resistance_option  /= integerMissing) then; NoahowpmpIO%stomatal_resistance_option(:,:) = stomatal_resistance_option; else; write(*,'(A)') 'ERROR: required entry stomatal_resistance_option not found in namelist'; stop; end if
-    if(evap_srfc_resistance_option /= integerMissing) then; NoahowpmpIO%evap_srfc_resistance_option(:,:) = evap_srfc_resistance_option; else; write(*,'(A)') 'ERROR: required entry evap_srfc_resistance_option not found in namelist'; stop; end if
-    if(subsurface_option           /= integerMissing) then; NoahowpmpIO%subsurface_option(:,:) = subsurface_option; else; write(*,'(A)') 'ERROR: required entry subsurface_option not found in namelist'; stop; end if
+    if(precip_phase_option         /= integerMissing) then; NoahowpmpIO%opt_snf(:,:) = precip_phase_option; else; write(*,'(A)') 'ERROR: required entry precip_phase_option not found in namelist'; stop; end if
+    if(runoff_option               /= integerMissing) then; NoahowpmpIO%opt_run(:,:) = runoff_option; else; write(*,'(A)') 'ERROR: required entry runoff_option not found in namelist'; stop; end if
+    if(drainage_option             /= integerMissing) then; NoahowpmpIO%opt_drn(:,:) = drainage_option; else; write(*,'(A)') 'ERROR: required entry drainage_option not found in namelist'; stop; end if
+    if(frozen_soil_option          /= integerMissing) then; NoahowpmpIO%opt_inf(:,:) = frozen_soil_option; else; write(*,'(A)') 'ERROR: required entry frozen_soil_option not found in namelist'; stop; end if
+    if(dynamic_vic_option          /= integerMissing) then; NoahowpmpIO%opt_infdv(:,:) = dynamic_vic_option; else; write(*,'(A)') 'ERROR: required entry dynamic_vic_option not found in namelist'; stop; end if
+    if(dynamic_veg_option          /= integerMissing) then; NoahowpmpIO%dveg(:,:) = dynamic_veg_option; else; write(*,'(A)') 'ERROR: required entry dynamic_veg_option not found in namelist'; stop; end if
+    if(snow_albedo_option          /= integerMissing) then; NoahowpmpIO%opt_alb(:,:) = snow_albedo_option; else; write(*,'(A)') 'ERROR: required entry snow_albedo_option not found in namelist'; stop; end if
+    if(radiative_transfer_option   /= integerMissing) then; NoahowpmpIO%opt_rad(:,:) = radiative_transfer_option; else; write(*,'(A)') 'ERROR: required entry radiative_transfer_option not found in namelist'; stop; end if
+    if(sfc_drag_coeff_option       /= integerMissing) then; NoahowpmpIO%opt_sfc(:,:) = sfc_drag_coeff_option; else; write(*,'(A)') 'ERROR: required entry sfc_drag_coeff_option not found in namelist'; stop; end if
+    if(crop_model_option           /= integerMissing) then; NoahowpmpIO%opt_crop(:,:) = crop_model_option; else; write(*,'(A)') 'ERROR: required entry crop_model_option not found in namelist'; stop; end if
+    if(canopy_stom_resist_option   /= integerMissing) then; NoahowpmpIO%opt_crs(:,:) = canopy_stom_resist_option; else; write(*,'(A)') 'ERROR: required entry canopy_stom_resist_option not found in namelist'; stop; end if
+    if(snowsoil_temp_time_option   /= integerMissing) then; NoahowpmpIO%opt_stc(:,:) = snowsoil_temp_time_option; else; write(*,'(A)') 'ERROR: required entry snowsoil_temp_time_option not found in namelist'; stop; end if
+    if(soil_temp_boundary_option   /= integerMissing) then; NoahowpmpIO%opt_tbot(:,:) = soil_temp_boundary_option; else; write(*,'(A)') 'ERROR: required entry soil_temp_boundary_option not found in namelist'; stop; end if
+    if(supercooled_water_option    /= integerMissing) then; NoahowpmpIO%opt_frz(:,:) = supercooled_water_option; else; write(*,'(A)') 'ERROR: required entry supercooled_water_option not found in namelist'; stop; end if
+    if(stomatal_resistance_option  /= integerMissing) then; NoahowpmpIO%opt_btr(:,:) = stomatal_resistance_option; else; write(*,'(A)') 'ERROR: required entry stomatal_resistance_option not found in namelist'; stop; end if
+    if(evap_srfc_resistance_option /= integerMissing) then; NoahowpmpIO%opt_rsf(:,:) = evap_srfc_resistance_option; else; write(*,'(A)') 'ERROR: required entry evap_srfc_resistance_option not found in namelist'; stop; end if
+    if(subsurface_option           /= integerMissing) then; NoahowpmpIO%opt_sub(:,:) = subsurface_option; else; write(*,'(A)') 'ERROR: required entry subsurface_option not found in namelist'; stop; end if
     
     if(zsoil(1).eq.realMissing) write(*,'(A)') 'ERROR: required entry zsoil not found in namelist'; stop
     if(dzsnso(1).eq.realMissing) write(*,'(A)') 'ERROR: required entry dzsnso not found in namelist'; stop
@@ -287,13 +303,6 @@ module NoahowpmpReadNamelistMod
       end do
     end do
 
-    ! store missing values as well
-    NoahowpmpIO%integerMissing              = integerMissing 
-    NoahowpmpIO%realMissing                 = realMissing
-    NoahowpmpIO%stringMissing               = stringMissing 
-
-    call read_all_parameters(NoahowpmpIO)
-
   end subroutine
 
-end module NoahowpmpReadNamelistMod
+end module NoahowpmpReadNamelistModule
