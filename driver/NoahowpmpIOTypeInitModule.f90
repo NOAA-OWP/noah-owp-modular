@@ -1,12 +1,13 @@
-module NoahmpIOVarInitModule
+module NoahowpmpIOTypeInitModule
 
-  use NoahowpmpIOVarType
+  use NoahowpmpIOType
+  use NoahowpmpReadTableModule
   
   implicit none
   
   contains
 
-  subroutine NoahmpIOVarInitDefault(NoahowpmpIO)
+  subroutine NoahowpmpIOTypeInit(NoahowpmpIO)
 
     implicit none
     type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
@@ -25,10 +26,13 @@ module NoahmpIOVarInitModule
     call ParametersTypeDefault(NoahowpmpIO)
     call WaterTypeAllocate(NoahowpmpIO)
     call WaterTypeDefault(NoahowpmpIO)
+    call TableVarsAllocate(NoahowpmpIO)
+    call TableVarsDefault(NoahowpmpIO)
+    call TableVarsRead(NoahowpmpIO)
 
-  end subroutine NoahmpIOVarInitDefault
+  end subroutine NoahowpmpIOTypeInit
 
-  subroutine WaterTypeAllocate(Noahowp)
+  subroutine WaterTypeAllocate(NoahowpmpIO)
 
     implicit none
     type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
@@ -91,7 +95,7 @@ module NoahmpIOVarInitModule
     if(.NOT.allocated(NoahowpmpIO%etrani)) allocate(NoahowpmpIO%etrani(NoahowpmpIO%n_x,NoahowpmpIO%n_y,NoahowpmpIO%nsoil))
     if(.NOT.allocated(NoahowpmpIO%BTRANI)) allocate(NoahowpmpIO%BTRANI(NoahowpmpIO%n_x,NoahowpmpIO%n_y,NoahowpmpIO%nsoil))
     if(.NOT.allocated(NoahowpmpIO%wcnd)) allocate(NoahowpmpIO%wcnd(NoahowpmpIO%n_x,NoahowpmpIO%n_y,NoahowpmpIO%nsoil))
-    if(.NOT.allocated(NoahowpmpIO%fcr)) allocate(NoahowpmpIO%fcr(NoahowpmpIO%n_x,NoahowpmpIO%n_y,,NoahowpmpIO%nsoil))
+    if(.NOT.allocated(NoahowpmpIO%fcr)) allocate(NoahowpmpIO%fcr(NoahowpmpIO%n_x,NoahowpmpIO%n_y,NoahowpmpIO%nsoil))
     if(.NOT.allocated(NoahowpmpIO%FICEOLD)) allocate(NoahowpmpIO%FICEOLD(NoahowpmpIO%n_x,NoahowpmpIO%n_y,-NoahowpmpIO%nsnow+1:0))
     if(.NOT.allocated(NoahowpmpIO%SNICE)) allocate(NoahowpmpIO%SNICE(NoahowpmpIO%n_x,NoahowpmpIO%n_y,-NoahowpmpIO%nsnow+1:0))
     if(.NOT.allocated(NoahowpmpIO%SNLIQ)) allocate(NoahowpmpIO%SNLIQ(NoahowpmpIO%n_x,NoahowpmpIO%n_y,-NoahowpmpIO%nsnow+1:0))
@@ -104,7 +108,7 @@ module NoahmpIOVarInitModule
 
   end subroutine
 
-  subroutine WaterTypeDefault(Noahowp)
+  subroutine WaterTypeDefault(NoahowpmpIO)
 
     implicit none
     type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
@@ -180,7 +184,7 @@ module NoahmpIOVarInitModule
 
   end subroutine
 
-  subroutine ParametersTypeAllocate(Noahowp)
+  subroutine ParametersTypeAllocate(NoahowpmpIO)
 
     implicit none
     type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
@@ -254,7 +258,7 @@ module NoahmpIOVarInitModule
 
   end subroutine
 
-  subroutine ParametersTypeDefault(Noahowp)
+  subroutine ParametersTypeDefault(NoahowpmpIO)
 
     implicit none
     type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
@@ -395,7 +399,7 @@ module NoahmpIOVarInitModule
 
   end subroutine
 
-  subroutine OptionsTypeAllocate(Noahowp)
+  subroutine OptionsTypeAllocate(NoahowpmpIO)
 
     implicit none
     type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
@@ -420,7 +424,7 @@ module NoahmpIOVarInitModule
 
   end subroutine
 
-  subroutine OptionsTypeDefault(Noahowp)
+  subroutine OptionsTypeDefault(NoahowpmpIO)
 
     implicit none
     type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
@@ -445,29 +449,25 @@ module NoahmpIOVarInitModule
 
   end subroutine
 
-  subroutine LevelsTypeAllocate(Noahowp)
+  subroutine LevelsTypeAllocate(NoahowpmpIO)
 
     implicit none
     type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
 
-    if(.NOT.allocated(NoahowpmpIO%nsoil)) allocate(NoahowpmpIO%nsoil(NoahowpmpIO%n_x,NoahowpmpIO%n_y))
-    if(.NOT.allocated(NoahowpmpIO%nsnow)) allocate(NoahowpmpIO%nsnow(NoahowpmpIO%n_x,NoahowpmpIO%n_y))
-    if(.NOT.allocated(NoahowpmpIO%nveg)) allocate(NoahowpmpIO%nveg(NoahowpmpIO%n_x,NoahowpmpIO%n_y))
-
   end subroutine
 
-  subroutine LevelsTypeDefault(Noahowp)
+  subroutine LevelsTypeDefault(NoahowpmpIO)
 
     implicit none
     type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
 
-    NoahowpmpIO%nsoil(:,:)    = huge(1)
-    NoahowpmpIO%nsnow(:,:)    = huge(1)
-    NoahowpmpIO%nveg(:,:)     = huge(1)
+    NoahowpmpIO%nsoil    = huge(1)
+    NoahowpmpIO%nsnow    = huge(1)
+    NoahowpmpIO%nveg     = huge(1)
 
   end subroutine
 
-  subroutine ForcingTypeAllocate(Noahowp)
+  subroutine ForcingTypeAllocate(NoahowpmpIO)
 
     implicit none
     type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
@@ -543,12 +543,18 @@ module NoahmpIOVarInitModule
     implicit none
     type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
 
+    associate(n_x   => NoahowpmpIO%n_x,   &
+              n_y   => NoahowpmpIO%n_y,   &
+              nsoil => NoahowpmpIO%nsoil, &
+              nsnow => NoahowpmpIO%nsnow  &
+             )
+
     if(.NOT.allocated(NoahowpmpIO%ALB)) allocate(NoahowpmpIO%ALB(NoahowpmpIO%n_x,NoahowpmpIO%n_y))
     if(.NOT.allocated(NoahowpmpIO%ALBD)) allocate(NoahowpmpIO%ALBD(NoahowpmpIO%n_x,NoahowpmpIO%n_y,2))
     if(.NOT.allocated(NoahowpmpIO%ALBGRD)) allocate(NoahowpmpIO%ALBGRD(NoahowpmpIO%n_x,NoahowpmpIO%n_y,2))
     if(.NOT.allocated(NoahowpmpIO%ALBGRI)) allocate(NoahowpmpIO%ALBGRI(NoahowpmpIO%n_x,NoahowpmpIO%n_y,2))
     if(.NOT.allocated(NoahowpmpIO%ALBI)) allocate(NoahowpmpIO%ALBI(NoahowpmpIO%n_x,NoahowpmpIO%n_y,2))
-    if(.NOT.allocated(NoahowpmpIO%ALBOLD)) allocate(NoahowpmpIO%ALBOLD(NoahowpmpIO%n_x,NoahowpmpIO%n_y,2))
+    if(.NOT.allocated(NoahowpmpIO%ALBOLD)) allocate(NoahowpmpIO%ALBOLD(NoahowpmpIO%n_x,NoahowpmpIO%n_y))
     if(.NOT.allocated(NoahowpmpIO%ALBSND)) allocate(NoahowpmpIO%ALBSND(NoahowpmpIO%n_x,NoahowpmpIO%n_y,2))
     if(.NOT.allocated(NoahowpmpIO%ALBSNI)) allocate(NoahowpmpIO%ALBSNI(NoahowpmpIO%n_x,NoahowpmpIO%n_y,2))
     if(.NOT.allocated(NoahowpmpIO%APAR)) allocate(NoahowpmpIO%APAR(NoahowpmpIO%n_x,NoahowpmpIO%n_y))
@@ -673,18 +679,23 @@ module NoahmpIOVarInitModule
     if(.NOT.allocated(NoahowpmpIO%ZLVL)) allocate(NoahowpmpIO%ZLVL(NoahowpmpIO%n_x,NoahowpmpIO%n_y))
     if(.NOT.allocated(NoahowpmpIO%ZPD)) allocate(NoahowpmpIO%ZPD(NoahowpmpIO%n_x,NoahowpmpIO%n_y))
 
+    end associate
+
   end subroutine EnergyTypeAllocate
 
-  subroutine EnergyTypeDefault
+  subroutine EnergyTypeDefault(NoahowpmpIO)
+
+    implicit none
+    type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
 
     NoahowpmpIO%ALB(:,:) = huge(1.0)
-    NoahowpmpIO%ALBD(:,:) = huge(1.0)
-    NoahowpmpIO%ALBGRD(:,:) = huge(1.0)
-    NoahowpmpIO%ALBGRI(:,:) = huge(1.0)
-    NoahowpmpIO%ALBI(:,:) = huge(1.0)
+    NoahowpmpIO%ALBD(:,:,:) = huge(1.0)
+    NoahowpmpIO%ALBGRD(:,:,:) = huge(1.0)
+    NoahowpmpIO%ALBGRI(:,:,:) = huge(1.0)
+    NoahowpmpIO%ALBI(:,:,:) = huge(1.0)
     NoahowpmpIO%ALBOLD(:,:) = huge(1.0)
-    NoahowpmpIO%ALBSND(:,:) = huge(1.0)
-    NoahowpmpIO%ALBSNI(:,:) = huge(1.0)
+    NoahowpmpIO%ALBSND(:,:,:) = huge(1.0)
+    NoahowpmpIO%ALBSNI(:,:,:) = huge(1.0)
     NoahowpmpIO%APAR(:,:) = huge(1.0)
     NoahowpmpIO%BGAP(:,:) = huge(1.0)
     NoahowpmpIO%CAH2(:,:) = huge(1.0)
@@ -709,18 +720,18 @@ module NoahmpIOVarInitModule
     NoahowpmpIO%EVB(:,:) = huge(1.0)
     NoahowpmpIO%EVC(:,:) = huge(1.0)
     NoahowpmpIO%EVG(:,:) = huge(1.0)
-    NoahowpmpIO%FABD(:,:) = huge(1.0)
-    NoahowpmpIO%FABI(:,:) = huge(1.0)
+    NoahowpmpIO%FABD(:,:,:) = huge(1.0)
+    NoahowpmpIO%FABI(:,:,:) = huge(1.0)
     NoahowpmpIO%FACT(:,:,:) = huge(1.0)
     NoahowpmpIO%FAGE(:,:) = huge(1.0)
     NoahowpmpIO%FCEV(:,:) = huge(1.0)
     NoahowpmpIO%FCTR(:,:) = huge(1.0)
     NoahowpmpIO%FGEV(:,:) = huge(1.0)
     NoahowpmpIO%FIRA(:,:) = huge(1.0)
-    NoahowpmpIO%FREGD(:,:) = huge(1.0)
-    NoahowpmpIO%FREGI(:,:) = huge(1.0)
-    NoahowpmpIO%FREVD(:,:) = huge(1.0)
-    NoahowpmpIO%FREVI(:,:) = huge(1.0)
+    NoahowpmpIO%FREGD(:,:,:) = huge(1.0)
+    NoahowpmpIO%FREGI(:,:,:) = huge(1.0)
+    NoahowpmpIO%FREVD(:,:,:) = huge(1.0)
+    NoahowpmpIO%FREVI(:,:,:) = huge(1.0)
     NoahowpmpIO%FROZEN_CANOPY(:,:) = .FALSE.
     NoahowpmpIO%FROZEN_GROUND(:,:) = .FALSE.
     NoahowpmpIO%FSA(:,:) = huge(1.0)
@@ -730,10 +741,10 @@ module NoahmpIOVarInitModule
     NoahowpmpIO%FSRG(:,:) = huge(1.0)
     NoahowpmpIO%FSRV(:,:) = huge(1.0)
     NoahowpmpIO%FSUN(:,:) = huge(1.0)
-    NoahowpmpIO%FTDD(:,:) = huge(1.0)
-    NoahowpmpIO%FTDI(:,:) = huge(1.0)
-    NoahowpmpIO%FTID(:,:) = huge(1.0)
-    NoahowpmpIO%FTII(:,:) = huge(1.0)
+    NoahowpmpIO%FTDD(:,:,:) = huge(1.0)
+    NoahowpmpIO%FTDI(:,:,:) = huge(1.0)
+    NoahowpmpIO%FTID(:,:,:) = huge(1.0)
+    NoahowpmpIO%FTII(:,:,:) = huge(1.0)
     NoahowpmpIO%GAMMAG(:,:) = huge(1.0)
     NoahowpmpIO%GAMMAV(:,:) = huge(1.0)
     NoahowpmpIO%GH(:,:) = huge(1.0)
@@ -768,7 +779,7 @@ module NoahmpIOVarInitModule
     NoahowpmpIO%QMELT(:,:) = huge(1.0)
     NoahowpmpIO%QSFC(:,:) = huge(1.0)
     NoahowpmpIO%RB(:,:) = huge(1.0)
-    NoahowpmpIO%RHO(:,:) = huge(1.0)
+    NoahowpmpIO%RHO(:,:,:) = huge(1.0)
     NoahowpmpIO%RHSUR(:,:) = huge(1.0)
     NoahowpmpIO%RSSHA(:,:) = huge(1.0)
     NoahowpmpIO%RSSUN(:,:) = huge(1.0)
@@ -784,7 +795,7 @@ module NoahmpIOVarInitModule
     NoahowpmpIO%T2MB(:,:) = huge(1.0)
     NoahowpmpIO%T2MV(:,:) = huge(1.0)
     NoahowpmpIO%TAH(:,:) = huge(1.0)
-    NoahowpmpIO%TAU(:,:) = huge(1.0)
+    NoahowpmpIO%TAU(:,:,:) = huge(1.0)
     NoahowpmpIO%TAUSS(:,:) = huge(1.0)
     NoahowpmpIO%TAUX(:,:) = huge(1.0)
     NoahowpmpIO%TAUXB(:,:) = huge(1.0)
@@ -814,17 +825,26 @@ module NoahmpIOVarInitModule
     implicit none
     type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
 
-    if(.NOT.allocated(NoahowpmpIO%lat))             allocate(NoahowpmpIO%lat(NoahowpmpIO%n_x,NoahowpmpIO%n_y))
-    if(.NOT.allocated(NoahowpmpIO%lon))             allocate(NoahowpmpIO%lon(NoahowpmpIO%n_x,NoahowpmpIO%n_y))
-    if(.NOT.allocated(NoahowpmpIO%terrain_slope))   allocate(NoahowpmpIO%terrain_slope(NoahowpmpIO%n_x,NoahowpmpIO%n_y))
-    if(.NOT.allocated(NoahowpmpIO%azimuth))         allocate(NoahowpmpIO%azimuth(NoahowpmpIO%n_x,NoahowpmpIO%n_y))
-    if(.NOT.allocated(NoahowpmpIO%vegtyp))          allocate(NoahowpmpIO%vegtyp(NoahowpmpIO%n_x,NoahowpmpIO%n_y))
-    if(.NOT.allocated(NoahowpmpIO%isltyp))          allocate(NoahowpmpIO%isltyp(NoahowpmpIO%n_x,NoahowpmpIO%n_y))
-    if(.NOT.allocated(NoahowpmpIO%IST))             allocate(NoahowpmpIO%IST(NoahowpmpIO%n_x,NoahowpmpIO%n_y))
-    if(.NOT.allocated(NoahowpmpIO%croptype))        allocate(NoahowpmpIO%croptype(NoahowpmpIO%n_x,NoahowpmpIO%n_y))
-    if(.NOT.allocated(NoahowpmpIO%zsoil))           allocate(NoahowpmpIO%zsoil (NoahowpmpIO%n_x,NoahowpmpIO%n_y,NoahowpmpIO%nsoil))
-    if(.NOT.allocated(NoahowpmpIO%dzsnso))          allocate(NoahowpmpIO%dzsnso(NoahowpmpIO%n_x,NoahowpmpIO%n_y,-NoahowpmpIO%nsnow+1:NoahowpmpIO%nsoil))
-    if(.NOT.allocated(NoahowpmpIO%zsnso))           allocate(NoahowpmpIO%zsnso(NoahowpmpIO%n_x,NoahowpmpIO%n_y,-NoahowpmpIO%nsnow+1:NoahowpmpIO%nsoil))
+    associate(n_x   => NoahowpmpIO%n_x,   &
+              n_y   => NoahowpmpIO%n_y,   &
+              nsoil => NoahowpmpIO%nsoil, &
+              nsnow => NoahowpmpIO%nsnow  &
+             )
+
+    if(.NOT.allocated(NoahowpmpIO%lat))             allocate(NoahowpmpIO%lat(n_x,n_y))
+    if(.NOT.allocated(NoahowpmpIO%lon))             allocate(NoahowpmpIO%lon(n_x,n_y))
+    if(.NOT.allocated(NoahowpmpIO%terrain_slope))   allocate(NoahowpmpIO%terrain_slope(n_x,n_y))
+    if(.NOT.allocated(NoahowpmpIO%azimuth))         allocate(NoahowpmpIO%azimuth(n_x,n_y))
+    if(.NOT.allocated(NoahowpmpIO%vegtyp))          allocate(NoahowpmpIO%vegtyp(n_x,n_y))
+    if(.NOT.allocated(NoahowpmpIO%isltyp))          allocate(NoahowpmpIO%isltyp(n_x,n_y))
+    if(.NOT.allocated(NoahowpmpIO%IST))             allocate(NoahowpmpIO%IST(n_x,n_y))
+    if(.NOT.allocated(NoahowpmpIO%croptype))        allocate(NoahowpmpIO%croptype(n_x,n_y))
+    if(.NOT.allocated(NoahowpmpIO%soilcolor))       allocate(NoahowpmpIO%soilcolor(n_x,n_y))
+    if(.NOT.allocated(NoahowpmpIO%zsoil))           allocate(NoahowpmpIO%zsoil(n_x,n_y,nsoil))
+    if(.NOT.allocated(NoahowpmpIO%dzsnso))          allocate(NoahowpmpIO%dzsnso(n_x,n_y,-nsnow+1:nsoil))
+    if(.NOT.allocated(NoahowpmpIO%zsnso))           allocate(NoahowpmpIO%zsnso(n_x,n_y,-nsnow+1:nsoil))
+
+    end associate
 
   end subroutine DomainTypeAllocate
 
@@ -845,8 +865,6 @@ module NoahmpIOVarInitModule
     NoahowpmpIO%time_dbl              = huge(1.d0)
     NoahowpmpIO%ix                    = huge(1)
     NoahowpmpIO%iy                    = huge(1)
-    NoahowpmpIO%nx                    = huge(1)
-    NoahowpmpIO%ny                    = huge(1)
     NoahowpmpIO%lat(:,:)              = huge(1.0)             
     NoahowpmpIO%lon(:,:)              = huge(1.0)           
     NoahowpmpIO%ZREF(:,:)             = huge(1.0)       
@@ -855,11 +873,402 @@ module NoahmpIOVarInitModule
     NoahowpmpIO%vegtyp(:,:)           = huge(1)          
     NoahowpmpIO%croptype(:,:)         = huge(1)   
     NoahowpmpIO%isltyp(:,:)           = huge(1)  
-    NoahowpmpIO%IST(:,:)              = huge(1)          
+    NoahowpmpIO%IST(:,:)              = huge(1)
+    NoahowpmpIO%soilcolor(:,:)        = huge(1)          
     NoahowpmpIO%zsoil(:,:,:)          = huge(1.0)           
     NoahowpmpIO%dzsnso(:,:,:)         = huge(1.0)             
     NoahowpmpIO%zsnso(:,:,:)          = huge(1.0)          
 
   end subroutine DomainTypeDefault
 
-end module NoahmpIOVarInitModule
+  subroutine TableVarsAllocate(NoahowpmpIO)
+
+    implicit none
+    type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
+
+    associate(MVT => NoahowpmpIO%MVT, &
+              MBAND => NoahowpmpIO%MBAND, &
+              MAX_SOILTYP => NoahowpmpIO%MAX_SOILTYP, &
+              NCROP => NoahowpmpIO%NCROP, &
+              MSC => NoahowpmpIO%MSC, &
+              NSTAGE => NoahowpmpIO%NSTAGE &
+             )
+
+    if(.NOT.allocated(NoahowpmpIO%CH2OP_TABLE)) allocate(NoahowpmpIO%CH2OP_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%DLEAF_TABLE)) allocate(NoahowpmpIO%DLEAF_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%Z0MVT_TABLE)) allocate(NoahowpmpIO%Z0MVT_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%HVT_TABLE)) allocate(NoahowpmpIO%HVT_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%HVB_TABLE)) allocate(NoahowpmpIO%HVB_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%DEN_TABLE)) allocate(NoahowpmpIO%DEN_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%RC_TABLE)) allocate(NoahowpmpIO%RC_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%MFSNO_TABLE)) allocate(NoahowpmpIO%MFSNO_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%SCFFAC_TABLE)) allocate(NoahowpmpIO%SCFFAC_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%SAIM_TABLE)) allocate(NoahowpmpIO%SAIM_TABLE(MVT,12))
+    if(.NOT.allocated(NoahowpmpIO%LAIM_TABLE)) allocate(NoahowpmpIO%LAIM_TABLE(MVT,12))
+    if(.NOT.allocated(NoahowpmpIO%SLA_TABLE)) allocate(NoahowpmpIO%SLA_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%DILEFC_TABLE)) allocate(NoahowpmpIO%DILEFC_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%DILEFW_TABLE)) allocate(NoahowpmpIO%DILEFW_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%FRAGR_TABLE)) allocate(NoahowpmpIO%FRAGR_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%LTOVRC_TABLE)) allocate(NoahowpmpIO%LTOVRC_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%C3PSN_TABLE)) allocate(NoahowpmpIO%C3PSN_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%KC25_TABLE)) allocate(NoahowpmpIO%KC25_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%AKC_TABLE)) allocate(NoahowpmpIO%AKC_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%KO25_TABLE)) allocate(NoahowpmpIO%KO25_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%AKO_TABLE)) allocate(NoahowpmpIO%AKO_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%VCMX25_TABLE)) allocate(NoahowpmpIO%VCMX25_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%AVCMX_TABLE)) allocate(NoahowpmpIO%AVCMX_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%BP_TABLE)) allocate(NoahowpmpIO%BP_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%MP_TABLE)) allocate(NoahowpmpIO%MP_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%QE25_TABLE)) allocate(NoahowpmpIO%QE25_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%AQE_TABLE)) allocate(NoahowpmpIO%AQE_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%RMF25_TABLE)) allocate(NoahowpmpIO%RMF25_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%RMS25_TABLE)) allocate(NoahowpmpIO%RMS25_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%RMR25_TABLE)) allocate(NoahowpmpIO%RMR25_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%ARM_TABLE)) allocate(NoahowpmpIO%ARM_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%FOLNMX_TABLE)) allocate(NoahowpmpIO%FOLNMX_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%TMIN_TABLE)) allocate(NoahowpmpIO%TMIN_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%XL_TABLE)) allocate(NoahowpmpIO%XL_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%RHOL_TABLE)) allocate(NoahowpmpIO%RHOL_TABLE(MVT,MBAND))
+    if(.NOT.allocated(NoahowpmpIO%RHOS_TABLE)) allocate(NoahowpmpIO%RHOS_TABLE(MVT,MBAND))
+    if(.NOT.allocated(NoahowpmpIO%TAUL_TABLE)) allocate(NoahowpmpIO%TAUL_TABLE(MVT,MBAND))
+    if(.NOT.allocated(NoahowpmpIO%TAUS_TABLE)) allocate(NoahowpmpIO%TAUS_TABLE(MVT,MBAND))
+    if(.NOT.allocated(NoahowpmpIO%MRP_TABLE)) allocate(NoahowpmpIO%MRP_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%CWPVT_TABLE)) allocate(NoahowpmpIO%CWPVT_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%WRRAT_TABLE)) allocate(NoahowpmpIO%WRRAT_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%WDPOOL_TABLE)) allocate(NoahowpmpIO%WDPOOL_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%TDLEF_TABLE)) allocate(NoahowpmpIO%TDLEF_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%SHDFAC_TABLE)) allocate(NoahowpmpIO%SHDFAC_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%NROOT_TABLE)) allocate(NoahowpmpIO%NROOT_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%RGL_TABLE)) allocate(NoahowpmpIO%RGL_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%RS_TABLE)) allocate(NoahowpmpIO%RS_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%HS_TABLE)) allocate(NoahowpmpIO%HS_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%TOPT_TABLE)) allocate(NoahowpmpIO%TOPT_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%RSMAX_TABLE)) allocate(NoahowpmpIO%RSMAX_TABLE(MVT))
+    if(.NOT.allocated(NoahowpmpIO%BEXP_TABLE)) allocate(NoahowpmpIO%BEXP_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%SMCDRY_TABLE)) allocate(NoahowpmpIO%SMCDRY_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%F1_TABLE)) allocate(NoahowpmpIO%F1_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%SMCMAX_TABLE)) allocate(NoahowpmpIO%SMCMAX_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%SMCREF_TABLE)) allocate(NoahowpmpIO%SMCREF_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%PSISAT_TABLE)) allocate(NoahowpmpIO%PSISAT_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%DKSAT_TABLE)) allocate(NoahowpmpIO%DKSAT_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%DWSAT_TABLE)) allocate(NoahowpmpIO%DWSAT_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%SMCWLT_TABLE)) allocate(NoahowpmpIO%SMCWLT_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%QUARTZ_TABLE)) allocate(NoahowpmpIO%QUARTZ_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%BVIC_TABLE)) allocate(NoahowpmpIO%BVIC_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%AXAJ_TABLE)) allocate(NoahowpmpIO%AXAJ_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%BXAJ_TABLE)) allocate(NoahowpmpIO%BXAJ_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%XXAJ_TABLE)) allocate(NoahowpmpIO%XXAJ_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%BDVIC_TABLE)) allocate(NoahowpmpIO%BDVIC_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%GDVIC_TABLE)) allocate(NoahowpmpIO%GDVIC_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%BBVIC_TABLE)) allocate(NoahowpmpIO%BBVIC_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%SLOPE_TABLE)) allocate(NoahowpmpIO%SLOPE_TABLE(9))
+    if(.NOT.allocated(NoahowpmpIO%ALBSAT_TABLE)) allocate(NoahowpmpIO%ALBSAT_TABLE(MSC,MBAND))
+    if(.NOT.allocated(NoahowpmpIO%ALBDRY_TABLE)) allocate(NoahowpmpIO%ALBDRY_TABLE(MSC,MBAND))
+    if(.NOT.allocated(NoahowpmpIO%ALBICE_TABLE)) allocate(NoahowpmpIO%ALBICE_TABLE(MBAND))
+    if(.NOT.allocated(NoahowpmpIO%ALBLAK_TABLE)) allocate(NoahowpmpIO%ALBLAK_TABLE(MBAND))
+    if(.NOT.allocated(NoahowpmpIO%OMEGAS_TABLE)) allocate(NoahowpmpIO%OMEGAS_TABLE(MBAND))
+    if(.NOT.allocated(NoahowpmpIO%EG_TABLE)) allocate(NoahowpmpIO%EG_TABLE(2))
+    if(.NOT.allocated(NoahowpmpIO%PLTDAY_TABLE)) allocate(NoahowpmpIO%PLTDAY_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%HSDAY_TABLE)) allocate(NoahowpmpIO%HSDAY_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%PLANTPOP_TABLE)) allocate(NoahowpmpIO%PLANTPOP_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%IRRI_TABLE)) allocate(NoahowpmpIO%IRRI_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%GDDTBASE_TABLE)) allocate(NoahowpmpIO%GDDTBASE_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%GDDTCUT_TABLE)) allocate(NoahowpmpIO%GDDTCUT_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%GDDS1_TABLE)) allocate(NoahowpmpIO%GDDS1_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%GDDS2_TABLE)) allocate(NoahowpmpIO%GDDS2_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%GDDS3_TABLE)) allocate(NoahowpmpIO%GDDS3_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%GDDS4_TABLE)) allocate(NoahowpmpIO%GDDS4_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%GDDS5_TABLE)) allocate(NoahowpmpIO%GDDS5_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%C3PSNI_TABLE)) allocate(NoahowpmpIO%C3PSNI_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%KC25I_TABLE)) allocate(NoahowpmpIO%KC25I_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%AKCI_TABLE)) allocate(NoahowpmpIO%AKCI_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%KO25I_TABLE)) allocate(NoahowpmpIO%KO25I_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%AKOI_TABLE)) allocate(NoahowpmpIO%AKOI_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%VCMX25I_TABLE)) allocate(NoahowpmpIO%VCMX25I_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%AVCMXI_TABLE)) allocate(NoahowpmpIO%AVCMXI_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%BPI_TABLE)) allocate(NoahowpmpIO%BPI_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%MPI_TABLE)) allocate(NoahowpmpIO%MPI_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%QE25I_TABLE)) allocate(NoahowpmpIO%QE25I_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%FOLNMXI_TABLE)) allocate(NoahowpmpIO%FOLNMXI_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%C3C4_TABLE)) allocate(NoahowpmpIO%C3C4_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%AREF_TABLE)) allocate(NoahowpmpIO%AREF_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%PSNRF_TABLE)) allocate(NoahowpmpIO%PSNRF_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%I2PAR_TABLE)) allocate(NoahowpmpIO%I2PAR_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%TASSIM0_TABLE)) allocate(NoahowpmpIO%TASSIM0_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%TASSIM1_TABLE)) allocate(NoahowpmpIO%TASSIM1_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%TASSIM2_TABLE)) allocate(NoahowpmpIO%TASSIM2_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%K_TABLE)) allocate(NoahowpmpIO%K_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%EPSI_TABLE)) allocate(NoahowpmpIO%EPSI_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%Q10MR_TABLE)) allocate(NoahowpmpIO%Q10MR_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%FOLN_MX_TABLE)) allocate(NoahowpmpIO%FOLN_MX_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%LEFREEZ_TABLE)) allocate(NoahowpmpIO%LEFREEZ_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%DILE_FC_TABLE)) allocate(NoahowpmpIO%DILE_FC_TABLE(NCROP,NSTAGE))
+    if(.NOT.allocated(NoahowpmpIO%DILE_FW_TABLE)) allocate(NoahowpmpIO%DILE_FW_TABLE(NCROP,NSTAGE))
+    if(.NOT.allocated(NoahowpmpIO%FRA_GR_TABLE)) allocate(NoahowpmpIO%FRA_GR_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%LF_OVRC_TABLE)) allocate(NoahowpmpIO%LF_OVRC_TABLE(NCROP,NSTAGE))
+    if(.NOT.allocated(NoahowpmpIO%ST_OVRC_TABLE)) allocate(NoahowpmpIO%ST_OVRC_TABLE(NCROP,NSTAGE))
+    if(.NOT.allocated(NoahowpmpIO%RT_OVRC_TABLE)) allocate(NoahowpmpIO%RT_OVRC_TABLE(NCROP,NSTAGE))
+    if(.NOT.allocated(NoahowpmpIO%LFMR25_TABLE)) allocate(NoahowpmpIO%LFMR25_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%STMR25_TABLE)) allocate(NoahowpmpIO%STMR25_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%RTMR25_TABLE)) allocate(NoahowpmpIO%RTMR25_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%GRAINMR25_TABLE)) allocate(NoahowpmpIO%GRAINMR25_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%LFPT_TABLE)) allocate(NoahowpmpIO%LFPT_TABLE(NCROP,NSTAGE))
+    if(.NOT.allocated(NoahowpmpIO%STPT_TABLE)) allocate(NoahowpmpIO%STPT_TABLE(NCROP,NSTAGE))
+    if(.NOT.allocated(NoahowpmpIO%RTPT_TABLE)) allocate(NoahowpmpIO%RTPT_TABLE(NCROP,NSTAGE))
+    if(.NOT.allocated(NoahowpmpIO%GRAINPT_TABLE)) allocate(NoahowpmpIO%GRAINPT_TABLE(NCROP,NSTAGE))
+    if(.NOT.allocated(NoahowpmpIO%LFCT_TABLE)) allocate(NoahowpmpIO%LFCT_TABLE(NCROP,NSTAGE))
+    if(.NOT.allocated(NoahowpmpIO%STCT_TABLE)) allocate(NoahowpmpIO%STCT_TABLE(NCROP,NSTAGE))
+    if(.NOT.allocated(NoahowpmpIO%RTCT_TABLE)) allocate(NoahowpmpIO%RTCT_TABLE(NCROP,NSTAGE))
+    if(.NOT.allocated(NoahowpmpIO%BIO2LAI_TABLE)) allocate(NoahowpmpIO%BIO2LAI_TABLE(NCROP))
+    if(.NOT.allocated(NoahowpmpIO%TDSMCFAC_TABLE)) allocate(NoahowpmpIO%TDSMCFAC_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%TD_DC_TABLE)) allocate(NoahowpmpIO%TD_DC_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%TD_DEPTH_TABLE)) allocate(NoahowpmpIO%TD_DEPTH_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%TD_DCOEF_TABLE)) allocate(NoahowpmpIO%TD_DCOEF_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%TD_D_TABLE)) allocate(NoahowpmpIO%TD_D_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%TD_ADEPTH_TABLE)) allocate(NoahowpmpIO%TD_ADEPTH_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%TD_RADI_TABLE)) allocate(NoahowpmpIO%TD_RADI_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%TD_SPAC_TABLE)) allocate(NoahowpmpIO%TD_SPAC_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%TD_DDRAIN_TABLE)) allocate(NoahowpmpIO%TD_DDRAIN_TABLE(MAX_SOILTYP))
+    if(.NOT.allocated(NoahowpmpIO%KLAT_FAC_TABLE)) allocate(NoahowpmpIO%KLAT_FAC_TABLE(MAX_SOILTYP))  
+
+    end associate
+
+  end subroutine TableVarsAllocate
+
+  subroutine TableVarsDefault(NoahowpmpIO)
+
+    implicit none
+    type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO        
+
+    NoahowpmpIO%ISURBAN_TABLE = huge(1)
+    NoahowpmpIO%ISWATER_TABLE = huge(1)
+    NoahowpmpIO%ISBARREN_TABLE = huge(1)
+    NoahowpmpIO%ISICE_TABLE = huge(1)
+    NoahowpmpIO%ISCROP_TABLE = huge(1)
+    NoahowpmpIO%EBLFOREST_TABLE = huge(1)
+    NoahowpmpIO%NATURAL_TABLE = huge(1)
+    NoahowpmpIO%LCZ_1_TABLE = huge(1)
+    NoahowpmpIO%LCZ_2_TABLE = huge(1)
+    NoahowpmpIO%LCZ_3_TABLE = huge(1)
+    NoahowpmpIO%LCZ_4_TABLE = huge(1)
+    NoahowpmpIO%LCZ_5_TABLE = huge(1)
+    NoahowpmpIO%LCZ_6_TABLE = huge(1)
+    NoahowpmpIO%LCZ_7_TABLE = huge(1)
+    NoahowpmpIO%LCZ_8_TABLE = huge(1)
+    NoahowpmpIO%LCZ_9_TABLE = huge(1)
+    NoahowpmpIO%LCZ_10_TABLE = huge(1)
+    NoahowpmpIO%LCZ_11_TABLE = huge(1)
+    NoahowpmpIO%CH2OP_TABLE(:) = huge(1.0)
+    NoahowpmpIO%DLEAF_TABLE(:) = huge(1.0)
+    NoahowpmpIO%Z0MVT_TABLE(:) = huge(1.0)
+    NoahowpmpIO%HVT_TABLE(:) = huge(1.0)
+    NoahowpmpIO%HVB_TABLE(:) = huge(1.0)
+    NoahowpmpIO%DEN_TABLE(:) = huge(1.0)
+    NoahowpmpIO%RC_TABLE(:) = huge(1.0)
+    NoahowpmpIO%MFSNO_TABLE(:) = huge(1.0)
+    NoahowpmpIO%SCFFAC_TABLE(:) = huge(1.0)
+    NoahowpmpIO%SAIM_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%LAIM_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%SLA_TABLE(:) = huge(1.0)
+    NoahowpmpIO%DILEFC_TABLE(:) = huge(1.0)
+    NoahowpmpIO%DILEFW_TABLE(:) = huge(1.0)
+    NoahowpmpIO%FRAGR_TABLE(:) = huge(1.0)
+    NoahowpmpIO%LTOVRC_TABLE(:) = huge(1.0)
+    NoahowpmpIO%C3PSN_TABLE(:) = huge(1.0)
+    NoahowpmpIO%KC25_TABLE(:) = huge(1.0)
+    NoahowpmpIO%AKC_TABLE(:) = huge(1.0)
+    NoahowpmpIO%KO25_TABLE(:) = huge(1.0)
+    NoahowpmpIO%AKO_TABLE(:) = huge(1.0)
+    NoahowpmpIO%VCMX25_TABLE(:) = huge(1.0)
+    NoahowpmpIO%AVCMX_TABLE(:) = huge(1.0)
+    NoahowpmpIO%BP_TABLE(:) = huge(1.0)
+    NoahowpmpIO%MP_TABLE(:) = huge(1.0)
+    NoahowpmpIO%QE25_TABLE(:) = huge(1.0)
+    NoahowpmpIO%AQE_TABLE(:) = huge(1.0)
+    NoahowpmpIO%RMF25_TABLE(:) = huge(1.0)
+    NoahowpmpIO%RMS25_TABLE(:) = huge(1.0)
+    NoahowpmpIO%RMR25_TABLE(:) = huge(1.0)
+    NoahowpmpIO%ARM_TABLE(:) = huge(1.0)
+    NoahowpmpIO%FOLNMX_TABLE(:) = huge(1.0)
+    NoahowpmpIO%TMIN_TABLE(:) = huge(1.0)
+    NoahowpmpIO%XL_TABLE(:) = huge(1.0)
+    NoahowpmpIO%RHOL_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%RHOS_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%TAUL_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%TAUS_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%MRP_TABLE(:) = huge(1.0)
+    NoahowpmpIO%CWPVT_TABLE(:) = huge(1.0)
+    NoahowpmpIO%WRRAT_TABLE(:) = huge(1.0)
+    NoahowpmpIO%WDPOOL_TABLE(:) = huge(1.0)
+    NoahowpmpIO%TDLEF_TABLE(:) = huge(1.0)
+    NoahowpmpIO%SHDFAC_TABLE(:) = huge(1.0)
+    NoahowpmpIO%NROOT_TABLE(:) = huge(1.0)
+    NoahowpmpIO%RGL_TABLE(:) = huge(1.0)
+    NoahowpmpIO%RS_TABLE(:) = huge(1.0)
+    NoahowpmpIO%HS_TABLE(:) = huge(1.0)
+    NoahowpmpIO%TOPT_TABLE(:) = huge(1.0)
+    NoahowpmpIO%RSMAX_TABLE(:) = huge(1.0)
+    NoahowpmpIO%SLCATS = huge(1)
+    NoahowpmpIO%BEXP_TABLE(:) = huge(1.0)
+    NoahowpmpIO%SMCDRY_TABLE(:) = huge(1.0)
+    NoahowpmpIO%F1_TABLE(:) = huge(1.0)
+    NoahowpmpIO%SMCMAX_TABLE(:) = huge(1.0)
+    NoahowpmpIO%SMCREF_TABLE(:) = huge(1.0)
+    NoahowpmpIO%PSISAT_TABLE(:) = huge(1.0)
+    NoahowpmpIO%DKSAT_TABLE(:) = huge(1.0)
+    NoahowpmpIO%DWSAT_TABLE(:) = huge(1.0)
+    NoahowpmpIO%SMCWLT_TABLE(:) = huge(1.0)
+    NoahowpmpIO%QUARTZ_TABLE(:) = huge(1.0)
+    NoahowpmpIO%BVIC_TABLE(:) = huge(1.0)
+    NoahowpmpIO%AXAJ_TABLE(:) = huge(1.0)
+    NoahowpmpIO%BXAJ_TABLE(:) = huge(1.0)
+    NoahowpmpIO%XXAJ_TABLE(:) = huge(1.0)
+    NoahowpmpIO%BDVIC_TABLE(:) = huge(1.0)
+    NoahowpmpIO%GDVIC_TABLE(:) = huge(1.0)
+    NoahowpmpIO%BBVIC_TABLE(:) = huge(1.0)
+    NoahowpmpIO%SLOPE_TABLE(:) = huge(1.0)
+    NoahowpmpIO%CSOIL_TABLE = huge(1.0)
+    NoahowpmpIO%REFDK_TABLE = huge(1.0)
+    NoahowpmpIO%REFKDT_TABLE = huge(1.0)
+    NoahowpmpIO%FRZK_TABLE = huge(1.0)
+    NoahowpmpIO%ZBOT_TABLE = huge(1.0)
+    NoahowpmpIO%CZIL_TABLE = huge(1.0)
+    NoahowpmpIO%Z0_TABLE = huge(1.0)
+    NoahowpmpIO%ALBSAT_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%ALBDRY_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%ALBICE_TABLE(:) = huge(1.0)
+    NoahowpmpIO%ALBLAK_TABLE(:) = huge(1.0)
+    NoahowpmpIO%OMEGAS_TABLE(:) = huge(1.0)
+    NoahowpmpIO%BETADS_TABLE = huge(1.0)
+    NoahowpmpIO%BETAIS_TABLE = huge(1.0)
+    NoahowpmpIO%EG_TABLE(:) = huge(1.0)
+    NoahowpmpIO%CO2_TABLE = huge(1.0)
+    NoahowpmpIO%O2_TABLE = huge(1.0)
+    NoahowpmpIO%TIMEAN_TABLE = huge(1.0)
+    NoahowpmpIO%FSATMX_TABLE = huge(1.0)
+    NoahowpmpIO%Z0SNO_TABLE = huge(1.0)
+    NoahowpmpIO%SSI_TABLE = huge(1.0)
+    NoahowpmpIO%SNOW_RET_FAC_TABLE = huge(1.0)
+    NoahowpmpIO%SNOW_EMIS_TABLE = huge(1.0)
+    NoahowpmpIO%SWEMX_TABLE = huge(1.0)
+    NoahowpmpIO%TAU0_TABLE = huge(1.0)
+    NoahowpmpIO%GRAIN_GROWTH_TABLE = huge(1.0)
+    NoahowpmpIO%EXTRA_GROWTH_TABLE = huge(1.0)
+    NoahowpmpIO%DIRT_SOOT_TABLE = huge(1.0)
+    NoahowpmpIO%BATS_COSZ_TABLE = huge(1.0)
+    NoahowpmpIO%BATS_VIS_NEW_TABLE = huge(1.0)
+    NoahowpmpIO%BATS_NIR_NEW_TABLE = huge(1.0)
+    NoahowpmpIO%BATS_VIS_AGE_TABLE = huge(1.0)
+    NoahowpmpIO%BATS_NIR_AGE_TABLE = huge(1.0)
+    NoahowpmpIO%BATS_VIS_DIR_TABLE = huge(1.0)
+    NoahowpmpIO%BATS_NIR_DIR_TABLE = huge(1.0)
+    NoahowpmpIO%RSURF_SNOW_TABLE = huge(1.0)
+    NoahowpmpIO%RSURF_EXP_TABLE = huge(1.0)
+    NoahowpmpIO%DEFAULT_CROP_TABLE = huge(1)
+    NoahowpmpIO%PLTDAY_TABLE(:) = huge(1)
+    NoahowpmpIO%HSDAY_TABLE(:) = huge(1)
+    NoahowpmpIO%PLANTPOP_TABLE(:) = huge(1.0)
+    NoahowpmpIO%IRRI_TABLE(:) = huge(1.0)
+    NoahowpmpIO%GDDTBASE_TABLE(:) = huge(1.0)
+    NoahowpmpIO%GDDTCUT_TABLE(:) = huge(1.0)
+    NoahowpmpIO%GDDS1_TABLE(:) = huge(1.0)
+    NoahowpmpIO%GDDS2_TABLE(:) = huge(1.0)
+    NoahowpmpIO%GDDS3_TABLE(:) = huge(1.0)
+    NoahowpmpIO%GDDS4_TABLE(:) = huge(1.0)
+    NoahowpmpIO%GDDS5_TABLE(:) = huge(1.0)
+    NoahowpmpIO%C3PSNI_TABLE(:) = huge(1.0)
+    NoahowpmpIO%KC25I_TABLE(:) = huge(1.0)
+    NoahowpmpIO%AKCI_TABLE(:) = huge(1.0)
+    NoahowpmpIO%KO25I_TABLE(:) = huge(1.0)
+    NoahowpmpIO%AKOI_TABLE(:) = huge(1.0)
+    NoahowpmpIO%VCMX25I_TABLE(:) = huge(1.0)
+    NoahowpmpIO%AVCMXI_TABLE(:) = huge(1.0)
+    NoahowpmpIO%BPI_TABLE(:) = huge(1.0)
+    NoahowpmpIO%MPI_TABLE(:) = huge(1.0)
+    NoahowpmpIO%QE25I_TABLE(:) = huge(1.0)
+    NoahowpmpIO%FOLNMXI_TABLE(:) = huge(1.0)
+    NoahowpmpIO%C3C4_TABLE(:) = huge(1)
+    NoahowpmpIO%AREF_TABLE(:) = huge(1.0)
+    NoahowpmpIO%PSNRF_TABLE(:) = huge(1.0)
+    NoahowpmpIO%I2PAR_TABLE(:) = huge(1.0)
+    NoahowpmpIO%TASSIM0_TABLE(:) = huge(1.0)
+    NoahowpmpIO%TASSIM1_TABLE(:) = huge(1.0)
+    NoahowpmpIO%TASSIM2_TABLE(:) = huge(1.0)
+    NoahowpmpIO%K_TABLE(:) = huge(1.0)
+    NoahowpmpIO%EPSI_TABLE(:) = huge(1.0)
+    NoahowpmpIO%Q10MR_TABLE(:) = huge(1.0)
+    NoahowpmpIO%FOLN_MX_TABLE(:) = huge(1.0)
+    NoahowpmpIO%LEFREEZ_TABLE(:) = huge(1.0)
+    NoahowpmpIO%DILE_FC_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%DILE_FW_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%FRA_GR_TABLE(:) = huge(1.0)
+    NoahowpmpIO%LF_OVRC_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%ST_OVRC_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%RT_OVRC_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%LFMR25_TABLE(:) = huge(1.0)
+    NoahowpmpIO%STMR25_TABLE(:) = huge(1.0)
+    NoahowpmpIO%RTMR25_TABLE(:) = huge(1.0)
+    NoahowpmpIO%GRAINMR25_TABLE(:) = huge(1.0)
+    NoahowpmpIO%LFPT_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%STPT_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%RTPT_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%GRAINPT_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%LFCT_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%STCT_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%RTCT_TABLE(:,:) = huge(1.0)
+    NoahowpmpIO%BIO2LAI_TABLE(:) = huge(1.0)
+    NoahowpmpIO%TDSMCFAC_TABLE(:) = huge(1.0)
+    NoahowpmpIO%TD_DC_TABLE(:) = huge(1.0)
+    NoahowpmpIO%TD_DEPTH_TABLE(:) = huge(1)
+    NoahowpmpIO%DRAIN_LAYER_OPT_TABLE = huge(1)
+    NoahowpmpIO%TD_DCOEF_TABLE(:) = huge(1.0)
+    NoahowpmpIO%TD_D_TABLE(:) = huge(1.0)
+    NoahowpmpIO%TD_ADEPTH_TABLE(:) = huge(1.0)
+    NoahowpmpIO%TD_RADI_TABLE(:) = huge(1.0)
+    NoahowpmpIO%TD_SPAC_TABLE(:) = huge(1.0)
+    NoahowpmpIO%TD_DDRAIN_TABLE(:) = huge(1.0)
+    NoahowpmpIO%KLAT_FAC_TABLE(:) = huge(1.0)
+    NoahowpmpIO%sr2006_theta_1500t_a = huge(1.0)
+    NoahowpmpIO%sr2006_theta_1500t_b = huge(1.0)
+    NoahowpmpIO%sr2006_theta_1500t_c = huge(1.0)
+    NoahowpmpIO%sr2006_theta_1500t_d = huge(1.0)
+    NoahowpmpIO%sr2006_theta_1500t_e = huge(1.0)
+    NoahowpmpIO%sr2006_theta_1500t_f = huge(1.0)
+    NoahowpmpIO%sr2006_theta_1500t_g = huge(1.0)
+    NoahowpmpIO%sr2006_theta_1500_a = huge(1.0)
+    NoahowpmpIO%sr2006_theta_1500_b = huge(1.0)
+    NoahowpmpIO%sr2006_theta_33t_a = huge(1.0)
+    NoahowpmpIO%sr2006_theta_33t_b = huge(1.0)
+    NoahowpmpIO%sr2006_theta_33t_c = huge(1.0)
+    NoahowpmpIO%sr2006_theta_33t_d = huge(1.0)
+    NoahowpmpIO%sr2006_theta_33t_e = huge(1.0)
+    NoahowpmpIO%sr2006_theta_33t_f = huge(1.0)
+    NoahowpmpIO%sr2006_theta_33t_g = huge(1.0)
+    NoahowpmpIO%sr2006_theta_33_a = huge(1.0)
+    NoahowpmpIO%sr2006_theta_33_b = huge(1.0)
+    NoahowpmpIO%sr2006_theta_33_c = huge(1.0)
+    NoahowpmpIO%sr2006_theta_s33t_a = huge(1.0)
+    NoahowpmpIO%sr2006_theta_s33t_b = huge(1.0)
+    NoahowpmpIO%sr2006_theta_s33t_c = huge(1.0)
+    NoahowpmpIO%sr2006_theta_s33t_d = huge(1.0)
+    NoahowpmpIO%sr2006_theta_s33t_e = huge(1.0)
+    NoahowpmpIO%sr2006_theta_s33t_f = huge(1.0)
+    NoahowpmpIO%sr2006_theta_s33t_g = huge(1.0)
+    NoahowpmpIO%sr2006_theta_s33_a = huge(1.0)
+    NoahowpmpIO%sr2006_theta_s33_b = huge(1.0)
+    NoahowpmpIO%sr2006_psi_et_a = huge(1.0)
+    NoahowpmpIO%sr2006_psi_et_b = huge(1.0)
+    NoahowpmpIO%sr2006_psi_et_c = huge(1.0)
+    NoahowpmpIO%sr2006_psi_et_d = huge(1.0)
+    NoahowpmpIO%sr2006_psi_et_e = huge(1.0)
+    NoahowpmpIO%sr2006_psi_et_f = huge(1.0)
+    NoahowpmpIO%sr2006_psi_et_g = huge(1.0)
+    NoahowpmpIO%sr2006_psi_e_a = huge(1.0)
+    NoahowpmpIO%sr2006_psi_e_b = huge(1.0)
+    NoahowpmpIO%sr2006_psi_e_c = huge(1.0)
+    NoahowpmpIO%sr2006_smcmax_a = huge(1.0)
+    NoahowpmpIO%sr2006_smcmax_b = huge(1.0)
+    
+  end subroutine TableVarsDefault
+
+end module NoahowpmpIOTypeInitModule

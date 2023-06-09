@@ -1,4 +1,4 @@
-module NoahowpmpIOVarType
+module NoahowpmpIOType
 
   implicit none
   type, public :: NoahowpmpIO_type
@@ -19,13 +19,26 @@ module NoahowpmpIOVarType
   double precision                                  :: time_dbl          ! current time of model run in seconds from beginning
 
   !--------------------------------------------------------------------------------------------------------------
+  ! File and table names
+  !--------------------------------------------------------------------------------------------------------------
+
+  character(len=256) :: forcing_filename     ! directory/name of the input/forcing file
+  character(len=256) :: output_filename    ! directory/name of the output file
+  character(len=256) :: parameter_dir      ! name of the directory where parameter TBLs reside
+  character(len=256) :: noahowp_table       ! name of noahowp parameter table
+  character(len=256) :: soil_table         ! name of soil parameter table
+  character(len=256) :: general_table      ! name of general parameter table
+  character(len=256) :: soil_class_name    ! name of soil classification (STAS or STAS-RUC)
+  character(len=256) :: veg_class_name     ! name of vegetation classification (MODIFIED_IGBP_MODIS_NOAH or USGS)
+
+  !--------------------------------------------------------------------------------------------------------------
   ! DomainType
   !--------------------------------------------------------------------------------------------------------------
 
   integer                                           :: ix                !
   integer                                           :: iy                !
-  integer                                           :: nx                !
-  integer                                           :: ny                !
+  integer                                           :: n_x                !
+  integer                                           :: n_y                !
   real, allocatable, dimension(:,:)                 :: lat               ! latitude (°)
   real, allocatable, dimension(:,:)                 :: lon               ! longitude (°)
   real, allocatable, dimension(:,:)                 :: ZREF              ! measurement height of wind speed (m)
@@ -38,6 +51,7 @@ module NoahowpmpIOVarType
   real, allocatable, dimension(:,:,:)               :: zsoil             ! depth of layer-bottom from soil surface
   real, allocatable, dimension(:,:,:)               :: dzsnso            ! snow/soil layer thickness [m]
   real, allocatable, dimension(:,:,:)               :: zsnso             ! depth of snow/soil layer-bottom
+  integer, allocatable, dimension(:,:)              :: soilcolor         ! soil color
 
   !--------------------------------------------------------------------------------------------------------------
   ! EnergyType
@@ -232,9 +246,9 @@ module NoahowpmpIOVarType
   ! LevelsType
   !--------------------------------------------------------------------------------------------------------------
 
-  integer,allocatable,dimension(:,:)                :: nsoil  ! number of soil layers
-  integer,allocatable,dimension(:,:)                :: nsnow  ! number of snow layers
-  integer,allocatable,dimension(:,:)                :: nveg   ! number of vegetation types in chosen table
+  integer                                           :: nsoil  ! number of soil layers
+  integer                                           :: nsnow  ! number of snow layers
+  integer                                           :: nveg   ! number of vegetation types in chosen table
 
   !--------------------------------------------------------------------------------------------------------------
   ! OptionsType
@@ -393,10 +407,8 @@ module NoahowpmpIOVarType
   real                                              :: O2                        ! o2 partial pressure, from MPTABLE.TBL
   real                                              :: CO2                       ! co2 partial pressure, from MPTABLE.TBL
   real                                              :: PSIWLT                    ! matric potential for wilting point (m)  (orig a fixed param.)
-  real                                              :: TBOT                      ! bottom condition for soil temp. (k)
   real                                              :: GRAV                      ! acceleration due to gravity (m/s2)
   real                                              :: rain_snow_thresh          ! user-defined rain-snow temperature threshold (°C)
-  integer                                           :: ix,iy,iz
 
   !--------------------------------------------------------------------------------------------------------------
   ! WaterType
@@ -473,6 +485,297 @@ module NoahowpmpIOVarType
   real,allocatable,dimension(:,:)                             :: FSNO        ! fraction of grid cell with snow cover
   real,allocatable,dimension(:,:)                             :: BTRAN       ! soil water transpiration factor (0 to 1)  
 
+! MPTABLE.TBL vegetation parameters
+
+  integer :: ISURBAN_TABLE
+  integer :: ISWATER_TABLE
+  integer :: ISBARREN_TABLE
+  integer :: ISICE_TABLE
+  integer :: ISCROP_TABLE
+  integer :: EBLFOREST_TABLE
+  integer :: NATURAL_TABLE
+  integer :: LCZ_1_TABLE
+  integer :: LCZ_2_TABLE
+  integer :: LCZ_3_TABLE
+  integer :: LCZ_4_TABLE
+  integer :: LCZ_5_TABLE
+  integer :: LCZ_6_TABLE
+  integer :: LCZ_7_TABLE
+  integer :: LCZ_8_TABLE
+  integer :: LCZ_9_TABLE
+  integer :: LCZ_10_TABLE
+  integer :: LCZ_11_TABLE
+
+  real, allocatable, dimension(:)   :: CH2OP_TABLE       !maximum intercepted h2o per unit lai+sai (mm)
+  real, allocatable, dimension(:)   :: DLEAF_TABLE       !characteristic leaf dimension (m)
+  real, allocatable, dimension(:)   :: Z0MVT_TABLE       !momentum roughness length (m)
+  real, allocatable, dimension(:)   :: HVT_TABLE         !top of canopy (m)
+  real, allocatable, dimension(:)   :: HVB_TABLE         !bottom of canopy (m)
+  real, allocatable, dimension(:)   :: DEN_TABLE         !tree density (no. of trunks per m2)
+  real, allocatable, dimension(:)   :: RC_TABLE          !tree crown radius (m)
+  real, allocatable, dimension(:)   :: MFSNO_TABLE       !snowmelt curve parameter ()
+  real, allocatable, dimension(:)   :: SCFFAC_TABLE      !snow cover factor (m) (replace original hard-coded 2.5*z0 in SCF formulation)
+  real, allocatable, dimension(:,:) :: SAIM_TABLE      !monthly stem area index, one-sided
+  real, allocatable, dimension(:,:) :: LAIM_TABLE      !monthly leaf area index, one-sided
+  real, allocatable, dimension(:)   :: SLA_TABLE         !single-side leaf area per Kg [m2/kg]
+  real, allocatable, dimension(:)   :: DILEFC_TABLE      !coeficient for leaf stress death [1/s]
+  real, allocatable, dimension(:)   :: DILEFW_TABLE      !coeficient for leaf stress death [1/s]
+  real, allocatable, dimension(:)   :: FRAGR_TABLE       !fraction of growth respiration  !original was 0.3
+  real, allocatable, dimension(:)   :: LTOVRC_TABLE      !leaf turnover [1/s]
+
+  real, allocatable, dimension(:)   :: C3PSN_TABLE       !photosynthetic pathway: 0. = c4, 1. = c3
+  real, allocatable, dimension(:)   :: KC25_TABLE        !co2 michaelis-menten constant at 25c (pa)
+  real, allocatable, dimension(:)   :: AKC_TABLE         !q10 for kc25
+  real, allocatable, dimension(:)   :: KO25_TABLE        !o2 michaelis-menten constant at 25c (pa)
+  real, allocatable, dimension(:)   :: AKO_TABLE         !q10 for ko25
+  real, allocatable, dimension(:)   :: VCMX25_TABLE      !maximum rate of carboxylation at 25c (umol co2/m**2/s)
+  real, allocatable, dimension(:)   :: AVCMX_TABLE       !q10 for vcmx25
+  real, allocatable, dimension(:)   :: BP_TABLE          !minimum leaf conductance (umol/m**2/s)
+  real, allocatable, dimension(:)   :: MP_TABLE          !slope of conductance-to-photosynthesis relationship
+  real, allocatable, dimension(:)   :: QE25_TABLE        !quantum efficiency at 25c (umol co2 / umol photon)
+  real, allocatable, dimension(:)   :: AQE_TABLE         !q10 for qe25
+  real, allocatable, dimension(:)   :: RMF25_TABLE       !leaf maintenance respiration at 25c (umol co2/m**2/s)
+  real, allocatable, dimension(:)   :: RMS25_TABLE       !stem maintenance respiration at 25c (umol co2/kg bio/s)
+  real, allocatable, dimension(:)   :: RMR25_TABLE       !root maintenance respiration at 25c (umol co2/kg bio/s)
+  real, allocatable, dimension(:)   :: ARM_TABLE         !q10 for maintenance respiration
+  real, allocatable, dimension(:)   :: FOLNMX_TABLE      !foliage nitrogen concentration when f(n)=1 (%)
+  real, allocatable, dimension(:)   :: TMIN_TABLE        !minimum temperature for photosynthesis (k)
+
+  real, allocatable, dimension(:)     :: XL_TABLE          !leaf/stem orientation index
+  real, allocatable, dimension(:,:)   :: RHOL_TABLE  !leaf reflectance: 1=vis, 2=nir
+  real, allocatable, dimension(:,:)   :: RHOS_TABLE  !stem reflectance: 1=vis, 2=nir
+  real, allocatable, dimension(:,:)   :: TAUL_TABLE  !leaf transmittance: 1=vis, 2=nir
+  real, allocatable, dimension(:,:)   :: TAUS_TABLE  !stem transmittance: 1=vis, 2=nir
+
+  real, allocatable, dimension(:)     :: MRP_TABLE         !microbial respiration parameter (umol co2 /kg c/ s)
+  real, allocatable, dimension(:)     :: CWPVT_TABLE       !empirical canopy wind parameter
+
+  real, allocatable, dimension(:)   :: WRRAT_TABLE       !wood to non-wood ratio
+  real, allocatable, dimension(:)   :: WDPOOL_TABLE      !wood pool (switch 1 or 0) depending on woody or not [-]
+  real, allocatable, dimension(:)   :: TDLEF_TABLE       !characteristic T for leaf freezing [K]
+
+  real, allocatable, dimension(:)   :: SHDFAC_TABLE      !fraction of surface covered by vegetation (dimensionless, 0.0 to 1.0)
+  real, allocatable, dimension(:)   :: NROOT_TABLE       !number of soil layers with root present
+  real, allocatable, dimension(:)   :: RGL_TABLE         !Parameter used in radiation stress function
+  real, allocatable, dimension(:)   :: RS_TABLE          !Minimum stomatal resistance [s m-1]
+  real, allocatable, dimension(:)   :: HS_TABLE          !Parameter used in vapor pressure deficit function
+  real, allocatable, dimension(:)   :: TOPT_TABLE        !Optimum transpiration air temperature [K]
+  real, allocatable, dimension(:)   :: RSMAX_TABLE       !Maximal stomatal resistance [s m-1]
+
+! SOILPARM.TBL parameters
+
+  integer      :: SLCATS
+  real, allocatable, dimension(:)   :: BEXP_TABLE        !maximum intercepted h2o per unit lai+sai (mm)
+  real, allocatable, dimension(:)   :: SMCDRY_TABLE      !characteristic leaf dimension (m)
+  real, allocatable, dimension(:)   :: F1_TABLE         !momentum roughness length (m)
+  real, allocatable, dimension(:)   :: SMCMAX_TABLE      !
+  real, allocatable, dimension(:)   :: SMCREF_TABLE      !
+  real, allocatable, dimension(:)   :: PSISAT_TABLE      !
+  real, allocatable, dimension(:)   :: DKSAT_TABLE       !
+  real, allocatable, dimension(:)   :: DWSAT_TABLE       !
+  real, allocatable, dimension(:)   :: SMCWLT_TABLE      !
+  real, allocatable, dimension(:)   :: QUARTZ_TABLE      !
+  real, allocatable, dimension(:)   :: BVIC_TABLE        !VIC model infiltration parameter (-) for opt_run=6
+  real, allocatable, dimension(:)   :: AXAJ_TABLE        !Xinanjiang: Tension water distribution inflection parameter [-] for opt_run=7
+  real, allocatable, dimension(:)   :: BXAJ_TABLE        !Xinanjiang: Tension water distribution shape parameter [-] for opt_run=7
+  real, allocatable, dimension(:)   :: XXAJ_TABLE       !Xinanjiang: Free water distribution shape parameter [-] for opt_run=7
+  real, allocatable, dimension(:)   :: BDVIC_TABLE       !VIC model infiltration parameter (-)
+  real, allocatable, dimension(:)   :: GDVIC_TABLE       !mean capilary drive (m)
+  real, allocatable, dimension(:)   :: BBVIC_TABLE       !heterogeniety parameter for DVIC infiltration [-]
+
+! GENPARM.TBL parameters
+
+  real, allocatable, dimension(:) :: SLOPE_TABLE    !slope factor for soil drainage
+  real :: CSOIL_TABLE       !Soil heat capacity [J m-3 K-1]
+  real :: REFDK_TABLE       !Parameter in the surface runoff parameterization
+  real :: REFKDT_TABLE      !Parameter in the surface runoff parameterization
+  real :: FRZK_TABLE        !Frozen ground parameter
+  real :: ZBOT_TABLE        !Depth [m] of lower boundary soil temperature
+  real :: CZIL_TABLE        !Parameter used in the calculation of the roughness length for heat
+  real :: Z0_TABLE          !bare soil roughness length (m)
+
+! MPTABLE.TBL radiation parameters
+
+  real, allocatable, dimension(:,:) :: ALBSAT_TABLE    !saturated soil albedos: 1=vis, 2=nir
+  real, allocatable, dimension(:,:) :: ALBDRY_TABLE    !dry soil albedos: 1=vis, 2=nir
+  real, allocatable, dimension(:)   :: ALBICE_TABLE        !albedo land ice: 1=vis, 2=nir
+  real, allocatable, dimension(:)   :: ALBLAK_TABLE       !albedo frozen lakes: 1=vis, 2=nir
+  real, allocatable, dimension(:)   :: OMEGAS_TABLE  !two-stream parameter omega for snow
+  real                              :: BETADS_TABLE              !two-stream parameter betad for snow
+  real                              :: BETAIS_TABLE              !two-stream parameter betad for snow
+  real, allocatable, dimension(:) :: EG_TABLE               !emissivity
+
+! MPTABLE.TBL global parameters
+
+  real :: CO2_TABLE            !co2 partial pressure
+  real :: O2_TABLE             !o2 partial pressure
+  real :: TIMEAN_TABLE         !gridcell mean topgraphic index (global mean)
+  real :: FSATMX_TABLE         !maximum surface saturated fraction (global mean)
+  real :: Z0SNO_TABLE          !snow surface roughness length (m) (0.002)
+  real :: SSI_TABLE            !liquid water holding capacity for snowpack (m3/m3) (0.03)
+  real :: SNOW_RET_FAC_TABLE   !snowpack water release timescale factor (1/s)
+  real :: SNOW_EMIS_TABLE      !snow emissivity
+  real :: SWEMX_TABLE          !new snow mass to fully cover old snow (mm)
+  real :: TAU0_TABLE           !tau0 from Yang97 eqn. 10a
+  real :: GRAIN_GROWTH_TABLE   !growth from vapor diffusion Yang97 eqn. 10b
+  real :: EXTRA_GROWTH_TABLE   !extra growth near freezing Yang97 eqn. 10c
+  real  :: DIRT_SOOT_TABLE      !dirt and soot term Yang97 eqn. 10d
+  real :: BATS_COSZ_TABLE      !zenith angle snow albedo adjustment; b in Yang97 eqn. 15
+  real :: BATS_VIS_NEW_TABLE   !new snow visible albedo
+  real :: BATS_NIR_NEW_TABLE   !new snow NIR albedo
+  real :: BATS_VIS_AGE_TABLE   !age factor for diffuse visible snow albedo Yang97 eqn. 17
+  real :: BATS_NIR_AGE_TABLE   !age factor for diffuse NIR snow albedo Yang97 eqn. 18
+  real  :: BATS_VIS_DIR_TABLE   !cosz factor for direct visible snow albedo Yang97 eqn. 15
+  real  :: BATS_NIR_DIR_TABLE   !cosz factor for direct NIR snow albedo Yang97 eqn. 16
+  real  :: RSURF_SNOW_TABLE     !surface resistance for snow(s/m)
+  real  :: RSURF_EXP_TABLE      !exponent in the shape parameter for soil resistance option 1
+
+! MPTABLE.TBL irrigation parameters
+
+  real :: IRR_FRAC_TABLE              ! irrigation Fraction
+  integer :: IRR_HAR_TABLE               ! number of days before harvest date to stop irrigation
+  real :: IRR_LAI_TABLE               ! Minimum lai to trigger irrigation
+  real :: IRR_MAD_TABLE               ! management allowable deficit (0-1)
+  real :: FILOSS_TABLE                ! fraction of flood irrigation loss (0-1)
+  real :: SPRIR_RATE_TABLE            ! mm/h, sprinkler irrigation rate
+  real :: MICIR_RATE_TABLE            ! mm/h, micro irrigation rate
+  real :: FIRTFAC_TABLE               ! flood application rate factor
+  real :: IR_RAIN_TABLE               ! maximum precipitation to stop irrigation trigger
+
+! MPTABLE.TBL crop parameters
+
+  integer :: DEFAULT_CROP_TABLE          ! Default crop index
+  integer, allocatable, dimension(:)   :: PLTDAY_TABLE       ! Planting date
+  integer, allocatable, dimension(:)   :: HSDAY_TABLE          ! Harvest date
+  real, allocatable, dimension(:)   :: PLANTPOP_TABLE       ! Plant density [per ha] - used?
+  real, allocatable, dimension(:)   :: IRRI_TABLE          ! Irrigation strategy 0= non-irrigation 1=irrigation (no water-stress)
+
+  real, allocatable, dimension(:)   :: GDDTBASE_TABLE      ! Base temperature for GDD accumulation [C]
+  real, allocatable, dimension(:)   :: GDDTCUT_TABLE       ! Upper temperature for GDD accumulation [C]
+  real, allocatable, dimension(:)   :: GDDS1_TABLE         ! GDD from seeding to emergence
+  real, allocatable, dimension(:)   :: GDDS2_TABLE        ! GDD from seeding to initial vegetative
+  real, allocatable, dimension(:)   :: GDDS3_TABLE          ! GDD from seeding to post vegetative
+  real, allocatable, dimension(:)   :: GDDS4_TABLE          ! GDD from seeding to intial reproductive
+  real, allocatable, dimension(:)   :: GDDS5_TABLE          ! GDD from seeding to pysical maturity
+
+  real, allocatable, dimension(:)   :: C3PSNI_TABLE         !photosynthetic pathway: 0. = c4, 1. = c3 ! Zhe Zhang 2020-07-03
+  real, allocatable, dimension(:)   :: KC25I_TABLE         !co2 michaelis-menten constant at 25c (pa)
+  real, allocatable, dimension(:)   :: AKCI_TABLE          !q10 for kc25
+  real, allocatable, dimension(:)   :: KO25I_TABLE          !o2 michaelis-menten constant at 25c (pa)
+  real, allocatable, dimension(:)   :: AKOI_TABLE        !q10 for ko25
+  real, allocatable, dimension(:)   :: VCMX25I_TABLE        !maximum rate of carboxylation at 25c (umol co2/m**2/s)
+  real, allocatable, dimension(:)   :: AVCMXI_TABLE       !q10 for vcmx25
+  real, allocatable, dimension(:)   :: BPI_TABLE            !minimum leaf conductance (umol/m**2/s)
+  real, allocatable, dimension(:)   :: MPI_TABLE          !slope of conductance-to-photosynthesis relationship
+  real, allocatable, dimension(:)   :: QE25I_TABLE          !quantum efficiency at 25c (umol co2 / umol photon)
+  real, allocatable, dimension(:)   :: FOLNMXI_TABLE        !foliage nitrogen concentration when
+
+  integer, allocatable, dimension(:)   :: C3C4_TABLE          ! photosynthetic pathway:  1. = c3 2. = c4
+  real, allocatable, dimension(:)   :: AREF_TABLE          ! reference maximum CO2 assimulation rate
+  real, allocatable, dimension(:)   :: PSNRF_TABLE          ! CO2 assimulation reduction factor(0-1) (caused by non-modeling part,e.g.pest,weeds)
+  real, allocatable, dimension(:)   :: I2PAR_TABLE         ! Fraction of incoming solar radiation to photosynthetically active radiation
+  real, allocatable, dimension(:)   :: TASSIM0_TABLE     ! Minimum temperature for CO2 assimulation [C]
+  real, allocatable, dimension(:)   :: TASSIM1_TABLE       ! CO2 assimulation linearly increasing until temperature reaches T1 [C]
+  real, allocatable, dimension(:)   :: TASSIM2_TABLE       ! CO2 assmilation rate remain at Aref until temperature reaches T2 [C]
+  real, allocatable, dimension(:)   :: K_TABLE            ! light extinction coefficient
+  real, allocatable, dimension(:)   :: EPSI_TABLE          ! initial light use efficiency
+
+  real, allocatable, dimension(:)   :: Q10MR_TABLE         ! q10 for maintainance respiration
+  real, allocatable, dimension(:)   :: FOLN_MX_TABLE       ! foliage nitrogen concentration when f(n)=1 (%)
+  real, allocatable, dimension(:)   :: LEFREEZ_TABLE       ! characteristic T for leaf freezing [K]
+
+  real, allocatable, dimension(:,:)   :: DILE_FC_TABLE ! coeficient for temperature leaf stress death [1/s]
+  real, allocatable, dimension(:,:)   :: DILE_FW_TABLE ! coeficient for water leaf stress death [1/s]
+  real, allocatable, dimension(:)   :: FRA_GR_TABLE        ! fraction of growth respiration
+
+  real, allocatable, dimension(:,:)   :: LF_OVRC_TABLE ! fraction of leaf turnover  [1/s]
+  real, allocatable, dimension(:,:)   :: ST_OVRC_TABLE ! fraction of stem turnover  [1/s]
+  real, allocatable, dimension(:,:)   :: RT_OVRC_TABLE! fraction of root tunrover  [1/s]
+  real, allocatable, dimension(:)   :: LFMR25_TABLE      !  leaf maintenance respiration at 25C [umol CO2/m**2  /s]
+  real, allocatable, dimension(:)   :: STMR25_TABLE       !  stem maintenance respiration at 25C [umol CO2/kg bio/s]
+  real, allocatable, dimension(:)   :: RTMR25_TABLE        !  root maintenance respiration at 25C [umol CO2/kg bio/s]
+  real, allocatable, dimension(:)   :: GRAINMR25_TABLE   ! grain maintenance respiration at 25C [umol CO2/kg bio/s]
+
+  real, allocatable, dimension(:,:)   :: LFPT_TABLE    ! fraction of carbohydrate flux to leaf
+  real, allocatable, dimension(:,:)   :: STPT_TABLE    ! fraction of carbohydrate flux to stem
+  real, allocatable, dimension(:,:)   :: RTPT_TABLE  ! fraction of carbohydrate flux to root
+  real, allocatable, dimension(:,:)   :: GRAINPT_TABLE ! fraction of carbohydrate flux to grain
+  real, allocatable, dimension(:,:)   :: LFCT_TABLE   ! fraction of carbohydrate translocation from leaf to grain ! Zhe Zhang 2020-07-13
+  real, allocatable, dimension(:,:)   :: STCT_TABLE   !                                             stem to grain
+  real, allocatable, dimension(:,:)   :: RTCT_TABLE   !                                             root to grain
+  real, allocatable, dimension(:)   :: BIO2LAI_TABLE       ! leaf are per living leaf biomass [m^2/kg]
+
+! tile drainage parameters
+  real, allocatable, dimension(:)   ::TDSMCFAC_TABLE
+  real, allocatable, dimension(:)   ::TD_DC_TABLE
+  integer, allocatable, dimension(:)   ::TD_DEPTH_TABLE
+  integer :: DRAIN_LAYER_OPT_TABLE
+  real, allocatable, dimension(:) :: TD_DCOEF_TABLE
+  real, allocatable, dimension(:) :: TD_D_TABLE
+  real, allocatable, dimension(:) :: TD_ADEPTH_TABLE 
+  real, allocatable, dimension(:) :: TD_RADI_TABLE
+  real, allocatable, dimension(:) :: TD_SPAC_TABLE
+  real, allocatable, dimension(:) :: TD_DDRAIN_TABLE
+  real, allocatable, dimension(:) :: KLAT_FAC_TABLE
+
+! MPTABLE.TBL optional parameters
+
+  real :: sr2006_theta_1500t_a        ! sand coefficient
+  real :: sr2006_theta_1500t_b        ! clay coefficient
+  real :: sr2006_theta_1500t_c        ! orgm coefficient
+  real :: sr2006_theta_1500t_d        ! sand*orgm coefficient
+  real :: sr2006_theta_1500t_e        ! clay*orgm coefficient
+  real :: sr2006_theta_1500t_f        ! sand*clay coefficient
+  real :: sr2006_theta_1500t_g        ! constant adjustment
+
+  real :: sr2006_theta_1500_a         ! theta_1500t coefficient
+  real :: sr2006_theta_1500_b         ! constant adjustment
+
+  real :: sr2006_theta_33t_a          ! sand coefficient
+  real :: sr2006_theta_33t_b          ! clay coefficient
+  real :: sr2006_theta_33t_c          ! orgm coefficient
+  real :: sr2006_theta_33t_d          ! sand*orgm coefficient
+  real :: sr2006_theta_33t_e          ! clay*orgm coefficient
+  real :: sr2006_theta_33t_f          ! sand*clay coefficient
+  real :: sr2006_theta_33t_g          ! constant adjustment
+
+  real :: sr2006_theta_33_a           ! theta_33t*theta_33t coefficient
+  real :: sr2006_theta_33_b           ! theta_33t coefficient
+  real :: sr2006_theta_33_c           ! constant adjustment
+
+  real :: sr2006_theta_s33t_a         ! sand coefficient
+  real :: sr2006_theta_s33t_b         ! clay coefficient
+  real :: sr2006_theta_s33t_c         ! orgm coefficient
+  real :: sr2006_theta_s33t_d         ! sand*orgm coefficient
+  real :: sr2006_theta_s33t_e         ! clay*orgm coefficient
+  real :: sr2006_theta_s33t_f         ! sand*clay coefficient
+  real :: sr2006_theta_s33t_g         ! constant adjustment
+
+  real :: sr2006_theta_s33_a          ! theta_s33t coefficient
+  real :: sr2006_theta_s33_b          ! constant adjustment
+
+  real :: sr2006_psi_et_a             ! sand coefficient
+  real :: sr2006_psi_et_b             ! clay coefficient
+  real :: sr2006_psi_et_c             ! theta_s33 coefficient
+  real :: sr2006_psi_et_d             ! sand*theta_s33 coefficient
+  real :: sr2006_psi_et_e             ! clay*theta_s33 coefficient
+  real :: sr2006_psi_et_f             ! sand*clay coefficient
+  real :: sr2006_psi_et_g             ! constant adjustment
+
+  real :: sr2006_psi_e_a              ! psi_et*psi_et coefficient
+  real :: sr2006_psi_e_b              ! psi_et coefficient
+  real :: sr2006_psi_e_c              ! constant adjustment
+
+  real :: sr2006_smcmax_a             ! sand adjustment
+  real :: sr2006_smcmax_b             ! constant adjustment
+
+  integer :: MVT   = 27
+  integer :: MBAND = 2
+  integer :: MSC   = 8
+  integer :: MAX_SOILTYP = 30
+  integer :: NCROP = 5
+  integer :: NSTAGE = 8
+
   end type
 
-end module NoahowpmpIOVarType
+end module NoahowpmpIOType
