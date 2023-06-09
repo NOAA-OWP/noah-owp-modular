@@ -26,3 +26,15 @@ testBMI_clean:
 	(cd bmi;		make clean)
 	(cd driver;		make clean)
 	(cd test;		make clean)
+
+testNoahIO:
+	(cd src;		make)
+	(cd bmi;		make)
+	(cd driver;		make)
+	(cd testNoahowpmpIO;		make)
+
+testNoahIO_clean:
+	(cd src;		make clean)
+	(cd bmi;		make clean)
+	(cd driver;		make clean)
+	(cd testNoahowpmpIO;		make clean)
