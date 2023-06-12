@@ -46,17 +46,17 @@ module DomainType
   
   contains   
   
-    subroutine Init(this, NoahowpmpIO)
+    subroutine Init(this,NoahowpmpIO)
   
       class(domain_type)                    :: this
       type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
-  
+
       call this%InitAllocate(NoahowpmpIO)
       call this%InitDefault()
   
     end subroutine Init
   
-    subroutine InitAllocate(this, NoahowpmpIO)
+    subroutine InitAllocate(this,NoahowpmpIO)
   
       class(domain_type)                    :: this
       type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO

@@ -15,8 +15,7 @@ type, public :: levels_type
   contains
 
     procedure, public  :: Init         
-    procedure, private :: InitDefault     
-    procedure, public  :: InitTransfer        
+    procedure, private :: InitDefault         
 
 end type levels_type
 
@@ -39,16 +38,5 @@ contains
     this%nveg   = huge(1)    
 
   end subroutine InitDefault
-
-  subroutine InitTransfer(this, namelist)
-
-    class(levels_type)   :: this
-    type(namelist_type)  :: namelist
-
-    this%nsoil  = namelist%nsoil
-    this%nsnow  = namelist%nsnow
-    this%nveg  = namelist%nveg    
-
-  end subroutine InitTransfer
 
 end module LevelsType
