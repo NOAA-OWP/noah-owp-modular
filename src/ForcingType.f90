@@ -1,7 +1,5 @@
 module ForcingType
 
-use NamelistRead, only: namelist_type
-
 implicit none
 save
 private
@@ -49,16 +47,14 @@ type, public :: forcing_type
     procedure, public  :: Init         
     procedure, private :: InitAllocate        
     procedure, private :: InitDefault     
-    procedure, public  :: InitTransfer
 
 end type forcing_type
 
 contains   
 
-  subroutine Init(this, namelist)
+  subroutine Init(this)
 
     class(forcing_type)    :: this
-    type(namelist_type) :: namelist
 
     call this%InitAllocate()
     call this%InitDefault()
@@ -109,12 +105,5 @@ contains
     this%CO2PP     = huge(1.0)
         
   end subroutine InitDefault
-
-  subroutine InitTransfer(this, namelist)
-
-    class(forcing_type) :: this
-    type(namelist_type) :: namelist
-
-  end subroutine InitTransfer
 
 end module ForcingType

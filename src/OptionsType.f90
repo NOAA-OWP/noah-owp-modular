@@ -110,7 +110,6 @@ type, public :: options_type
 
     procedure, public  :: Init         
     procedure, private :: InitDefault     
-    procedure, public  :: InitTransfer
 
 end type options_type
 

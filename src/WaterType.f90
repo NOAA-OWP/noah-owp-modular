@@ -1,6 +1,7 @@
 module WaterType
 
 use NamelistRead, only: namelist_type
+use NoahowpmpIOType
 
 implicit none
 save
@@ -84,42 +85,41 @@ type, public :: water_type
     procedure, public  :: Init         
     procedure, private :: InitAllocate 
     procedure, private :: InitDefault     
-    procedure, public  :: InitTransfer
 
 end type water_type
 
 contains   
 
-  subroutine Init(this, namelist)
+  subroutine Init(this, NoahowpmpIO)
 
     class(water_type) :: this
-    type(namelist_type) :: namelist
+    type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
 
-    call this%InitAllocate(namelist)
+    call this%InitAllocate(NoahowpmpIO)
     call this%InitDefault()
 
   end subroutine Init
 
-  subroutine InitAllocate(this, namelist)
+  subroutine InitAllocate(this, NoahowpmpIO)
 
     class(water_type) :: this
-    type(namelist_type) :: namelist
+    type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
 
-    allocate(this%smc     (namelist%nsoil)); this%smc     (:) = huge(1.0)
-    allocate(this%smc_init(namelist%nsoil)); this%smc_init(:) = huge(1.0)
-    allocate(this%sice    (namelist%nsoil)); this%sice    (:) = huge(1.0)
-    allocate(this%sh2o    (namelist%nsoil)); this%sh2o    (:) = huge(1.0)
-    allocate(this%etrani  (namelist%nsoil)); this%etrani  (:) = huge(1.0)
-    allocate(this%btrani  (namelist%nsoil)); this%btrani  (:) = huge(1.0)
-    allocate(this%wcnd    (namelist%nsoil)); this%wcnd    (:) = huge(1.0)
-    allocate(this%fcr     (namelist%nsoil)); this%fcr     (:) = huge(1.0)
-    allocate(this%FICEOLD(-namelist%nsnow+1:0)); this%FICEOLD (:) = huge(1.0)
-    allocate(this%SNICE  (-namelist%nsnow+1:0)); this%SNICE   (:) = huge(1.0)
-    allocate(this%SNLIQ  (-namelist%nsnow+1:0)); this%SNLIQ   (:) = huge(1.0)
-    allocate(this%SNICEV (-namelist%nsnow+1:0)); this%SNICEV  (:) = huge(1.0)
-    allocate(this%SNLIQV (-namelist%nsnow+1:0)); this%SNLIQV  (:) = huge(1.0)
-    allocate(this%FICE   (-namelist%nsnow+1:0)); this%FICE    (:) = huge(1.0)
-    allocate(this%EPORE  (-namelist%nsnow+1:0)); this%EPORE   (:) = huge(1.0)
+    allocate(this%smc     (NoahowpmpIO%nsoil)); this%smc     (:) = huge(1.0)
+    allocate(this%smc_init(NoahowpmpIO%nsoil)); this%smc_init(:) = huge(1.0)
+    allocate(this%sice    (NoahowpmpIO%nsoil)); this%sice    (:) = huge(1.0)
+    allocate(this%sh2o    (NoahowpmpIO%nsoil)); this%sh2o    (:) = huge(1.0)
+    allocate(this%etrani  (NoahowpmpIO%nsoil)); this%etrani  (:) = huge(1.0)
+    allocate(this%btrani  (NoahowpmpIO%nsoil)); this%btrani  (:) = huge(1.0)
+    allocate(this%wcnd    (NoahowpmpIO%nsoil)); this%wcnd    (:) = huge(1.0)
+    allocate(this%fcr     (NoahowpmpIO%nsoil)); this%fcr     (:) = huge(1.0)
+    allocate(this%FICEOLD(-NoahowpmpIO%nsnow+1:0)); this%FICEOLD (:) = huge(1.0)
+    allocate(this%SNICE  (-NoahowpmpIO%nsnow+1:0)); this%SNICE   (:) = huge(1.0)
+    allocate(this%SNLIQ  (-NoahowpmpIO%nsnow+1:0)); this%SNLIQ   (:) = huge(1.0)
+    allocate(this%SNICEV (-NoahowpmpIO%nsnow+1:0)); this%SNICEV  (:) = huge(1.0)
+    allocate(this%SNLIQV (-NoahowpmpIO%nsnow+1:0)); this%SNLIQV  (:) = huge(1.0)
+    allocate(this%FICE   (-NoahowpmpIO%nsnow+1:0)); this%FICE    (:) = huge(1.0)
+    allocate(this%EPORE  (-NoahowpmpIO%nsnow+1:0)); this%EPORE   (:) = huge(1.0)
 
   end subroutine InitAllocate
 
@@ -182,18 +182,5 @@ contains
     this%FSNO     = huge(1.0)
 
   end subroutine InitDefault
-
-  subroutine InitTransfer(this, namelist)
-
-    class(water_type) :: this
-    type(namelist_type) :: namelist
-
-    this%sh2o     = namelist%sh2o
-    this%sice     = namelist%sice
-    this%smc      = this%sh2o + this%sice  ! volumetric soil water
-    this%smc_init = this%smc               ! initial SMC
-    this%zwt = namelist%zwt                ! initialize zwt
-    
-  end subroutine InitTransfer
 
 end module WaterType

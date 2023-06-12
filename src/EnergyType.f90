@@ -1,6 +1,6 @@
 module EnergyType
 
-use NamelistRead, only: namelist_type
+use NoahowpmpIOType
 
 implicit none
 save
@@ -166,26 +166,26 @@ end type energy_type
 
 contains   
 
-  subroutine Init(this, namelist)
+  subroutine Init(this, NoahowpmpIO)
 
     class(energy_type) :: this
-    type(namelist_type) :: namelist
+    type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
 
-    call this%InitAllocate(namelist)
+    call this%InitAllocate(NoahowpmpIO)
     call this%InitDefault()
 
   end subroutine Init
 
-  subroutine InitAllocate(this, namelist)
+  subroutine InitAllocate(this, NoahowpmpIO)
 
     class(energy_type) :: this
-    type(namelist_type) :: namelist
+    type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
 
-    allocate(this%IMELT (-namelist%nsnow+1:namelist%nsoil)); this%IMELT(:) = huge(1)
-    allocate(this%STC   (-namelist%nsnow+1:namelist%nsoil)); this%STC(:)   = huge(1.0)
-    allocate(this%DF    (-namelist%nsnow+1:namelist%nsoil)); this%DF(:)    = huge(1.0)
-    allocate(this%HCPCT (-namelist%nsnow+1:namelist%nsoil)); this%HCPCT(:) = huge(1.0)
-    allocate(this%FACT  (-namelist%nsnow+1:namelist%nsoil)); this%FACT(:)  = huge(1.0)
+    allocate(this%IMELT (-NoahowpmpIO%nsnow+1:NoahowpmpIO%nsoil)); this%IMELT(:) = huge(1)
+    allocate(this%STC   (-NoahowpmpIO%nsnow+1:NoahowpmpIO%nsoil)); this%STC(:)   = huge(1.0)
+    allocate(this%DF    (-NoahowpmpIO%nsnow+1:NoahowpmpIO%nsoil)); this%DF(:)    = huge(1.0)
+    allocate(this%HCPCT (-NoahowpmpIO%nsnow+1:NoahowpmpIO%nsoil)); this%HCPCT(:) = huge(1.0)
+    allocate(this%FACT  (-NoahowpmpIO%nsnow+1:NoahowpmpIO%nsoil)); this%FACT(:)  = huge(1.0)
     
     allocate(this%ALBD (1:2)); this%ALBD(:)      = huge(1.0) 
     allocate(this%ALBI (1:2)); this%ALBI(:)      = huge(1.0) 
