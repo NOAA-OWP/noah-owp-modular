@@ -1,4 +1,4 @@
-module WaterVarInTransferModule
+module WaterVarTransferModule
 
     use NoahowpmpIOType
     use NoahowpmpType
@@ -90,4 +90,87 @@ module WaterVarInTransferModule
 
   end subroutine WaterVarInTransfer
 
-end module WaterVarInTransferModule
+  subroutine WaterVarOutTransfer(noahowpmp, NoahowpmpIO)
+
+    implicit none
+
+    type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
+    type(noahowp_type),     intent(inout) :: noahowpmp
+
+    associate(ix   => NoahowpmpIO%ix, &
+              iy   => NoahowpmpIO%iy)
+
+    NoahowpmpIO%qinsur(ix,iy) = Noahowpmp%water%qinsur
+    NoahowpmpIO%qseva(ix,iy) = Noahowpmp%water%qseva
+    NoahowpmpIO%EVAPOTRANS(ix,iy) = Noahowpmp%water%EVAPOTRANS
+    NoahowpmpIO%runsrf(ix,iy) = Noahowpmp%water%runsrf
+    NoahowpmpIO%runsub(ix,iy) = Noahowpmp%water%runsub
+    NoahowpmpIO%qdrain(ix,iy) = Noahowpmp%water%qdrain
+    NoahowpmpIO%zwt(ix,iy) = Noahowpmp%water%zwt
+    NoahowpmpIO%smcwtd(ix,iy) = Noahowpmp%water%smcwtd
+    NoahowpmpIO%deeprech(ix,iy) = Noahowpmp%water%deeprech
+    NoahowpmpIO%fcrmax(ix,iy) = Noahowpmp%water%fcrmax
+    NoahowpmpIO%snoflow(ix,iy) = Noahowpmp%water%snoflow
+    NoahowpmpIO%pddum(ix,iy) = Noahowpmp%water%pddum
+    NoahowpmpIO%FACC(ix,iy) = Noahowpmp%water%FACC
+    NoahowpmpIO%sicemax(ix,iy) = Noahowpmp%water%sicemax
+    NoahowpmpIO%FB_snow(ix,iy) = Noahowpmp%water%FB_snow
+    NoahowpmpIO%rain(ix,iy) = Noahowpmp%water%rain
+    NoahowpmpIO%snow(ix,iy) = Noahowpmp%water%snow
+    NoahowpmpIO%bdfall(ix,iy) = Noahowpmp%water%bdfall
+    NoahowpmpIO%FP(ix,iy) = Noahowpmp%water%FP
+    NoahowpmpIO%canliq(ix,iy) = Noahowpmp%water%canliq
+    NoahowpmpIO%canice(ix,iy) = Noahowpmp%water%canice
+    NoahowpmpIO%FWET(ix,iy) = Noahowpmp%water%FWET
+    NoahowpmpIO%CMC(ix,iy) = Noahowpmp%water%CMC
+    NoahowpmpIO%QINTR(ix,iy) = Noahowpmp%water%QINTR
+    NoahowpmpIO%QDRIPR(ix,iy) = Noahowpmp%water%QDRIPR
+    NoahowpmpIO%QTHROR(ix,iy) = Noahowpmp%water%QTHROR
+    NoahowpmpIO%QINTS(ix,iy) = Noahowpmp%water%QINTS
+    NoahowpmpIO%QDRIPS(ix,iy) = Noahowpmp%water%QDRIPS
+    NoahowpmpIO%QTHROS(ix,iy) = Noahowpmp%water%QTHROS
+    NoahowpmpIO%QRAIN(ix,iy) = Noahowpmp%water%QRAIN
+    NoahowpmpIO%QSNOW(ix,iy) = Noahowpmp%water%QSNOW
+    NoahowpmpIO%SNOWHIN(ix,iy) = Noahowpmp%water%SNOWHIN
+    NoahowpmpIO%ECAN(ix,iy) = Noahowpmp%water%ECAN
+    NoahowpmpIO%ETRAN(ix,iy) = Noahowpmp%water%ETRAN
+    NoahowpmpIO%QSNFRO(ix,iy) = Noahowpmp%water%QSNFRO
+    NoahowpmpIO%QSNSUB(ix,iy) = Noahowpmp%water%QSNSUB
+    NoahowpmpIO%SNOWH(ix,iy) = Noahowpmp%water%SNOWH
+    NoahowpmpIO%SNEQV(ix,iy) = Noahowpmp%water%SNEQV
+    NoahowpmpIO%SNEQVO(ix,iy) = Noahowpmp%water%SNEQVO
+    NoahowpmpIO%BDSNO(ix,iy) = Noahowpmp%water%BDSNO
+    NoahowpmpIO%QSNBOT(ix,iy) = Noahowpmp%water%QSNBOT
+    NoahowpmpIO%PONDING(ix,iy) = Noahowpmp%water%PONDING
+    NoahowpmpIO%PONDING1(ix,iy) = Noahowpmp%water%PONDING1
+    NoahowpmpIO%PONDING2(ix,iy) = Noahowpmp%water%PONDING2
+    NoahowpmpIO%QVAP(ix,iy) = Noahowpmp%water%QVAP
+    NoahowpmpIO%QDEW(ix,iy) = Noahowpmp%water%QDEW
+    NoahowpmpIO%QSDEW(ix,iy) = Noahowpmp%water%QSDEW
+    NoahowpmpIO%WSLAKE(ix,iy) = Noahowpmp%water%WSLAKE
+    NoahowpmpIO%runsrf_dt(ix,iy) = Noahowpmp%water%runsrf_dt
+    NoahowpmpIO%ASAT(ix,iy) = Noahowpmp%water%ASAT
+    NoahowpmpIO%ISNOW(ix,iy) = Noahowpmp%water%ISNOW
+    NoahowpmpIO%smc(ix,iy,:) = Noahowpmp%water%smc(:)
+    NoahowpmpIO%smc_init(ix,iy,:) = Noahowpmp%water%smc_init(:)
+    NoahowpmpIO%sice(ix,iy,:) = Noahowpmp%water%sice(:)
+    NoahowpmpIO%sh2o(ix,iy,:) = Noahowpmp%water%sh2o(:)
+    NoahowpmpIO%etrani(ix,iy,:) = Noahowpmp%water%etrani(:)
+    NoahowpmpIO%BTRANI(ix,iy,:) = Noahowpmp%water%BTRANI(:)
+    NoahowpmpIO%wcnd(ix,iy,:) = Noahowpmp%water%wcnd(:)
+    NoahowpmpIO%fcr(ix,iy,:) = Noahowpmp%water%fcr(:)
+    NoahowpmpIO%FICEOLD(ix,iy,:) = Noahowpmp%water%FICEOLD(:)
+    NoahowpmpIO%SNICE(ix,iy,:) = Noahowpmp%water%SNICE(:)
+    NoahowpmpIO%SNLIQ(ix,iy,:) = Noahowpmp%water%SNLIQ(:)
+    NoahowpmpIO%SNICEV(ix,iy,:) = Noahowpmp%water%SNICEV(:)
+    NoahowpmpIO%SNLIQV(ix,iy,:) = Noahowpmp%water%SNLIQV(:)
+    NoahowpmpIO%FICE(ix,iy,:) = Noahowpmp%water%FICE(:)
+    NoahowpmpIO%EPORE(ix,iy,:) = Noahowpmp%water%EPORE(:)
+    NoahowpmpIO%FSNO(ix,iy) = Noahowpmp%water%FSNO
+    NoahowpmpIO%BTRAN(ix,iy) = Noahowpmp%water%BTRAN
+
+    end associate
+
+  end subroutine WaterVarOutTransfer
+
+end module WaterVarTransferModule

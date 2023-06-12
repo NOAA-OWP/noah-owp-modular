@@ -1,4 +1,4 @@
-module ForcingVarInTransferModule
+module ForcingVarTransferModule
 
     use NoahowpmpIOType
     use NoahowpmpType
@@ -51,4 +51,46 @@ module ForcingVarInTransferModule
 
   end subroutine
 
-end module ForcingVarInTransferModule
+  subroutine ForcingVarOutTransfer(Noahowpmp, NoahowpmpIO)
+
+    implicit none
+
+    type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
+    type(noahowp_type),     intent(inout) :: Noahowpmp
+
+    associate(ix   => NoahowpmpIO%ix, &
+              iy   => NoahowpmpIO%iy)
+
+    NoahowpmpIO%SFCPRS(ix,iy) = Noahowpmp%forcing%SFCPRS
+    NoahowpmpIO%SFCTMP(ix,iy) = Noahowpmp%forcing%SFCTMP
+    NoahowpmpIO%Q2(ix,iy) = Noahowpmp%forcing%Q2
+    NoahowpmpIO%PRCP(ix,iy) = Noahowpmp%forcing%PRCP
+    NoahowpmpIO%PRCPCONV(ix,iy) = Noahowpmp%forcing%PRCPCONV
+    NoahowpmpIO%PRCPNONC(ix,iy) = Noahowpmp%forcing%PRCPNONC
+    NoahowpmpIO%PRCPSHCV(ix,iy) = Noahowpmp%forcing%PRCPSHCV
+    NoahowpmpIO%PRCPSNOW(ix,iy) = Noahowpmp%forcing%PRCPSNOW
+    NoahowpmpIO%PRCPGRPL(ix,iy) = Noahowpmp%forcing%PRCPGRPL
+    NoahowpmpIO%PRCPHAIL(ix,iy) = Noahowpmp%forcing%PRCPHAIL
+    NoahowpmpIO%SOLDN(ix,iy) = Noahowpmp%forcing%SOLDN
+    NoahowpmpIO%LWDN(ix,iy) = Noahowpmp%forcing%LWDN
+    NoahowpmpIO%FOLN(ix,iy) = Noahowpmp%forcing%FOLN
+    NoahowpmpIO%O2PP(ix,iy) = Noahowpmp%forcing%O2PP
+    NoahowpmpIO%CO2PP(ix,iy) = Noahowpmp%forcing%CO2PP
+    NoahowpmpIO%UU(ix,iy) = Noahowpmp%forcing%UU
+    NoahowpmpIO%VV(ix,iy) = Noahowpmp%forcing%VV
+    NoahowpmpIO%TBOT(ix,iy) = Noahowpmp%forcing%TBOT
+    NoahowpmpIO%UR(ix,iy) = Noahowpmp%forcing%UR
+    NoahowpmpIO%THAIR(ix,iy) = Noahowpmp%forcing%THAIR
+    NoahowpmpIO%QAIR(ix,iy) = Noahowpmp%forcing%QAIR
+    NoahowpmpIO%EAIR(ix,iy) = Noahowpmp%forcing%EAIR
+    NoahowpmpIO%RHOAIR(ix,iy) = Noahowpmp%forcing%RHOAIR
+    NoahowpmpIO%FPICE(ix,iy) = Noahowpmp%forcing%FPICE
+    NoahowpmpIO%SWDOWN(ix,iy) = Noahowpmp%forcing%SWDOWN
+    NoahowpmpIO%SOLAD(ix,iy,:) = Noahowpmp%forcing%SOLAD(:)
+    NoahowpmpIO%SOLAI(ix,iy,:) = Noahowpmp%forcing%SOLAI(:)
+
+    end associate
+
+  end subroutine ForcingVarOutTransfer
+
+end module ForcingVarTransferModule
