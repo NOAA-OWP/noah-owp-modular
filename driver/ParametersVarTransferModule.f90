@@ -181,4 +181,151 @@ module ParametersVarInTransferModule
 
   end subroutine
 
+  subroutine ParametersVarOutTransfer(Noahowpmp, NoahowpmpIO)
+
+    implicit none
+
+    type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
+    type(noahowp_type),     intent(inout) :: Noahowpmp
+
+    associate(ix   => NoahowpmpIO%ix, &
+              iy   => NoahowpmpIO%iy)
+
+    NoahowpmpIO%bexp(ix,iy,:) = Noahowpmp%parameters%bexp(:)
+    NoahowpmpIO%smcmax(ix,iy,:) = Noahowpmp%parameters%smcmax(:)
+    NoahowpmpIO%smcwlt(ix,iy,:) = Noahowpmp%parameters%smcwlt(:)
+    NoahowpmpIO%smcref(ix,iy,:) = Noahowpmp%parameters%smcref(:)
+    NoahowpmpIO%dksat(ix,iy,:) = Noahowpmp%parameters%dksat(:)
+    NoahowpmpIO%dwsat(ix,iy,:) = Noahowpmp%parameters%dwsat(:)
+    NoahowpmpIO%psisat(ix,iy,:) = Noahowpmp%parameters%psisat(:)
+    NoahowpmpIO%bvic(ix,iy) = Noahowpmp%parameters%bvic
+    NoahowpmpIO%AXAJ(ix,iy) = Noahowpmp%parameters%AXAJ
+    NoahowpmpIO%BXAJ(ix,iy) = Noahowpmp%parameters%BXAJ
+    NoahowpmpIO%XXAJ(ix,iy) = Noahowpmp%parameters%XXAJ
+    NoahowpmpIO%BBVIC(ix,iy) = Noahowpmp%parameters%BBVIC
+    NoahowpmpIO%G(ix,iy) = Noahowpmp%parameters%G
+    NoahowpmpIO%QUARTZ(ix,iy) = Noahowpmp%parameters%QUARTZ
+    NoahowpmpIO%kdt(ix,iy) = Noahowpmp%parameters%kdt
+    NoahowpmpIO%refkdt = Noahowpmp%parameters%refkdt
+    NoahowpmpIO%refdk = Noahowpmp%parameters%refdk
+    NoahowpmpIO%csoil = Noahowpmp%parameters%csoil
+    NoahowpmpIO%Z0 = Noahowpmp%parameters%Z0
+    NoahowpmpIO%CZIL = Noahowpmp%parameters%CZIL
+    NoahowpmpIO%ZBOT = Noahowpmp%parameters%ZBOT
+    NoahowpmpIO%frzx(ix,iy) = Noahowpmp%parameters%frzx
+    NoahowpmpIO%slope = Noahowpmp%parameters%slope
+    NoahowpmpIO%timean = Noahowpmp%parameters%timean
+    NoahowpmpIO%fsatmx = Noahowpmp%parameters%fsatmx
+    NoahowpmpIO%ZWT_INIT(ix,iy) = Noahowpmp%parameters%ZWT_INIT
+    NoahowpmpIO%urban_flag(ix,iy) = Noahowpmp%parameters%urban_flag
+    NoahowpmpIO%LAIM(ix,iy,:) = Noahowpmp%parameters%LAIM(:)
+    NoahowpmpIO%SAIM(ix,iy,:) = Noahowpmp%parameters%SAIM(:)
+    NoahowpmpIO%LAI(ix,iy) = Noahowpmp%parameters%LAI
+    NoahowpmpIO%SAI(ix,iy) = Noahowpmp%parameters%SAI
+    NoahowpmpIO%CH2OP(ix,iy) = Noahowpmp%parameters%CH2OP
+    NoahowpmpIO%NROOT(ix,iy) = Noahowpmp%parameters%NROOT
+    NoahowpmpIO%HVT(ix,iy) = Noahowpmp%parameters%HVT
+    NoahowpmpIO%HVB(ix,iy) = Noahowpmp%parameters%HVB
+    NoahowpmpIO%TMIN(ix,iy) = Noahowpmp%parameters%TMIN
+    NoahowpmpIO%SHDFAC(ix,iy) = Noahowpmp%parameters%SHDFAC
+    NoahowpmpIO%SHDMAX(ix,iy) = Noahowpmp%parameters%SHDMAX
+    NoahowpmpIO%Z0MVT(ix,iy) = Noahowpmp%parameters%Z0MVT
+    NoahowpmpIO%RC(ix,iy) = Noahowpmp%parameters%RC
+    NoahowpmpIO%XL(ix,iy) = Noahowpmp%parameters%XL
+    NoahowpmpIO%BP(ix,iy) = Noahowpmp%parameters%BP
+    NoahowpmpIO%FOLNMX(ix,iy) = Noahowpmp%parameters%FOLNMX
+    NoahowpmpIO%QE25(ix,iy) = Noahowpmp%parameters%QE25
+    NoahowpmpIO%VCMX25(ix,iy) = Noahowpmp%parameters%VCMX25
+    NoahowpmpIO%MP(ix,iy) = Noahowpmp%parameters%MP
+    NoahowpmpIO%RGL(ix,iy) = Noahowpmp%parameters%RGL
+    NoahowpmpIO%RSMIN(ix,iy) = Noahowpmp%parameters%RSMIN
+    NoahowpmpIO%HS(ix,iy) = Noahowpmp%parameters%HS
+    NoahowpmpIO%AKC(ix,iy) = Noahowpmp%parameters%AKC
+    NoahowpmpIO%AKO(ix,iy) = Noahowpmp%parameters%AKO
+    NoahowpmpIO%AVCMX(ix,iy) = Noahowpmp%parameters%AVCMX
+    NoahowpmpIO%RSMAX(ix,iy) = Noahowpmp%parameters%RSMAX
+    NoahowpmpIO%CWP(ix,iy) = Noahowpmp%parameters%CWP
+    NoahowpmpIO%C3PSN(ix,iy) = Noahowpmp%parameters%C3PSN
+    NoahowpmpIO%DLEAF(ix,iy) = Noahowpmp%parameters%DLEAF
+    NoahowpmpIO%KC25(ix,iy) = Noahowpmp%parameters%KC25
+    NoahowpmpIO%KO25(ix,iy) = Noahowpmp%parameters%KO25
+    NoahowpmpIO%ELAI(ix,iy) = Noahowpmp%parameters%ELAI
+    NoahowpmpIO%ESAI(ix,iy) = Noahowpmp%parameters%ESAI
+    NoahowpmpIO%VAI(ix,iy) = Noahowpmp%parameters%VAI
+    NoahowpmpIO%VEG(ix,iy) = Noahowpmp%parameters%VEG
+    NoahowpmpIO%FVEG(ix,iy) = Noahowpmp%parameters%FVEG
+    NoahowpmpIO%RHOL(ix,iy,:) = Noahowpmp%parameters%RHOL(:)
+    NoahowpmpIO%RHOS(ix,iy,:) = Noahowpmp%parameters%RHOS(:)
+    NoahowpmpIO%TAUL(ix,iy,:) = Noahowpmp%parameters%TAUL(:)
+    NoahowpmpIO%TAUS(ix,iy,:) = Noahowpmp%parameters%TAUS(:)
+    NoahowpmpIO%ISURBAN = Noahowpmp%parameters%ISURBAN
+    NoahowpmpIO%ISWATER = Noahowpmp%parameters%ISWATER
+    NoahowpmpIO%ISBARREN = Noahowpmp%parameters%ISBARREN
+    NoahowpmpIO%ISICE = Noahowpmp%parameters%ISICE
+    NoahowpmpIO%ISCROP = Noahowpmp%parameters%ISCROP
+    NoahowpmpIO%EBLFOREST = Noahowpmp%parameters%EBLFOREST
+    NoahowpmpIO%NATURAL = Noahowpmp%parameters%NATURAL
+    NoahowpmpIO%LOW_DENSITY_RESIDENTIAL = Noahowpmp%parameters%LOW_DENSITY_RESIDENTIAL
+    NoahowpmpIO%HIGH_DENSITY_RESIDENTIAL = Noahowpmp%parameters%HIGH_DENSITY_RESIDENTIAL
+    NoahowpmpIO%HIGH_INTENSITY_INDUSTRIAL = Noahowpmp%parameters%HIGH_INTENSITY_INDUSTRIAL
+    NoahowpmpIO%SB = Noahowpmp%parameters%SB
+    NoahowpmpIO%VKC = Noahowpmp%parameters%VKC
+    NoahowpmpIO%TFRZ = Noahowpmp%parameters%TFRZ
+    NoahowpmpIO%HSUB = Noahowpmp%parameters%HSUB
+    NoahowpmpIO%HVAP = Noahowpmp%parameters%HVAP
+    NoahowpmpIO%HFUS = Noahowpmp%parameters%HFUS
+    NoahowpmpIO%CWAT = Noahowpmp%parameters%CWAT
+    NoahowpmpIO%CICE = Noahowpmp%parameters%CICE
+    NoahowpmpIO%CPAIR = Noahowpmp%parameters%CPAIR
+    NoahowpmpIO%TKWAT = Noahowpmp%parameters%TKWAT
+    NoahowpmpIO%TKICE = Noahowpmp%parameters%TKICE
+    NoahowpmpIO%TKAIR = Noahowpmp%parameters%TKAIR
+    NoahowpmpIO%RAIR = Noahowpmp%parameters%RAIR
+    NoahowpmpIO%RW = Noahowpmp%parameters%RW
+    NoahowpmpIO%DENH2O = Noahowpmp%parameters%DENH2O
+    NoahowpmpIO%DENICE = Noahowpmp%parameters%DENICE
+    NoahowpmpIO%THKW = Noahowpmp%parameters%THKW
+    NoahowpmpIO%THKO = Noahowpmp%parameters%THKO
+    NoahowpmpIO%THKQTZ = Noahowpmp%parameters%THKQTZ
+    NoahowpmpIO%SSI = Noahowpmp%parameters%SSI
+    NoahowpmpIO%MFSNO(ix,iy) = Noahowpmp%parameters%MFSNO
+    NoahowpmpIO%Z0SNO = Noahowpmp%parameters%Z0SNO
+    NoahowpmpIO%SWEMX = Noahowpmp%parameters%SWEMX
+    NoahowpmpIO%TAU0 = Noahowpmp%parameters%TAU0
+    NoahowpmpIO%GRAIN_GROWTH = Noahowpmp%parameters%GRAIN_GROWTH
+    NoahowpmpIO%EXTRA_GROWTH = Noahowpmp%parameters%EXTRA_GROWTH
+    NoahowpmpIO%DIRT_SOOT = Noahowpmp%parameters%DIRT_SOOT
+    NoahowpmpIO%BATS_COSZ = Noahowpmp%parameters%BATS_COSZ
+    NoahowpmpIO%BATS_VIS_NEW = Noahowpmp%parameters%BATS_VIS_NEW
+    NoahowpmpIO%BATS_NIR_NEW = Noahowpmp%parameters%BATS_NIR_NEW
+    NoahowpmpIO%BATS_VIS_AGE = Noahowpmp%parameters%BATS_VIS_AGE
+    NoahowpmpIO%BATS_NIR_AGE = Noahowpmp%parameters%BATS_NIR_AGE
+    NoahowpmpIO%BATS_VIS_DIR = Noahowpmp%parameters%BATS_VIS_DIR
+    NoahowpmpIO%BATS_NIR_DIR = Noahowpmp%parameters%BATS_NIR_DIR
+    NoahowpmpIO%RSURF_SNOW = Noahowpmp%parameters%RSURF_SNOW
+    NoahowpmpIO%RSURF_EXP = Noahowpmp%parameters%RSURF_EXP
+    NoahowpmpIO%ALBSAT(ix,iy,:) = Noahowpmp%parameters%ALBSAT(:)
+    NoahowpmpIO%ALBDRY(ix,iy,:) = Noahowpmp%parameters%ALBDRY(:)
+    NoahowpmpIO%ALBICE(ix,iy,:) = Noahowpmp%parameters%ALBICE(:)
+    NoahowpmpIO%ALBLAK(ix,iy,:) = Noahowpmp%parameters%ALBLAK(:)
+    NoahowpmpIO%OMEGAS(ix,iy,:) = Noahowpmp%parameters%OMEGAS(:)
+    NoahowpmpIO%BETADS = Noahowpmp%parameters%BETADS
+    NoahowpmpIO%BETAIS = Noahowpmp%parameters%BETAIS
+    NoahowpmpIO%EG(ix,iy,:) = Noahowpmp%parameters%EG(:)
+    NoahowpmpIO%WSLMAX = Noahowpmp%parameters%WSLMAX
+    NoahowpmpIO%max_liq_mass_fraction = Noahowpmp%parameters%max_liq_mass_fraction
+    NoahowpmpIO%SNOW_RET_FAC = Noahowpmp%parameters%SNOW_RET_FAC
+    NoahowpmpIO%NBAND = Noahowpmp%parameters%NBAND
+    NoahowpmpIO%MPE = Noahowpmp%parameters%MPE
+    NoahowpmpIO%TOPT(ix,iy) = Noahowpmp%parameters%TOPT
+    NoahowpmpIO%O2 = Noahowpmp%parameters%O2
+    NoahowpmpIO%CO2 = Noahowpmp%parameters%CO2
+    NoahowpmpIO%PSIWLT = Noahowpmp%parameters%PSIWLT
+    NoahowpmpIO%GRAV = Noahowpmp%parameters%GRAV
+    NoahowpmpIO%rain_snow_thresh = Noahowpmp%parameters%rain_snow_thresh
+
+  end associate
+
+  end subroutine ParametersVarOutTransfer
+
 end module ParametersVarInTransferModule

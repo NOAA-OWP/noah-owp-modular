@@ -1,4 +1,4 @@
-module DomainVarInTransferModule
+module DomainVarTransferModule
 
     use NoahowpmpIOType
     use NoahowpmpType
@@ -47,4 +47,23 @@ module DomainVarInTransferModule
 
   end subroutine
 
-end module DomainVarInTransferModule
+  subroutine DomainVarOutTransfer(Noahowpmp, NoahowpmpIO)
+
+    implicit none
+
+    type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
+    type(noahowp_type),     intent(inout) :: Noahowpmp
+
+    associate(ix   => NoahowpmpIO%ix, &
+              iy   => NoahowpmpIO%iy)
+
+    
+    NoahowpmpIO%zsoil(ix,iy,:) = Noahowpmp%domain%zsoil(:) 
+    NoahowpmpIO%dzsnso(ix,iy,:) = Noahowpmp%domain%dzsnso(:)  
+    NoahowpmpIO%zsnso(ix,iy,:) = Noahowpmp%domain%zsnso(:)   
+
+    end associate
+
+  end subroutine DomainVarOutTransfer
+
+end module DomainVarTransferModule
