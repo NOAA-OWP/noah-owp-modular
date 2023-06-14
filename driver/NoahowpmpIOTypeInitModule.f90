@@ -1,7 +1,6 @@
 module NoahowpmpIOTypeInitModule
 
   use NoahowpmpIOType
-  use NoahowpmpReadTableModule
   
   implicit none
   
@@ -28,7 +27,6 @@ module NoahowpmpIOTypeInitModule
     call WaterTypeDefault(NoahowpmpIO)
     call TableVarsAllocate(NoahowpmpIO)
     call TableVarsDefault(NoahowpmpIO)
-    call TableVarsRead(NoahowpmpIO)
 
   end subroutine NoahowpmpIOTypeInit
 
