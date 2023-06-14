@@ -2,6 +2,7 @@ module NoahowpmpReadNamelistModule
 
     use NoahowpmpIOType
     use NoahowpmpIOTypeInitModule
+    use NoahowpmpReadTableModule
     use ErrorCheckModule, only: sys_abort
     use ErrorCheckModule, only: is_within_bound
   
@@ -251,6 +252,11 @@ module NoahowpmpReadNamelistModule
     call NoahowpmpIOTypeInit(NoahowpmpIO)
 
     !---------------------------------------------------------------------
+    !  read in table variables
+    !---------------------------------------------------------------------
+    call TableVarsRead(NoahowpmpIO)
+
+    !---------------------------------------------------------------------
     !  transfer remaining values to NoahowpmpIO
     !---------------------------------------------------------------------
     if(dt               /= realMissing)   then; NoahowpmpIO%dt = dt; else; write(*,'(A)') 'ERROR: required entry dt not found in namelist'; stop; end if 
@@ -289,19 +295,47 @@ module NoahowpmpReadNamelistModule
     if(stomatal_resistance_option  /= integerMissing) then; NoahowpmpIO%opt_btr(:,:) = stomatal_resistance_option; else; write(*,'(A)') 'ERROR: required entry stomatal_resistance_option not found in namelist'; stop; end if
     if(evap_srfc_resistance_option /= integerMissing) then; NoahowpmpIO%opt_rsf(:,:) = evap_srfc_resistance_option; else; write(*,'(A)') 'ERROR: required entry evap_srfc_resistance_option not found in namelist'; stop; end if
     if(subsurface_option           /= integerMissing) then; NoahowpmpIO%opt_sub(:,:) = subsurface_option; else; write(*,'(A)') 'ERROR: required entry subsurface_option not found in namelist'; stop; end if
-    
-    if(zsoil(1).eq.realMissing) write(*,'(A)') 'ERROR: required entry zsoil not found in namelist'; stop
-    if(dzsnso(1).eq.realMissing) write(*,'(A)') 'ERROR: required entry dzsnso not found in namelist'; stop
-    if(sice(1).eq.realMissing) write(*,'(A)') 'ERROR: required entry sice not found in namelist'; stop
-    if(sh2o(1).eq.realMissing) write(*,'(A)') 'ERROR: required entry sh2o not found in namelist'; stop
-    do ix = 1, NoahowpmpIO%n_x
-      do iy = 1, NoahowpmpIO%n_y
-        NoahowpmpIO%zsoil(ix,iy,:) = zsoil
-        NoahowpmpIO%dzsnso(ix,iy,:) = dzsnso
-        NoahowpmpIO%sice(ix,iy,:) = sice
-        NoahowpmpIO%sh2o(ix,iy,:) = sh2o
+
+    if(zsoil(1).eq.realMissing) then
+      write(*,'(A)') 'ERROR: required entry zsoil not found in namelist'
+      stop
+    else
+      do ix = 1, NoahowpmpIO%n_x
+        do iy = 1, NoahowpmpIO%n_y
+          NoahowpmpIO%zsoil(ix,iy,:) = zsoil(:)
+        end do
       end do
-    end do
+    end if
+    if(dzsnso(1).eq.realMissing) then
+      write(*,'(A)') 'ERROR: required entry dzsnso not found in namelist'
+      stop
+    else
+      do ix = 1, NoahowpmpIO%n_x
+        do iy = 1, NoahowpmpIO%n_y
+          NoahowpmpIO%dzsnso(ix,iy,:) = dzsnso(:)
+        end do
+      end do
+    end if
+    if(sice(1).eq.realMissing) then
+      write(*,'(A)') 'ERROR: required entry sice not found in namelist'
+      stop
+    else
+      do ix = 1, NoahowpmpIO%n_x
+        do iy = 1, NoahowpmpIO%n_y
+          NoahowpmpIO%sice(ix,iy,:) = sice(:)
+        end do
+      end do
+    end if
+    if(sh2o(1).eq.realMissing) then
+      write(*,'(A)') 'ERROR: required entry sh2o not found in namelist'
+      stop
+    else
+      do ix = 1, NoahowpmpIO%n_x
+        do iy = 1, NoahowpmpIO%n_y
+          NoahowpmpIO%sh2o(ix,iy,:) = sh2o(:)
+        end do
+      end do
+    end if
 
   end subroutine
 
