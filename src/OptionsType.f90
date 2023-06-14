@@ -1,7 +1,5 @@
 module OptionsType
 
-use NamelistRead, only: namelist_type
-
 implicit none
 save
 private
