@@ -5,15 +5,21 @@
 
 all: user_build_options
 	(cd src;		make)
-	(cd bmi;		make)
 	(cd driver;		make)
-	(cd run;		make)
+	(cd bmi;		make)
+#	(cd run;		make)
 
 clean:
 	(cd src;		make clean)
 	(cd bmi;		make clean)
 	(cd driver;		make clean)
 	(cd run;		make clean)
+
+testDriver:
+	(cd src;		make)
+	(cd driver;		make)
+	(cd bmi;		make)
+	(cd test;		make)
 
 testBMI:
 	(cd src;		make)
