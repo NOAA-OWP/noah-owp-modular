@@ -236,7 +236,21 @@ contains
       error = 1
     end if
   end subroutine check  
+
+  SUBROUTINE cleanup()
+    implicit none
+      
+      !---------------------------------------------------------------------
+      ! Compiler directive NGEN_OUTPUT_ACTIVE to be defined if 
+      ! Nextgen is writing model output (https://github.com/NOAA-OWP/ngen)
+      !---------------------------------------------------------------------
+
+#ifndef NGEN_OUTPUT_ACTIVE
+    call finalize_output()
+#endif
   
+  END SUBROUTINE cleanup
+
 #endif     ! end of block to remove output if NGEN_OUTPUT_ACTIVE directive is True
 
 end module OutputModule
