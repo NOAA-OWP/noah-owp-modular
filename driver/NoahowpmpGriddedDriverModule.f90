@@ -1,68 +1,49 @@
 module NoahowpmpGriddedDriverModule
   
-  use LevelsType
-  use DomainType
-  use OptionsType
-  use ParametersType
-  use WaterType
-  use ForcingType
-  use EnergyType
   use AsciiReadModule
-  use OutputModule
-  use UtilitiesModule
-  use ForcingModule
-  use InterceptionModule
-  use EnergyModule
-  use WaterModule
-  use DateTimeUtilsModule
+  use RunModule
   use NoahowpmpType
   use NoahowpmpIOType
 
-  use DomainVarInTransferModule
+  use DomainVarTransferModule
+  use EnergyVarTransferModule
+  use ForcingVarTransferModule
+  use OptionsVarTransferModule
+  use ParametersVarTransferModule
+  use WaterVarTransferModule
   
   implicit none
 
-contains
+contains 
 
-  SUBROUTINE cleanup(model)
-    implicit none
-    type(noahowp_type), intent(inout) :: model
-      
-      !---------------------------------------------------------------------
-      ! Compiler directive NGEN_OUTPUT_ACTIVE to be defined if 
-      ! Nextgen is writing model output (https://github.com/NOAA-OWP/ngen)
-      !---------------------------------------------------------------------
-#ifndef NGEN_OUTPUT_ACTIVE
-      call finalize_output()
-#endif
-  
-  END SUBROUTINE cleanup
-
-  SUBROUTINE GriddedDriverMain(NoahowpmpIO,Noahowpmp)
+  SUBROUTINE GriddedDriverMain(NoahowpmpIO)
 
     implicit none
     type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
-    type(noahowp_type),     intent(inout) :: Noahowpmp   
-    integer                               :: ix, iy
+    type(noahowp_type)                    :: Noahowpmp   
+    integer                               :: ix, iy, ierr
+    integer                               :: iunit = 10
+    real                                  :: read_UU, read_VV, read_SFCTMP, read_Q2, read_SFCPRS
+    real                                  :: read_SOLDN, read_LWDN, read_PRCP
 
-    forcing_timestep = NoahowpmpIO%dt
-    #ifndef NGEN_FORCING_ACTIVE
-        call read_forcing_text(iunit, NoahowpmpIO%nowdate, forcing_timestep, &
-             read_UU, read_VV, read_SFCTMP, read_Q2, read_SFCPRS, read_SOLDN, read_LWDN, read_PRCP, ierr)
-        NoahowpmpIO%UU(:,:) = read_UU
-        NoahowpmpIO%VV(:,:) = read_VV
-        NoahowpmpIO%SFCTMP(:,:) = read_SFCTMP
-        NoahowpmpIO%Q2(:,:) = read_Q2
-        NoahowpmpIO%SFCPRS(:,:) = read_SFCPRS
-        NoahowpmpIO%SOLDN(:,:) = read_SOLDN
-        NoahowpmpIO%LWDN(:,:) = read_LWDN
-        NoahowpmpIO%PRCP(:,:) = read_PRCP
-        NoahowpmpIO%UU(:,:) = read_UU
-    #endif
+#ifndef NGEN_FORCING_ACTIVE
+    call read_forcing_text(iunit, NoahowpmpIO%nowdate, int(NoahowpmpIO%dt), &
+          read_UU, read_VV, read_SFCTMP, read_Q2, read_SFCPRS, read_SOLDN, read_LWDN, read_PRCP, ierr)
+    NoahowpmpIO%UU(:,:) = read_UU
+    NoahowpmpIO%VV(:,:) = read_VV
+    NoahowpmpIO%SFCTMP(:,:) = read_SFCTMP
+    NoahowpmpIO%Q2(:,:) = read_Q2
+    NoahowpmpIO%SFCPRS(:,:) = read_SFCPRS
+    NoahowpmpIO%SOLDN(:,:) = read_SOLDN
+    NoahowpmpIO%LWDN(:,:) = read_LWDN
+    NoahowpmpIO%PRCP(:,:) = read_PRCP
+    NoahowpmpIO%UU(:,:) = read_UU
+#endif
        
-    model%domain%itime    = model%domain%itime + 1 ! increment the integer time by 1
-    model%domain%time_dbl = dble(model%domain%time_dbl + model%domain%dt) ! increment model time in seconds by DT
+    NoahowpmpIO%itime    = NoahowpmpIO%itime + 1 ! increment the integer time by 1
+    NoahowpmpIO%time_dbl = dble(NoahowpmpIO%time_dbl + NoahowpmpIO%dt) ! increment model time in seconds by DT
 
+    call Noahowpmp%Init(NoahowpmpIO)
     do ix = 1, NoahowpmpIO%n_x
       do iy = 1, NoahowpmpIO%n_y
 
@@ -77,11 +58,16 @@ contains
         
         call solve_noahowp(Noahowpmp)
 
+        call DomainVarOutTransfer(Noahowpmp, NoahowpmpIO)
+        call EnergyVarOutTransfer(Noahowpmp, NoahowpmpIO)
+        call ForcingVarOutTransfer(Noahowpmp, NoahowpmpIO)
+        call OptionsVarOutTransfer(Noahowpmp, NoahowpmpIO)
+        call ParametersVarOutTransfer(Noahowpmp, NoahowpmpIO)
+        call WaterVarOutTransfer(Noahowpmp, NoahowpmpIO)
+
       end do
     end do
 
   END SUBROUTINE GriddedDriverMain
-
-  
 
 end module NoahowpmpGriddedDriverModule
