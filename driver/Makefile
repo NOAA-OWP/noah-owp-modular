@@ -8,24 +8,24 @@ include ../user_build_options
 F90FLAGS := -cpp ${F90FLAGS}
 
 #OBJS = noahowp_output.o noahowp_driver.o noahowp_ascii_read.o
-OBJS =  AsciiReadModule.o \
-       DomainVarInTransferModule.o \
-       EnergyVarInTransferModule.o \
-       ForcingVarInTransferModule.o \
-       NoahModularDriver.o \
+OBJS = AsciiReadModule.o \
+       DomainVarTransferModule.o \
+       EnergyVarTransferModule.o \
+       ForcingVarTransferModule.o \
        NoahowpmpIOType.o \
        NoahowpmpIOTypeInitModule.o \
        NoahowpmpReadNamelistModule.o \
        NoahowpmpReadTableModule.o \
-       OptionsVarInTransferModule.o \
+       OptionsVarTransferModule.o \
        OutputModule.o \
-       ParametersVarInTransferModule.o \
-       WaterVarInTransferModule.o 
+       ParametersVarTransferModule.o \
+       WaterVarTransferModule.o \
+       NoahowpmpGriddedDriverModule.o
 
 all:	$(OBJS)
 
 .f90.o:
-	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I./ -I../src -I../bmi $(*).f90
+	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I./ -I../src $(*).f90
 
 #
 # This command cleans up object (etc) files:
@@ -38,26 +38,29 @@ clean:
 # Dependencies:
 #
 AsciiReadModule.o:               ../src/UtilitiesModule.o
-DomainVarInTransferModule.o:     ./NoahowpmpIOType.o \
+DomainVarTransferModule.o:       ./NoahowpmpIOType.o \
                                  ../src/NoahowpmpType.o
-EnergyVarInTransferModule.o:     ./NoahowpmpIOType.o \
+EnergyVarTransferModule.o:       ./NoahowpmpIOType.o \
                                  ../src/NoahowpmpType.o 
-ForcingVarInTransferModule.o:    ./NoahowpmpIOType.o \
+ForcingVarTransferModule.o:      ./NoahowpmpIOType.o \
                                  ../src/NoahowpmpType.o 
-NoahModularDriver.o:             ../bmi/bmi_noahowp.o \
-                                 ../bmi/bmi.o
-NoahowpmpIOTypeInitModule.o:     ./NoahowpmpIOType.o \
-                                 ./NoahowpmpReadTableModule.o
+NoahowpmpIOTypeInitModule.o:     ./NoahowpmpIOType.o
 NoahowpmpReadNamelistModule.o:   ./NoahowpmpIOType.o \
-                                 ./NoahowpmpIOTypeInitModule.o
+                                 ./NoahowpmpIOTypeInitModule.o \
+                                 ./NoahowpmpReadTableModule.o \
+                                 ../src/ErrorCheckModule.o
 NoahowpmpReadTableModule.o:      ./NoahowpmpIOType.o
-OptionsVarInTransferModule.o:    ./NoahowpmpIOType.o \
+OptionsVarTransferModule.o:      ./NoahowpmpIOType.o \
                                  ../src/NoahowpmpType.o 
 OutputModule.o:                  ../src/WaterType.o \
                                  ../src/DomainType.o \
                                  ../src/ForcingType.o \
                                  ../src/EnergyType.o 
-ParametersVarInTransferModule.o: ./NoahowpmpIOType.o \
+ParametersVarTransferModule.o:   ./NoahowpmpIOType.o \
                                  ../src/NoahowpmpType.o
-WaterVarInTransferModule.o:     ./NoahowpmpIOType.o \
+WaterVarTransferModule.o:        ./NoahowpmpIOType.o \
+                                 ../src/NoahowpmpType.o 
+NoahowpmpGriddedDriverModule.o:  ./AsciiReadModule.o \
+                                 ../src/RunModule.o \
+                                 ./NoahowpmpIOType.o \
                                  ../src/NoahowpmpType.o 
