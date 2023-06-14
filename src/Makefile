@@ -46,7 +46,7 @@ OBJS = ErrorCheckModule.o \
 all:	$(OBJS)
 
 .f90.o:
-	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../driver $(*).f90
+	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I./ $(*).f90
 
 #
 # This command cleans up object (etc) files:
@@ -61,7 +61,7 @@ clean:
 
 NamelistRead.o: ErrorCheckModule.o
 LevelsType.o: NamelistRead.o
-DomainType.o: NamelistRead.o LevelsType.o DateTimeUtilsModule.o
+DomainType.o: NamelistRead.o LevelsType.o DateTimeUtilsModule.o ../driver/NoahowpmpIOType.o
 OptionsType.o: NamelistRead.o
 ParametersType.o: NamelistRead.o ParametersRead.o
 ForcingType.o: NamelistRead.o
