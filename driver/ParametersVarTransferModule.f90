@@ -1,4 +1,4 @@
-module ParametersVarInTransferModule
+module ParametersVarTransferModule
 
     use NoahowpmpIOType
     use NoahowpmpType
@@ -328,4 +328,4 @@ module ParametersVarInTransferModule
 
   end subroutine ParametersVarOutTransfer
 
-end module ParametersVarInTransferModule
+end module ParametersVarTransferModule
