@@ -8,13 +8,17 @@ module bminoahowp
    use bmif_2_0
 #endif
 
-  use RunModule 
+  use NoahowpmpIOType
+  use NoahowpmpReadNamelistModule
+  use OutputModule
+  use NoahowpmpGriddedDriverModule
   use, intrinsic :: iso_c_binding, only: c_ptr, c_loc, c_f_pointer
+  
   implicit none
 
   type, extends (bmi) :: bmi_noahowp
      private
-     type (noahowp_type) :: model
+     type(NoahowpmpIO_type) :: NoahowpmpIO
    contains
      procedure :: get_component_name => noahowp_component_name
      procedure :: get_input_item_count => noahowp_input_item_count
@@ -181,7 +185,7 @@ contains
     integer :: bmi_status
 
     if (len(config_file) > 0) then
-       call initialize_from_file(this%model, config_file)
+       call NoahowpmpReadNamelist(this%NoahowpmpIO,config_file)
     else
        !call initialize_from_defaults(this%model)
     end if
@@ -193,7 +197,7 @@ contains
     class (bmi_noahowp), intent(inout) :: this
     integer :: bmi_status
 
-    call cleanup(this%model)
+    call cleanup()
     bmi_status = BMI_SUCCESS
   end function noahowp_finalize
 
@@ -213,7 +217,7 @@ contains
     double precision, intent(out) :: time
     integer :: bmi_status
 
-    time = dble(this%model%domain%ntime * this%model%domain%dt)
+    time = dble(this%NoahowpmpIO%ntime * this%NoahowpmpIO%dt)
     bmi_status = BMI_SUCCESS
   end function noahowp_end_time
 
@@ -223,7 +227,7 @@ contains
     double precision, intent(out) :: time
     integer :: bmi_status
 
-    time = dble(this%model%domain%time_dbl)
+    time = dble(this%NoahowpmpIO%time_dbl)
     bmi_status = BMI_SUCCESS
   end function noahowp_current_time
 
@@ -233,7 +237,7 @@ contains
     double precision, intent(out) :: time_step
     integer :: bmi_status
 
-    time_step = dble(this%model%domain%dt)
+    time_step = dble(this%NoahowpmpIO%dt)
     bmi_status = BMI_SUCCESS
   end function noahowp_time_step
 
@@ -252,7 +256,8 @@ contains
     class (bmi_noahowp), intent(inout) :: this
     integer :: bmi_status
 
-    call advance_in_time(this%model)
+    call GriddedDriverMain(this%NoahowpmpIO)
+
     bmi_status = BMI_SUCCESS
   end function noahowp_update
 
@@ -264,12 +269,12 @@ contains
     double precision :: n_steps_real
     integer :: n_steps, i, s
 
-    if (time < this%model%domain%time_dbl) then
+    if (time < this%NoahowpmpIO%time_dbl) then
        bmi_status = BMI_FAILURE
        return
     end if
 
-    n_steps_real = (time - this%model%domain%time_dbl) / this%model%domain%dt
+    n_steps_real = (time - this%NoahowpmpIO%time_dbl) / this%NoahowpmpIO%dt
     n_steps = floor(n_steps_real)
     do i = 1, n_steps
        s = this%update()
@@ -614,49 +619,49 @@ contains
 
     select case(name)
     case("SFCPRS")
-       size = sizeof(this%model%forcing%sfcprs)  ! 'sizeof' in gcc & ifort
+       size = sizeof(this%NoahowpmpIO%sfcprs)  ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("SFCTMP")
-       size = sizeof(this%model%forcing%sfctmp)             ! 'sizeof' in gcc & ifort
+       size = sizeof(this%NoahowpmpIO%sfctmp)             ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("SOLDN")
-       size = sizeof(this%model%forcing%soldn)                ! 'sizeof' in gcc & ifort
+       size = sizeof(this%NoahowpmpIO%soldn)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("LWDN")
-       size = sizeof(this%model%forcing%lwdn)                ! 'sizeof' in gcc & ifort
+       size = sizeof(this%NoahowpmpIO%lwdn)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("UU")
-       size = sizeof(this%model%forcing%uu)                ! 'sizeof' in gcc & ifort
+       size = sizeof(this%NoahowpmpIO%uu)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("VV")
-       size = sizeof(this%model%forcing%vv)                ! 'sizeof' in gcc & ifort
+       size = sizeof(this%NoahowpmpIO%vv)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("Q2")
-       size = sizeof(this%model%forcing%q2)                ! 'sizeof' in gcc & ifort
+       size = sizeof(this%NoahowpmpIO%q2)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("PRCPNONC")
-       size = sizeof(this%model%forcing%prcpnonc)                ! 'sizeof' in gcc & ifort
+       size = sizeof(this%NoahowpmpIO%prcpnonc)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("QINSUR")
-       size = sizeof(this%model%water%qinsur)                ! 'sizeof' in gcc & ifort
+       size = sizeof(this%NoahowpmpIO%qinsur)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("ETRAN")
-       size = sizeof(this%model%water%etran)                ! 'sizeof' in gcc & ifort
+       size = sizeof(this%NoahowpmpIO%etran)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("QSEVA")
-       size = sizeof(this%model%water%qseva)                ! 'sizeof' in gcc & ifort
+       size = sizeof(this%NoahowpmpIO%qseva)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("EVAPOTRANS")
-       size = sizeof(this%model%water%evapotrans)            ! 'sizeof' in gcc & ifort
+       size = sizeof(this%NoahowpmpIO%evapotrans)            ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("TG")
-       size = sizeof(this%model%energy%tg)            ! 'sizeof' in gcc & ifort
+       size = sizeof(this%NoahowpmpIO%tg)            ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("SNEQV")
-       size = sizeof(this%model%water%sneqv)            ! 'sizeof' in gcc & ifort
+       size = sizeof(this%NoahowpmpIO%sneqv)            ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("TGS")
-       size = sizeof(this%model%energy%tgs)            ! 'sizeof' in gcc & ifort
+       size = sizeof(this%NoahowpmpIO%tgs)            ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case default
        size = -1
@@ -726,49 +731,49 @@ contains
 
     select case(name)
     case("SFCPRS")
-       dest = [this%model%forcing%sfcprs]
+       dest = [this%NoahowpmpIO%sfcprs]
        bmi_status = BMI_SUCCESS
     case("SFCTMP")
-       dest = [this%model%forcing%sfctmp]
+       dest = [this%NoahowpmpIO%sfctmp]
        bmi_status = BMI_SUCCESS
     case("SOLDN")
-       dest = [this%model%forcing%soldn]
+       dest = [this%NoahowpmpIO%soldn]
        bmi_status = BMI_SUCCESS
     case("LWDN")
-       dest = [this%model%forcing%lwdn]
+       dest = [this%NoahowpmpIO%lwdn]
        bmi_status = BMI_SUCCESS
     case("UU")
-       dest = [this%model%forcing%uu]
+       dest = [this%NoahowpmpIO%uu]
        bmi_status = BMI_SUCCESS
     case("VV")
-       dest = [this%model%forcing%vv]
+       dest = [this%NoahowpmpIO%vv]
        bmi_status = BMI_SUCCESS
     case("Q2")
-       dest = [this%model%forcing%q2]
+       dest = [this%NoahowpmpIO%q2]
        bmi_status = BMI_SUCCESS
     case("PRCPNONC")
-       dest = [this%model%forcing%prcpnonc]
+       dest = [this%NoahowpmpIO%prcpnonc]
        bmi_status = BMI_SUCCESS
     case("QINSUR")
-       dest = [this%model%water%qinsur]
+       dest = [this%NoahowpmpIO%qinsur]
        bmi_status = BMI_SUCCESS
     case("ETRAN")
-       dest = [this%model%water%etran]
+       dest = [this%NoahowpmpIO%etran]
        bmi_status = BMI_SUCCESS
     case("QSEVA")
-       dest = [this%model%water%qseva]
+       dest = [this%NoahowpmpIO%qseva]
        bmi_status = BMI_SUCCESS
     case("EVAPOTRANS")
-       dest = [this%model%water%evapotrans]
+       dest = [this%NoahowpmpIO%evapotrans]
        bmi_status = BMI_SUCCESS
     case("TG")
-       dest = [this%model%energy%tg]
+       dest = [this%NoahowpmpIO%tg]
        bmi_status = BMI_SUCCESS
     case("SNEQV")
-       dest = [this%model%water%sneqv]
+       dest = [this%NoahowpmpIO%sneqv]
        bmi_status = BMI_SUCCESS
     case("TGS")
-       dest = [this%model%energy%tgs]
+       dest = [this%NoahowpmpIO%tgs]
        bmi_status = BMI_SUCCESS
     case default
        dest(:) = -1.0
@@ -931,49 +936,49 @@ contains
 
     select case(name)
     case("SFCPRS")
-       this%model%forcing%sfcprs = src(1)
+       this%NoahowpmpIO%sfcprs = src(1)
        bmi_status = BMI_SUCCESS
     case("SFCTMP")
-       this%model%forcing%sfctmp = src(1)
+       this%NoahowpmpIO%sfctmp = src(1)
        bmi_status = BMI_SUCCESS
     case("SOLDN")
-       this%model%forcing%soldn = src(1)
+       this%NoahowpmpIO%soldn = src(1)
        bmi_status = BMI_SUCCESS
     case("LWDN")
-       this%model%forcing%lwdn = src(1)
+       this%NoahowpmpIO%lwdn = src(1)
        bmi_status = BMI_SUCCESS
     case("UU")
-       this%model%forcing%uu = src(1)
+       this%NoahowpmpIO%uu = src(1)
        bmi_status = BMI_SUCCESS
     case("VV")
-       this%model%forcing%vv = src(1)
+       this%NoahowpmpIO%vv = src(1)
        bmi_status = BMI_SUCCESS
     case("Q2")
-       this%model%forcing%q2 = src(1)
+       this%NoahowpmpIO%q2 = src(1)
        bmi_status = BMI_SUCCESS
     case("PRCPNONC")
-       this%model%forcing%prcpnonc = src(1)
+       this%NoahowpmpIO%prcpnonc = src(1)
        bmi_status = BMI_SUCCESS
     case("QINSUR")
-       this%model%water%qinsur = src(1)
+       this%NoahowpmpIO%qinsur = src(1)
        bmi_status = BMI_SUCCESS
     case("ETRAN")
-       this%model%water%etran = src(1)
+       this%NoahowpmpIO%etran = src(1)
        bmi_status = BMI_SUCCESS
     case("QSEVA")
-       this%model%water%qseva = src(1)
+       this%NoahowpmpIO%qseva = src(1)
        bmi_status = BMI_SUCCESS
     case("EVAPOTRANS")
-       this%model%water%evapotrans = src(1)
+       this%NoahowpmpIO%evapotrans = src(1)
        bmi_status = BMI_SUCCESS
     case("TG")
-       this%model%energy%tg = src(1)
+       this%NoahowpmpIO%tg = src(1)
        bmi_status = BMI_SUCCESS
     case("SNEQV")
-       this%model%water%sneqv = src(1)
+       this%NoahowpmpIO%sneqv = src(1)
        bmi_status = BMI_SUCCESS
     case("TGS")
-       this%model%energy%tgs = src(1)
+       this%NoahowpmpIO%tgs = src(1)
        bmi_status = BMI_SUCCESS
     case default
        bmi_status = BMI_FAILURE
