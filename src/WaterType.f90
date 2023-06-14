@@ -1,6 +1,5 @@
 module WaterType
 
-use NamelistRead, only: namelist_type
 use NoahowpmpIOType
 
 implicit none
