@@ -12,6 +12,7 @@ OBJS = AsciiReadModule.o \
        DomainVarTransferModule.o \
        EnergyVarTransferModule.o \
        ForcingVarTransferModule.o \
+       LevelsVarTransferModule.o \
        NoahowpmpIOType.o \
        NoahowpmpIOTypeInitModule.o \
        NoahowpmpReadNamelistModule.o \
@@ -42,13 +43,18 @@ DomainVarTransferModule.o:       ./NoahowpmpIOType.o \
                                  ../src/NoahowpmpType.o
 EnergyVarTransferModule.o:       ./NoahowpmpIOType.o \
                                  ../src/NoahowpmpType.o 
+LevelsVarTransferModule.o:       ./NoahowpmpIOType.o \
+                                 ../src/NoahowpmpType.o 
 ForcingVarTransferModule.o:      ./NoahowpmpIOType.o \
                                  ../src/NoahowpmpType.o 
 NoahowpmpIOTypeInitModule.o:     ./NoahowpmpIOType.o
 NoahowpmpReadNamelistModule.o:   ./NoahowpmpIOType.o \
                                  ./NoahowpmpIOTypeInitModule.o \
                                  ./NoahowpmpReadTableModule.o \
-                                 ../src/ErrorCheckModule.o
+                                 ../src/ErrorCheckModule.o \
+                                 ./OutputModule.o \
+                                 ../src/DateTimeUtilsModule.o \
+                                 ./AsciiReadModule.o
 NoahowpmpReadTableModule.o:      ./NoahowpmpIOType.o
 OptionsVarTransferModule.o:      ./NoahowpmpIOType.o \
                                  ../src/NoahowpmpType.o 
@@ -63,4 +69,11 @@ WaterVarTransferModule.o:        ./NoahowpmpIOType.o \
 NoahowpmpGriddedDriverModule.o:  ./AsciiReadModule.o \
                                  ../src/RunModule.o \
                                  ./NoahowpmpIOType.o \
-                                 ../src/NoahowpmpType.o 
+                                 ../src/NoahowpmpType.o \
+                                 ./DomainVarTransferModule.o \
+                                 ./EnergyVarTransferModule.o \
+                                 ./ForcingVarTransferModule.o \
+                                 ./OptionsVarTransferModule.o \
+                                 ./ParametersVarTransferModule.o \
+                                 ./WaterVarTransferModule.o \
+                                 ./LevelsVarTransferModule.o

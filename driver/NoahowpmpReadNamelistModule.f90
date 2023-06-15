@@ -3,6 +3,9 @@ module NoahowpmpReadNamelistModule
     use NoahowpmpIOType
     use NoahowpmpIOTypeInitModule
     use NoahowpmpReadTableModule
+    use AsciiReadModule
+    use OutputModule
+    use DateTimeUtilsModule
     use ErrorCheckModule, only: sys_abort
     use ErrorCheckModule, only: is_within_bound
   
@@ -230,7 +233,7 @@ module NoahowpmpReadNamelistModule
     !---------------------------------------------------------------------
     !  check xyz dimensions and move to NoahowpmpIO
     !---------------------------------------------------------------------
-    ! n_x and n_y tobe read in via namelist.input but currently hardcode here
+    ! n_x and n_y tobe read in via namelist.input but currently hardcoding here
     n_x = 2
     n_y = 3
     if(n_x              /= integerMissing) then; NoahowpmpIO%n_x = n_x; else; write(*,'(A)') 'ERROR: required entry n_x not found in namelist'; stop; end if
@@ -300,42 +303,178 @@ module NoahowpmpReadNamelistModule
       write(*,'(A)') 'ERROR: required entry zsoil not found in namelist'
       stop
     else
-      do ix = 1, NoahowpmpIO%n_x
-        do iy = 1, NoahowpmpIO%n_y
-          NoahowpmpIO%zsoil(ix,iy,:) = zsoil(:)
-        end do
+      do iz = 1, nsoil
+        NoahowpmpIO%zsoil(:,:,iz) = zsoil(iz)
       end do
     end if
     if(dzsnso(1).eq.realMissing) then
       write(*,'(A)') 'ERROR: required entry dzsnso not found in namelist'
       stop
     else
-      do ix = 1, NoahowpmpIO%n_x
-        do iy = 1, NoahowpmpIO%n_y
-          NoahowpmpIO%dzsnso(ix,iy,:) = dzsnso(:)
-        end do
+      do iz = -nsnow+1,nsoil
+        NoahowpmpIO%dzsnso(:,:,iz) = dzsnso(iz)
       end do
     end if
     if(sice(1).eq.realMissing) then
       write(*,'(A)') 'ERROR: required entry sice not found in namelist'
       stop
     else
-      do ix = 1, NoahowpmpIO%n_x
-        do iy = 1, NoahowpmpIO%n_y
-          NoahowpmpIO%sice(ix,iy,:) = sice(:)
-        end do
+      do iz = 1, nsoil
+        NoahowpmpIO%sice(:,:,iz) = sice(iz)
       end do
     end if
     if(sh2o(1).eq.realMissing) then
       write(*,'(A)') 'ERROR: required entry sh2o not found in namelist'
       stop
     else
-      do ix = 1, NoahowpmpIO%n_x
-        do iy = 1, NoahowpmpIO%n_y
-          NoahowpmpIO%sh2o(ix,iy,:) = sh2o(:)
-        end do
+      do iz = 1, nsoil
+        NoahowpmpIO%sh2o(:,:,iz) = sh2o(iz)
       end do
     end if
+
+      ! Initializations
+      ! for soil water
+      !water%zwt       = -100.0       ! should only be needed for run=1
+    NoahowpmpIO%smcwtd(:,:)    = 0.0          ! should only be needed for run=5
+    NoahowpmpIO%deeprech(:,:)  = 0.0          ! should only be needed for run=5
+    NoahowpmpIO%qinsur(:,:)    = 0.0          !
+    NoahowpmpIO%runsrf(:,:)    = 0.0          !
+    NoahowpmpIO%runsub(:,:)    = 0.0          !
+    NoahowpmpIO%qdrain(:,:)    = 0.0          !
+    NoahowpmpIO%wcnd(:,:,:)      = 0.0          !
+    NoahowpmpIO%fcrmax(:,:)    = 0.0          !
+    NoahowpmpIO%snoflow(:,:)   = 0.0          ! glacier outflow for all RUNSUB options, [mm/s]
+    NoahowpmpIO%qseva(:,:)     = 0.0          ! soil evaporation [mm/s]
+    NoahowpmpIO%etrani(:,:,:)    = 0.0          ! transpiration from each level[mm/s]
+    NoahowpmpIO%btrani(:,:,:)    = 0.0          ! soil water transpiration factor (0 to 1) by soil layer
+    NoahowpmpIO%btran(:,:)     = 0.0          ! soil water transpiration factor (0 to 1)
+
+    ! for canopy water
+    NoahowpmpIO%RAIN(:,:)      = 0.0          ! rainfall mm/s
+    NoahowpmpIO%SNOW(:,:)      = 0.0          ! snowfall mm/s
+    NoahowpmpIO%BDFALL(:,:)    = 0.0        ! bulk density of snowfall (kg/m3)
+    NoahowpmpIO%FB_snow(:,:)   = 0.0          ! canopy fraction buried by snow (computed from phenology)
+    NoahowpmpIO%FP(:,:)        = 1.0          ! fraction of the gridcell that receives precipitation
+    NoahowpmpIO%CANLIQ(:,:)    = 0.0          ! canopy liquid water [mm]
+    NoahowpmpIO%CANICE(:,:)    = 0.0          ! canopy frozen water [mm]
+    NoahowpmpIO%FWET(:,:)      = 0.0          ! canopy fraction wet or snow
+    NoahowpmpIO%CMC(:,:)       = 0.0          ! intercepted water per ground area (mm)
+    NoahowpmpIO%QINTR(:,:)    = 0.0           ! interception rate for rain (mm/s)
+    NoahowpmpIO%QDRIPR(:,:)   = 0.0           ! drip rate for rain (mm/s)
+    NoahowpmpIO%QTHROR(:,:)   = 0.0           ! throughfall for rain (mm/s)
+    NoahowpmpIO%QINTS(:,:)    = 0.0           ! interception (loading) rate for snowfall (mm/s)
+    NoahowpmpIO%QDRIPS(:,:)   = 0.0           ! drip (unloading) rate for intercepted snow (mm/s)
+    NoahowpmpIO%QTHROS(:,:)   = 0.0           ! throughfall of snowfall (mm/s)
+    NoahowpmpIO%QRAIN(:,:)    = 0.0           ! rain at ground srf (mm/s) [+]
+    NoahowpmpIO%QSNOW(:,:)    = 0.0           ! snow at ground srf (mm/s) [+]
+    NoahowpmpIO%SNOWHIN(:,:)  = 0.0           ! snow depth increasing rate (m/s)
+    NoahowpmpIO%ECAN(:,:)     = 0.0           ! evap of intercepted water (mm/s) [+]
+    NoahowpmpIO%ETRAN(:,:)    = 0.0           ! transpiration rate (mm/s) [+]
+
+    ! for snow water
+    NoahowpmpIO%QVAP(:,:)     = 0.0           ! evaporation/sublimation rate mm/s 
+    NoahowpmpIO%ISNOW(:,:)    = 0
+    NoahowpmpIO%SNOWH(:,:)    = 0.0
+    NoahowpmpIO%SNEQV(:,:)    = 0.0
+    NoahowpmpIO%SNEQVO(:,:)   = 0.0
+    NoahowpmpIO%BDSNO(:,:)    = 0.0
+    NoahowpmpIO%PONDING(:,:)  = 0.0
+    NoahowpmpIO%PONDING1(:,:) = 0.0
+    NoahowpmpIO%PONDING2(:,:) = 0.0
+    NoahowpmpIO%QSNBOT(:,:)   = 0.0
+    NoahowpmpIO%QSNFRO(:,:)   = 0.0
+    NoahowpmpIO%QSNSUB(:,:)   = 0.0
+    NoahowpmpIO%QDEW(:,:)     = 0.0
+    NoahowpmpIO%QSDEW(:,:)    = 0.0
+    NoahowpmpIO%SNICE(:,:,:)    = 0.0
+    NoahowpmpIO%SNLIQ(:,:,:)    = 0.0
+    NoahowpmpIO%FICEOLD(:,:,:)  = 0.0
+    NoahowpmpIO%FSNO(:,:)     = 0.0
+
+    ! for energy-related variable
+    NoahowpmpIO%TV(:,:)      = 298.0        ! leaf temperature [K]
+    NoahowpmpIO%TG(:,:)      = 298.0        ! ground temperature [K]
+    NoahowpmpIO%CM(:,:)      = 0.0          ! momentum drag coefficient
+    NoahowpmpIO%CH(:,:)      = 0.0          ! heat drag coefficient
+    NoahowpmpIO%FCEV(:,:)    = 5.0          ! constant canopy evaporation (w/m2) [+ to atm ]
+    NoahowpmpIO%FCTR(:,:)    = 5.0          ! constant transpiration (w/m2) [+ to atm]
+    NoahowpmpIO%IMELT(:,:,:)   = 1 ! freeze
+    NoahowpmpIO%STC(:,:,:)     = 298.0
+    NoahowpmpIO%COSZ(:,:)    = 0.7        ! cosine of solar zenith angle
+    NoahowpmpIO%ICE(:,:)     = 0          ! 1 if sea ice, -1 if glacier, 0 if no land ice (seasonal snow)
+    NoahowpmpIO%ALB(:,:)     = 0.6        ! initialize snow albedo in CLASS routine
+    NoahowpmpIO%ALBOLD(:,:)  = 0.6        ! initialize snow albedo in CLASS routine
+    NoahowpmpIO%FROZEN_CANOPY(:,:) = .false. ! used to define latent heat pathway
+    NoahowpmpIO%FROZEN_GROUND(:,:) = .false. 
+
+    ! -- forcings 
+    ! these are initially set to huge(1) -- to trap errors may want to set to a recognizable flag if they are
+    !   supposed to be assigned below (eg -9999)
+    !forcing%UU       = 0.0        ! wind speed in u direction (m s-1)
+    !forcing%VV       = 0.0        ! wind speed in v direction (m s-1)
+    !forcing%SFCPRS   = 0.0        ! pressure (pa)
+    !forcing%SFCTMP   = 0.0        ! surface air temperature [k]
+    !forcing%Q2       = 0.0        ! mixing ratio (kg/kg)
+    !forcing%PRCP     = 0.0        ! convective precipitation entering  [mm/s]    ! MB/AN : v3.7
+    !forcing%SOLDN    = 0.0        ! downward shortwave radiation (w/m2)
+    !forcing%LWDN     = 0.0        ! downward longwave radiation (w/m2)
+    
+    ! forcing-related variables
+    NoahowpmpIO%PRCPCONV(:,:) = 0.0        ! convective precipitation entering  [mm/s]    ! MB/AN : v3.7
+    NoahowpmpIO%PRCPNONC(:,:) = 0.0        ! non-convective precipitation entering [mm/s] ! MB/AN : v3.7
+    NoahowpmpIO%PRCPSHCV(:,:) = 0.0        ! shallow convective precip entering  [mm/s]   ! MB/AN : v3.7
+    NoahowpmpIO%PRCPSNOW(:,:) = 0.0        ! snow entering land model [mm/s]              ! MB/AN : v3.7
+    NoahowpmpIO%PRCPGRPL(:,:) = 0.0        ! graupel entering land model [mm/s]           ! MB/AN : v3.7
+    NoahowpmpIO%PRCPHAIL(:,:) = 0.0        ! hail entering land model [mm/s]              ! MB/AN : v3.7
+    NoahowpmpIO%THAIR(:,:)    = 0.0        ! potential temperature (k)
+    NoahowpmpIO%QAIR(:,:)     = 0.0        ! specific humidity (kg/kg) (q2/(1+q2))
+    NoahowpmpIO%EAIR(:,:)     = 0.0        ! vapor pressure air (pa)
+    NoahowpmpIO%RHOAIR(:,:)   = 0.0        ! density air (kg/m3)
+    NoahowpmpIO%SWDOWN(:,:)   = 0.0        ! downward solar filtered by sun angle [w/m2]
+    NoahowpmpIO%FPICE(:,:)    = 0.0        ! fraction of ice                AJN
+    NoahowpmpIO%JULIAN        = 0.0        ! Setting arbitrary julian day
+    NoahowpmpIO%YEARLEN       = 365        ! Setting year to be normal (i.e. not a leap year)  
+    NoahowpmpIO%FOLN(:,:)     = 1.0        ! foliage nitrogen concentration (%); for now, set to nitrogen saturation
+    NoahowpmpIO%TBOT(:,:)     = 285.0      ! bottom condition for soil temperature [K]
+
+    ! domain variables
+    do iz = -NoahowpmpIO%nsnow+1,0
+      NoahowpmpIO%zsnso(:,:,iz) = 0.0
+    end do
+    do iz = 1,NoahowpmpIO%nsoil
+      NoahowpmpIO%zsnso(:,:,iz)    = zsoil(iz)
+    end do
+
+    NoahowpmpIO%smc = NoahowpmpIO%sh2o + NoahowpmpIO%sice  ! volumetric soil water
+    NoahowpmpIO%smc_init = NoahowpmpIO%smc               ! initial SMC
+
+    ! time variables
+    NoahowpmpIO%nowdate   = NoahowpmpIO%startdate ! start the model with nowdate = startdate
+    NoahowpmpIO%start_datetime = date_to_unix(NoahowpmpIO%startdate)
+    NoahowpmpIO%end_datetime   = date_to_unix(NoahowpmpIO%enddate)
+    NoahowpmpIO%itime     = 1                ! initialize the time loop counter at 1
+    NoahowpmpIO%time_dbl  = 0.d0             ! start model run at t = 0
+    call get_utime_list (NoahowpmpIO%start_datetime, NoahowpmpIO%end_datetime, NoahowpmpIO%dt, NoahowpmpIO%sim_datetimes)  ! makes unix-time list for desired records (end-of-timestep)
+    NoahowpmpIO%ntime = size (NoahowpmpIO%sim_datetimes) 
+
+!---------------------------------------------------------------------
+! Open the forcing file
+! Code adapted from the ASCII_IO from NOAH-MP V1.1
+! Compiler directive NGEN_FORCING_ACTIVE to be defined if 
+! Nextgen forcing is being used (https://github.com/NOAA-OWP/ngen)
+!---------------------------------------------------------------------
+#ifndef NGEN_FORCING_ACTIVE
+    call open_forcing_file(NoahowpmpIO%forcing_filename)
+#endif
+    
+!---------------------------------------------------------------------
+! create output file and add initial values
+! Compiler directive NGEN_OUTPUT_ACTIVE to be defined if 
+! Nextgen is writing model output (https://github.com/NOAA-OWP/ngen)
+!---------------------------------------------------------------------
+#ifndef NGEN_OUTPUT_ACTIVE
+    call initialize_output(NoahowpmpIO%output_filename, NoahowpmpIO%ntime, NoahowpmpIO%nsoil, NoahowpmpIO%nsnow, NoahowpmpIO%n_x, NoahowpmpIO%n_y)
+#endif
 
   end subroutine
 

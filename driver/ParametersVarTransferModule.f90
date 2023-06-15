@@ -81,12 +81,12 @@ module ParametersVarTransferModule
 
     noahowpmp%parameters%refkdt       = NoahowpmpIO%REFKDT_TABLE
     noahowpmp%parameters%refdk        = NoahowpmpIO%REFDK_TABLE
-    noahowpmp%parameters%kdt          = NoahowpmpIO%refkdt * NoahowpmpIO%dksat(ix,iy,1) / NoahowpmpIO%refdk
+    noahowpmp%parameters%kdt          = noahowpmp%parameters%refkdt * noahowpmp%parameters%dksat(1) / noahowpmp%parameters%refdk
     noahowpmp%parameters%csoil        = NoahowpmpIO%CSOIL_TABLE
     noahowpmp%parameters%Z0           = NoahowpmpIO%Z0_TABLE     ! bare soil roughness length (m). in GENPARM.TBL.  NOTE: This is hard-coded in hrldas version of noah-mp
     noahowpmp%parameters%CZIL         = NoahowpmpIO%CZIL_TABLE
     noahowpmp%parameters%ZBOT         = NoahowpmpIO%ZBOT_TABLE
-    noahowpmp%parameters%frzx         = 0.15 * (NoahowpmpIO%smcmax(ix,iy,1) / NoahowpmpIO%smcref(ix,iy,1)) * (0.412 / 0.468)
+    noahowpmp%parameters%frzx         = 0.15 * (noahowpmp%parameters%smcmax(1) / noahowpmp%parameters%smcref(1)) * (0.412 / 0.468)
     noahowpmp%parameters%SSI          = NoahowpmpIO%SSI_TABLE
     noahowpmp%parameters%MFSNO        = NoahowpmpIO%MFSNO_TABLE(vegtyp)
     noahowpmp%parameters%Z0SNO        = NoahowpmpIO%Z0SNO_TABLE

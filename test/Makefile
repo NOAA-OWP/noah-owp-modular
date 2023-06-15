@@ -43,6 +43,7 @@ OBJS = ../src/ErrorCheckModule.o \
        ../driver/DomainVarTransferModule.o \
        ../driver/EnergyVarTransferModule.o \
        ../driver/ForcingVarTransferModule.o \
+       ../driver/LevelsVarTransferModule.o \
        ../driver/NoahowpmpIOType.o \
        ../driver/NoahowpmpIOTypeInitModule.o \
        ../driver/NoahowpmpReadNamelistModule.o \
