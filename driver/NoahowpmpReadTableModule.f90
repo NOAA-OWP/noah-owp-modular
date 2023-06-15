@@ -14,6 +14,7 @@ MODULE NoahowpmpReadTableModule
     call read_veg_parameters(NoahowpmpIO)
     call read_soil_parameters(NoahowpmpIO)
     call read_rad_parameters(NoahowpmpIO)
+    call read_global_parameters(NoahowpmpIO)
 
   end subroutine TableVarsRead
 
