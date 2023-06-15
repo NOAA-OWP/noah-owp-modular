@@ -11,6 +11,7 @@ module NoahowpmpGriddedDriverModule
   use OptionsVarTransferModule
   use ParametersVarTransferModule
   use WaterVarTransferModule
+  use LevelsVarTransferModule
   
   implicit none
 
@@ -40,9 +41,6 @@ contains
     NoahowpmpIO%UU(:,:) = read_UU
 #endif
        
-    NoahowpmpIO%itime    = NoahowpmpIO%itime + 1 ! increment the integer time by 1
-    NoahowpmpIO%time_dbl = dble(NoahowpmpIO%time_dbl + NoahowpmpIO%dt) ! increment model time in seconds by DT
-
     call Noahowpmp%Init(NoahowpmpIO)
     do ix = 1, NoahowpmpIO%n_x
       do iy = 1, NoahowpmpIO%n_y
@@ -50,6 +48,7 @@ contains
         NoahowpmpIO%ix = ix
         NoahowpmpIO%iy = iy
         call DomainVarInTransfer(Noahowpmp, NoahowpmpIO)
+        call LevelsVarInTransfer(Noahowpmp, NoahowpmpIO)
         call EnergyVarInTransfer(Noahowpmp, NoahowpmpIO)
         call ForcingVarInTransfer(Noahowpmp, NoahowpmpIO)
         call OptionsVarInTransfer(Noahowpmp, NoahowpmpIO)
@@ -59,6 +58,7 @@ contains
         call solve_noahowp(Noahowpmp)
 
         call DomainVarOutTransfer(Noahowpmp, NoahowpmpIO)
+        call LevelsVarOutTransfer(Noahowpmp, NoahowpmpIO)
         call EnergyVarOutTransfer(Noahowpmp, NoahowpmpIO)
         call ForcingVarOutTransfer(Noahowpmp, NoahowpmpIO)
         call OptionsVarOutTransfer(Noahowpmp, NoahowpmpIO)
@@ -67,6 +67,10 @@ contains
 
       end do
     end do
+
+    !Increment time
+    NoahowpmpIO%itime    = NoahowpmpIO%itime + 1 ! increment the integer time by 1
+    NoahowpmpIO%time_dbl = dble(NoahowpmpIO%time_dbl + NoahowpmpIO%dt) ! increment model time in seconds by DT
 
   END SUBROUTINE GriddedDriverMain
 

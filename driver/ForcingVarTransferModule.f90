@@ -11,7 +11,7 @@ module ForcingVarTransferModule
 
     implicit none
 
-    type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
+    type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
     type(noahowp_type),     intent(inout) :: noahowpmp
 
     associate(ix   => NoahowpmpIO%ix, &
@@ -56,7 +56,7 @@ module ForcingVarTransferModule
     implicit none
 
     type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
-    type(noahowp_type),     intent(inout) :: Noahowpmp
+    type(noahowp_type),     intent(in)    :: Noahowpmp
 
     associate(ix   => NoahowpmpIO%ix, &
               iy   => NoahowpmpIO%iy)

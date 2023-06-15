@@ -23,7 +23,7 @@ module DomainVarTransferModule
     noahowpmp%domain%nowdate = NoahowpmpIO%nowdate           
     noahowpmp%domain%start_datetime = NoahowpmpIO%start_datetime  
     noahowpmp%domain%end_datetime = NoahowpmpIO%end_datetime  
-    noahowpmp%domain%curr_datetime = NoahowpmpIO%curr_datetime    
+    noahowpmp%domain%curr_datetime = NoahowpmpIO%sim_datetimes(NoahowpmpIO%itime)    
     noahowpmp%domain%sim_datetimes = NoahowpmpIO%sim_datetimes
     noahowpmp%domain%itime = NoahowpmpIO%itime          
     noahowpmp%domain%ntime = NoahowpmpIO%ntime          

@@ -90,7 +90,6 @@ subroutine initialize_output(output_filename, ntime, nsoil, nsnow, n_x, n_y)
   iret = nf90_def_dim(ncid, "x", n_x, x_dim)
   iret = nf90_def_dim(ncid, "y", n_y, y_dim)
 
-
   ! time variable (need units / time datum)
   !iret = nf90_def_var(ncid, "timestep",             NF90_INT  , (/time_dim/), time_id)
   !iret = nf90_def_var(ncid, "time",                 NF90_DOUBLE, (/time_dim/), time_id)
