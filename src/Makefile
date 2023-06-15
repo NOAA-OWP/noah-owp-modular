@@ -9,7 +9,6 @@ F90FLAGS := -cpp ${F90FLAGS}
 
 OBJS = ErrorCheckModule.o \
        NamelistRead.o \
-       ParametersRead.o  \
        LevelsType.o   \
        DomainType.o   \
        OptionsType.o  \
@@ -63,7 +62,7 @@ NamelistRead.o: ErrorCheckModule.o
 LevelsType.o: NamelistRead.o
 DomainType.o: NamelistRead.o LevelsType.o DateTimeUtilsModule.o ../driver/NoahowpmpIOType.o
 OptionsType.o: NamelistRead.o
-ParametersType.o: NamelistRead.o ParametersRead.o
+ParametersType.o: NamelistRead.o
 ForcingType.o: NamelistRead.o
 EnergyType.o: NamelistRead.o
 WaterType.o: NamelistRead.o
