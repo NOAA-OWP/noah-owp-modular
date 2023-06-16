@@ -285,21 +285,104 @@ contains
 
   ! Get the grid id for a particular variable.
   function noahowp_var_grid(this, name, grid) result (bmi_status)
-    class (bmi_noahowp), intent(in) :: this
-    character (len=*), intent(in) :: name
-    integer, intent(out) :: grid
-    integer :: bmi_status
+   class (bmi_noahowp), intent(in) :: this
+   character (len=*), intent(in) :: name
+   integer, intent(out) :: grid
+   integer :: bmi_status
 
-    select case(name)
-    case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! input vars
-         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS')             ! output vars
-       grid = 0
-       bmi_status = BMI_SUCCESS
-    case default
-       grid = -1
-       bmi_status = BMI_FAILURE
-    end select
-  end function noahowp_var_grid
+   select case(name)
+   case('SFCPRS')
+     grid = 1
+     bmi_status = BMI_SUCCESS
+   case('SFCTMP')
+     grid = 2
+     bmi_status = BMI_SUCCESS
+   case('SOLDN')
+     grid = 3
+     bmi_status = BMI_SUCCESS
+   case('LWDN')
+     grid = 4
+     bmi_status = BMI_SUCCESS
+   case('UU')
+     grid = 5
+     bmi_status = BMI_SUCCESS
+   case('VV')
+     grid = 6
+     bmi_status = BMI_SUCCESS
+   case('Q2')
+     grid = 7
+     bmi_status = BMI_SUCCESS
+   case('PRCPNONC')
+     grid = 8
+     bmi_status = BMI_SUCCESS
+   case('QINSUR')
+     grid = 9
+     bmi_status = BMI_SUCCESS
+   case('ETRAN')
+     grid = 10
+     bmi_status = BMI_SUCCESS
+   case('QSEVA')
+     grid = 11
+     bmi_status = BMI_SUCCESS
+   case('EVAPOTRANS')
+     grid = 12
+     bmi_status = BMI_SUCCESS
+   case('TG')
+     grid = 13
+     bmi_status = BMI_SUCCESS
+   case('SNEQV')
+     grid = 14
+     bmi_status = BMI_SUCCESS
+   case('TGS')
+     grid = 15
+     bmi_status = BMI_SUCCESS
+   case('lat')
+     grid = 16
+     bmi_status = BMI_SUCCESS
+   case('lon')
+     grid = 17
+     bmi_status = BMI_SUCCESS
+   case('terrain_slope')
+     grid = 18
+     bmi_status = BMI_SUCCESS
+   case('azimuth')
+     grid = 19
+     bmi_status = BMI_SUCCESS
+   case('vegtyp')
+     grid = 20
+     bmi_status = BMI_SUCCESS
+   case('croptype')
+     grid = 21
+     bmi_status = BMI_SUCCESS
+   case('isltyp')
+     grid = 22
+     bmi_status = BMI_SUCCESS
+   case('IST')
+     grid = 23
+     bmi_status = BMI_SUCCESS
+   case('soilcolor')
+     grid = 24
+     bmi_status = BMI_SUCCESS
+  case('smc')
+     grid = 25
+     bmi_status = BMI_SUCCESS
+  case('sice')
+     grid = 26
+     bmi_status = BMI_SUCCESS
+  case('sh2o')
+     grid = 27
+     bmi_status = BMI_SUCCESS
+  case('SNICE')
+     grid = 28
+     bmi_status = BMI_SUCCESS
+  case('SNLIQ')
+     grid = 29
+     bmi_status = BMI_SUCCESS
+   case default
+     grid = -1
+     bmi_status = BMI_FAILURE
+   end select
+ end function noahowp_var_grid
 
   ! The type of a variable's grid.
   function noahowp_grid_type(this, grid, type) result (bmi_status)
@@ -345,43 +428,53 @@ contains
 
   ! The dimensions of a grid.
   function noahowp_grid_shape(this, grid, shape) result (bmi_status)
-    class (bmi_noahowp), intent(in) :: this
-    integer, intent(in) :: grid
-    integer, dimension(:), intent(out) :: shape
-    integer :: bmi_status
+   class (bmi_noahowp), intent(in) :: this
+   integer, intent(in) :: grid
+   integer, dimension(:), intent(out) :: shape
+   integer :: bmi_status
 
-    select case(grid)
+   select case(grid)
 !================================ IMPLEMENT WHEN noahowp DONE IN GRID ======================
 ! NOTE: Scalar "grids" do not have dimensions, ie. there is no case(0)
 !     case(1)
 !        shape(:) = [this%model%n_y, this%model%n_x]
 !        bmi_status = BMI_SUCCESS
-    case default
-       shape(:) = -1
-       bmi_status = BMI_FAILURE
-    end select
-  end function noahowp_grid_shape
+
+   case(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24)
+      shape = [this%NoahowpmpIO%n_y, this%NoahowpmpIO%n_x]
+      bmi_status = BMI_SUCCESS
+   case(25,26,27,28,29)
+     shape = [this%NoahowpmpIO%nsoil,this%NoahowpmpIO%n_y, this%NoahowpmpIO%n_x]
+     bmi_status = BMI_SUCCESS
+   case default
+      shape(:) = -1
+      bmi_status = BMI_FAILURE
+   end select
+ end function noahowp_grid_shape
 
   ! The total number of elements in a grid.
-  function noahowp_grid_size(this, grid, size) result (bmi_status)
-    class (bmi_noahowp), intent(in) :: this
-    integer, intent(in) :: grid
-    integer, intent(out) :: size
-    integer :: bmi_status
+ function noahowp_grid_size(this, grid, size) result (bmi_status)
+   class (bmi_noahowp), intent(in) :: this
+   integer, intent(in) :: grid
+   integer, intent(out) :: size
+   integer :: bmi_status
 
-    select case(grid)
-    case(0)
-       size = 1
-       bmi_status = BMI_SUCCESS
+   select case(grid)
+   case(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24)
+     size = this%NoahowpmpIO%n_x * this%NoahowpmpIO%n_y
+     bmi_status = BMI_SUCCESS
+   case(0)
+      size = 1
+      bmi_status = BMI_SUCCESS
 !================================ IMPLEMENT WHEN noahowp DONE IN GRID ======================
 !     case(1)
 !        size = this%model%n_y * this%model%n_x
 !        bmi_status = BMI_SUCCESS
-    case default
-       size = -1
-       bmi_status = BMI_FAILURE
-    end select
-  end function noahowp_grid_size
+   case default
+      size = -1
+      bmi_status = BMI_FAILURE
+   end select
+ end function noahowp_grid_size
 
   ! The distance between nodes of a grid.
   function noahowp_grid_spacing(this, grid, spacing) result (bmi_status)
@@ -556,139 +649,180 @@ contains
 
   ! The data type of the variable, as a string.
   function noahowp_var_type(this, name, type) result (bmi_status)
-    class (bmi_noahowp), intent(in) :: this
-    character (len=*), intent(in) :: name
-    character (len=*), intent(out) :: type
-    integer :: bmi_status
+   class (bmi_noahowp), intent(in) :: this
+   character (len=*), intent(in) :: name
+   character (len=*), intent(out) :: type
+   integer :: bmi_status
 
-    select case(name)
-    case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! input vars
-         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS')             ! output vars
-       type = "real"
-       bmi_status = BMI_SUCCESS
-    case default
-       type = "-"
-       bmi_status = BMI_FAILURE
-    end select
+   select case(name)
+   case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! forcing vars
+        'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS',    & ! output vars
+        'lat','lon','terrain_slope','azimuth')                               ! model setup vars
+      type = "real"
+      bmi_status = BMI_SUCCESS
+  case('vegtyp','croptype','isltyp','IST','soilcolor')
+      type = "integer"
+      bmi_status = BMI_SUCCESS
+   case default
+      type = "-"
+      bmi_status = BMI_FAILURE
+   end select
+
   end function noahowp_var_type
 
   ! The units of the given variable.
   function noahowp_var_units(this, name, units) result (bmi_status)
-    class (bmi_noahowp), intent(in) :: this
-    character (len=*), intent(in) :: name
-    character (len=*), intent(out) :: units
-    integer :: bmi_status
+   class (bmi_noahowp), intent(in) :: this
+   character (len=*), intent(in) :: name
+   character (len=*), intent(out) :: units
+   integer :: bmi_status
 
-    select case(name)
-    case("SFCPRS")
-       units = "Pa"
-       bmi_status = BMI_SUCCESS
-    case("SFCTMP", "TG", "TGS")
-       units = "K"
-       bmi_status = BMI_SUCCESS
-    case("SOLDN", "LWDN")
-       units = "W/m2"
-       bmi_status = BMI_SUCCESS
-    case("UU", "VV")
-       units = "m/s"
-       bmi_status = BMI_SUCCESS
-    case("Q2")
-       units = "kg/kg"
-       bmi_status = BMI_SUCCESS
-    case("QINSUR", "QSEVA", "EVAPOTRANS")
-       units = "m/s"
-       bmi_status = BMI_SUCCESS
-    case("PRCPNONC", "ETRAN")
-       units = "mm/s"
-       bmi_status = BMI_SUCCESS
-    case("SNEQV")
-       units = "mm"
-       bmi_status = BMI_SUCCESS
-    case default
-       units = "-"
-       bmi_status = BMI_FAILURE
-    end select
-  end function noahowp_var_units
+   select case(name)
+   case("SFCPRS")
+      units = "Pa"
+      bmi_status = BMI_SUCCESS
+   case("SFCTMP", "TG", "TGS")
+      units = "K"
+      bmi_status = BMI_SUCCESS
+   case("SOLDN", "LWDN")
+      units = "W/m2"
+      bmi_status = BMI_SUCCESS
+   case("UU", "VV")
+      units = "m/s"
+      bmi_status = BMI_SUCCESS
+   case("Q2")
+      units = "kg/kg"
+      bmi_status = BMI_SUCCESS
+   case("QINSUR", "QSEVA", "EVAPOTRANS")
+      units = "m/s"
+      bmi_status = BMI_SUCCESS
+   case("PRCPNONC", "ETRAN")
+      units = "mm/s"
+      bmi_status = BMI_SUCCESS
+   case("SNEQV")
+      units = "mm"
+      bmi_status = BMI_SUCCESS
+   case('lat','lon','terrain_slope')
+     units = 'degrees'
+     bmi_status = BMI_SUCCESS
+   case('azimuth')
+     units = 'degrees clockwise from north'
+     bmi_status = BMI_SUCCESS
+   case('vegtyp','croptype','isltyp','IST','soilcolor')
+     units = 'none'
+     bmi_status = BMI_SUCCESS
+   case default
+      units = "-"
+      bmi_status = BMI_FAILURE
+   end select
+ end function noahowp_var_units
 
   ! Memory use per array element.
-  function noahowp_var_itemsize(this, name, size) result (bmi_status)
-    class (bmi_noahowp), intent(in) :: this
-    character (len=*), intent(in) :: name
-    integer, intent(out) :: size
-    integer :: bmi_status
+ function noahowp_var_itemsize(this, name, size) result (bmi_status)
+   class (bmi_noahowp), intent(in) :: this
+   character (len=*), intent(in) :: name
+   integer, intent(out) :: size
+   integer :: bmi_status
 
-    select case(name)
-    case("SFCPRS")
-       size = sizeof(this%NoahowpmpIO%sfcprs)  ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("SFCTMP")
-       size = sizeof(this%NoahowpmpIO%sfctmp)             ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("SOLDN")
-       size = sizeof(this%NoahowpmpIO%soldn)                ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("LWDN")
-       size = sizeof(this%NoahowpmpIO%lwdn)                ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("UU")
-       size = sizeof(this%NoahowpmpIO%uu)                ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("VV")
-       size = sizeof(this%NoahowpmpIO%vv)                ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("Q2")
-       size = sizeof(this%NoahowpmpIO%q2)                ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("PRCPNONC")
-       size = sizeof(this%NoahowpmpIO%prcpnonc)                ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("QINSUR")
-       size = sizeof(this%NoahowpmpIO%qinsur)                ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("ETRAN")
-       size = sizeof(this%NoahowpmpIO%etran)                ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("QSEVA")
-       size = sizeof(this%NoahowpmpIO%qseva)                ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("EVAPOTRANS")
-       size = sizeof(this%NoahowpmpIO%evapotrans)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("TG")
-       size = sizeof(this%NoahowpmpIO%tg)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("SNEQV")
-       size = sizeof(this%NoahowpmpIO%sneqv)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("TGS")
-       size = sizeof(this%NoahowpmpIO%tgs)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case default
-       size = -1
-       bmi_status = BMI_FAILURE
-    end select
+   select case(name)
+   case("SFCPRS")
+      size = sizeof(this%NoahowpmpIO%sfcprs(1,1)) ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("SFCTMP")
+      size = sizeof(this%NoahowpmpIO%sfctmp(1,1))             ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("SOLDN")
+      size = sizeof(this%NoahowpmpIO%soldn(1,1))                ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("LWDN")
+      size = sizeof(this%NoahowpmpIO%lwdn(1,1))                ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("UU")
+      size = sizeof(this%NoahowpmpIO%uu(1,1))                ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("VV")
+      size = sizeof(this%NoahowpmpIO%vv(1,1))                ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("Q2")
+      size = sizeof(this%NoahowpmpIO%q2(1,1))                ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("PRCPNONC")
+      size = sizeof(this%NoahowpmpIO%prcpnonc(1,1))                ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("QINSUR")
+      size = sizeof(this%NoahowpmpIO%qinsur(1,1))                ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("ETRAN")
+      size = sizeof(this%NoahowpmpIO%etran(1,1))                ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("QSEVA")
+      size = sizeof(this%NoahowpmpIO%qseva(1,1))                ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("EVAPOTRANS")
+      size = sizeof(this%NoahowpmpIO%evapotrans(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("TG")
+      size = sizeof(this%NoahowpmpIO%tg(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("SNEQV")
+      size = sizeof(this%NoahowpmpIO%sneqv(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("TGS")
+      size = sizeof(this%NoahowpmpIO%tgs(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("lat")
+      size = sizeof(this%NoahowpmpIO%lat(1,1))    
+      bmi_status = BMI_SUCCESS
+   case("lon")
+      size = sizeof(this%NoahowpmpIO%lon(1,1))    
+      bmi_status = BMI_SUCCESS    
+   case("terrain_slope")
+      size = sizeof(this%NoahowpmpIO%terrain_slope(1,1))    
+      bmi_status = BMI_SUCCESS
+   case("azimuth")
+      size = sizeof(this%NoahowpmpIO%azimuth(1,1))    
+      bmi_status = BMI_SUCCESS  
+   case("vegtyp")
+      size = sizeof(this%NoahowpmpIO%vegtyp(1,1))    
+      bmi_status = BMI_SUCCESS
+   case("croptype")
+      size = sizeof(this%NoahowpmpIO%croptype(1,1))    
+      bmi_status = BMI_SUCCESS    
+   case("isltyp")
+      size = sizeof(this%NoahowpmpIO%isltyp(1,1))    
+      bmi_status = BMI_SUCCESS
+   case("IST")
+      size = sizeof(this%NoahowpmpIO%IST(1,1))    
+      bmi_status = BMI_SUCCESS
+   case("soilcolor")
+      size = sizeof(this%NoahowpmpIO%soilcolor(1,1))    
+      bmi_status = BMI_SUCCESS
+   case default
+      size = -1
+      bmi_status = BMI_FAILURE
+   end select
   end function noahowp_var_itemsize
 
   ! The size of the given variable.
   function noahowp_var_nbytes(this, name, nbytes) result (bmi_status)
-    class (bmi_noahowp), intent(in) :: this
-    character (len=*), intent(in) :: name
-    integer, intent(out) :: nbytes
-    integer :: bmi_status
-    integer :: s1, s2, s3, grid, grid_size, item_size
+   class (bmi_noahowp), intent(in) :: this
+   character (len=*), intent(in) :: name
+   integer, intent(out) :: nbytes
+   integer :: bmi_status
+   integer :: s1, s2, s3, grid, grid_size, item_size
 
-    s1 = this%get_var_grid(name, grid)
-    s2 = this%get_grid_size(grid, grid_size)
-    s3 = this%get_var_itemsize(name, item_size)
+   s1 = this%get_var_grid(name, grid)
+   s2 = this%get_grid_size(grid, grid_size)
+   s3 = this%get_var_itemsize(name, item_size)
 
-    if ((s1 == BMI_SUCCESS).and.(s2 == BMI_SUCCESS).and.(s3 == BMI_SUCCESS)) then
-       nbytes = item_size * grid_size
-       bmi_status = BMI_SUCCESS
-    else
-       nbytes = -1
-       bmi_status = BMI_FAILURE
-    end if
-  end function noahowp_var_nbytes
+   if ((s1 == BMI_SUCCESS).and.(s2 == BMI_SUCCESS).and.(s3 == BMI_SUCCESS)) then
+      nbytes = item_size * grid_size
+      bmi_status = BMI_SUCCESS
+   else
+      nbytes = -1
+      bmi_status = BMI_FAILURE
+   end if
+ end function noahowp_var_nbytes
 
   ! The location (node, face, edge) of the given variable.
   function noahowp_var_location(this, name, location) result (bmi_status)
@@ -706,82 +840,112 @@ contains
 
   ! Get a copy of a integer variable's values, flattened.
   function noahowp_get_int(this, name, dest) result (bmi_status)
-    class (bmi_noahowp), intent(in) :: this
-    character (len=*), intent(in) :: name
-    integer, intent(inout) :: dest(:)
-    integer :: bmi_status
+   class (bmi_noahowp), intent(in) :: this
+   character (len=*), intent(in) :: name
+   integer, intent(inout) :: dest(:)
+   integer :: bmi_status
 
-    select case(name)
+   select case(name)
+   case("vegtyp")
+     dest = reshape(this%NoahowpmpIO%vegtyp,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+     bmi_status = BMI_SUCCESS
+   case("croptype")
+     dest = reshape(this%NoahowpmpIO%croptype,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+     bmi_status = BMI_SUCCESS    
+   case("isltyp")
+     dest = reshape(this%NoahowpmpIO%isltyp,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+     bmi_status = BMI_SUCCESS
+   case("IST")
+     dest = reshape(this%NoahowpmpIO%IST,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+     bmi_status = BMI_SUCCESS
+   case("soilcolor")
+     dest = reshape(this%NoahowpmpIO%soilcolor,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+     bmi_status = BMI_SUCCESS
 !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR INTEGER VARS =================
 !     case("model__identification_number")
 !        dest = [this%model%id]
 !        bmi_status = BMI_SUCCESS
-    case default
-       dest(:) = -1
-       bmi_status = BMI_FAILURE
-    end select
-  end function noahowp_get_int
+   case default
+      dest(:) = -1
+      bmi_status = BMI_FAILURE
+   end select
+ end function noahowp_get_int
 
   ! Get a copy of a real variable's values, flattened.
   function noahowp_get_float(this, name, dest) result (bmi_status)
-    class (bmi_noahowp), intent(in) :: this
-    character (len=*), intent(in) :: name
-    real, intent(inout) :: dest(:)
-    integer :: bmi_status
+   class (bmi_noahowp), intent(in) :: this
+   character (len=*), intent(in) :: name
+   real, intent(inout) :: dest(:)
+   integer :: bmi_status, ix, iy, iz, iflat, n_x, n_y, n_z
 
-    select case(name)
-    case("SFCPRS")
-       dest = [this%NoahowpmpIO%sfcprs]
-       bmi_status = BMI_SUCCESS
-    case("SFCTMP")
-       dest = [this%NoahowpmpIO%sfctmp]
-       bmi_status = BMI_SUCCESS
-    case("SOLDN")
-       dest = [this%NoahowpmpIO%soldn]
-       bmi_status = BMI_SUCCESS
-    case("LWDN")
-       dest = [this%NoahowpmpIO%lwdn]
-       bmi_status = BMI_SUCCESS
-    case("UU")
-       dest = [this%NoahowpmpIO%uu]
-       bmi_status = BMI_SUCCESS
-    case("VV")
-       dest = [this%NoahowpmpIO%vv]
-       bmi_status = BMI_SUCCESS
-    case("Q2")
-       dest = [this%NoahowpmpIO%q2]
-       bmi_status = BMI_SUCCESS
-    case("PRCPNONC")
-       dest = [this%NoahowpmpIO%prcpnonc]
-       bmi_status = BMI_SUCCESS
-    case("QINSUR")
-       dest = [this%NoahowpmpIO%qinsur]
-       bmi_status = BMI_SUCCESS
-    case("ETRAN")
-       dest = [this%NoahowpmpIO%etran]
-       bmi_status = BMI_SUCCESS
-    case("QSEVA")
-       dest = [this%NoahowpmpIO%qseva]
-       bmi_status = BMI_SUCCESS
-    case("EVAPOTRANS")
-       dest = [this%NoahowpmpIO%evapotrans]
-       bmi_status = BMI_SUCCESS
-    case("TG")
-       dest = [this%NoahowpmpIO%tg]
-       bmi_status = BMI_SUCCESS
-    case("SNEQV")
-       dest = [this%NoahowpmpIO%sneqv]
-       bmi_status = BMI_SUCCESS
-    case("TGS")
-       dest = [this%NoahowpmpIO%tgs]
-       bmi_status = BMI_SUCCESS
-    case default
-       dest(:) = -1.0
-       bmi_status = BMI_FAILURE
-    end select
-    ! NOTE, if vars are gridded, then use:
-    ! dest = reshape(this%model%temperature, [this%model%n_x*this%model%n_y]) 
-  end function noahowp_get_float
+   select case(name)
+   case("SFCPRS")
+      dest = reshape(this%NoahowpmpIO%sfcprs,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("SFCTMP")
+      dest = reshape(this%NoahowpmpIO%sfctmp,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("SOLDN")
+      dest = reshape(this%NoahowpmpIO%soldn,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("LWDN")
+      dest = reshape(this%NoahowpmpIO%lwdn,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("UU")
+      dest = reshape(this%NoahowpmpIO%uu,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("VV")
+      dest = reshape(this%NoahowpmpIO%vv,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("Q2")
+      dest = reshape(this%NoahowpmpIO%q2,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("PRCPNONC")
+      dest = reshape(this%NoahowpmpIO%prcpnonc,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("QINSUR")
+      dest = reshape(this%NoahowpmpIO%qinsur,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("ETRAN")
+      dest = reshape(this%NoahowpmpIO%etran,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("QSEVA")
+      dest = reshape(this%NoahowpmpIO%qseva,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("EVAPOTRANS")
+      dest = reshape(this%NoahowpmpIO%evapotrans,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("TG")
+      dest = reshape(this%NoahowpmpIO%tg,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("SNEQV")
+      dest = reshape(this%NoahowpmpIO%sneqv,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("TGS")
+      dest = reshape(this%NoahowpmpIO%tgs,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("lat")
+      dest = reshape(this%NoahowpmpIO%lat,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("lon")
+      dest = reshape(this%NoahowpmpIO%lon,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("terrain_slope")
+      dest = reshape(this%NoahowpmpIO%terrain_slope,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("azimuth")
+      dest = reshape(this%NoahowpmpIO%azimuth,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("smc")
+     dest = reshape(this%NoahowpmpIO%smc,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y*this%NoahowpmpIO%nsoil])
+     bmi_status = BMI_SUCCESS
+   case default
+      dest(:) = -1.0
+      bmi_status = BMI_FAILURE
+   end select
+   ! NOTE, if vars are gridded, then use:
+   ! dest = reshape(this%model%temperature, [this%model%n_x*this%model%n_y]) 
+ end function noahowp_get_float
 
   ! Get a copy of a double variable's values, flattened.
   function noahowp_get_double(this, name, dest) result (bmi_status)
@@ -910,82 +1074,112 @@ contains
    end function noahowp_get_at_indices_double
 
   ! Set new integer values.
-  function noahowp_set_int(this, name, src) result (bmi_status)
-    class (bmi_noahowp), intent(inout) :: this
-    character (len=*), intent(in) :: name
-    integer, intent(in) :: src(:)
-    integer :: bmi_status
-
-    !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR INTEGER VARS =================
-
-    select case(name)
-!     case("model__identification_number")
-!        this%model%id = src(1)
-!        bmi_status = BMI_SUCCESS
-    case default
-       bmi_status = BMI_FAILURE
-    end select
-  end function noahowp_set_int
+   function noahowp_set_int(this, name, src) result (bmi_status)
+      class (bmi_noahowp), intent(inout) :: this
+      character (len=*), intent(in) :: name
+      integer, intent(in) :: src(:)
+      integer :: bmi_status
+  
+      !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR INTEGER VARS =================
+  
+      select case(name)
+      case('vegtyp')
+        this%NoahowpmpIO%vegtyp = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+        bmi_status = BMI_SUCCESS
+      case('croptype')
+        this%NoahowpmpIO%croptype = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+        bmi_status = BMI_SUCCESS
+      case('isltyp')
+        this%NoahowpmpIO%isltyp = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+        bmi_status = BMI_SUCCESS
+      case('IST')
+        this%NoahowpmpIO%IST = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+        bmi_status = BMI_SUCCESS
+      case('soilcolor')
+        this%NoahowpmpIO%soilcolor = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+        bmi_status = BMI_SUCCESS
+  !     case("model__identification_number")
+  !        this%model%id = src(1)
+  !        bmi_status = BMI_SUCCESS
+      case default
+         bmi_status = BMI_FAILURE
+      end select
+    end function noahowp_set_int
 
   ! Set new real values.
   function noahowp_set_float(this, name, src) result (bmi_status)
-    class (bmi_noahowp), intent(inout) :: this
-    character (len=*), intent(in) :: name
-    real, intent(in) :: src(:)
-    integer :: bmi_status
+   class (bmi_noahowp), intent(inout) :: this
+   character (len=*), intent(in) :: name
+   real, intent(in) :: src(:)
+   integer :: bmi_status
 
-    select case(name)
-    case("SFCPRS")
-       this%NoahowpmpIO%sfcprs = src(1)
-       bmi_status = BMI_SUCCESS
-    case("SFCTMP")
-       this%NoahowpmpIO%sfctmp = src(1)
-       bmi_status = BMI_SUCCESS
-    case("SOLDN")
-       this%NoahowpmpIO%soldn = src(1)
-       bmi_status = BMI_SUCCESS
-    case("LWDN")
-       this%NoahowpmpIO%lwdn = src(1)
-       bmi_status = BMI_SUCCESS
-    case("UU")
-       this%NoahowpmpIO%uu = src(1)
-       bmi_status = BMI_SUCCESS
-    case("VV")
-       this%NoahowpmpIO%vv = src(1)
-       bmi_status = BMI_SUCCESS
-    case("Q2")
-       this%NoahowpmpIO%q2 = src(1)
-       bmi_status = BMI_SUCCESS
-    case("PRCPNONC")
-       this%NoahowpmpIO%prcpnonc = src(1)
-       bmi_status = BMI_SUCCESS
-    case("QINSUR")
-       this%NoahowpmpIO%qinsur = src(1)
-       bmi_status = BMI_SUCCESS
-    case("ETRAN")
-       this%NoahowpmpIO%etran = src(1)
-       bmi_status = BMI_SUCCESS
-    case("QSEVA")
-       this%NoahowpmpIO%qseva = src(1)
-       bmi_status = BMI_SUCCESS
-    case("EVAPOTRANS")
-       this%NoahowpmpIO%evapotrans = src(1)
-       bmi_status = BMI_SUCCESS
-    case("TG")
-       this%NoahowpmpIO%tg = src(1)
-       bmi_status = BMI_SUCCESS
-    case("SNEQV")
-       this%NoahowpmpIO%sneqv = src(1)
-       bmi_status = BMI_SUCCESS
-    case("TGS")
-       this%NoahowpmpIO%tgs = src(1)
-       bmi_status = BMI_SUCCESS
-    case default
-       bmi_status = BMI_FAILURE
-    end select
-    ! NOTE, if vars are gridded, then use:
-    ! this%model%temperature = reshape(src, [this%model%n_y, this%model%n_x])
-  end function noahowp_set_float
+   select case(name)
+   case("SFCPRS")
+     this%NoahowpmpIO%sfcprs = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("SFCTMP")
+     this%NoahowpmpIO%sfctmp = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("SOLDN")
+     this%NoahowpmpIO%soldn = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("LWDN")
+     this%NoahowpmpIO%lwdn = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("UU")
+     this%NoahowpmpIO%uu = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("VV")
+     this%NoahowpmpIO%vv = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("Q2")
+     this%NoahowpmpIO%q2 = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("PRCPNONC")
+     this%NoahowpmpIO%prcpnonc = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("QINSUR")
+     this%NoahowpmpIO%qinsur = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("ETRAN")
+     this%NoahowpmpIO%etran = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("QSEVA")
+     this%NoahowpmpIO%qseva = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("EVAPOTRANS")
+     this%NoahowpmpIO%evapotrans = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("TG")
+     this%NoahowpmpIO%tg = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("SNEQV")
+     this%NoahowpmpIO%sneqv = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("TGS")
+     this%NoahowpmpIO%tgs = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("terrain_slope")
+     this%NoahowpmpIO%terrain_slope = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("azimuth")
+     this%NoahowpmpIO%azimuth = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("lat")
+     this%NoahowpmpIO%lat = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("lon")
+     this%NoahowpmpIO%lon = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+      bmi_status = BMI_SUCCESS
+   case("smc")
+     this%NoahowpmpIO%smc = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y,this%NoahowpmpIO%nsoil])
+     bmi_status = BMI_SUCCESS
+   case default
+      bmi_status = BMI_FAILURE
+   end select
+   ! NOTE, if vars are gridded, then use:
+   ! this%model%temperature = reshape(src, [this%model%n_y, this%model%n_x])
+ end function noahowp_set_float
 
   ! Set new double values.
   function noahowp_set_double(this, name, src) result (bmi_status)
