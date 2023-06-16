@@ -61,7 +61,8 @@ module DomainVarTransferModule
     NoahowpmpIO%zsoil(ix,iy,:) = Noahowpmp%domain%zsoil(:) 
     NoahowpmpIO%dzsnso(ix,iy,:) = Noahowpmp%domain%dzsnso(:)  
     NoahowpmpIO%zsnso(ix,iy,:) = Noahowpmp%domain%zsnso(:)   
-
+    NoahowpmpIO%nowdate = Noahowpmp%domain%nowdate 
+  
     end associate
 
   end subroutine DomainVarOutTransfer

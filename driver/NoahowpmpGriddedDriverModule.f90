@@ -28,10 +28,9 @@ contains
     real                                  :: read_SOLDN, read_LWDN, read_PRCP
     integer                               :: idt
 
-
 #ifndef NGEN_FORCING_ACTIVE
-    idt = NoahowpmpIO%itime * (NoahowpmpIO%dt / 60)
-    call geth_newdate(NoahowpmpIO%startdate, idt, NoahowpmpIO%nowdate)
+    !idt = NoahowpmpIO%itime * (NoahowpmpIO%dt / 60)
+    !call geth_newdate(NoahowpmpIO%startdate, idt, NoahowpmpIO%nowdate)
     call read_forcing_text(iunit, NoahowpmpIO%nowdate, int(NoahowpmpIO%dt), &
           read_UU, read_VV, read_SFCTMP, read_Q2, read_SFCPRS, read_SOLDN, read_LWDN, read_PRCP, ierr)
     NoahowpmpIO%UU(:,:) = read_UU
