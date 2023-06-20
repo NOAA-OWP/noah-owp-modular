@@ -44,7 +44,7 @@ module OptionsVarTransferModule
     implicit none
 
     type(noahowpgrid_type), intent(inout) :: noahowpgrid
-    type(noahowp_type),     intent(inout) :: noahowp
+    type(noahowp_type),     intent(in)    :: noahowp
 
     associate(ix   => noahowpgrid%ix, &
               iy   => noahowpgrid%iy)

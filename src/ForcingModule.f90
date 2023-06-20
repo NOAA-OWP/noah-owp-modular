@@ -24,10 +24,8 @@ contains
   type (forcing_type),    intent(in)   :: forcing 
   type (energy_type)                   :: energy
 
-    
-    ! Call the ATM subroutine to process other variables such as
-    ! air density and precipitation phase
-    call ATM (options, parameters, forcing, energy, water)
+  ! Call the ATM subroutine to process other variables such as air density and precipitation phase
+  call ATM (options, parameters, forcing, energy, water)
 
   END SUBROUTINE ForcingMain   
 

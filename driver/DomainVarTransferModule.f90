@@ -11,7 +11,7 @@ module DomainVarTransferModule
 
     implicit none
 
-    type(noahowpgrid_type), intent(inout) :: noahowpgrid
+    type(noahowpgrid_type), intent(in)    :: noahowpgrid
     type(noahowp_type),     intent(inout) :: noahowp
 
     associate(ix   => noahowpgrid%ix, &
@@ -52,7 +52,7 @@ module DomainVarTransferModule
     implicit none
 
     type(noahowpgrid_type), intent(inout) :: noahowpgrid
-    type(noahowp_type),     intent(inout) :: noahowp
+    type(noahowp_type),     intent(in)    :: noahowp
 
     associate(ix   => noahowpgrid%ix, &
               iy   => noahowpgrid%iy)

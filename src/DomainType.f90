@@ -62,7 +62,7 @@ module DomainType
   
       allocate(this%zsoil (noahowpgrid%nsoil))
       allocate(this%dzsnso(-noahowpgrid%nsnow+1:noahowpgrid%nsoil))
-      allocate(this%zsnso(-noahowpgrid%nsnow+1:noahowpgrid%nsoil))
+      allocate(this%zsnso (-noahowpgrid%nsnow+1:noahowpgrid%nsoil))
   
     end subroutine InitAllocate
   
