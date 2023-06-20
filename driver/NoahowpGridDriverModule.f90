@@ -34,7 +34,7 @@ contains
     !to bmi_update/NoahowpGridDriverMain
 
     !Update noahowpgrid%nowdate 
-    !I think this needs to be done here rather than in UtilitiesMain
+    !I think this needs to be done here rather than in UtilitiesMain if NGEN isn't doing forcing
     !idt = noahowpgrid%itime * (noahowpgrid%dt / 60)
     !call geth_newdate(noahowpgrid%startdate, idt, noahowpgrid%nowdate)
 
