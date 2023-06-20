@@ -65,8 +65,8 @@ contains
 
     class(forcing_type) :: this
 
-    allocate(this%SOLAD (1:2)); this%SOLAD(:) = huge(1.0) 
-    allocate(this%SOLAI (1:2)); this%SOLAI(:) = huge(1.0) 
+    allocate(this%SOLAD (2)); this%SOLAD(:) = huge(1.0) 
+    allocate(this%SOLAI (2)); this%SOLAI(:) = huge(1.0) 
 
   end subroutine InitAllocate
 
@@ -104,6 +104,19 @@ contains
     this%O2PP      = huge(1.0)
     this%CO2PP     = huge(1.0)
         
+    this%UR        = huge(1.0)     
+    this%THAIR     = huge(1.0) 
+    this%QAIR      = huge(1.0)   
+    this%EAIR      = huge(1.0)    
+    this%RHOAIR    = huge(1.0)   
+    this%FPICE     = huge(1.0)  
+    this%SWDOWN    = huge(1.0)   
+    this%JULIAN    = huge(1.0) 
+    this%YEARLEN   = huge(1) 
+  
+    this%SOLAD(:)  = huge(1.0)
+    this%SOLAI(:)  = huge(1.0) 
+
   end subroutine InitDefault
 
 end module ForcingType
