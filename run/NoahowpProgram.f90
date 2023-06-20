@@ -1,4 +1,4 @@
-program model_driver
+program NoahowpProgram
   
   !---------------------------------------------------------------------
   !  Modules
@@ -29,7 +29,7 @@ program model_driver
   print*, "Initializing..."
   call get_command_argument(1, arg)
   status = m%initialize(arg)
-  print*, "Finished initializing..."
+
   !---------------------------------------------------------------------
   ! Run the model with BMI
   ! All model excution code in ../src/RunModule.f90
@@ -50,7 +50,8 @@ program model_driver
   ! Finalize with BMI
   ! All model finalization code in ../src/RunModule.f90
   !---------------------------------------------------------------------
+  print*, "Finalizing..."
   status = m%finalize()
   print*, "Finished!"
 
-end program
+end program NoahowpProgram
