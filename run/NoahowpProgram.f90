@@ -24,7 +24,7 @@ program NoahowpProgram
 
   !---------------------------------------------------------------------
   !  Initialize
-  !  All driver initialization code in ../src/RunModule.f90
+  !  All driver initialization code in ../driver/NoahowpReadNamelistModule.f90
   !---------------------------------------------------------------------
   print*, "Initializing..."
   call get_command_argument(1, arg)
@@ -32,7 +32,7 @@ program NoahowpProgram
 
   !---------------------------------------------------------------------
   ! Run the model with BMI
-  ! All model excution code in ../src/RunModule.f90
+  ! All model excution code in ../driver/NoahowpGridDriverModule.f90
   !---------------------------------------------------------------------
     
   ! get the current and end time for running the execution loop
@@ -48,7 +48,7 @@ program NoahowpProgram
 
   !---------------------------------------------------------------------
   ! Finalize with BMI
-  ! All model finalization code in ../src/RunModule.f90
+  ! All model finalization code in ../driver/OutputModule.f90
   !---------------------------------------------------------------------
   print*, "Finalizing..."
   status = m%finalize()
