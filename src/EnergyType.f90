@@ -1,6 +1,6 @@
 module EnergyType
 
-use NoahowpmpIOType
+use NoahowpGridTypeModule
 
 implicit none
 save
@@ -166,26 +166,26 @@ end type energy_type
 
 contains   
 
-  subroutine Init(this, NoahowpmpIO)
+  subroutine Init(this, noahowpgrid)
 
-    class(energy_type) :: this
-    type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
+    class(energy_type)                    :: this
+    type(noahowpgrid_type), intent(in)    :: noahowpgrid
 
-    call this%InitAllocate(NoahowpmpIO)
+    call this%InitAllocate(noahowpgrid)
     call this%InitDefault()
 
   end subroutine Init
 
-  subroutine InitAllocate(this, NoahowpmpIO)
+  subroutine InitAllocate(this, noahowpgrid)
 
-    class(energy_type) :: this
-    type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
+    class(energy_type)                    :: this
+    type(noahowpgrid_type), intent(in)    :: noahowpgrid
 
-    allocate(this%IMELT (-NoahowpmpIO%nsnow+1:NoahowpmpIO%nsoil)); this%IMELT(:) = huge(1)
-    allocate(this%STC   (-NoahowpmpIO%nsnow+1:NoahowpmpIO%nsoil)); this%STC(:)   = huge(1.0)
-    allocate(this%DF    (-NoahowpmpIO%nsnow+1:NoahowpmpIO%nsoil)); this%DF(:)    = huge(1.0)
-    allocate(this%HCPCT (-NoahowpmpIO%nsnow+1:NoahowpmpIO%nsoil)); this%HCPCT(:) = huge(1.0)
-    allocate(this%FACT  (-NoahowpmpIO%nsnow+1:NoahowpmpIO%nsoil)); this%FACT(:)  = huge(1.0)
+    allocate(this%IMELT (-noahowpgrid%nsnow+1:noahowpgrid%nsoil)); this%IMELT(:) = huge(1)
+    allocate(this%STC   (-noahowpgrid%nsnow+1:noahowpgrid%nsoil)); this%STC(:)   = huge(1.0)
+    allocate(this%DF    (-noahowpgrid%nsnow+1:noahowpgrid%nsoil)); this%DF(:)    = huge(1.0)
+    allocate(this%HCPCT (-noahowpgrid%nsnow+1:noahowpgrid%nsoil)); this%HCPCT(:) = huge(1.0)
+    allocate(this%FACT  (-noahowpgrid%nsnow+1:noahowpgrid%nsoil)); this%FACT(:)  = huge(1.0)
     
     allocate(this%ALBD (1:2)); this%ALBD(:)      = huge(1.0) 
     allocate(this%ALBI (1:2)); this%ALBI(:)      = huge(1.0) 

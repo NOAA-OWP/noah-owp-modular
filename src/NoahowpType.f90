@@ -1,4 +1,4 @@
-module NoahowpmpType
+module NoahowpType
   
   use LevelsType
   use DomainType
@@ -7,7 +7,7 @@ module NoahowpmpType
   use WaterType
   use ForcingType
   use EnergyType
-  use NoahowpmpIOType
+  use NoahowpGridTypeModule
   
   implicit none
 
@@ -29,19 +29,19 @@ module NoahowpmpType
 
   contains   
 
-  subroutine Init(this,NoahowpmpIO)
+  subroutine Init(this,noahowpgrid)
 
     class(noahowp_type)                   :: this
-    type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
+    type(noahowpgrid_type), intent(in)    :: noahowpgrid
 
-    call this%domain%Init(NoahowpmpIO)
+    call this%domain%Init(noahowpgrid)
     call this%options%Init()
-    call this%parameters%Init(NoahowpmpIO)
+    call this%parameters%Init(noahowpgrid)
     call this%levels%Init()
-    call this%water%Init(NoahowpmpIO)
+    call this%water%Init(noahowpgrid)
     call this%forcing%Init()
-    call this%energy%Init(NoahowpmpIO)
+    call this%energy%Init(noahowpgrid)
 
   end subroutine Init
 
-end module NoahowpmpType
+end module NoahowpType

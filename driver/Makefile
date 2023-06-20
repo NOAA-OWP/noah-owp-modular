@@ -13,15 +13,15 @@ OBJS = AsciiReadModule.o \
        EnergyVarTransferModule.o \
        ForcingVarTransferModule.o \
        LevelsVarTransferModule.o \
-       NoahowpmpIOType.o \
-       NoahowpmpIOTypeInitModule.o \
-       NoahowpmpReadNamelistModule.o \
-       NoahowpmpReadTableModule.o \
+       NoahowpGridTypeModule.o \
+       NoahowpGridTypeInitModule.o \
+       NoahowpReadNamelistModule.o \
+       NoahowpReadTableModule.o \
        OptionsVarTransferModule.o \
        OutputModule.o \
        ParametersVarTransferModule.o \
        WaterVarTransferModule.o \
-       NoahowpmpGriddedDriverModule.o
+       NoahowpGridDriverModule.o
 
 all:	$(OBJS)
 
@@ -39,37 +39,37 @@ clean:
 # Dependencies:
 #
 AsciiReadModule.o:               ../src/UtilitiesModule.o
-DomainVarTransferModule.o:       ./NoahowpmpIOType.o \
-                                 ../src/NoahowpmpType.o
-EnergyVarTransferModule.o:       ./NoahowpmpIOType.o \
-                                 ../src/NoahowpmpType.o 
-LevelsVarTransferModule.o:       ./NoahowpmpIOType.o \
-                                 ../src/NoahowpmpType.o 
-ForcingVarTransferModule.o:      ./NoahowpmpIOType.o \
-                                 ../src/NoahowpmpType.o 
-NoahowpmpIOTypeInitModule.o:     ./NoahowpmpIOType.o
-NoahowpmpReadNamelistModule.o:   ./NoahowpmpIOType.o \
-                                 ./NoahowpmpIOTypeInitModule.o \
-                                 ./NoahowpmpReadTableModule.o \
+DomainVarTransferModule.o:       ./NoahowpGridTypeModule.o \
+                                 ../src/NoahowpType.o
+EnergyVarTransferModule.o:       ./NoahowpGridTypeModule.o \
+                                 ../src/NoahowpType.o 
+LevelsVarTransferModule.o:       ./NoahowpGridTypeModule.o \
+                                 ../src/NoahowpType.o 
+ForcingVarTransferModule.o:      ./NoahowpGridTypeModule.o \
+                                 ../src/NoahowpType.o 
+NoahowpGridTypeInitModule.o:     ./NoahowpGridTypeModule.o
+NoahowpReadNamelistModule.o:     ./NoahowpGridTypeModule.o \
+                                 ./NoahowpGridTypeInitModule.o \
+                                 ./NoahowpReadTableModule.o \
                                  ../src/ErrorCheckModule.o \
                                  ./OutputModule.o \
                                  ../src/DateTimeUtilsModule.o \
                                  ./AsciiReadModule.o
-NoahowpmpReadTableModule.o:      ./NoahowpmpIOType.o
-OptionsVarTransferModule.o:      ./NoahowpmpIOType.o \
-                                 ../src/NoahowpmpType.o 
+NoahowpReadTableModule.o:        ./NoahowpGridTypeModule.o
+OptionsVarTransferModule.o:      ./NoahowpGridTypeModule.o \
+                                 ../src/NoahowpType.o 
 OutputModule.o:                  ../src/WaterType.o \
                                  ../src/DomainType.o \
                                  ../src/ForcingType.o \
                                  ../src/EnergyType.o 
-ParametersVarTransferModule.o:   ./NoahowpmpIOType.o \
-                                 ../src/NoahowpmpType.o
-WaterVarTransferModule.o:        ./NoahowpmpIOType.o \
-                                 ../src/NoahowpmpType.o 
-NoahowpmpGriddedDriverModule.o:  ./AsciiReadModule.o \
+ParametersVarTransferModule.o:   ./NoahowpGridTypeModule.o \
+                                 ../src/NoahowpType.o
+WaterVarTransferModule.o:        ./NoahowpGridTypeModule.o \
+                                 ../src/NoahowpType.o 
+NoahowpGridDriverModule.o:       ./AsciiReadModule.o \
                                  ../src/RunModule.o \
-                                 ./NoahowpmpIOType.o \
-                                 ../src/NoahowpmpType.o \
+                                 ./NoahowpGridTypeModule.o \
+                                 ../src/NoahowpType.o \
                                  ./DomainVarTransferModule.o \
                                  ./EnergyVarTransferModule.o \
                                  ./ForcingVarTransferModule.o \

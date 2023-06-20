@@ -28,7 +28,7 @@ contains
     idt = itime * (domain%dt / 60)
 
 
-    ! This is unnecessary call because now calling in NoahowpmpGriddedModule
+    ! This is unnecessary call because now calling in NoahowpGriddedModule
     ! calculate current 'nowdate' from start date + integer length of run to current time
     call geth_newdate(domain%startdate, idt, &  ! in
                       domain%nowdate)           ! out

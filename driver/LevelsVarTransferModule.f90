@@ -1,40 +1,42 @@
 module LevelsVarTransferModule
 
-    use NoahowpmpIOType
-    use NoahowpmpType
+    use NoahowpGridTypeModule
+    use NoahowpType
 
     implicit none
   
   contains
   
-  subroutine LevelsVarInTransfer(noahowpmp, NoahowpmpIO)
+  subroutine LevelsVarInTransfer(noahowp, noahowpgrid)
 
     implicit none
 
-    type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
-    type(noahowp_type),     intent(inout) :: noahowpmp
+    type(noahowpgrid_type), intent(in)    :: noahowpgrid
+    type(noahowp_type),     intent(inout) :: noahowp
 
-    associate(ix   => NoahowpmpIO%ix, &
-              iy   => NoahowpmpIO%iy)
+    associate(ix   => noahowpgrid%ix, &
+              iy   => noahowpgrid%iy)
 
-    noahowpmp%levels%nsoil = NoahowpmpIO%nsoil
-    noahowpmp%levels%nsnow = NoahowpmpIO%nsnow
-    noahowpmp%levels%nveg = NoahowpmpIO%nveg
+    noahowp%levels%nsoil = noahowpgrid%nsoil
+    noahowp%levels%nsnow = noahowpgrid%nsnow
+    noahowp%levels%nveg = noahowpgrid%nveg
             
     end associate
 
   end subroutine LevelsVarInTransfer
 
-  subroutine LevelsVarOutTransfer(Noahowpmp, NoahowpmpIO)
+  subroutine LevelsVarOutTransfer(noahowp, noahowpgrid)
 
     implicit none
 
-    type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
-    type(noahowp_type),     intent(inout) :: Noahowpmp
+    type(noahowpgrid_type), intent(inout) :: noahowpgrid
+    type(noahowp_type),     intent(inout) :: noahowp
 
-    associate(ix   => NoahowpmpIO%ix, &
-              iy   => NoahowpmpIO%iy)
+    associate(ix   => noahowpgrid%ix, &
+              iy   => noahowpgrid%iy)
 
+    ! Nothing to do      
+    
     end associate
 
   end subroutine LevelsVarOutTransfer

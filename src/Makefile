@@ -39,7 +39,7 @@ OBJS = ErrorCheckModule.o \
        EnergyModule.o \
        UtilitiesModule.o \
        DateTimeUtilsModule.o \
-       NoahowpmpType.o \
+       NoahowpType.o \
        RunModule.o
 
 all:	$(OBJS)
@@ -60,7 +60,7 @@ clean:
 
 NamelistRead.o: ErrorCheckModule.o
 LevelsType.o: NamelistRead.o
-DomainType.o: NamelistRead.o LevelsType.o DateTimeUtilsModule.o ../driver/NoahowpmpIOType.o
+DomainType.o: NamelistRead.o LevelsType.o DateTimeUtilsModule.o ../driver/NoahowpGridTypeModule.o
 OptionsType.o: NamelistRead.o
 ParametersType.o: NamelistRead.o
 ForcingType.o: NamelistRead.o
@@ -109,5 +109,5 @@ RunModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType
                 ForcingType.o WaterType.o NamelistRead.o ../driver/AsciiReadModule.o \
                 ../driver/OutputModule.o UtilitiesModule.o ForcingModule.o InterceptionModule.o \
                 EnergyModule.o WaterModule.o DateTimeUtilsModule.o
-NoahowpmpType.o: NamelistRead.o LevelsType.o DomainType.o OptionsType.o ParametersType.o \
+NoahowpType.o: NamelistRead.o LevelsType.o DomainType.o OptionsType.o ParametersType.o \
                    WaterType.o ForcingType.o EnergyType.o

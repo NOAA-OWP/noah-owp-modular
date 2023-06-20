@@ -1,93 +1,93 @@
 module ForcingVarTransferModule
 
-    use NoahowpmpIOType
-    use NoahowpmpType
+    use NoahowpGridTypeModule
+    use NoahowpType
 
     implicit none
   
   contains
   
-  subroutine ForcingVarInTransfer(noahowpmp, NoahowpmpIO)
+  subroutine ForcingVarInTransfer(noahowp, noahowpgrid)
 
     implicit none
 
-    type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
-    type(noahowp_type),     intent(inout) :: noahowpmp
+    type(noahowpgrid_type), intent(in)    :: noahowpgrid
+    type(noahowp_type),     intent(inout) :: noahowp
 
-    associate(ix   => NoahowpmpIO%ix, &
-              iy   => NoahowpmpIO%iy)
+    associate(ix   => noahowpgrid%ix, &
+              iy   => noahowpgrid%iy)
 
-    noahowpmp%forcing%SFCPRS = NoahowpmpIO%SFCPRS(ix,iy)
-    noahowpmp%forcing%SFCTMP = NoahowpmpIO%SFCTMP(ix,iy)
-    noahowpmp%forcing%Q2 = NoahowpmpIO%Q2(ix,iy)
-    noahowpmp%forcing%PRCP = NoahowpmpIO%PRCP(ix,iy)
-    noahowpmp%forcing%PRCPCONV = NoahowpmpIO%PRCPCONV(ix,iy)
-    noahowpmp%forcing%PRCPNONC = NoahowpmpIO%PRCPNONC(ix,iy)
-    noahowpmp%forcing%PRCPSHCV = NoahowpmpIO%PRCPSHCV(ix,iy)
-    noahowpmp%forcing%PRCPSNOW = NoahowpmpIO%PRCPSNOW(ix,iy)
-    noahowpmp%forcing%PRCPGRPL = NoahowpmpIO%PRCPGRPL(ix,iy)
-    noahowpmp%forcing%PRCPHAIL = NoahowpmpIO%PRCPHAIL(ix,iy)            
-    noahowpmp%forcing%SOLDN = NoahowpmpIO%SOLDN(ix,iy)
-    noahowpmp%forcing%LWDN = NoahowpmpIO%LWDN(ix,iy)
-    noahowpmp%forcing%FOLN = NoahowpmpIO%FOLN(ix,iy)
-    noahowpmp%forcing%O2PP = NoahowpmpIO%O2PP(ix,iy)
-    noahowpmp%forcing%CO2PP = NoahowpmpIO%CO2PP(ix,iy) 
-    noahowpmp%forcing%UU = NoahowpmpIO%UU(ix,iy)
-    noahowpmp%forcing%VV = NoahowpmpIO%VV(ix,iy)
-    noahowpmp%forcing%TBOT = NoahowpmpIO%TBOT(ix,iy)
-    noahowpmp%forcing%UR = NoahowpmpIO%UR(ix,iy)
-    noahowpmp%forcing%THAIR = NoahowpmpIO%THAIR(ix,iy)
-    noahowpmp%forcing%QAIR = NoahowpmpIO%QAIR(ix,iy)
-    noahowpmp%forcing%EAIR = NoahowpmpIO%EAIR(ix,iy)
-    noahowpmp%forcing%RHOAIR = NoahowpmpIO%RHOAIR(ix,iy)
-    noahowpmp%forcing%FPICE = NoahowpmpIO%FPICE(ix,iy)
-    noahowpmp%forcing%SWDOWN = NoahowpmpIO%SWDOWN(ix,iy)
-    noahowpmp%forcing%JULIAN = NoahowpmpIO%JULIAN
-    noahowpmp%forcing%YEARLEN = NoahowpmpIO%YEARLEN
-    noahowpmp%forcing%SOLAD(:) = NoahowpmpIO%SOLAD(ix,iy,:)
-    noahowpmp%forcing%SOLAI(:) = NoahowpmpIO%SOLAI(ix,iy,:)
+    noahowp%forcing%SFCPRS = noahowpgrid%SFCPRS(ix,iy)
+    noahowp%forcing%SFCTMP = noahowpgrid%SFCTMP(ix,iy)
+    noahowp%forcing%Q2 = noahowpgrid%Q2(ix,iy)
+    noahowp%forcing%PRCP = noahowpgrid%PRCP(ix,iy)
+    noahowp%forcing%PRCPCONV = noahowpgrid%PRCPCONV(ix,iy)
+    noahowp%forcing%PRCPNONC = noahowpgrid%PRCPNONC(ix,iy)
+    noahowp%forcing%PRCPSHCV = noahowpgrid%PRCPSHCV(ix,iy)
+    noahowp%forcing%PRCPSNOW = noahowpgrid%PRCPSNOW(ix,iy)
+    noahowp%forcing%PRCPGRPL = noahowpgrid%PRCPGRPL(ix,iy)
+    noahowp%forcing%PRCPHAIL = noahowpgrid%PRCPHAIL(ix,iy)            
+    noahowp%forcing%SOLDN = noahowpgrid%SOLDN(ix,iy)
+    noahowp%forcing%LWDN = noahowpgrid%LWDN(ix,iy)
+    noahowp%forcing%FOLN = noahowpgrid%FOLN(ix,iy)
+    noahowp%forcing%O2PP = noahowpgrid%O2PP(ix,iy)
+    noahowp%forcing%CO2PP = noahowpgrid%CO2PP(ix,iy) 
+    noahowp%forcing%UU = noahowpgrid%UU(ix,iy)
+    noahowp%forcing%VV = noahowpgrid%VV(ix,iy)
+    noahowp%forcing%TBOT = noahowpgrid%TBOT(ix,iy)
+    noahowp%forcing%UR = noahowpgrid%UR(ix,iy)
+    noahowp%forcing%THAIR = noahowpgrid%THAIR(ix,iy)
+    noahowp%forcing%QAIR = noahowpgrid%QAIR(ix,iy)
+    noahowp%forcing%EAIR = noahowpgrid%EAIR(ix,iy)
+    noahowp%forcing%RHOAIR = noahowpgrid%RHOAIR(ix,iy)
+    noahowp%forcing%FPICE = noahowpgrid%FPICE(ix,iy)
+    noahowp%forcing%SWDOWN = noahowpgrid%SWDOWN(ix,iy)
+    noahowp%forcing%JULIAN = noahowpgrid%JULIAN
+    noahowp%forcing%YEARLEN = noahowpgrid%YEARLEN
+    noahowp%forcing%SOLAD(:) = noahowpgrid%SOLAD(ix,iy,:)
+    noahowp%forcing%SOLAI(:) = noahowpgrid%SOLAI(ix,iy,:)
 
     end associate
 
   end subroutine
 
-  subroutine ForcingVarOutTransfer(Noahowpmp, NoahowpmpIO)
+  subroutine ForcingVarOutTransfer(noahowp, noahowpgrid)
 
     implicit none
 
-    type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
-    type(noahowp_type),     intent(in)    :: Noahowpmp
+    type(noahowpgrid_type), intent(inout) :: noahowpgrid
+    type(noahowp_type),     intent(in)    :: noahowp
 
-    associate(ix   => NoahowpmpIO%ix, &
-              iy   => NoahowpmpIO%iy)
+    associate(ix   => noahowpgrid%ix, &
+              iy   => noahowpgrid%iy)
 
-    NoahowpmpIO%SFCPRS(ix,iy) = Noahowpmp%forcing%SFCPRS
-    NoahowpmpIO%SFCTMP(ix,iy) = Noahowpmp%forcing%SFCTMP
-    NoahowpmpIO%Q2(ix,iy) = Noahowpmp%forcing%Q2
-    NoahowpmpIO%PRCP(ix,iy) = Noahowpmp%forcing%PRCP
-    NoahowpmpIO%PRCPCONV(ix,iy) = Noahowpmp%forcing%PRCPCONV
-    NoahowpmpIO%PRCPNONC(ix,iy) = Noahowpmp%forcing%PRCPNONC
-    NoahowpmpIO%PRCPSHCV(ix,iy) = Noahowpmp%forcing%PRCPSHCV
-    NoahowpmpIO%PRCPSNOW(ix,iy) = Noahowpmp%forcing%PRCPSNOW
-    NoahowpmpIO%PRCPGRPL(ix,iy) = Noahowpmp%forcing%PRCPGRPL
-    NoahowpmpIO%PRCPHAIL(ix,iy) = Noahowpmp%forcing%PRCPHAIL
-    NoahowpmpIO%SOLDN(ix,iy) = Noahowpmp%forcing%SOLDN
-    NoahowpmpIO%LWDN(ix,iy) = Noahowpmp%forcing%LWDN
-    NoahowpmpIO%FOLN(ix,iy) = Noahowpmp%forcing%FOLN
-    NoahowpmpIO%O2PP(ix,iy) = Noahowpmp%forcing%O2PP
-    NoahowpmpIO%CO2PP(ix,iy) = Noahowpmp%forcing%CO2PP
-    NoahowpmpIO%UU(ix,iy) = Noahowpmp%forcing%UU
-    NoahowpmpIO%VV(ix,iy) = Noahowpmp%forcing%VV
-    NoahowpmpIO%TBOT(ix,iy) = Noahowpmp%forcing%TBOT
-    NoahowpmpIO%UR(ix,iy) = Noahowpmp%forcing%UR
-    NoahowpmpIO%THAIR(ix,iy) = Noahowpmp%forcing%THAIR
-    NoahowpmpIO%QAIR(ix,iy) = Noahowpmp%forcing%QAIR
-    NoahowpmpIO%EAIR(ix,iy) = Noahowpmp%forcing%EAIR
-    NoahowpmpIO%RHOAIR(ix,iy) = Noahowpmp%forcing%RHOAIR
-    NoahowpmpIO%FPICE(ix,iy) = Noahowpmp%forcing%FPICE
-    NoahowpmpIO%SWDOWN(ix,iy) = Noahowpmp%forcing%SWDOWN
-    NoahowpmpIO%SOLAD(ix,iy,:) = Noahowpmp%forcing%SOLAD(:)
-    NoahowpmpIO%SOLAI(ix,iy,:) = Noahowpmp%forcing%SOLAI(:)
+    noahowpgrid%SFCPRS(ix,iy) = noahowp%forcing%SFCPRS
+    noahowpgrid%SFCTMP(ix,iy) = noahowp%forcing%SFCTMP
+    noahowpgrid%Q2(ix,iy) = noahowp%forcing%Q2
+    noahowpgrid%PRCP(ix,iy) = noahowp%forcing%PRCP
+    noahowpgrid%PRCPCONV(ix,iy) = noahowp%forcing%PRCPCONV
+    noahowpgrid%PRCPNONC(ix,iy) = noahowp%forcing%PRCPNONC
+    noahowpgrid%PRCPSHCV(ix,iy) = noahowp%forcing%PRCPSHCV
+    noahowpgrid%PRCPSNOW(ix,iy) = noahowp%forcing%PRCPSNOW
+    noahowpgrid%PRCPGRPL(ix,iy) = noahowp%forcing%PRCPGRPL
+    noahowpgrid%PRCPHAIL(ix,iy) = noahowp%forcing%PRCPHAIL
+    noahowpgrid%SOLDN(ix,iy) = noahowp%forcing%SOLDN
+    noahowpgrid%LWDN(ix,iy) = noahowp%forcing%LWDN
+    noahowpgrid%FOLN(ix,iy) = noahowp%forcing%FOLN
+    noahowpgrid%O2PP(ix,iy) = noahowp%forcing%O2PP
+    noahowpgrid%CO2PP(ix,iy) = noahowp%forcing%CO2PP
+    noahowpgrid%UU(ix,iy) = noahowp%forcing%UU
+    noahowpgrid%VV(ix,iy) = noahowp%forcing%VV
+    noahowpgrid%TBOT(ix,iy) = noahowp%forcing%TBOT
+    noahowpgrid%UR(ix,iy) = noahowp%forcing%UR
+    noahowpgrid%THAIR(ix,iy) = noahowp%forcing%THAIR
+    noahowpgrid%QAIR(ix,iy) = noahowp%forcing%QAIR
+    noahowpgrid%EAIR(ix,iy) = noahowp%forcing%EAIR
+    noahowpgrid%RHOAIR(ix,iy) = noahowp%forcing%RHOAIR
+    noahowpgrid%FPICE(ix,iy) = noahowp%forcing%FPICE
+    noahowpgrid%SWDOWN(ix,iy) = noahowp%forcing%SWDOWN
+    noahowpgrid%SOLAD(ix,iy,:) = noahowp%forcing%SOLAD(:)
+    noahowpgrid%SOLAI(ix,iy,:) = noahowp%forcing%SOLAI(:)
 
     end associate
 

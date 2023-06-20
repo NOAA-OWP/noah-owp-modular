@@ -1,330 +1,330 @@
 module ParametersVarTransferModule
 
-    use NoahowpmpIOType
-    use NoahowpmpType
+    use NoahowpGridTypeModule
+    use NoahowpType
 
     implicit none
   
   contains
   
-  subroutine ParametersVarInTransfer(noahowpmp, NoahowpmpIO)
+  subroutine ParametersVarInTransfer(noahowp, noahowpgrid)
 
     implicit none
 
-    type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
-    type(noahowp_type),   intent(inout) :: noahowpmp
-    integer                            :: ii
+    type(noahowpgrid_type), intent(in)    :: noahowpgrid
+    type(noahowp_type),     intent(inout) :: noahowp
+    integer                               :: ii
 
-    associate(ix   => NoahowpmpIO%ix, &
-              iy   => NoahowpmpIO%iy, &
-              isltyp => NoahowpmpIO%isltyp(NoahowpmpIO%ix,NoahowpmpIO%iy), &
-              vegtyp => NoahowpmpIO%vegtyp(NoahowpmpIO%ix,NoahowpmpIO%iy), &
-              soilcolor => NoahowpmpIO%soilcolor(NoahowpmpIO%ix,NoahowpmpIO%iy) &
+    associate(ix        => noahowpgrid%ix, &
+              iy        => noahowpgrid%iy, &
+              isltyp    => noahowpgrid%isltyp(noahowpgrid%ix,noahowpgrid%iy),   &
+              vegtyp    => noahowpgrid%vegtyp(noahowpgrid%ix,noahowpgrid%iy),   &
+              soilcolor => noahowpgrid%soilcolor(noahowpgrid%ix,noahowpgrid%iy) &
               )
 
-    noahowpmp%parameters%bexp    = NoahowpmpIO%BEXP_TABLE(isltyp)
-    noahowpmp%parameters%smcmax  = NoahowpmpIO%SMCMAX_TABLE(isltyp)
-    noahowpmp%parameters%smcwlt  = NoahowpmpIO%SMCWLT_TABLE(isltyp)
-    noahowpmp%parameters%smcref  = NoahowpmpIO%SMCREF_TABLE(isltyp)
-    noahowpmp%parameters%dksat   = NoahowpmpIO%DKSAT_TABLE(isltyp)
-    noahowpmp%parameters%dwsat   = NoahowpmpIO%DWSAT_TABLE(isltyp)
-    noahowpmp%parameters%psisat  = NoahowpmpIO%PSISAT_TABLE(isltyp)
-    noahowpmp%parameters%bvic    = NoahowpmpIO%BVIC_table(isltyp)
-    noahowpmp%parameters%AXAJ    = NoahowpmpIO%AXAJ_table(isltyp)
-    noahowpmp%parameters%BXAJ    = NoahowpmpIO%BXAJ_table(isltyp)
-    noahowpmp%parameters%XXAJ    = NoahowpmpIO%XXAJ_table(isltyp)
-    noahowpmp%parameters%BBVIC   = NoahowpmpIO%BBVIC_table(isltyp)
-    noahowpmp%parameters%G       = NoahowpmpIO%GDVIC_table(isltyp)
-    noahowpmp%parameters%QUARTZ  = NoahowpmpIO%QUARTZ_table(isltyp)
+    noahowp%parameters%bexp    = noahowpgrid%BEXP_TABLE(isltyp)
+    noahowp%parameters%smcmax  = noahowpgrid%SMCMAX_TABLE(isltyp)
+    noahowp%parameters%smcwlt  = noahowpgrid%SMCWLT_TABLE(isltyp)
+    noahowp%parameters%smcref  = noahowpgrid%SMCREF_TABLE(isltyp)
+    noahowp%parameters%dksat   = noahowpgrid%DKSAT_TABLE(isltyp)
+    noahowp%parameters%dwsat   = noahowpgrid%DWSAT_TABLE(isltyp)
+    noahowp%parameters%psisat  = noahowpgrid%PSISAT_TABLE(isltyp)
+    noahowp%parameters%bvic    = noahowpgrid%BVIC_table(isltyp)
+    noahowp%parameters%AXAJ    = noahowpgrid%AXAJ_table(isltyp)
+    noahowp%parameters%BXAJ    = noahowpgrid%BXAJ_table(isltyp)
+    noahowp%parameters%XXAJ    = noahowpgrid%XXAJ_table(isltyp)
+    noahowp%parameters%BBVIC   = noahowpgrid%BBVIC_table(isltyp)
+    noahowp%parameters%G       = noahowpgrid%GDVIC_table(isltyp)
+    noahowp%parameters%QUARTZ  = noahowpgrid%QUARTZ_table(isltyp)
 
     do ii = 1,12
-      noahowpmp%parameters%LAIM(ii) = NoahowpmpIO%LAIM_TABLE(vegtyp, ii)
-      noahowpmp%parameters%SAIM(ii) = NoahowpmpIO%SAIM_TABLE(vegtyp, ii)
+      noahowp%parameters%LAIM(ii) = noahowpgrid%LAIM_TABLE(vegtyp, ii)
+      noahowp%parameters%SAIM(ii) = noahowpgrid%SAIM_TABLE(vegtyp, ii)
     end do
 
-    noahowpmp%parameters%CH2OP   = NoahowpmpIO%CH2OP_TABLE(vegtyp)
-    noahowpmp%parameters%NROOT   = NoahowpmpIO%NROOT_TABLE(vegtyp)
-    noahowpmp%parameters%HVT     = NoahowpmpIO%HVT_TABLE(vegtyp)
-    noahowpmp%parameters%HVB     = NoahowpmpIO%HVB_TABLE(vegtyp)
-    noahowpmp%parameters%TMIN    = NoahowpmpIO%TMIN_TABLE(vegtyp)
-    noahowpmp%parameters%SHDFAC  = NoahowpmpIO%SHDFAC_TABLE(vegtyp) ! this used to be in VEGPARM.TBL, but now somewhere else for hrldas. this is temporarily in MPTABLE.TBL.
-    noahowpmp%parameters%SHDMAX  = NoahowpmpIO%SHDFAC_TABLE(vegtyp)
-    noahowpmp%parameters%Z0MVT   = NoahowpmpIO%Z0MVT_TABLE(vegtyp)
-    noahowpmp%parameters%RC      = NoahowpmpIO%RC_TABLE(vegtyp)
-    noahowpmp%parameters%XL      = NoahowpmpIO%XL_TABLE(vegtyp)
-    noahowpmp%parameters%BP      = NoahowpmpIO%BP_TABLE(vegtyp)
-    noahowpmp%parameters%FOLNMX  = NoahowpmpIO%FOLNMX_TABLE(vegtyp)
-    noahowpmp%parameters%QE25    = NoahowpmpIO%QE25_TABLE(vegtyp)
-    noahowpmp%parameters%VCMX25  = NoahowpmpIO%VCMX25_TABLE(vegtyp)
-    noahowpmp%parameters%MP      = NoahowpmpIO%MP_TABLE(vegtyp)
-    noahowpmp%parameters%RGL     = NoahowpmpIO%RGL_TABLE(vegtyp)
-    noahowpmp%parameters%RSMIN   = NoahowpmpIO%RS_TABLE(vegtyp)
-    noahowpmp%parameters%HS      = NoahowpmpIO%HS_TABLE(vegtyp)
-    noahowpmp%parameters%AKC     = NoahowpmpIO%AKC_TABLE(vegtyp)
-    noahowpmp%parameters%AKO     = NoahowpmpIO%AKO_TABLE(vegtyp)
-    noahowpmp%parameters%AVCMX   = NoahowpmpIO%AVCMX_TABLE(vegtyp)
-    noahowpmp%parameters%RSMAX   = NoahowpmpIO%RSMAX_TABLE(vegtyp)
-    noahowpmp%parameters%CWP     = NoahowpmpIO%CWPVT_TABLE(vegtyp)
-    noahowpmp%parameters%C3PSN   = NoahowpmpIO%C3PSN_TABLE(vegtyp)
-    noahowpmp%parameters%DLEAF   = NoahowpmpIO%DLEAF_TABLE(vegtyp)
-    noahowpmp%parameters%KC25    = NoahowpmpIO%KC25_TABLE(vegtyp)
-    noahowpmp%parameters%KO25    = NoahowpmpIO%KO25_TABLE(vegtyp)
+    noahowp%parameters%CH2OP   = noahowpgrid%CH2OP_TABLE(vegtyp)
+    noahowp%parameters%NROOT   = noahowpgrid%NROOT_TABLE(vegtyp)
+    noahowp%parameters%HVT     = noahowpgrid%HVT_TABLE(vegtyp)
+    noahowp%parameters%HVB     = noahowpgrid%HVB_TABLE(vegtyp)
+    noahowp%parameters%TMIN    = noahowpgrid%TMIN_TABLE(vegtyp)
+    noahowp%parameters%SHDFAC  = noahowpgrid%SHDFAC_TABLE(vegtyp) ! this used to be in VEGPARM.TBL, but now somewhere else for hrldas. this is temporarily in MPTABLE.TBL.
+    noahowp%parameters%SHDMAX  = noahowpgrid%SHDFAC_TABLE(vegtyp)
+    noahowp%parameters%Z0MVT   = noahowpgrid%Z0MVT_TABLE(vegtyp)
+    noahowp%parameters%RC      = noahowpgrid%RC_TABLE(vegtyp)
+    noahowp%parameters%XL      = noahowpgrid%XL_TABLE(vegtyp)
+    noahowp%parameters%BP      = noahowpgrid%BP_TABLE(vegtyp)
+    noahowp%parameters%FOLNMX  = noahowpgrid%FOLNMX_TABLE(vegtyp)
+    noahowp%parameters%QE25    = noahowpgrid%QE25_TABLE(vegtyp)
+    noahowp%parameters%VCMX25  = noahowpgrid%VCMX25_TABLE(vegtyp)
+    noahowp%parameters%MP      = noahowpgrid%MP_TABLE(vegtyp)
+    noahowp%parameters%RGL     = noahowpgrid%RGL_TABLE(vegtyp)
+    noahowp%parameters%RSMIN   = noahowpgrid%RS_TABLE(vegtyp)
+    noahowp%parameters%HS      = noahowpgrid%HS_TABLE(vegtyp)
+    noahowp%parameters%AKC     = noahowpgrid%AKC_TABLE(vegtyp)
+    noahowp%parameters%AKO     = noahowpgrid%AKO_TABLE(vegtyp)
+    noahowp%parameters%AVCMX   = noahowpgrid%AVCMX_TABLE(vegtyp)
+    noahowp%parameters%RSMAX   = noahowpgrid%RSMAX_TABLE(vegtyp)
+    noahowp%parameters%CWP     = noahowpgrid%CWPVT_TABLE(vegtyp)
+    noahowp%parameters%C3PSN   = noahowpgrid%C3PSN_TABLE(vegtyp)
+    noahowp%parameters%DLEAF   = noahowpgrid%DLEAF_TABLE(vegtyp)
+    noahowp%parameters%KC25    = noahowpgrid%KC25_TABLE(vegtyp)
+    noahowp%parameters%KO25    = noahowpgrid%KO25_TABLE(vegtyp)
 
-    noahowpmp%parameters%RHOL(1) = NoahowpmpIO%RHOL_TABLE(vegtyp, 1)
-    noahowpmp%parameters%RHOL(2) = NoahowpmpIO%RHOL_TABLE(vegtyp, 2)
-    noahowpmp%parameters%RHOS(1) = NoahowpmpIO%RHOS_TABLE(vegtyp, 1)
-    noahowpmp%parameters%RHOS(2) = NoahowpmpIO%RHOS_TABLE(vegtyp, 2)
-    noahowpmp%parameters%TAUL(1) = NoahowpmpIO%TAUL_TABLE(vegtyp, 1)
-    noahowpmp%parameters%TAUL(2) = NoahowpmpIO%TAUL_TABLE(vegtyp, 2)
-    noahowpmp%parameters%TAUS(1) = NoahowpmpIO%TAUS_TABLE(vegtyp, 1)
-    noahowpmp%parameters%TAUS(2) = NoahowpmpIO%TAUS_TABLE(vegtyp, 2)
+    noahowp%parameters%RHOL(1) = noahowpgrid%RHOL_TABLE(vegtyp, 1)
+    noahowp%parameters%RHOL(2) = noahowpgrid%RHOL_TABLE(vegtyp, 2)
+    noahowp%parameters%RHOS(1) = noahowpgrid%RHOS_TABLE(vegtyp, 1)
+    noahowp%parameters%RHOS(2) = noahowpgrid%RHOS_TABLE(vegtyp, 2)
+    noahowp%parameters%TAUL(1) = noahowpgrid%TAUL_TABLE(vegtyp, 1)
+    noahowp%parameters%TAUL(2) = noahowpgrid%TAUL_TABLE(vegtyp, 2)
+    noahowp%parameters%TAUS(1) = noahowpgrid%TAUS_TABLE(vegtyp, 1)
+    noahowp%parameters%TAUS(2) = noahowpgrid%TAUS_TABLE(vegtyp, 2)
 
-    noahowpmp%parameters%refkdt       = NoahowpmpIO%REFKDT_TABLE
-    noahowpmp%parameters%refdk        = NoahowpmpIO%REFDK_TABLE
-    noahowpmp%parameters%kdt          = noahowpmp%parameters%refkdt * noahowpmp%parameters%dksat(1) / noahowpmp%parameters%refdk
-    noahowpmp%parameters%csoil        = NoahowpmpIO%CSOIL_TABLE
-    noahowpmp%parameters%Z0           = NoahowpmpIO%Z0_TABLE     ! bare soil roughness length (m). in GENPARM.TBL.  NOTE: This is hard-coded in hrldas version of noah-mp
-    noahowpmp%parameters%CZIL         = NoahowpmpIO%CZIL_TABLE
-    noahowpmp%parameters%ZBOT         = NoahowpmpIO%ZBOT_TABLE
-    noahowpmp%parameters%frzx         = 0.15 * (noahowpmp%parameters%smcmax(1) / noahowpmp%parameters%smcref(1)) * (0.412 / 0.468)
-    noahowpmp%parameters%SSI          = NoahowpmpIO%SSI_TABLE
-    noahowpmp%parameters%MFSNO        = NoahowpmpIO%MFSNO_TABLE(vegtyp)
-    noahowpmp%parameters%Z0SNO        = NoahowpmpIO%Z0SNO_TABLE
-    noahowpmp%parameters%SWEMX        = NoahowpmpIO%SWEMX_TABLE
-    noahowpmp%parameters%TAU0         = NoahowpmpIO%TAU0_TABLE
-    noahowpmp%parameters%GRAIN_GROWTH = NoahowpmpIO%GRAIN_GROWTH_TABLE
-    noahowpmp%parameters%EXTRA_GROWTH = NoahowpmpIO%EXTRA_GROWTH_TABLE
-    noahowpmp%parameters%DIRT_SOOT    = NoahowpmpIO%DIRT_SOOT_TABLE
-    noahowpmp%parameters%BATS_COSZ    = NoahowpmpIO%BATS_COSZ_TABLE
-    noahowpmp%parameters%BATS_VIS_NEW = NoahowpmpIO%BATS_VIS_NEW_TABLE
-    noahowpmp%parameters%BATS_NIR_NEW = NoahowpmpIO%BATS_NIR_NEW_TABLE
-    noahowpmp%parameters%BATS_VIS_AGE = NoahowpmpIO%BATS_VIS_AGE_TABLE
-    noahowpmp%parameters%BATS_NIR_AGE = NoahowpmpIO%BATS_NIR_AGE_TABLE
-    noahowpmp%parameters%BATS_VIS_DIR = NoahowpmpIO%BATS_VIS_DIR_TABLE
-    noahowpmp%parameters%BATS_NIR_DIR = NoahowpmpIO%BATS_NIR_DIR_TABLE
-    noahowpmp%parameters%RSURF_SNOW   = NoahowpmpIO%RSURF_SNOW_TABLE
-    noahowpmp%parameters%RSURF_EXP    = NoahowpmpIO%RSURF_EXP_TABLE
+    noahowp%parameters%refkdt       = noahowpgrid%REFKDT_TABLE
+    noahowp%parameters%refdk        = noahowpgrid%REFDK_TABLE
+    noahowp%parameters%kdt          = noahowp%parameters%refkdt * noahowp%parameters%dksat(1) / noahowp%parameters%refdk
+    noahowp%parameters%csoil        = noahowpgrid%CSOIL_TABLE
+    noahowp%parameters%Z0           = noahowpgrid%Z0_TABLE     ! bare soil roughness length (m). in GENPARM.TBL.  NOTE: This is hard-coded in hrldas version of noah-mp
+    noahowp%parameters%CZIL         = noahowpgrid%CZIL_TABLE
+    noahowp%parameters%ZBOT         = noahowpgrid%ZBOT_TABLE
+    noahowp%parameters%frzx         = 0.15 * (noahowp%parameters%smcmax(1) / noahowp%parameters%smcref(1)) * (0.412 / 0.468)
+    noahowp%parameters%SSI          = noahowpgrid%SSI_TABLE
+    noahowp%parameters%MFSNO        = noahowpgrid%MFSNO_TABLE(vegtyp)
+    noahowp%parameters%Z0SNO        = noahowpgrid%Z0SNO_TABLE
+    noahowp%parameters%SWEMX        = noahowpgrid%SWEMX_TABLE
+    noahowp%parameters%TAU0         = noahowpgrid%TAU0_TABLE
+    noahowp%parameters%GRAIN_GROWTH = noahowpgrid%GRAIN_GROWTH_TABLE
+    noahowp%parameters%EXTRA_GROWTH = noahowpgrid%EXTRA_GROWTH_TABLE
+    noahowp%parameters%DIRT_SOOT    = noahowpgrid%DIRT_SOOT_TABLE
+    noahowp%parameters%BATS_COSZ    = noahowpgrid%BATS_COSZ_TABLE
+    noahowp%parameters%BATS_VIS_NEW = noahowpgrid%BATS_VIS_NEW_TABLE
+    noahowp%parameters%BATS_NIR_NEW = noahowpgrid%BATS_NIR_NEW_TABLE
+    noahowp%parameters%BATS_VIS_AGE = noahowpgrid%BATS_VIS_AGE_TABLE
+    noahowp%parameters%BATS_NIR_AGE = noahowpgrid%BATS_NIR_AGE_TABLE
+    noahowp%parameters%BATS_VIS_DIR = noahowpgrid%BATS_VIS_DIR_TABLE
+    noahowp%parameters%BATS_NIR_DIR = noahowpgrid%BATS_NIR_DIR_TABLE
+    noahowp%parameters%RSURF_SNOW   = noahowpgrid%RSURF_SNOW_TABLE
+    noahowp%parameters%RSURF_EXP    = noahowpgrid%RSURF_EXP_TABLE
 
-    noahowpmp%parameters%ALBSAT(1)    = NoahowpmpIO%ALBSAT_TABLE(soilcolor, 1)
-    noahowpmp%parameters%ALBSAT(2)    = NoahowpmpIO%ALBSAT_TABLE(soilcolor, 2)
-    noahowpmp%parameters%ALBDRY(1)    = NoahowpmpIO%ALBDRY_TABLE(soilcolor, 1)
-    noahowpmp%parameters%ALBDRY(2)    = NoahowpmpIO%ALBDRY_TABLE(soilcolor, 2)
-    noahowpmp%parameters%ALBICE       = NoahowpmpIO%ALBICE_TABLE
-    noahowpmp%parameters%ALBLAK       = NoahowpmpIO%ALBLAK_TABLE
-    noahowpmp%parameters%OMEGAS       = NoahowpmpIO%OMEGAS_TABLE
-    noahowpmp%parameters%BETADS       = NoahowpmpIO%BETADS_TABLE
-    noahowpmp%parameters%BETAIS       = NoahowpmpIO%BETAIS_TABLE
-    noahowpmp%parameters%EG           = NoahowpmpIO%EG_TABLE
-    noahowpmp%parameters%slope        = NoahowpmpIO%SLOPE_TABLE(1)
+    noahowp%parameters%ALBSAT(1)    = noahowpgrid%ALBSAT_TABLE(soilcolor, 1)
+    noahowp%parameters%ALBSAT(2)    = noahowpgrid%ALBSAT_TABLE(soilcolor, 2)
+    noahowp%parameters%ALBDRY(1)    = noahowpgrid%ALBDRY_TABLE(soilcolor, 1)
+    noahowp%parameters%ALBDRY(2)    = noahowpgrid%ALBDRY_TABLE(soilcolor, 2)
+    noahowp%parameters%ALBICE       = noahowpgrid%ALBICE_TABLE
+    noahowp%parameters%ALBLAK       = noahowpgrid%ALBLAK_TABLE
+    noahowp%parameters%OMEGAS       = noahowpgrid%OMEGAS_TABLE
+    noahowp%parameters%BETADS       = noahowpgrid%BETADS_TABLE
+    noahowp%parameters%BETAIS       = noahowpgrid%BETAIS_TABLE
+    noahowp%parameters%EG           = noahowpgrid%EG_TABLE
+    noahowp%parameters%slope        = noahowpgrid%SLOPE_TABLE(1)
 
-    noahowpmp%parameters%ISURBAN                   = NoahowpmpIO%ISURBAN_TABLE
-    noahowpmp%parameters%ISWATER                   = NoahowpmpIO%ISWATER_TABLE
-    noahowpmp%parameters%ISBARREN                  = NoahowpmpIO%ISBARREN_TABLE
-    noahowpmp%parameters%ISICE                     = NoahowpmpIO%ISICE_TABLE
-    noahowpmp%parameters%ISCROP                    = NoahowpmpIO%ISCROP_TABLE
-    noahowpmp%parameters%EBLFOREST                 = NoahowpmpIO%EBLFOREST_TABLE
-    noahowpmp%parameters%NATURAL                   = NoahowpmpIO%NATURAL_TABLE
-    noahowpmp%parameters%LOW_DENSITY_RESIDENTIAL   = NoahowpmpIO%LCZ_1_TABLE  ! TO-DO: rename LOW_DENSITY_RESIDENTIAL -> LCZ_1
-    noahowpmp%parameters%HIGH_DENSITY_RESIDENTIAL  = NoahowpmpIO%LCZ_2_TABLE  ! TO-DO: rename LOW_DENSITY_RESIDENTIAL -> LCZ_2
-    noahowpmp%parameters%HIGH_INTENSITY_INDUSTRIAL = NoahowpmpIO%LCZ_3_TABLE  ! TO-DO: rename LOW_DENSITY_RESIDENTIAL -> LCZ_3
+    noahowp%parameters%ISURBAN                   = noahowpgrid%ISURBAN_TABLE
+    noahowp%parameters%ISWATER                   = noahowpgrid%ISWATER_TABLE
+    noahowp%parameters%ISBARREN                  = noahowpgrid%ISBARREN_TABLE
+    noahowp%parameters%ISICE                     = noahowpgrid%ISICE_TABLE
+    noahowp%parameters%ISCROP                    = noahowpgrid%ISCROP_TABLE
+    noahowp%parameters%EBLFOREST                 = noahowpgrid%EBLFOREST_TABLE
+    noahowp%parameters%NATURAL                   = noahowpgrid%NATURAL_TABLE
+    noahowp%parameters%LOW_DENSITY_RESIDENTIAL   = noahowpgrid%LCZ_1_TABLE  ! TO-DO: rename LOW_DENSITY_RESIDENTIAL -> LCZ_1
+    noahowp%parameters%HIGH_DENSITY_RESIDENTIAL  = noahowpgrid%LCZ_2_TABLE  ! TO-DO: rename LOW_DENSITY_RESIDENTIAL -> LCZ_2
+    noahowp%parameters%HIGH_INTENSITY_INDUSTRIAL = noahowpgrid%LCZ_3_TABLE  ! TO-DO: rename LOW_DENSITY_RESIDENTIAL -> LCZ_3
 
-    noahowpmp%parameters%urban_flag = .false.
-    noahowpmp%parameters%timean     = 10.5
-    noahowpmp%parameters%fsatmx     = 0.38
-    noahowpmp%parameters%GRAV       = 9.80616
-    noahowpmp%parameters%SB         = 5.67E-08
-    noahowpmp%parameters%VKC        = 0.40
-    noahowpmp%parameters%TFRZ       = 273.16
-    noahowpmp%parameters%HSUB       = 2.8440E06
-    noahowpmp%parameters%HVAP       = 2.5104E06
-    noahowpmp%parameters%HFUS       = 0.3336E06
-    noahowpmp%parameters%CWAT       = 4.188E06
-    noahowpmp%parameters%CICE       = 2.094E06
-    noahowpmp%parameters%CPAIR      = 1004.64
-    noahowpmp%parameters%TKWAT      = 0.6
-    noahowpmp%parameters%TKICE      = 2.2
-    noahowpmp%parameters%TKAIR      = 0.023
-    noahowpmp%parameters%RAIR       = 287.04
-    noahowpmp%parameters%RW         = 461.269
-    noahowpmp%parameters%DENH2O     = 1000.0
-    noahowpmp%parameters%DENICE     = 917.0
-    noahowpmp%parameters%THKW       = 0.57
-    noahowpmp%parameters%THKO       = 2.0
-    noahowpmp%parameters%THKQTZ     = 7.7
-    noahowpmp%parameters%WSLMAX     = 5000.0
-    noahowpmp%parameters%max_liq_mass_fraction = 0.4
-    noahowpmp%parameters%SNOW_RET_FAC = 5.e-5
-    noahowpmp%parameters%NBAND        = 2       ! do not change
-    noahowpmp%parameters%MPE          = 1.E-06  ! do not change ! need to make this a parameter
-    noahowpmp%parameters%TOPT         = 1.E-06  ! Optimum transpiration air temperature [K]
+    noahowp%parameters%urban_flag = .false.
+    noahowp%parameters%timean     = 10.5
+    noahowp%parameters%fsatmx     = 0.38
+    noahowp%parameters%GRAV       = 9.80616
+    noahowp%parameters%SB         = 5.67E-08
+    noahowp%parameters%VKC        = 0.40
+    noahowp%parameters%TFRZ       = 273.16
+    noahowp%parameters%HSUB       = 2.8440E06
+    noahowp%parameters%HVAP       = 2.5104E06
+    noahowp%parameters%HFUS       = 0.3336E06
+    noahowp%parameters%CWAT       = 4.188E06
+    noahowp%parameters%CICE       = 2.094E06
+    noahowp%parameters%CPAIR      = 1004.64
+    noahowp%parameters%TKWAT      = 0.6
+    noahowp%parameters%TKICE      = 2.2
+    noahowp%parameters%TKAIR      = 0.023
+    noahowp%parameters%RAIR       = 287.04
+    noahowp%parameters%RW         = 461.269
+    noahowp%parameters%DENH2O     = 1000.0
+    noahowp%parameters%DENICE     = 917.0
+    noahowp%parameters%THKW       = 0.57
+    noahowp%parameters%THKO       = 2.0
+    noahowp%parameters%THKQTZ     = 7.7
+    noahowp%parameters%WSLMAX     = 5000.0
+    noahowp%parameters%max_liq_mass_fraction = 0.4
+    noahowp%parameters%SNOW_RET_FAC = 5.e-5
+    noahowp%parameters%NBAND        = 2       ! do not change
+    noahowp%parameters%MPE          = 1.E-06  ! do not change ! need to make this a parameter
+    noahowp%parameters%TOPT         = 1.E-06  ! Optimum transpiration air temperature [K]
 
-    noahowpmp%parameters%CO2       =  395.e-06   ! co2 partial pressure, from CO2_TABLE var (set in MPTABLE.TBL)
-    noahowpmp%parameters%O2        =  0.209      ! o2 partial pressure, from O2_TABLE var (set in MPTABLE.TBL)
-    noahowpmp%parameters%PSIWLT    = -150.0      ! originally a fixed parameter set in ENERGY()
-    noahowpmp%parameters%TBOT      = 263.0       ! (K) can be updated depending on option OPT_TBOT
+    noahowp%parameters%CO2       =  395.e-06   ! co2 partial pressure, from CO2_TABLE var (set in MPTABLE.TBL)
+    noahowp%parameters%O2        =  0.209      ! o2 partial pressure, from O2_TABLE var (set in MPTABLE.TBL)
+    noahowp%parameters%PSIWLT    = -150.0      ! originally a fixed parameter set in ENERGY()
+    noahowp%parameters%TBOT      = 263.0       ! (K) can be updated depending on option OPT_TBOT
 
     ! Assign rain-snow threshold based on option
-    IF(NoahowpmpIO%opt_snf(ix,iy) == 2) THEN
-      NoahowpmpIO%rain_snow_thresh = NoahowpmpIO%TFRZ + 2.2
-    ELSE IF(NoahowpmpIO%opt_snf(ix,iy) == 3) THEN
-      NoahowpmpIO%rain_snow_thresh = NoahowpmpIO%TFRZ
-    ELSE IF(NoahowpmpIO%opt_snf(ix,iy) == 5 .or. NoahowpmpIO%opt_snf(ix,iy) == 6) THEN
-      NoahowpmpIO%rain_snow_thresh = NoahowpmpIO%TFRZ + NoahowpmpIO%rain_snow_thresh
+    IF(noahowpgrid%opt_snf(ix,iy) == 2) THEN
+      noahowp%parameters%rain_snow_thresh = noahowpgrid%TFRZ + 2.2
+    ELSE IF(noahowpgrid%opt_snf(ix,iy) == 3) THEN
+      noahowp%parameters%rain_snow_thresh = noahowpgrid%TFRZ
+    ELSE IF(noahowpgrid%opt_snf(ix,iy) == 5 .or. noahowpgrid%opt_snf(ix,iy) == 6) THEN
+      noahowp%parameters%rain_snow_thresh = noahowpgrid%TFRZ + noahowpgrid%rain_snow_thresh
     ELSE 
-      NoahowpmpIO%rain_snow_thresh = NoahowpmpIO%TFRZ ! set to TFRZ as a backup
+      noahowp%parameters%rain_snow_thresh = noahowpgrid%TFRZ ! set to TFRZ as a backup
     ENDIF
 
     ! Assign initial soil moisture based on variable or uniform initial conditions
-    NoahowpmpIO%zwt_init = NoahowpmpIO%zwt
+    noahowp%parameters%zwt_init = noahowpgrid%zwt(ix,iy)
 
     end associate
 
   end subroutine
 
-  subroutine ParametersVarOutTransfer(Noahowpmp, NoahowpmpIO)
+  subroutine ParametersVarOutTransfer(noahowp, noahowpgrid)
 
     implicit none
 
-    type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
-    type(noahowp_type),     intent(inout) :: Noahowpmp
+    type(noahowpgrid_type), intent(inout) :: noahowpgrid
+    type(noahowp_type),     intent(in)    :: noahowp
 
-    associate(ix   => NoahowpmpIO%ix, &
-              iy   => NoahowpmpIO%iy)
+    associate(ix   => noahowpgrid%ix, &
+              iy   => noahowpgrid%iy)
 
-    NoahowpmpIO%bexp(ix,iy,:) = Noahowpmp%parameters%bexp(:)
-    NoahowpmpIO%smcmax(ix,iy,:) = Noahowpmp%parameters%smcmax(:)
-    NoahowpmpIO%smcwlt(ix,iy,:) = Noahowpmp%parameters%smcwlt(:)
-    NoahowpmpIO%smcref(ix,iy,:) = Noahowpmp%parameters%smcref(:)
-    NoahowpmpIO%dksat(ix,iy,:) = Noahowpmp%parameters%dksat(:)
-    NoahowpmpIO%dwsat(ix,iy,:) = Noahowpmp%parameters%dwsat(:)
-    NoahowpmpIO%psisat(ix,iy,:) = Noahowpmp%parameters%psisat(:)
-    NoahowpmpIO%bvic(ix,iy) = Noahowpmp%parameters%bvic
-    NoahowpmpIO%AXAJ(ix,iy) = Noahowpmp%parameters%AXAJ
-    NoahowpmpIO%BXAJ(ix,iy) = Noahowpmp%parameters%BXAJ
-    NoahowpmpIO%XXAJ(ix,iy) = Noahowpmp%parameters%XXAJ
-    NoahowpmpIO%BBVIC(ix,iy) = Noahowpmp%parameters%BBVIC
-    NoahowpmpIO%G(ix,iy) = Noahowpmp%parameters%G
-    NoahowpmpIO%QUARTZ(ix,iy) = Noahowpmp%parameters%QUARTZ
-    NoahowpmpIO%kdt(ix,iy) = Noahowpmp%parameters%kdt
-    NoahowpmpIO%refkdt = Noahowpmp%parameters%refkdt
-    NoahowpmpIO%refdk = Noahowpmp%parameters%refdk
-    NoahowpmpIO%csoil = Noahowpmp%parameters%csoil
-    NoahowpmpIO%Z0 = Noahowpmp%parameters%Z0
-    NoahowpmpIO%CZIL = Noahowpmp%parameters%CZIL
-    NoahowpmpIO%ZBOT = Noahowpmp%parameters%ZBOT
-    NoahowpmpIO%frzx(ix,iy) = Noahowpmp%parameters%frzx
-    NoahowpmpIO%slope = Noahowpmp%parameters%slope
-    NoahowpmpIO%timean = Noahowpmp%parameters%timean
-    NoahowpmpIO%fsatmx = Noahowpmp%parameters%fsatmx
-    NoahowpmpIO%ZWT_INIT(ix,iy) = Noahowpmp%parameters%ZWT_INIT
-    NoahowpmpIO%urban_flag(ix,iy) = Noahowpmp%parameters%urban_flag
-    NoahowpmpIO%LAIM(ix,iy,:) = Noahowpmp%parameters%LAIM(:)
-    NoahowpmpIO%SAIM(ix,iy,:) = Noahowpmp%parameters%SAIM(:)
-    NoahowpmpIO%LAI(ix,iy) = Noahowpmp%parameters%LAI
-    NoahowpmpIO%SAI(ix,iy) = Noahowpmp%parameters%SAI
-    NoahowpmpIO%CH2OP(ix,iy) = Noahowpmp%parameters%CH2OP
-    NoahowpmpIO%NROOT(ix,iy) = Noahowpmp%parameters%NROOT
-    NoahowpmpIO%HVT(ix,iy) = Noahowpmp%parameters%HVT
-    NoahowpmpIO%HVB(ix,iy) = Noahowpmp%parameters%HVB
-    NoahowpmpIO%TMIN(ix,iy) = Noahowpmp%parameters%TMIN
-    NoahowpmpIO%SHDFAC(ix,iy) = Noahowpmp%parameters%SHDFAC
-    NoahowpmpIO%SHDMAX(ix,iy) = Noahowpmp%parameters%SHDMAX
-    NoahowpmpIO%Z0MVT(ix,iy) = Noahowpmp%parameters%Z0MVT
-    NoahowpmpIO%RC(ix,iy) = Noahowpmp%parameters%RC
-    NoahowpmpIO%XL(ix,iy) = Noahowpmp%parameters%XL
-    NoahowpmpIO%BP(ix,iy) = Noahowpmp%parameters%BP
-    NoahowpmpIO%FOLNMX(ix,iy) = Noahowpmp%parameters%FOLNMX
-    NoahowpmpIO%QE25(ix,iy) = Noahowpmp%parameters%QE25
-    NoahowpmpIO%VCMX25(ix,iy) = Noahowpmp%parameters%VCMX25
-    NoahowpmpIO%MP(ix,iy) = Noahowpmp%parameters%MP
-    NoahowpmpIO%RGL(ix,iy) = Noahowpmp%parameters%RGL
-    NoahowpmpIO%RSMIN(ix,iy) = Noahowpmp%parameters%RSMIN
-    NoahowpmpIO%HS(ix,iy) = Noahowpmp%parameters%HS
-    NoahowpmpIO%AKC(ix,iy) = Noahowpmp%parameters%AKC
-    NoahowpmpIO%AKO(ix,iy) = Noahowpmp%parameters%AKO
-    NoahowpmpIO%AVCMX(ix,iy) = Noahowpmp%parameters%AVCMX
-    NoahowpmpIO%RSMAX(ix,iy) = Noahowpmp%parameters%RSMAX
-    NoahowpmpIO%CWP(ix,iy) = Noahowpmp%parameters%CWP
-    NoahowpmpIO%C3PSN(ix,iy) = Noahowpmp%parameters%C3PSN
-    NoahowpmpIO%DLEAF(ix,iy) = Noahowpmp%parameters%DLEAF
-    NoahowpmpIO%KC25(ix,iy) = Noahowpmp%parameters%KC25
-    NoahowpmpIO%KO25(ix,iy) = Noahowpmp%parameters%KO25
-    NoahowpmpIO%ELAI(ix,iy) = Noahowpmp%parameters%ELAI
-    NoahowpmpIO%ESAI(ix,iy) = Noahowpmp%parameters%ESAI
-    NoahowpmpIO%VAI(ix,iy) = Noahowpmp%parameters%VAI
-    NoahowpmpIO%VEG(ix,iy) = Noahowpmp%parameters%VEG
-    NoahowpmpIO%FVEG(ix,iy) = Noahowpmp%parameters%FVEG
-    NoahowpmpIO%RHOL(ix,iy,:) = Noahowpmp%parameters%RHOL(:)
-    NoahowpmpIO%RHOS(ix,iy,:) = Noahowpmp%parameters%RHOS(:)
-    NoahowpmpIO%TAUL(ix,iy,:) = Noahowpmp%parameters%TAUL(:)
-    NoahowpmpIO%TAUS(ix,iy,:) = Noahowpmp%parameters%TAUS(:)
-    NoahowpmpIO%ISURBAN = Noahowpmp%parameters%ISURBAN
-    NoahowpmpIO%ISWATER = Noahowpmp%parameters%ISWATER
-    NoahowpmpIO%ISBARREN = Noahowpmp%parameters%ISBARREN
-    NoahowpmpIO%ISICE = Noahowpmp%parameters%ISICE
-    NoahowpmpIO%ISCROP = Noahowpmp%parameters%ISCROP
-    NoahowpmpIO%EBLFOREST = Noahowpmp%parameters%EBLFOREST
-    NoahowpmpIO%NATURAL = Noahowpmp%parameters%NATURAL
-    NoahowpmpIO%LOW_DENSITY_RESIDENTIAL = Noahowpmp%parameters%LOW_DENSITY_RESIDENTIAL
-    NoahowpmpIO%HIGH_DENSITY_RESIDENTIAL = Noahowpmp%parameters%HIGH_DENSITY_RESIDENTIAL
-    NoahowpmpIO%HIGH_INTENSITY_INDUSTRIAL = Noahowpmp%parameters%HIGH_INTENSITY_INDUSTRIAL
-    NoahowpmpIO%SB = Noahowpmp%parameters%SB
-    NoahowpmpIO%VKC = Noahowpmp%parameters%VKC
-    NoahowpmpIO%TFRZ = Noahowpmp%parameters%TFRZ
-    NoahowpmpIO%HSUB = Noahowpmp%parameters%HSUB
-    NoahowpmpIO%HVAP = Noahowpmp%parameters%HVAP
-    NoahowpmpIO%HFUS = Noahowpmp%parameters%HFUS
-    NoahowpmpIO%CWAT = Noahowpmp%parameters%CWAT
-    NoahowpmpIO%CICE = Noahowpmp%parameters%CICE
-    NoahowpmpIO%CPAIR = Noahowpmp%parameters%CPAIR
-    NoahowpmpIO%TKWAT = Noahowpmp%parameters%TKWAT
-    NoahowpmpIO%TKICE = Noahowpmp%parameters%TKICE
-    NoahowpmpIO%TKAIR = Noahowpmp%parameters%TKAIR
-    NoahowpmpIO%RAIR = Noahowpmp%parameters%RAIR
-    NoahowpmpIO%RW = Noahowpmp%parameters%RW
-    NoahowpmpIO%DENH2O = Noahowpmp%parameters%DENH2O
-    NoahowpmpIO%DENICE = Noahowpmp%parameters%DENICE
-    NoahowpmpIO%THKW = Noahowpmp%parameters%THKW
-    NoahowpmpIO%THKO = Noahowpmp%parameters%THKO
-    NoahowpmpIO%THKQTZ = Noahowpmp%parameters%THKQTZ
-    NoahowpmpIO%SSI = Noahowpmp%parameters%SSI
-    NoahowpmpIO%MFSNO(ix,iy) = Noahowpmp%parameters%MFSNO
-    NoahowpmpIO%Z0SNO = Noahowpmp%parameters%Z0SNO
-    NoahowpmpIO%SWEMX = Noahowpmp%parameters%SWEMX
-    NoahowpmpIO%TAU0 = Noahowpmp%parameters%TAU0
-    NoahowpmpIO%GRAIN_GROWTH = Noahowpmp%parameters%GRAIN_GROWTH
-    NoahowpmpIO%EXTRA_GROWTH = Noahowpmp%parameters%EXTRA_GROWTH
-    NoahowpmpIO%DIRT_SOOT = Noahowpmp%parameters%DIRT_SOOT
-    NoahowpmpIO%BATS_COSZ = Noahowpmp%parameters%BATS_COSZ
-    NoahowpmpIO%BATS_VIS_NEW = Noahowpmp%parameters%BATS_VIS_NEW
-    NoahowpmpIO%BATS_NIR_NEW = Noahowpmp%parameters%BATS_NIR_NEW
-    NoahowpmpIO%BATS_VIS_AGE = Noahowpmp%parameters%BATS_VIS_AGE
-    NoahowpmpIO%BATS_NIR_AGE = Noahowpmp%parameters%BATS_NIR_AGE
-    NoahowpmpIO%BATS_VIS_DIR = Noahowpmp%parameters%BATS_VIS_DIR
-    NoahowpmpIO%BATS_NIR_DIR = Noahowpmp%parameters%BATS_NIR_DIR
-    NoahowpmpIO%RSURF_SNOW = Noahowpmp%parameters%RSURF_SNOW
-    NoahowpmpIO%RSURF_EXP = Noahowpmp%parameters%RSURF_EXP
-    NoahowpmpIO%ALBSAT(ix,iy,:) = Noahowpmp%parameters%ALBSAT(:)
-    NoahowpmpIO%ALBDRY(ix,iy,:) = Noahowpmp%parameters%ALBDRY(:)
-    NoahowpmpIO%ALBICE(ix,iy,:) = Noahowpmp%parameters%ALBICE(:)
-    NoahowpmpIO%ALBLAK(ix,iy,:) = Noahowpmp%parameters%ALBLAK(:)
-    NoahowpmpIO%OMEGAS(ix,iy,:) = Noahowpmp%parameters%OMEGAS(:)
-    NoahowpmpIO%BETADS = Noahowpmp%parameters%BETADS
-    NoahowpmpIO%BETAIS = Noahowpmp%parameters%BETAIS
-    NoahowpmpIO%EG(ix,iy,:) = Noahowpmp%parameters%EG(:)
-    NoahowpmpIO%WSLMAX = Noahowpmp%parameters%WSLMAX
-    NoahowpmpIO%max_liq_mass_fraction = Noahowpmp%parameters%max_liq_mass_fraction
-    NoahowpmpIO%SNOW_RET_FAC = Noahowpmp%parameters%SNOW_RET_FAC
-    NoahowpmpIO%NBAND = Noahowpmp%parameters%NBAND
-    NoahowpmpIO%MPE = Noahowpmp%parameters%MPE
-    NoahowpmpIO%TOPT(ix,iy) = Noahowpmp%parameters%TOPT
-    NoahowpmpIO%O2 = Noahowpmp%parameters%O2
-    NoahowpmpIO%CO2 = Noahowpmp%parameters%CO2
-    NoahowpmpIO%PSIWLT = Noahowpmp%parameters%PSIWLT
-    NoahowpmpIO%GRAV = Noahowpmp%parameters%GRAV
-    NoahowpmpIO%rain_snow_thresh = Noahowpmp%parameters%rain_snow_thresh
+    noahowpgrid%bexp(ix,iy,:) = noahowp%parameters%bexp(:)
+    noahowpgrid%smcmax(ix,iy,:) = noahowp%parameters%smcmax(:)
+    noahowpgrid%smcwlt(ix,iy,:) = noahowp%parameters%smcwlt(:)
+    noahowpgrid%smcref(ix,iy,:) = noahowp%parameters%smcref(:)
+    noahowpgrid%dksat(ix,iy,:) = noahowp%parameters%dksat(:)
+    noahowpgrid%dwsat(ix,iy,:) = noahowp%parameters%dwsat(:)
+    noahowpgrid%psisat(ix,iy,:) = noahowp%parameters%psisat(:)
+    noahowpgrid%bvic(ix,iy) = noahowp%parameters%bvic
+    noahowpgrid%AXAJ(ix,iy) = noahowp%parameters%AXAJ
+    noahowpgrid%BXAJ(ix,iy) = noahowp%parameters%BXAJ
+    noahowpgrid%XXAJ(ix,iy) = noahowp%parameters%XXAJ
+    noahowpgrid%BBVIC(ix,iy) = noahowp%parameters%BBVIC
+    noahowpgrid%G(ix,iy) = noahowp%parameters%G
+    noahowpgrid%QUARTZ(ix,iy) = noahowp%parameters%QUARTZ
+    noahowpgrid%kdt(ix,iy) = noahowp%parameters%kdt
+    noahowpgrid%refkdt = noahowp%parameters%refkdt
+    noahowpgrid%refdk = noahowp%parameters%refdk
+    noahowpgrid%csoil = noahowp%parameters%csoil
+    noahowpgrid%Z0 = noahowp%parameters%Z0
+    noahowpgrid%CZIL = noahowp%parameters%CZIL
+    noahowpgrid%ZBOT = noahowp%parameters%ZBOT
+    noahowpgrid%frzx(ix,iy) = noahowp%parameters%frzx
+    noahowpgrid%slope = noahowp%parameters%slope
+    noahowpgrid%timean = noahowp%parameters%timean
+    noahowpgrid%fsatmx = noahowp%parameters%fsatmx
+    noahowpgrid%ZWT_INIT(ix,iy) = noahowp%parameters%ZWT_INIT
+    noahowpgrid%urban_flag(ix,iy) = noahowp%parameters%urban_flag
+    noahowpgrid%LAIM(ix,iy,:) = noahowp%parameters%LAIM(:)
+    noahowpgrid%SAIM(ix,iy,:) = noahowp%parameters%SAIM(:)
+    noahowpgrid%LAI(ix,iy) = noahowp%parameters%LAI
+    noahowpgrid%SAI(ix,iy) = noahowp%parameters%SAI
+    noahowpgrid%CH2OP(ix,iy) = noahowp%parameters%CH2OP
+    noahowpgrid%NROOT(ix,iy) = noahowp%parameters%NROOT
+    noahowpgrid%HVT(ix,iy) = noahowp%parameters%HVT
+    noahowpgrid%HVB(ix,iy) = noahowp%parameters%HVB
+    noahowpgrid%TMIN(ix,iy) = noahowp%parameters%TMIN
+    noahowpgrid%SHDFAC(ix,iy) = noahowp%parameters%SHDFAC
+    noahowpgrid%SHDMAX(ix,iy) = noahowp%parameters%SHDMAX
+    noahowpgrid%Z0MVT(ix,iy) = noahowp%parameters%Z0MVT
+    noahowpgrid%RC(ix,iy) = noahowp%parameters%RC
+    noahowpgrid%XL(ix,iy) = noahowp%parameters%XL
+    noahowpgrid%BP(ix,iy) = noahowp%parameters%BP
+    noahowpgrid%FOLNMX(ix,iy) = noahowp%parameters%FOLNMX
+    noahowpgrid%QE25(ix,iy) = noahowp%parameters%QE25
+    noahowpgrid%VCMX25(ix,iy) = noahowp%parameters%VCMX25
+    noahowpgrid%MP(ix,iy) = noahowp%parameters%MP
+    noahowpgrid%RGL(ix,iy) = noahowp%parameters%RGL
+    noahowpgrid%RSMIN(ix,iy) = noahowp%parameters%RSMIN
+    noahowpgrid%HS(ix,iy) = noahowp%parameters%HS
+    noahowpgrid%AKC(ix,iy) = noahowp%parameters%AKC
+    noahowpgrid%AKO(ix,iy) = noahowp%parameters%AKO
+    noahowpgrid%AVCMX(ix,iy) = noahowp%parameters%AVCMX
+    noahowpgrid%RSMAX(ix,iy) = noahowp%parameters%RSMAX
+    noahowpgrid%CWP(ix,iy) = noahowp%parameters%CWP
+    noahowpgrid%C3PSN(ix,iy) = noahowp%parameters%C3PSN
+    noahowpgrid%DLEAF(ix,iy) = noahowp%parameters%DLEAF
+    noahowpgrid%KC25(ix,iy) = noahowp%parameters%KC25
+    noahowpgrid%KO25(ix,iy) = noahowp%parameters%KO25
+    noahowpgrid%ELAI(ix,iy) = noahowp%parameters%ELAI
+    noahowpgrid%ESAI(ix,iy) = noahowp%parameters%ESAI
+    noahowpgrid%VAI(ix,iy) = noahowp%parameters%VAI
+    noahowpgrid%VEG(ix,iy) = noahowp%parameters%VEG
+    noahowpgrid%FVEG(ix,iy) = noahowp%parameters%FVEG
+    noahowpgrid%RHOL(ix,iy,:) = noahowp%parameters%RHOL(:)
+    noahowpgrid%RHOS(ix,iy,:) = noahowp%parameters%RHOS(:)
+    noahowpgrid%TAUL(ix,iy,:) = noahowp%parameters%TAUL(:)
+    noahowpgrid%TAUS(ix,iy,:) = noahowp%parameters%TAUS(:)
+    noahowpgrid%ISURBAN = noahowp%parameters%ISURBAN
+    noahowpgrid%ISWATER = noahowp%parameters%ISWATER
+    noahowpgrid%ISBARREN = noahowp%parameters%ISBARREN
+    noahowpgrid%ISICE = noahowp%parameters%ISICE
+    noahowpgrid%ISCROP = noahowp%parameters%ISCROP
+    noahowpgrid%EBLFOREST = noahowp%parameters%EBLFOREST
+    noahowpgrid%NATURAL = noahowp%parameters%NATURAL
+    noahowpgrid%LOW_DENSITY_RESIDENTIAL = noahowp%parameters%LOW_DENSITY_RESIDENTIAL
+    noahowpgrid%HIGH_DENSITY_RESIDENTIAL = noahowp%parameters%HIGH_DENSITY_RESIDENTIAL
+    noahowpgrid%HIGH_INTENSITY_INDUSTRIAL = noahowp%parameters%HIGH_INTENSITY_INDUSTRIAL
+    noahowpgrid%SB = noahowp%parameters%SB
+    noahowpgrid%VKC = noahowp%parameters%VKC
+    noahowpgrid%TFRZ = noahowp%parameters%TFRZ
+    noahowpgrid%HSUB = noahowp%parameters%HSUB
+    noahowpgrid%HVAP = noahowp%parameters%HVAP
+    noahowpgrid%HFUS = noahowp%parameters%HFUS
+    noahowpgrid%CWAT = noahowp%parameters%CWAT
+    noahowpgrid%CICE = noahowp%parameters%CICE
+    noahowpgrid%CPAIR = noahowp%parameters%CPAIR
+    noahowpgrid%TKWAT = noahowp%parameters%TKWAT
+    noahowpgrid%TKICE = noahowp%parameters%TKICE
+    noahowpgrid%TKAIR = noahowp%parameters%TKAIR
+    noahowpgrid%RAIR = noahowp%parameters%RAIR
+    noahowpgrid%RW = noahowp%parameters%RW
+    noahowpgrid%DENH2O = noahowp%parameters%DENH2O
+    noahowpgrid%DENICE = noahowp%parameters%DENICE
+    noahowpgrid%THKW = noahowp%parameters%THKW
+    noahowpgrid%THKO = noahowp%parameters%THKO
+    noahowpgrid%THKQTZ = noahowp%parameters%THKQTZ
+    noahowpgrid%SSI = noahowp%parameters%SSI
+    noahowpgrid%MFSNO(ix,iy) = noahowp%parameters%MFSNO
+    noahowpgrid%Z0SNO = noahowp%parameters%Z0SNO
+    noahowpgrid%SWEMX = noahowp%parameters%SWEMX
+    noahowpgrid%TAU0 = noahowp%parameters%TAU0
+    noahowpgrid%GRAIN_GROWTH = noahowp%parameters%GRAIN_GROWTH
+    noahowpgrid%EXTRA_GROWTH = noahowp%parameters%EXTRA_GROWTH
+    noahowpgrid%DIRT_SOOT = noahowp%parameters%DIRT_SOOT
+    noahowpgrid%BATS_COSZ = noahowp%parameters%BATS_COSZ
+    noahowpgrid%BATS_VIS_NEW = noahowp%parameters%BATS_VIS_NEW
+    noahowpgrid%BATS_NIR_NEW = noahowp%parameters%BATS_NIR_NEW
+    noahowpgrid%BATS_VIS_AGE = noahowp%parameters%BATS_VIS_AGE
+    noahowpgrid%BATS_NIR_AGE = noahowp%parameters%BATS_NIR_AGE
+    noahowpgrid%BATS_VIS_DIR = noahowp%parameters%BATS_VIS_DIR
+    noahowpgrid%BATS_NIR_DIR = noahowp%parameters%BATS_NIR_DIR
+    noahowpgrid%RSURF_SNOW = noahowp%parameters%RSURF_SNOW
+    noahowpgrid%RSURF_EXP = noahowp%parameters%RSURF_EXP
+    noahowpgrid%ALBSAT(ix,iy,:) = noahowp%parameters%ALBSAT(:)
+    noahowpgrid%ALBDRY(ix,iy,:) = noahowp%parameters%ALBDRY(:)
+    noahowpgrid%ALBICE(ix,iy,:) = noahowp%parameters%ALBICE(:)
+    noahowpgrid%ALBLAK(ix,iy,:) = noahowp%parameters%ALBLAK(:)
+    noahowpgrid%OMEGAS(ix,iy,:) = noahowp%parameters%OMEGAS(:)
+    noahowpgrid%BETADS = noahowp%parameters%BETADS
+    noahowpgrid%BETAIS = noahowp%parameters%BETAIS
+    noahowpgrid%EG(ix,iy,:) = noahowp%parameters%EG(:)
+    noahowpgrid%WSLMAX = noahowp%parameters%WSLMAX
+    noahowpgrid%max_liq_mass_fraction = noahowp%parameters%max_liq_mass_fraction
+    noahowpgrid%SNOW_RET_FAC = noahowp%parameters%SNOW_RET_FAC
+    noahowpgrid%NBAND = noahowp%parameters%NBAND
+    noahowpgrid%MPE = noahowp%parameters%MPE
+    noahowpgrid%TOPT(ix,iy) = noahowp%parameters%TOPT
+    noahowpgrid%O2 = noahowp%parameters%O2
+    noahowpgrid%CO2 = noahowp%parameters%CO2
+    noahowpgrid%PSIWLT = noahowp%parameters%PSIWLT
+    noahowpgrid%GRAV = noahowp%parameters%GRAV
+    !noahowpgrid%rain_snow_thresh = noahowp%parameters%rain_snow_thresh
 
-  end associate
+    end associate
 
   end subroutine ParametersVarOutTransfer
 
