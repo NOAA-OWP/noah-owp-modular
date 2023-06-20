@@ -17,26 +17,26 @@ module RunModule
   use EnergyModule
   use WaterModule
   use DateTimeUtilsModule
-  use NoahowpmpType
+  use NoahowpType
   
   implicit none
 
 contains
   
-  SUBROUTINE solve_noahowp(noahowpmp)
-    type (noahowp_type), intent (inout) :: noahowpmp
-    integer, parameter :: iunit        = 10 ! Fortran unit number to attach to the opened file
-    integer            :: forcing_timestep  ! integer time step (set to dt) for some subroutine calls
-    integer            :: ierr              ! error code for reading forcing data
-    integer            :: curr_yr, curr_mo, curr_dy, curr_hr, curr_min, curr_sec  ! current UNIX timestep details
+  SUBROUTINE solve_noahowp(noahowp)
+    type (noahowp_type), intent (inout) :: noahowp
+    integer, parameter                  :: iunit        = 10 ! Fortran unit number to attach to the opened file
+    integer                             :: forcing_timestep  ! integer time step (set to dt) for some subroutine calls
+    integer                             :: ierr              ! error code for reading forcing data
+    integer                             :: curr_yr, curr_mo, curr_dy, curr_hr, curr_min, curr_sec  ! current UNIX timestep details
 
-    associate(levels     => noahowpmp%levels, &
-              domain     => noahowpmp%domain, &
-              options    => noahowpmp%options, &
-              parameters => noahowpmp%parameters, &
-              water      => noahowpmp%water, &
-              forcing    => noahowpmp%forcing, &
-              energy     => noahowpmp%energy)
+    associate(levels     => noahowp%levels, &
+              domain     => noahowp%domain, &
+              options    => noahowp%options, &
+              parameters => noahowp%parameters, &
+              water      => noahowp%water, &
+              forcing    => noahowp%forcing, &
+              energy     => noahowp%energy)
     
     !---------------------------------------------------------------------
     ! call the main utility routines

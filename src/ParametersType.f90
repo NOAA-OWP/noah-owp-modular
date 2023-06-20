@@ -1,6 +1,6 @@
 module ParametersType
 
-use NoahowpmpIOType
+use NoahowpGridTypeModule
 
 implicit none
 save
@@ -152,30 +152,30 @@ end type parameters_type
 
 contains
 
-  subroutine Init(this, NoahowpmpIO)
+  subroutine Init(this, noahowpgrid)
 
     implicit none
     class(parameters_type)                :: this
-    type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
+    type(noahowpgrid_type), intent(in)    :: noahowpgrid
 
-    call this%InitAllocate(NoahowpmpIO)
+    call this%InitAllocate(noahowpgrid)
     call this%InitDefault()
 
   end subroutine Init
 
-  subroutine InitAllocate(this, NoahowpmpIO)
+  subroutine InitAllocate(this, noahowpgrid)
 
     implicit none
     class(parameters_type)                :: this
-    type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
+    type(noahowpgrid_type), intent(in)    :: noahowpgrid
 
-    allocate(this%bexp   (NoahowpmpIO%nsoil))
-    allocate(this%smcmax (NoahowpmpIO%nsoil)) 
-    allocate(this%smcwlt (NoahowpmpIO%nsoil))
-    allocate(this%smcref (NoahowpmpIO%nsoil)) 
-    allocate(this%dksat  (NoahowpmpIO%nsoil)) 
-    allocate(this%dwsat  (NoahowpmpIO%nsoil))  
-    allocate(this%psisat (NoahowpmpIO%nsoil))
+    allocate(this%bexp   (noahowpgrid%nsoil))
+    allocate(this%smcmax (noahowpgrid%nsoil)) 
+    allocate(this%smcwlt (noahowpgrid%nsoil))
+    allocate(this%smcref (noahowpgrid%nsoil)) 
+    allocate(this%dksat  (noahowpgrid%nsoil)) 
+    allocate(this%dwsat  (noahowpgrid%nsoil))  
+    allocate(this%psisat (noahowpgrid%nsoil))
 
   end subroutine InitAllocate
 

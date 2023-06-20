@@ -36,22 +36,22 @@ OBJS = ../src/ErrorCheckModule.o \
        ../src/EnergyModule.o \
        ../src/UtilitiesModule.o \
        ../src/DateTimeUtilsModule.o \
-       ../src/NoahowpmpType.o \
+       ../src/NoahowpType.o \
        ../src/RunModule.o \
        ../driver/AsciiReadModule.o \
        ../driver/DomainVarTransferModule.o \
        ../driver/EnergyVarTransferModule.o \
        ../driver/ForcingVarTransferModule.o \
        ../driver/LevelsVarTransferModule.o \
-       ../driver/NoahowpmpIOType.o \
-       ../driver/NoahowpmpIOTypeInitModule.o \
-       ../driver/NoahowpmpReadNamelistModule.o \
-       ../driver/NoahowpmpReadTableModule.o \
+       ../driver/NoahowpGridTypeModule.o \
+       ../driver/NoahowpGridTypeInitModule.o \
+       ../driver/NoahowpReadNamelistModule.o \
+       ../driver/NoahowpReadTableModule.o \
        ../driver/OptionsVarTransferModule.o \
        ../driver/OutputModule.o \
        ../driver/ParametersVarTransferModule.o \
        ../driver/WaterVarTransferModule.o \
-       ../driver/NoahowpmpGriddedDriverModule.o \
+       ../driver/NoahowpGridDriverModule.o \
        ../bmi/bmi_noahowp.o \
        ../bmi/bmi.o \
        ./noahowp_bmi_driver_test.o

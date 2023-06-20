@@ -1,68 +1,67 @@
 module DomainVarTransferModule
 
-    use NoahowpmpIOType
-    use NoahowpmpType
+    use NoahowpGridTypeModule
+    use NoahowpType
 
     implicit none
   
   contains
   
-  subroutine DomainVarInTransfer(noahowpmp, NoahowpmpIO)
+  subroutine DomainVarInTransfer(noahowp, noahowpgrid)
 
     implicit none
 
-    type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
-    type(noahowp_type),     intent(inout) :: noahowpmp
+    type(noahowpgrid_type), intent(inout) :: noahowpgrid
+    type(noahowp_type),     intent(inout) :: noahowp
 
-    associate(ix   => NoahowpmpIO%ix, &
-              iy   => NoahowpmpIO%iy)
+    associate(ix   => noahowpgrid%ix, &
+              iy   => noahowpgrid%iy)
 
-    noahowpmp%domain%DT = NoahowpmpIO%DT
-    noahowpmp%domain%startdate = NoahowpmpIO%startdate 
-    noahowpmp%domain%enddate = NoahowpmpIO%enddate    
-    noahowpmp%domain%nowdate = NoahowpmpIO%nowdate           
-    noahowpmp%domain%start_datetime = NoahowpmpIO%start_datetime  
-    noahowpmp%domain%end_datetime = NoahowpmpIO%end_datetime  
-    noahowpmp%domain%curr_datetime = NoahowpmpIO%sim_datetimes(NoahowpmpIO%itime)    
-    noahowpmp%domain%sim_datetimes = NoahowpmpIO%sim_datetimes
-    noahowpmp%domain%itime = NoahowpmpIO%itime          
-    noahowpmp%domain%ntime = NoahowpmpIO%ntime          
-    noahowpmp%domain%time_dbl = NoahowpmpIO%time_dbl
-    noahowpmp%domain%iloc = ix 
-    noahowpmp%domain%jloc = iy 
-    noahowpmp%domain%lat = NoahowpmpIO%lat(ix,iy)       
-    noahowpmp%domain%lon = NoahowpmpIO%lon(ix,iy)       
-    noahowpmp%domain%ZREF = NoahowpmpIO%ZREF(ix,iy)         
-    noahowpmp%domain%terrain_slope = NoahowpmpIO%terrain_slope(ix,iy) 
-    noahowpmp%domain%azimuth = NoahowpmpIO%azimuth(ix,iy)          
-    noahowpmp%domain%vegtyp = NoahowpmpIO%vegtyp(ix,iy)    
-    noahowpmp%domain%croptype = NoahowpmpIO%croptype(ix,iy)        
-    noahowpmp%domain%isltyp = NoahowpmpIO%isltyp(ix,iy)       
-    noahowpmp%domain%IST = NoahowpmpIO%IST(ix,iy)      
-    noahowpmp%domain%zsoil(:) = NoahowpmpIO%zsoil(ix,iy,:)    
-    noahowpmp%domain%dzsnso(:) = NoahowpmpIO%dzsnso(ix,iy,:)   
-    noahowpmp%domain%zsnso(:) = NoahowpmpIO%zsnso(ix,iy,:)    
+    noahowp%domain%DT = noahowpgrid%DT
+    noahowp%domain%startdate = noahowpgrid%startdate 
+    noahowp%domain%enddate = noahowpgrid%enddate    
+    noahowp%domain%nowdate = noahowpgrid%nowdate           
+    noahowp%domain%start_datetime = noahowpgrid%start_datetime  
+    noahowp%domain%end_datetime = noahowpgrid%end_datetime  
+    noahowp%domain%curr_datetime = noahowpgrid%sim_datetimes(noahowpgrid%itime)    
+    noahowp%domain%sim_datetimes = noahowpgrid%sim_datetimes
+    noahowp%domain%itime = noahowpgrid%itime          
+    noahowp%domain%ntime = noahowpgrid%ntime          
+    noahowp%domain%time_dbl = noahowpgrid%time_dbl
+    noahowp%domain%iloc = ix 
+    noahowp%domain%jloc = iy 
+    noahowp%domain%lat = noahowpgrid%lat(ix,iy)       
+    noahowp%domain%lon = noahowpgrid%lon(ix,iy)       
+    noahowp%domain%ZREF = noahowpgrid%ZREF(ix,iy)         
+    noahowp%domain%terrain_slope = noahowpgrid%terrain_slope(ix,iy) 
+    noahowp%domain%azimuth = noahowpgrid%azimuth(ix,iy)          
+    noahowp%domain%vegtyp = noahowpgrid%vegtyp(ix,iy)    
+    noahowp%domain%croptype = noahowpgrid%croptype(ix,iy)        
+    noahowp%domain%isltyp = noahowpgrid%isltyp(ix,iy)       
+    noahowp%domain%IST = noahowpgrid%IST(ix,iy)      
+    noahowp%domain%zsoil(:) = noahowpgrid%zsoil(ix,iy,:)    
+    noahowp%domain%dzsnso(:) = noahowpgrid%dzsnso(ix,iy,:)   
+    noahowp%domain%zsnso(:) = noahowpgrid%zsnso(ix,iy,:)    
 
     end associate
 
   end subroutine
 
-  subroutine DomainVarOutTransfer(Noahowpmp, NoahowpmpIO)
+  subroutine DomainVarOutTransfer(noahowp, noahowpgrid)
 
     implicit none
 
-    type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
-    type(noahowp_type),     intent(inout) :: Noahowpmp
+    type(noahowpgrid_type), intent(inout) :: noahowpgrid
+    type(noahowp_type),     intent(inout) :: noahowp
 
-    associate(ix   => NoahowpmpIO%ix, &
-              iy   => NoahowpmpIO%iy)
+    associate(ix   => noahowpgrid%ix, &
+              iy   => noahowpgrid%iy)
 
-    
-    NoahowpmpIO%zsoil(ix,iy,:) = Noahowpmp%domain%zsoil(:) 
-    NoahowpmpIO%dzsnso(ix,iy,:) = Noahowpmp%domain%dzsnso(:)  
-    NoahowpmpIO%zsnso(ix,iy,:) = Noahowpmp%domain%zsnso(:)   
-    NoahowpmpIO%nowdate = Noahowpmp%domain%nowdate 
-  
+    noahowpgrid%zsoil(ix,iy,:) = noahowp%domain%zsoil(:) 
+    noahowpgrid%dzsnso(ix,iy,:) = noahowp%domain%dzsnso(:)  
+    noahowpgrid%zsnso(ix,iy,:) = noahowp%domain%zsnso(:)   
+    noahowpgrid%nowdate = noahowp%domain%nowdate !this needs to be kept here until nowdate is updated in NoahowpGriddedDriverModule
+
     end associate
 
   end subroutine DomainVarOutTransfer

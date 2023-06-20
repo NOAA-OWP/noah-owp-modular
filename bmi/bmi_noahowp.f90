@@ -8,17 +8,17 @@ module bminoahowp
    use bmif_2_0
 #endif
 
-  use NoahowpmpIOType
-  use NoahowpmpReadNamelistModule
+  use NoahowpGridTypeModule
+  use NoahowpReadNamelistModule
   use OutputModule
-  use NoahowpmpGriddedDriverModule
+  use NoahowpGridDriverModule
   use, intrinsic :: iso_c_binding, only: c_ptr, c_loc, c_f_pointer
   
   implicit none
 
   type, extends (bmi) :: bmi_noahowp
      private
-     type(NoahowpmpIO_type) :: NoahowpmpIO
+     type(noahowpgrid_type) :: noahowpgrid
    contains
      procedure :: get_component_name => noahowp_component_name
      procedure :: get_input_item_count => noahowp_input_item_count
@@ -185,7 +185,7 @@ contains
     integer :: bmi_status
 
     if (len(config_file) > 0) then
-       call NoahowpmpReadNamelist(this%NoahowpmpIO,config_file)
+       call NoahowpReadNamelist(this%noahowpgrid,config_file)
     else
        !call initialize_from_defaults(this%model)
     end if
@@ -217,7 +217,7 @@ contains
     double precision, intent(out) :: time
     integer :: bmi_status
 
-    time = dble(this%NoahowpmpIO%ntime * this%NoahowpmpIO%dt)
+    time = dble(this%noahowpgrid%ntime * this%noahowpgrid%dt)
     bmi_status = BMI_SUCCESS
   end function noahowp_end_time
 
@@ -227,7 +227,7 @@ contains
     double precision, intent(out) :: time
     integer :: bmi_status
 
-    time = dble(this%NoahowpmpIO%time_dbl)
+    time = dble(this%noahowpgrid%time_dbl)
     bmi_status = BMI_SUCCESS
   end function noahowp_current_time
 
@@ -237,7 +237,7 @@ contains
     double precision, intent(out) :: time_step
     integer :: bmi_status
 
-    time_step = dble(this%NoahowpmpIO%dt)
+    time_step = dble(this%noahowpgrid%dt)
     bmi_status = BMI_SUCCESS
   end function noahowp_time_step
 
@@ -256,7 +256,7 @@ contains
     class (bmi_noahowp), intent(inout) :: this
     integer :: bmi_status
 
-    call GriddedDriverMain(this%NoahowpmpIO)
+    call NoahowpGridDriverMain(this%noahowpgrid)
 
     bmi_status = BMI_SUCCESS
   end function noahowp_update
@@ -269,12 +269,12 @@ contains
     double precision :: n_steps_real
     integer :: n_steps, i, s
 
-    if (time < this%NoahowpmpIO%time_dbl) then
+    if (time < this%noahowpgrid%time_dbl) then
        bmi_status = BMI_FAILURE
        return
     end if
 
-    n_steps_real = (time - this%NoahowpmpIO%time_dbl) / this%NoahowpmpIO%dt
+    n_steps_real = (time - this%noahowpgrid%time_dbl) / this%noahowpgrid%dt
     n_steps = floor(n_steps_real)
     do i = 1, n_steps
        s = this%update()
@@ -441,10 +441,10 @@ contains
 !        bmi_status = BMI_SUCCESS
 
    case(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24)
-      shape = [this%NoahowpmpIO%n_y, this%NoahowpmpIO%n_x]
+      shape = [this%noahowpgrid%n_y, this%noahowpgrid%n_x]
       bmi_status = BMI_SUCCESS
    case(25,26,27,28,29)
-     shape = [this%NoahowpmpIO%nsoil,this%NoahowpmpIO%n_y, this%NoahowpmpIO%n_x]
+     shape = [this%noahowpgrid%nsoil,this%noahowpgrid%n_y, this%noahowpgrid%n_x]
      bmi_status = BMI_SUCCESS
    case default
       shape(:) = -1
@@ -461,7 +461,7 @@ contains
 
    select case(grid)
    case(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24)
-     size = this%NoahowpmpIO%n_x * this%NoahowpmpIO%n_y
+     size = this%noahowpgrid%n_x * this%noahowpgrid%n_y
      bmi_status = BMI_SUCCESS
    case(0)
       size = 1
@@ -726,76 +726,76 @@ contains
 
    select case(name)
    case("SFCPRS")
-      size = sizeof(this%NoahowpmpIO%sfcprs(1,1)) ! 'sizeof' in gcc & ifort
+      size = sizeof(this%noahowpgrid%sfcprs(1,1)) ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("SFCTMP")
-      size = sizeof(this%NoahowpmpIO%sfctmp(1,1))             ! 'sizeof' in gcc & ifort
+      size = sizeof(this%noahowpgrid%sfctmp(1,1))             ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("SOLDN")
-      size = sizeof(this%NoahowpmpIO%soldn(1,1))                ! 'sizeof' in gcc & ifort
+      size = sizeof(this%noahowpgrid%soldn(1,1))                ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("LWDN")
-      size = sizeof(this%NoahowpmpIO%lwdn(1,1))                ! 'sizeof' in gcc & ifort
+      size = sizeof(this%noahowpgrid%lwdn(1,1))                ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("UU")
-      size = sizeof(this%NoahowpmpIO%uu(1,1))                ! 'sizeof' in gcc & ifort
+      size = sizeof(this%noahowpgrid%uu(1,1))                ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("VV")
-      size = sizeof(this%NoahowpmpIO%vv(1,1))                ! 'sizeof' in gcc & ifort
+      size = sizeof(this%noahowpgrid%vv(1,1))                ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("Q2")
-      size = sizeof(this%NoahowpmpIO%q2(1,1))                ! 'sizeof' in gcc & ifort
+      size = sizeof(this%noahowpgrid%q2(1,1))                ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("PRCPNONC")
-      size = sizeof(this%NoahowpmpIO%prcpnonc(1,1))                ! 'sizeof' in gcc & ifort
+      size = sizeof(this%noahowpgrid%prcpnonc(1,1))                ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("QINSUR")
-      size = sizeof(this%NoahowpmpIO%qinsur(1,1))                ! 'sizeof' in gcc & ifort
+      size = sizeof(this%noahowpgrid%qinsur(1,1))                ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("ETRAN")
-      size = sizeof(this%NoahowpmpIO%etran(1,1))                ! 'sizeof' in gcc & ifort
+      size = sizeof(this%noahowpgrid%etran(1,1))                ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("QSEVA")
-      size = sizeof(this%NoahowpmpIO%qseva(1,1))                ! 'sizeof' in gcc & ifort
+      size = sizeof(this%noahowpgrid%qseva(1,1))                ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("EVAPOTRANS")
-      size = sizeof(this%NoahowpmpIO%evapotrans(1,1))            ! 'sizeof' in gcc & ifort
+      size = sizeof(this%noahowpgrid%evapotrans(1,1))            ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("TG")
-      size = sizeof(this%NoahowpmpIO%tg(1,1))            ! 'sizeof' in gcc & ifort
+      size = sizeof(this%noahowpgrid%tg(1,1))            ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("SNEQV")
-      size = sizeof(this%NoahowpmpIO%sneqv(1,1))            ! 'sizeof' in gcc & ifort
+      size = sizeof(this%noahowpgrid%sneqv(1,1))            ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("TGS")
-      size = sizeof(this%NoahowpmpIO%tgs(1,1))            ! 'sizeof' in gcc & ifort
+      size = sizeof(this%noahowpgrid%tgs(1,1))            ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("lat")
-      size = sizeof(this%NoahowpmpIO%lat(1,1))    
+      size = sizeof(this%noahowpgrid%lat(1,1))    
       bmi_status = BMI_SUCCESS
    case("lon")
-      size = sizeof(this%NoahowpmpIO%lon(1,1))    
+      size = sizeof(this%noahowpgrid%lon(1,1))    
       bmi_status = BMI_SUCCESS    
    case("terrain_slope")
-      size = sizeof(this%NoahowpmpIO%terrain_slope(1,1))    
+      size = sizeof(this%noahowpgrid%terrain_slope(1,1))    
       bmi_status = BMI_SUCCESS
    case("azimuth")
-      size = sizeof(this%NoahowpmpIO%azimuth(1,1))    
+      size = sizeof(this%noahowpgrid%azimuth(1,1))    
       bmi_status = BMI_SUCCESS  
    case("vegtyp")
-      size = sizeof(this%NoahowpmpIO%vegtyp(1,1))    
+      size = sizeof(this%noahowpgrid%vegtyp(1,1))    
       bmi_status = BMI_SUCCESS
    case("croptype")
-      size = sizeof(this%NoahowpmpIO%croptype(1,1))    
+      size = sizeof(this%noahowpgrid%croptype(1,1))    
       bmi_status = BMI_SUCCESS    
    case("isltyp")
-      size = sizeof(this%NoahowpmpIO%isltyp(1,1))    
+      size = sizeof(this%noahowpgrid%isltyp(1,1))    
       bmi_status = BMI_SUCCESS
    case("IST")
-      size = sizeof(this%NoahowpmpIO%IST(1,1))    
+      size = sizeof(this%noahowpgrid%IST(1,1))    
       bmi_status = BMI_SUCCESS
    case("soilcolor")
-      size = sizeof(this%NoahowpmpIO%soilcolor(1,1))    
+      size = sizeof(this%noahowpgrid%soilcolor(1,1))    
       bmi_status = BMI_SUCCESS
    case default
       size = -1
@@ -847,19 +847,19 @@ contains
 
    select case(name)
    case("vegtyp")
-     dest = reshape(this%NoahowpmpIO%vegtyp,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+     dest = reshape(this%noahowpgrid%vegtyp,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
      bmi_status = BMI_SUCCESS
    case("croptype")
-     dest = reshape(this%NoahowpmpIO%croptype,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+     dest = reshape(this%noahowpgrid%croptype,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
      bmi_status = BMI_SUCCESS    
    case("isltyp")
-     dest = reshape(this%NoahowpmpIO%isltyp,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+     dest = reshape(this%noahowpgrid%isltyp,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
      bmi_status = BMI_SUCCESS
    case("IST")
-     dest = reshape(this%NoahowpmpIO%IST,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+     dest = reshape(this%noahowpgrid%IST,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
      bmi_status = BMI_SUCCESS
    case("soilcolor")
-     dest = reshape(this%NoahowpmpIO%soilcolor,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+     dest = reshape(this%noahowpgrid%soilcolor,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
      bmi_status = BMI_SUCCESS
 !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR INTEGER VARS =================
 !     case("model__identification_number")
@@ -880,64 +880,64 @@ contains
 
    select case(name)
    case("SFCPRS")
-      dest = reshape(this%NoahowpmpIO%sfcprs,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%sfcprs,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("SFCTMP")
-      dest = reshape(this%NoahowpmpIO%sfctmp,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%sfctmp,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("SOLDN")
-      dest = reshape(this%NoahowpmpIO%soldn,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%soldn,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("LWDN")
-      dest = reshape(this%NoahowpmpIO%lwdn,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%lwdn,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("UU")
-      dest = reshape(this%NoahowpmpIO%uu,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%uu,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("VV")
-      dest = reshape(this%NoahowpmpIO%vv,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%vv,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("Q2")
-      dest = reshape(this%NoahowpmpIO%q2,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%q2,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("PRCPNONC")
-      dest = reshape(this%NoahowpmpIO%prcpnonc,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%prcpnonc,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("QINSUR")
-      dest = reshape(this%NoahowpmpIO%qinsur,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%qinsur,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("ETRAN")
-      dest = reshape(this%NoahowpmpIO%etran,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%etran,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("QSEVA")
-      dest = reshape(this%NoahowpmpIO%qseva,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%qseva,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("EVAPOTRANS")
-      dest = reshape(this%NoahowpmpIO%evapotrans,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%evapotrans,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("TG")
-      dest = reshape(this%NoahowpmpIO%tg,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%tg,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("SNEQV")
-      dest = reshape(this%NoahowpmpIO%sneqv,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%sneqv,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("TGS")
-      dest = reshape(this%NoahowpmpIO%tgs,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%tgs,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("lat")
-      dest = reshape(this%NoahowpmpIO%lat,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%lat,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("lon")
-      dest = reshape(this%NoahowpmpIO%lon,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%lon,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("terrain_slope")
-      dest = reshape(this%NoahowpmpIO%terrain_slope,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%terrain_slope,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("azimuth")
-      dest = reshape(this%NoahowpmpIO%azimuth,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y])
+      dest = reshape(this%noahowpgrid%azimuth,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("smc")
-     dest = reshape(this%NoahowpmpIO%smc,[this%NoahowpmpIO%n_x*this%NoahowpmpIO%n_y*this%NoahowpmpIO%nsoil])
+     dest = reshape(this%noahowpgrid%smc,[this%noahowpgrid%n_x*this%noahowpgrid%n_y*this%noahowpgrid%nsoil])
      bmi_status = BMI_SUCCESS
    case default
       dest(:) = -1.0
@@ -1084,19 +1084,19 @@ contains
   
       select case(name)
       case('vegtyp')
-        this%NoahowpmpIO%vegtyp = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+        this%noahowpgrid%vegtyp = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
         bmi_status = BMI_SUCCESS
       case('croptype')
-        this%NoahowpmpIO%croptype = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+        this%noahowpgrid%croptype = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
         bmi_status = BMI_SUCCESS
       case('isltyp')
-        this%NoahowpmpIO%isltyp = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+        this%noahowpgrid%isltyp = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
         bmi_status = BMI_SUCCESS
       case('IST')
-        this%NoahowpmpIO%IST = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+        this%noahowpgrid%IST = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
         bmi_status = BMI_SUCCESS
       case('soilcolor')
-        this%NoahowpmpIO%soilcolor = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+        this%noahowpgrid%soilcolor = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
         bmi_status = BMI_SUCCESS
   !     case("model__identification_number")
   !        this%model%id = src(1)
@@ -1115,64 +1115,64 @@ contains
 
    select case(name)
    case("SFCPRS")
-     this%NoahowpmpIO%sfcprs = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%sfcprs = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("SFCTMP")
-     this%NoahowpmpIO%sfctmp = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%sfctmp = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("SOLDN")
-     this%NoahowpmpIO%soldn = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%soldn = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("LWDN")
-     this%NoahowpmpIO%lwdn = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%lwdn = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("UU")
-     this%NoahowpmpIO%uu = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%uu = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("VV")
-     this%NoahowpmpIO%vv = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%vv = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("Q2")
-     this%NoahowpmpIO%q2 = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%q2 = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("PRCPNONC")
-     this%NoahowpmpIO%prcpnonc = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%prcpnonc = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("QINSUR")
-     this%NoahowpmpIO%qinsur = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%qinsur = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("ETRAN")
-     this%NoahowpmpIO%etran = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%etran = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("QSEVA")
-     this%NoahowpmpIO%qseva = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%qseva = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("EVAPOTRANS")
-     this%NoahowpmpIO%evapotrans = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%evapotrans = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("TG")
-     this%NoahowpmpIO%tg = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%tg = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("SNEQV")
-     this%NoahowpmpIO%sneqv = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%sneqv = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("TGS")
-     this%NoahowpmpIO%tgs = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%tgs = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("terrain_slope")
-     this%NoahowpmpIO%terrain_slope = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%terrain_slope = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("azimuth")
-     this%NoahowpmpIO%azimuth = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%azimuth = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("lat")
-     this%NoahowpmpIO%lat = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%lat = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("lon")
-     this%NoahowpmpIO%lon = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y])
+     this%noahowpgrid%lon = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
       bmi_status = BMI_SUCCESS
    case("smc")
-     this%NoahowpmpIO%smc = reshape(src,[this%NoahowpmpIO%n_x,this%NoahowpmpIO%n_y,this%NoahowpmpIO%nsoil])
+     this%noahowpgrid%smc = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y,this%noahowpgrid%nsoil])
      bmi_status = BMI_SUCCESS
    case default
       bmi_status = BMI_FAILURE

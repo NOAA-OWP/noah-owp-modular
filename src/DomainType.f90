@@ -1,7 +1,7 @@
 module DomainType
   
   use DateTimeUtilsModule
-  use NoahowpmpIOType
+  use NoahowpGridTypeModule
   
   implicit none
   save
@@ -45,24 +45,24 @@ module DomainType
   
   contains   
   
-    subroutine Init(this,NoahowpmpIO)
+    subroutine Init(this,noahowpgrid)
   
       class(domain_type)                    :: this
-      type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
+      type(noahowpgrid_type), intent(in)    :: noahowpgrid
 
-      call this%InitAllocate(NoahowpmpIO)
+      call this%InitAllocate(noahowpgrid)
       call this%InitDefault()
   
     end subroutine Init
   
-    subroutine InitAllocate(this,NoahowpmpIO)
+    subroutine InitAllocate(this,noahowpgrid)
   
       class(domain_type)                    :: this
-      type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
+      type(noahowpgrid_type), intent(in)    :: noahowpgrid
   
-      allocate(this%zsoil (NoahowpmpIO%nsoil))
-      allocate(this%dzsnso(-NoahowpmpIO%nsnow+1:NoahowpmpIO%nsoil))
-      allocate(this%zsnso(-NoahowpmpIO%nsnow+1:NoahowpmpIO%nsoil))
+      allocate(this%zsoil (noahowpgrid%nsoil))
+      allocate(this%dzsnso(-noahowpgrid%nsnow+1:noahowpgrid%nsoil))
+      allocate(this%zsnso(-noahowpgrid%nsnow+1:noahowpgrid%nsoil))
   
     end subroutine InitAllocate
   

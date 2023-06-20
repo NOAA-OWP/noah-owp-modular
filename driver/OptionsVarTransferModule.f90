@@ -1,71 +1,71 @@
 module OptionsVarTransferModule
 
-    use NoahowpmpIOType
-    use NoahowpmpType
+    use NoahowpGridTypeModule
+    use NoahowpType
 
     implicit none
   
   contains
   
-  subroutine OptionsVarInTransfer(noahowpmp, NoahowpmpIO)
+  subroutine OptionsVarInTransfer(noahowp, noahowpgrid)
 
     implicit none
 
-    type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
-    type(noahowp_type),     intent(inout) :: noahowpmp
+    type(noahowpgrid_type), intent(in)    :: noahowpgrid
+    type(noahowp_type),     intent(inout) :: noahowp
 
-    associate(ix   => NoahowpmpIO%ix, &
-              iy   => NoahowpmpIO%iy)
+    associate(ix   => noahowpgrid%ix, &
+              iy   => noahowpgrid%iy)
   
-    noahowpmp%options%opt_snf   = NoahowpmpIO%opt_snf(ix,iy)
-    noahowpmp%options%opt_run   = NoahowpmpIO%opt_run(ix,iy)
-    noahowpmp%options%opt_drn   = NoahowpmpIO%opt_drn(ix,iy)
-    noahowpmp%options%opt_inf   = NoahowpmpIO%opt_inf(ix,iy)
-    noahowpmp%options%opt_infdv = NoahowpmpIO%opt_infdv(ix,iy)
-    noahowpmp%options%dveg      = NoahowpmpIO%dveg(ix,iy)
-    noahowpmp%options%opt_alb   = NoahowpmpIO%opt_alb(ix,iy)
-    noahowpmp%options%opt_rad   = NoahowpmpIO%opt_rad(ix,iy)
-    noahowpmp%options%opt_sfc   = NoahowpmpIO%opt_sfc(ix,iy)
-    noahowpmp%options%opt_crs   = NoahowpmpIO%opt_crs(ix,iy)
-    noahowpmp%options%opt_crop  = NoahowpmpIO%opt_crop(ix,iy)
-    noahowpmp%options%opt_stc   = NoahowpmpIO%opt_stc(ix,iy)
-    noahowpmp%options%opt_tbot  = NoahowpmpIO%opt_tbot(ix,iy)
-    noahowpmp%options%opt_frz   = NoahowpmpIO%opt_frz(ix,iy)
-    noahowpmp%options%opt_btr   = NoahowpmpIO%opt_btr(ix,iy)
-    noahowpmp%options%opt_rsf   = NoahowpmpIO%opt_rsf(ix,iy)
-    noahowpmp%options%opt_sub   = NoahowpmpIO%opt_sub(ix,iy)
+    noahowp%options%opt_snf   = noahowpgrid%opt_snf(ix,iy)
+    noahowp%options%opt_run   = noahowpgrid%opt_run(ix,iy)
+    noahowp%options%opt_drn   = noahowpgrid%opt_drn(ix,iy)
+    noahowp%options%opt_inf   = noahowpgrid%opt_inf(ix,iy)
+    noahowp%options%opt_infdv = noahowpgrid%opt_infdv(ix,iy)
+    noahowp%options%dveg      = noahowpgrid%dveg(ix,iy)
+    noahowp%options%opt_alb   = noahowpgrid%opt_alb(ix,iy)
+    noahowp%options%opt_rad   = noahowpgrid%opt_rad(ix,iy)
+    noahowp%options%opt_sfc   = noahowpgrid%opt_sfc(ix,iy)
+    noahowp%options%opt_crs   = noahowpgrid%opt_crs(ix,iy)
+    noahowp%options%opt_crop  = noahowpgrid%opt_crop(ix,iy)
+    noahowp%options%opt_stc   = noahowpgrid%opt_stc(ix,iy)
+    noahowp%options%opt_tbot  = noahowpgrid%opt_tbot(ix,iy)
+    noahowp%options%opt_frz   = noahowpgrid%opt_frz(ix,iy)
+    noahowp%options%opt_btr   = noahowpgrid%opt_btr(ix,iy)
+    noahowp%options%opt_rsf   = noahowpgrid%opt_rsf(ix,iy)
+    noahowp%options%opt_sub   = noahowpgrid%opt_sub(ix,iy)
           
     end associate
 
   end subroutine OptionsVarInTransfer
 
-  subroutine OptionsVarOutTransfer(noahowpmp, NoahowpmpIO)
+  subroutine OptionsVarOutTransfer(noahowp, noahowpgrid)
 
     implicit none
 
-    type(NoahowpmpIO_type), intent(inout) :: NoahowpmpIO
-    type(noahowp_type),     intent(inout) :: noahowpmp
+    type(noahowpgrid_type), intent(inout) :: noahowpgrid
+    type(noahowp_type),     intent(inout) :: noahowp
 
-    associate(ix   => NoahowpmpIO%ix, &
-              iy   => NoahowpmpIO%iy)
+    associate(ix   => noahowpgrid%ix, &
+              iy   => noahowpgrid%iy)
   
-    NoahowpmpIO%opt_snf(ix,iy) = noahowpmp%options%opt_snf
-    NoahowpmpIO%opt_run(ix,iy) = noahowpmp%options%opt_run
-    NoahowpmpIO%opt_drn(ix,iy) = noahowpmp%options%opt_drn
-    NoahowpmpIO%opt_inf(ix,iy) = noahowpmp%options%opt_inf
-    NoahowpmpIO%opt_infdv(ix,iy) = noahowpmp%options%opt_infdv
-    NoahowpmpIO%dveg(ix,iy) = noahowpmp%options%dveg
-    NoahowpmpIO%opt_alb(ix,iy) = noahowpmp%options%opt_alb
-    NoahowpmpIO%opt_rad(ix,iy) = noahowpmp%options%opt_rad
-    NoahowpmpIO%opt_sfc(ix,iy) = noahowpmp%options%opt_sfc
-    NoahowpmpIO%opt_crs(ix,iy) = noahowpmp%options%opt_crs
-    NoahowpmpIO%opt_crop(ix,iy) = noahowpmp%options%opt_crop
-    NoahowpmpIO%opt_stc(ix,iy) = noahowpmp%options%opt_stc
-    NoahowpmpIO%opt_tbot(ix,iy) = noahowpmp%options%opt_tbot
-    NoahowpmpIO%opt_frz(ix,iy) = noahowpmp%options%opt_frz
-    NoahowpmpIO%opt_btr(ix,iy) = noahowpmp%options%opt_btr
-    NoahowpmpIO%opt_rsf(ix,iy) = noahowpmp%options%opt_rsf
-    NoahowpmpIO%opt_sub(ix,iy) = noahowpmp%options%opt_sub
+    noahowpgrid%opt_snf(ix,iy) = noahowp%options%opt_snf
+    noahowpgrid%opt_run(ix,iy) = noahowp%options%opt_run
+    noahowpgrid%opt_drn(ix,iy) = noahowp%options%opt_drn
+    noahowpgrid%opt_inf(ix,iy) = noahowp%options%opt_inf
+    noahowpgrid%opt_infdv(ix,iy) = noahowp%options%opt_infdv
+    noahowpgrid%dveg(ix,iy) = noahowp%options%dveg
+    noahowpgrid%opt_alb(ix,iy) = noahowp%options%opt_alb
+    noahowpgrid%opt_rad(ix,iy) = noahowp%options%opt_rad
+    noahowpgrid%opt_sfc(ix,iy) = noahowp%options%opt_sfc
+    noahowpgrid%opt_crs(ix,iy) = noahowp%options%opt_crs
+    noahowpgrid%opt_crop(ix,iy) = noahowp%options%opt_crop
+    noahowpgrid%opt_stc(ix,iy) = noahowp%options%opt_stc
+    noahowpgrid%opt_tbot(ix,iy) = noahowp%options%opt_tbot
+    noahowpgrid%opt_frz(ix,iy) = noahowp%options%opt_frz
+    noahowpgrid%opt_btr(ix,iy) = noahowp%options%opt_btr
+    noahowpgrid%opt_rsf(ix,iy) = noahowp%options%opt_rsf
+    noahowpgrid%opt_sub(ix,iy) = noahowp%options%opt_sub
           
     end associate
 

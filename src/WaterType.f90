@@ -1,6 +1,6 @@
 module WaterType
 
-use NoahowpmpIOType
+use NoahowpGridTypeModule
 
 implicit none
 save
@@ -89,36 +89,36 @@ end type water_type
 
 contains   
 
-  subroutine Init(this, NoahowpmpIO)
+  subroutine Init(this, noahowpgrid)
 
-    class(water_type) :: this
-    type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
+    class(water_type)                     :: this
+    type(noahowpgrid_type), intent(in)    :: noahowpgrid
 
-    call this%InitAllocate(NoahowpmpIO)
+    call this%InitAllocate(noahowpgrid)
     call this%InitDefault()
 
   end subroutine Init
 
-  subroutine InitAllocate(this, NoahowpmpIO)
+  subroutine InitAllocate(this, noahowpgrid)
 
     class(water_type) :: this
-    type(NoahowpmpIO_type), intent(in)    :: NoahowpmpIO
+    type(noahowpgrid_type), intent(in)    :: noahowpgrid
 
-    allocate(this%smc     (NoahowpmpIO%nsoil)); this%smc     (:) = huge(1.0)
-    allocate(this%smc_init(NoahowpmpIO%nsoil)); this%smc_init(:) = huge(1.0)
-    allocate(this%sice    (NoahowpmpIO%nsoil)); this%sice    (:) = huge(1.0)
-    allocate(this%sh2o    (NoahowpmpIO%nsoil)); this%sh2o    (:) = huge(1.0)
-    allocate(this%etrani  (NoahowpmpIO%nsoil)); this%etrani  (:) = huge(1.0)
-    allocate(this%btrani  (NoahowpmpIO%nsoil)); this%btrani  (:) = huge(1.0)
-    allocate(this%wcnd    (NoahowpmpIO%nsoil)); this%wcnd    (:) = huge(1.0)
-    allocate(this%fcr     (NoahowpmpIO%nsoil)); this%fcr     (:) = huge(1.0)
-    allocate(this%FICEOLD(-NoahowpmpIO%nsnow+1:0)); this%FICEOLD (:) = huge(1.0)
-    allocate(this%SNICE  (-NoahowpmpIO%nsnow+1:0)); this%SNICE   (:) = huge(1.0)
-    allocate(this%SNLIQ  (-NoahowpmpIO%nsnow+1:0)); this%SNLIQ   (:) = huge(1.0)
-    allocate(this%SNICEV (-NoahowpmpIO%nsnow+1:0)); this%SNICEV  (:) = huge(1.0)
-    allocate(this%SNLIQV (-NoahowpmpIO%nsnow+1:0)); this%SNLIQV  (:) = huge(1.0)
-    allocate(this%FICE   (-NoahowpmpIO%nsnow+1:0)); this%FICE    (:) = huge(1.0)
-    allocate(this%EPORE  (-NoahowpmpIO%nsnow+1:0)); this%EPORE   (:) = huge(1.0)
+    allocate(this%smc     (noahowpgrid%nsoil)); this%smc     (:) = huge(1.0)
+    allocate(this%smc_init(noahowpgrid%nsoil)); this%smc_init(:) = huge(1.0)
+    allocate(this%sice    (noahowpgrid%nsoil)); this%sice    (:) = huge(1.0)
+    allocate(this%sh2o    (noahowpgrid%nsoil)); this%sh2o    (:) = huge(1.0)
+    allocate(this%etrani  (noahowpgrid%nsoil)); this%etrani  (:) = huge(1.0)
+    allocate(this%btrani  (noahowpgrid%nsoil)); this%btrani  (:) = huge(1.0)
+    allocate(this%wcnd    (noahowpgrid%nsoil)); this%wcnd    (:) = huge(1.0)
+    allocate(this%fcr     (noahowpgrid%nsoil)); this%fcr     (:) = huge(1.0)
+    allocate(this%FICEOLD(-noahowpgrid%nsnow+1:0)); this%FICEOLD (:) = huge(1.0)
+    allocate(this%SNICE  (-noahowpgrid%nsnow+1:0)); this%SNICE   (:) = huge(1.0)
+    allocate(this%SNLIQ  (-noahowpgrid%nsnow+1:0)); this%SNLIQ   (:) = huge(1.0)
+    allocate(this%SNICEV (-noahowpgrid%nsnow+1:0)); this%SNICEV  (:) = huge(1.0)
+    allocate(this%SNLIQV (-noahowpgrid%nsnow+1:0)); this%SNLIQV  (:) = huge(1.0)
+    allocate(this%FICE   (-noahowpgrid%nsnow+1:0)); this%FICE    (:) = huge(1.0)
+    allocate(this%EPORE  (-noahowpgrid%nsnow+1:0)); this%EPORE   (:) = huge(1.0)
 
   end subroutine InitAllocate
 

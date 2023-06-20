@@ -27,7 +27,7 @@ clean:
 #
 
 bmi_noahowp.o: bmi.o \
-              ../driver/NoahowpmpIOType.o \
-							../driver/NoahowpmpReadNamelistModule.o \
+              ../driver/NoahowpGridTypeModule.o \
+							../driver/NoahowpReadNamelistModule.o \
 							../driver/OutputModule.o \
-							../driver/NoahowpmpGriddedDriverModule.o
+							../driver/NoahowpGridDriverModule.o
