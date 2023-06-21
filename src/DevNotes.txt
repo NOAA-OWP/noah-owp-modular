@@ -70,4 +70,7 @@ a clean build of the noah column model with the expectation of a perfect match.
 refractoring it.
 
 ../test/analysis/compare_outputnc.py: This script will compare two versions of output.nc - one from a clean build of
-noahowp and the other from this modified/gridded build of noahowp.
+noahowp and the other from this modified/gridded build of noahowp. The output from a clean build and this modified/gridded
+noaohowp implementation should be exactly the same assuming the executibles are given the same namelist.input. Thus,
+this script reads output.nc and compares values for every grid cell against the values from the clean build. If any 
+value does not match, the test fails.
