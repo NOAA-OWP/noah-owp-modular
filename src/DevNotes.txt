@@ -53,3 +53,16 @@ more than zero.
 set in driver -- 1 if sea ice (do nothing), -1 if land ice point (calls glacier), 0 if neither sea ice or land ice (call SFLX)
   use 0 
 
+
+Grey Evenson notes:
+
+EtFluxModule.f90, line 708: energy%LATHEA was changed to energy%LATHEAV because energy%LATHEA 
+was set to huge(1.) and causing arithmetic error. Is this change acceptable/scientifically valid?
+
+NoahowpGridDriverModule.f90: I think we may be incorrectly reading in daily forcing when NGEN_FORCING_ACTIVE 
+is undefined (i.e., when NGEN does not provide forcings). AsciiReadModule:read_forcing_text uses nowdate which
+isn't updated for the given time step until UtilitiesMain. I placed code that would fix this problem within 
+NoahowpGridDriverMain, which simply requires a call to UtilitiesModule:geth_newdate. However, I commented it 
+out because implementing the fix changes model output such that it cannot be compared against the output from 
+a clean build of the noah column model.
+
