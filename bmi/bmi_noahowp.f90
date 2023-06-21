@@ -385,46 +385,44 @@ contains
  end function noahowp_var_grid
 
   ! The type of a variable's grid.
-  function noahowp_grid_type(this, grid, type) result (bmi_status)
-    class (bmi_noahowp), intent(in) :: this
-    integer, intent(in) :: grid
-    character (len=*), intent(out) :: type
-    integer :: bmi_status
+ function noahowp_grid_type(this, grid, type) result (bmi_status)
+   class (bmi_noahowp), intent(in) :: this
+   integer, intent(in) :: grid
+   character (len=*), intent(out) :: type
+   integer :: bmi_status
 
-    select case(grid)
-    case(0)
-       type = "scalar"
-       bmi_status = BMI_SUCCESS
-!================================ IMPLEMENT WHEN noahowp DONE IN GRID ======================
-!     case(1)
-!       type = "uniform_rectilinear"
-!        bmi_status = BMI_SUCCESS
-    case default
-       type = "-"
-       bmi_status = BMI_FAILURE
-    end select
-  end function noahowp_grid_type
+   select case(grid)
+   case(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29)
+     type = "uniform_rectilinear"
+     bmi_status = BMI_SUCCESS
+   case(0)
+      type = "scalar"
+      bmi_status = BMI_SUCCESS
+   case default
+      type = "-"
+      bmi_status = BMI_FAILURE
+   end select
+ end function noahowp_grid_type
 
   ! The number of dimensions of a grid.
-  function noahowp_grid_rank(this, grid, rank) result (bmi_status)
-    class (bmi_noahowp), intent(in) :: this
-    integer, intent(in) :: grid
-    integer, intent(out) :: rank
-    integer :: bmi_status
+ function noahowp_grid_rank(this, grid, rank) result (bmi_status)
+   class (bmi_noahowp), intent(in) :: this
+   integer, intent(in) :: grid
+   integer, intent(out) :: rank
+   integer :: bmi_status
 
-    select case(grid)
-    case(0)
-       rank = 0
-       bmi_status = BMI_SUCCESS
-!================================ IMPLEMENT WHEN noahowp DONE IN GRID ======================
-!     case(1)
-!        rank = 2
-!        bmi_status = BMI_SUCCESS
-    case default
-       rank = -1
-       bmi_status = BMI_FAILURE
-    end select
-  end function noahowp_grid_rank
+   select case(grid)
+   case(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24)
+      rank = 2
+      bmi_status = BMI_SUCCESS
+   case(25,27,28,29)
+        rank = 3
+        bmi_status = BMI_SUCCESS
+   case default
+      rank = -1
+      bmi_status = BMI_FAILURE
+   end select
+ end function noahowp_grid_rank
 
   ! The dimensions of a grid.
   function noahowp_grid_shape(this, grid, shape) result (bmi_status)
