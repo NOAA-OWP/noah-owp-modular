@@ -129,8 +129,8 @@ contains
   water%ASAT  = 0.0
 
   DO IZ=1,levels%nsoil-2
-    TOP_MOIST     = TOP_MOIST + (water%SMC(IZ) * -1 * domain%ZSOIL(IZ)) ! m
-    TOP_MAX_MOIST = TOP_MAX_MOIST + (parameters%SMCMAX(IZ)*-1*domain%ZSOIL(IZ)) ! m  
+    TOP_MOIST     = TOP_MOIST + (water%SMC(IZ) * (-1) * domain%ZSOIL(IZ)) ! m
+    TOP_MAX_MOIST = TOP_MAX_MOIST + (parameters%SMCMAX(IZ)*(-1)*domain%ZSOIL(IZ)) ! m  
   END DO
 
   ! Saturated area from soil moisture
@@ -197,13 +197,13 @@ contains
 
     DO IZ=1,levels%nsoil-2
        IF ((water%SMC(IZ)-parameters%SMCREF(IZ)) .GT. 0.) THEN ! soil moisture greater than field capacity
-          SM     = SM + (water%SMC(IZ) - parameters%SMCREF(IZ) )*-1*domain%ZSOIL(IZ) !m
-          WM     = WM + (parameters%SMCREF(IZ)*-1*domain%ZSOIL(IZ))            !m  
+          SM     = SM + (water%SMC(IZ) - parameters%SMCREF(IZ) )*(-1)*domain%ZSOIL(IZ) !m
+          WM     = WM + (parameters%SMCREF(IZ)*(-1)*domain%ZSOIL(IZ))            !m  
        ELSE
-          WM     = WM + (water%SMC(IZ)*-1*domain%ZSOIL(IZ))
+          WM     = WM + (water%SMC(IZ)*(-1)*domain%ZSOIL(IZ))
        END IF
-       WM_MAX = WM_MAX + (parameters%SMCREF(IZ)*-1*domain%ZSOIL(IZ))
-       SM_MAX = SM_MAX + (parameters%SMCMAX(IZ) - parameters%SMCREF(IZ))*-1*domain%ZSOIL(IZ)
+       WM_MAX = WM_MAX + (parameters%SMCREF(IZ)*(-1)*domain%ZSOIL(IZ))
+       SM_MAX = SM_MAX + (parameters%SMCMAX(IZ) - parameters%SMCREF(IZ))*(-1)*domain%ZSOIL(IZ)
     END DO
     WM = MIN(WM,WM_MAX) ! tension water (m) 
     SM = MIN(SM,SM_MAX) ! free water (m)
