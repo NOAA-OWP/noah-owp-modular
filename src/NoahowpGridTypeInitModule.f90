@@ -1,6 +1,6 @@
-module NoahowpGridTypeInitModule
+module NoahowpGridTypeInit
 
-  use NoahowpGridTypeModule
+  use NoahowpGridType
   
   implicit none
   
