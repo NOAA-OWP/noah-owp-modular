@@ -1,4 +1,4 @@
-module NoahowpGridTypeModule
+module NoahowpGridType
 
   implicit none
   type, public :: noahowpgrid_type
@@ -778,4 +778,4 @@ module NoahowpGridTypeModule
 
   end type
 
-end module NoahowpGridTypeModule
+end module NoahowpGridType
