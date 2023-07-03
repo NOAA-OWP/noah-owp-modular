@@ -1,6 +1,8 @@
 module ParametersGridType
 
   use NamelistRead, only: namelist_type
+  use ParametersRead
+  use DomainGridType
 
   implicit none
   save
@@ -134,10 +136,11 @@ module ParametersGridType
     real                                              :: SNOW_RET_FAC              ! snowpack water release timescale factor (1/s)
     integer                                           :: NBAND                     ! Number of shortwave bands (2, visible and NIR)
     real                                              :: MPE                       ! MPE is nominally small to prevent dividing by zero error
-    real,allocatable,dimension(:,:)                   :: TOPT                      ! Optimum transpiration air temperature [K]
+    real                                              :: TOPT                      ! Optimum transpiration air temperature [K]
     real                                              :: O2                        ! o2 partial pressure, from MPTABLE.TBL
     real                                              :: CO2                       ! co2 partial pressure, from MPTABLE.TBL
     real                                              :: PSIWLT                    ! matric potential for wilting point (m)  (orig a fixed param.)
+    real                                              :: TBOT                      ! bottom condition for soil temp. (k)
     real                                              :: GRAV                      ! acceleration due to gravity (m/s2)
     real                                              :: rain_snow_thresh          ! user-defined rain-snow temperature threshold (°C)
 
@@ -169,72 +172,77 @@ module ParametersGridType
     class(parametersgrid_type)   :: this
     type(namelist_type)          :: namelist
 
-    allocate(this%bexp(namelist%n_x,namelist%n_y,namelist%nsoil))
-    allocate(this%smcmax(namelist%n_x,namelist%n_y,namelist%nsoil))
-    allocate(this%smcwlt(namelist%n_x,namelist%n_y,namelist%nsoil))
-    allocate(this%smcref(namelist%n_x,namelist%n_y,namelist%nsoil))
-    allocate(this%dksat(namelist%n_x,namelist%n_y,namelist%nsoil))
-    allocate(this%dwsat(namelist%n_x,namelist%n_y,namelist%nsoil))
-    allocate(this%psisat(namelist%n_x,namelist%n_y,namelist%nsoil))
-    allocate(this%bvic(namelist%n_x,namelist%n_y))
-    allocate(this%AXAJ(namelist%n_x,namelist%n_y))
-    allocate(this%BXAJ(namelist%n_x,namelist%n_y))
-    allocate(this%XXAJ(namelist%n_x,namelist%n_y))
-    allocate(this%BBVIC(namelist%n_x,namelist%n_y))
-    allocate(this%G(namelist%n_x,namelist%n_y))
-    allocate(this%QUARTZ(namelist%n_x,namelist%n_y))
-    allocate(this%kdt(namelist%n_x,namelist%n_y))
-    allocate(this%frzx(namelist%n_x,namelist%n_y))
-    allocate(this%ZWT_INIT(namelist%n_x,namelist%n_y))
-    allocate(this%urban_flag(namelist%n_x,namelist%n_y))
-    allocate(this%LAIM(namelist%n_x,namelist%n_y,12))
-    allocate(this%SAIM(namelist%n_x,namelist%n_y,12))
-    allocate(this%LAI(namelist%n_x,namelist%n_y))
-    allocate(this%SAI(namelist%n_x,namelist%n_y))
-    allocate(this%CH2OP(namelist%n_x,namelist%n_y))
-    allocate(this%NROOT(namelist%n_x,namelist%n_y))
-    allocate(this%HVT(namelist%n_x,namelist%n_y))
-    allocate(this%HVB(namelist%n_x,namelist%n_y))
-    allocate(this%TMIN(namelist%n_x,namelist%n_y))
-    allocate(this%SHDFAC(namelist%n_x,namelist%n_y))
-    allocate(this%SHDMAX(namelist%n_x,namelist%n_y))
-    allocate(this%Z0MVT(namelist%n_x,namelist%n_y))
-    allocate(this%RC(namelist%n_x,namelist%n_y))
-    allocate(this%XL(namelist%n_x,namelist%n_y))
-    allocate(this%BP(namelist%n_x,namelist%n_y))
-    allocate(this%FOLNMX(namelist%n_x,namelist%n_y))
-    allocate(this%QE25(namelist%n_x,namelist%n_y))
-    allocate(this%VCMX25(namelist%n_x,namelist%n_y))
-    allocate(this%MP(namelist%n_x,namelist%n_y))
-    allocate(this%RGL(namelist%n_x,namelist%n_y))
-    allocate(this%RSMIN(namelist%n_x,namelist%n_y))
-    allocate(this%HS(namelist%n_x,namelist%n_y))
-    allocate(this%AKC(namelist%n_x,namelist%n_y))
-    allocate(this%AKO(namelist%n_x,namelist%n_y))
-    allocate(this%AVCMX(namelist%n_x,namelist%n_y))
-    allocate(this%RSMAX(namelist%n_x,namelist%n_y))
-    allocate(this%CWP(namelist%n_x,namelist%n_y))
-    allocate(this%C3PSN(namelist%n_x,namelist%n_y))
-    allocate(this%DLEAF(namelist%n_x,namelist%n_y))
-    allocate(this%KC25(namelist%n_x,namelist%n_y))
-    allocate(this%KO25(namelist%n_x,namelist%n_y))
-    allocate(this%ELAI(namelist%n_x,namelist%n_y))
-    allocate(this%ESAI(namelist%n_x,namelist%n_y))
-    allocate(this%VAI(namelist%n_x,namelist%n_y))
-    allocate(this%VEG(namelist%n_x,namelist%n_y))
-    allocate(this%FVEG(namelist%n_x,namelist%n_y))
-    allocate(this%RHOL(namelist%n_x,namelist%n_y,2))
-    allocate(this%RHOS(namelist%n_x,namelist%n_y,2))
-    allocate(this%TAUL(namelist%n_x,namelist%n_y,2))
-    allocate(this%TAUS(namelist%n_x,namelist%n_y,2))
-    allocate(this%MFSNO(namelist%n_x,namelist%n_y))
-    allocate(this%ALBSAT(namelist%n_x,namelist%n_y,2))
-    allocate(this%ALBDRY(namelist%n_x,namelist%n_y,2))
-    allocate(this%ALBICE(namelist%n_x,namelist%n_y,2))
-    allocate(this%ALBLAK(namelist%n_x,namelist%n_y,2))
-    allocate(this%OMEGAS(namelist%n_x,namelist%n_y,2))
-    allocate(this%EG(namelist%n_x,namelist%n_y,2))
-    allocate(this%TOPT(namelist%n_x,namelist%n_y))
+    associate(n_x   => namelist%n_x,  &
+              n_y   => namelist%n_y,  &
+              nsoil => namelist%nsoil)
+
+    allocate(this%bexp(n_x,n_y,nsoil))
+    allocate(this%smcmax(n_x,n_y,nsoil))
+    allocate(this%smcwlt(n_x,n_y,nsoil))
+    allocate(this%smcref(n_x,n_y,nsoil))
+    allocate(this%dksat(n_x,n_y,nsoil))
+    allocate(this%dwsat(n_x,n_y,nsoil))
+    allocate(this%psisat(n_x,n_y,nsoil))
+    allocate(this%bvic(n_x,n_y))
+    allocate(this%AXAJ(n_x,n_y))
+    allocate(this%BXAJ(n_x,n_y))
+    allocate(this%XXAJ(n_x,n_y))
+    allocate(this%BBVIC(n_x,n_y))
+    allocate(this%G(n_x,n_y))
+    allocate(this%QUARTZ(n_x,n_y))
+    allocate(this%kdt(n_x,n_y))
+    allocate(this%frzx(n_x,n_y))
+    allocate(this%ZWT_INIT(n_x,n_y))
+    allocate(this%urban_flag(n_x,n_y))
+    allocate(this%LAIM(n_x,n_y,12))
+    allocate(this%SAIM(n_x,n_y,12))
+    allocate(this%LAI(n_x,n_y))
+    allocate(this%SAI(n_x,n_y))
+    allocate(this%CH2OP(n_x,n_y))
+    allocate(this%NROOT(n_x,n_y))
+    allocate(this%HVT(n_x,n_y))
+    allocate(this%HVB(n_x,n_y))
+    allocate(this%TMIN(n_x,n_y))
+    allocate(this%SHDFAC(n_x,n_y))
+    allocate(this%SHDMAX(n_x,n_y))
+    allocate(this%Z0MVT(n_x,n_y))
+    allocate(this%RC(n_x,n_y))
+    allocate(this%XL(n_x,n_y))
+    allocate(this%BP(n_x,n_y))
+    allocate(this%FOLNMX(n_x,n_y))
+    allocate(this%QE25(n_x,n_y))
+    allocate(this%VCMX25(n_x,n_y))
+    allocate(this%MP(n_x,n_y))
+    allocate(this%RGL(n_x,n_y))
+    allocate(this%RSMIN(n_x,n_y))
+    allocate(this%HS(n_x,n_y))
+    allocate(this%AKC(n_x,n_y))
+    allocate(this%AKO(n_x,n_y))
+    allocate(this%AVCMX(n_x,n_y))
+    allocate(this%RSMAX(n_x,n_y))
+    allocate(this%CWP(n_x,n_y))
+    allocate(this%C3PSN(n_x,n_y))
+    allocate(this%DLEAF(n_x,n_y))
+    allocate(this%KC25(n_x,n_y))
+    allocate(this%KO25(n_x,n_y))
+    allocate(this%ELAI(n_x,n_y))
+    allocate(this%ESAI(n_x,n_y))
+    allocate(this%VAI(n_x,n_y))
+    allocate(this%VEG(n_x,n_y))
+    allocate(this%FVEG(n_x,n_y))
+    allocate(this%RHOL(n_x,n_y,2))
+    allocate(this%RHOS(n_x,n_y,2))
+    allocate(this%TAUL(n_x,n_y,2))
+    allocate(this%TAUS(n_x,n_y,2))
+    allocate(this%MFSNO(n_x,n_y))
+    allocate(this%ALBSAT(n_x,n_y,2))
+    allocate(this%ALBDRY(n_x,n_y,2))
+    allocate(this%ALBICE(n_x,n_y,2))
+    allocate(this%ALBLAK(n_x,n_y,2))
+    allocate(this%OMEGAS(n_x,n_y,2))
+    allocate(this%EG(n_x,n_y,2))
+
+    end associate
 
   end subroutine InitAllocate
 
@@ -369,7 +377,7 @@ module ParametersGridType
     this%SNOW_RET_FAC = huge(1.0)
     this%NBAND = huge(1)
     this%MPE = huge(1.0)
-    this%TOPT(:,:) = huge(1.0)
+    this%TOPT = huge(1.0)
     this%O2 = huge(1.0)
     this%CO2 = huge(1.0)
     this%PSIWLT = huge(1.0)
@@ -382,7 +390,7 @@ module ParametersGridType
   subroutine paramRead(this, namelist, domaingrid)
     implicit none
     class(parametersgrid_type)             :: this
-    type(namelist_type), intent(in)        :: domaingrid
+    type(namelist_type), intent(in)        :: namelist
     type(domaingrid_type), intent(in)      :: domaingrid
     ! local variables
     integer                          :: ix, iy, ii
@@ -404,8 +412,8 @@ module ParametersGridType
     do ix = 1, namelist%n_x
       do iy = 1, namelist%n_y
 
-        associate(isltype   => domaingrid%isltyp(ix,iy),
-                  vegtyp    => domaingrid%vegtyp(ix,iy),
+        associate(isltyp    => domaingrid%isltyp(ix,iy), &
+                  vegtyp    => domaingrid%vegtyp(ix,iy), &
                   soilcolor => domaingrid%soilcolor(ix,iy))
 
         this%bexp(ix,iy,:) = BEXP_TABLE(isltyp)
@@ -568,4 +576,4 @@ module ParametersGridType
   
   end subroutine paramRead
 
-end module ParametersType
+end module ParametersGridType
