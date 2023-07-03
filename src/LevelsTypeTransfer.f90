@@ -1,43 +1,37 @@
 module LevelsTypeTransfer
 
-    use NoahowpGridTypeModule
-    use NoahowpType
+    use LevelsType
+    use LevelsGridType
 
     implicit none
   
   contains
   
-  subroutine LevelsVarInTransfer(noahowp, noahowpgrid)
+  subroutine LevelsVarInTransfer(levels, levelsgrid, ix, iy)
 
     implicit none
 
-    type(noahowpgrid_type), intent(in)    :: noahowpgrid
-    type(noahowp_type),     intent(inout) :: noahowp
+    type(levels_type),     intent(inout) :: levels
+    type(levelsgrid_type), intent(in)    :: levelsgrid
+    integer,               intent(in)    :: ix
+    integer,               intent(in)    :: iy
 
-    associate(ix   => noahowpgrid%ix, &
-              iy   => noahowpgrid%iy)
-
-    noahowp%levels%nsoil = noahowpgrid%nsoil
-    noahowp%levels%nsnow = noahowpgrid%nsnow
-    noahowp%levels%nveg = noahowpgrid%nveg
-            
-    end associate
+    levels%nsoil = levelsgrid%nsoil
+    levels%nsnow = levelsgrid%nsnow
+    levels%nveg = levelsgrid%nveg()
 
   end subroutine LevelsVarInTransfer
 
-  subroutine LevelsVarOutTransfer(noahowp, noahowpgrid)
+  subroutine LevelsVarOutTransfer(levels, levelsgrid, ix, iy)
 
     implicit none
 
-    type(noahowpgrid_type), intent(inout) :: noahowpgrid
-    type(noahowp_type),     intent(in)    :: noahowp
-
-    associate(ix   => noahowpgrid%ix, &
-              iy   => noahowpgrid%iy)
+    type(levels_type),     intent(in)    :: levels
+    type(levelsgrid_type), intent(inout) :: levelsgrid
+    integer,               intent(in)    :: ix
+    integer,               intent(in)    :: iy
 
     ! Nothing to do      
-    
-    end associate
 
   end subroutine LevelsVarOutTransfer
 
