@@ -36,6 +36,8 @@ type, public :: namelist_type
   integer            :: croptype           ! crop type (SET TO 0, no crops currently supported)
   integer            :: sfctyp             ! surface type (1 = land, 2 = lake)
   integer            :: soilcolor          ! soil color code
+  integer            :: n_x                !
+  integer            :: n_y                !
 
   real, allocatable, dimension(:) :: zsoil   ! depth of layer-bottom from soil surface
   real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
@@ -357,6 +359,10 @@ contains
     this%integerMissing              = integerMissing 
     this%realMissing                 = realMissing
     this%stringMissing               = stringMissing 
+
+    !hardcode n_x and n_y
+    this%n_x = 2
+    this%n_y = 3
 
   end subroutine ReadNamelist
 
