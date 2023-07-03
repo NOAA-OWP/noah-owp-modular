@@ -1,7 +1,6 @@
 module ParametersType
 
   use NamelistRead, only: namelist_type
-  use ParametersRead
   
   implicit none
   save
