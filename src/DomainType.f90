@@ -1,7 +1,8 @@
 module DomainType
-  
+
+  use NamelistRead, only: namelist_type
+  use DomainGridType
   use DateTimeUtilsModule
-  use NoahowpGridTypeModule
   
   implicit none
   save
@@ -9,60 +10,60 @@ module DomainType
   
   type, public :: domain_type
   
-    integer                         :: iloc              ! i index in grid  
-    integer                         :: jloc              ! j index in grid
-    real                            :: DT                ! run timestep (s)
-    character(len=12)               :: startdate         ! Start date of the model run ( YYYYMMDDHHmm ) 
-    character(len=12)               :: enddate           ! End date of the model run ( YYYYMMDDHHmm ) 
-    character(len=12)               :: nowdate           ! Current date of the model run ( YYYYMMDDHHmm ) 
-    real*8                          :: start_datetime    ! unix start datetime (s since 1970-01-01 00:00:00) ?UTC? 
-    real*8                          :: end_datetime      ! unix end datetime (s since 1970-01-01 00:00:00) ?UTC? 
-    real*8                          :: curr_datetime     ! unix current datetime (s since 1970-01-01 00:00:00) ?UTC? 
-    real*8, allocatable             :: sim_datetimes (:) ! vector of unix sim times given start/end dates and dt (try 'ki8' type)
-    integer                         :: itime             ! current integer time step of model run
-    integer                         :: ntime             ! total number of integer time steps in model run
-    double precision                :: time_dbl          ! current time of model run in seconds from beginning
-    real                            :: lat               ! latitude (°)
-    real                            :: lon               ! longitude (°)
-    real                            :: ZREF              ! measurement height of wind speed (m)
-    real                            :: terrain_slope     ! terrain slope (°)
-    real                            :: azimuth           ! terrain azimuth or aspect (° clockwise from north)
-    integer                         :: vegtyp            ! land cover type
-    integer                         :: croptype          ! crop type
-    integer                         :: isltyp            ! soil type
-    integer                         :: IST               ! surface type 1-soil; 2-lake
+    integer             :: iloc              ! i index in grid  
+    integer             :: jloc              ! j index in grid
+    real                :: DT                ! run timestep (s)
+    character(len=12)   :: startdate         ! Start date of the model run ( YYYYMMDDHHmm ) 
+    character(len=12)   :: enddate           ! End date of the model run ( YYYYMMDDHHmm ) 
+    character(len=12)   :: nowdate           ! Current date of the model run ( YYYYMMDDHHmm ) 
+    real*8              :: start_datetime    ! unix start datetime (s since 1970-01-01 00:00:00) ?UTC? 
+    real*8              :: end_datetime      ! unix end datetime (s since 1970-01-01 00:00:00) ?UTC? 
+    real*8              :: curr_datetime     ! unix current datetime (s since 1970-01-01 00:00:00) ?UTC? 
+    integer             :: itime             ! current integer time step of model run
+    integer             :: ntime             ! total number of integer time steps in model run
+    double precision    :: time_dbl          ! current time of model run in seconds from beginning
+    real                :: lat               ! latitude (°)
+    real                :: lon               ! longitude (°)
+    real                :: ZREF              ! measurement height of wind speed (m)
+    real                :: terrain_slope     ! terrain slope (°)
+    real                :: azimuth           ! terrain azimuth or aspect (° clockwise from north)
+    integer             :: vegtyp            ! land cover type
+    integer             :: croptype          ! crop type
+    integer             :: isltyp            ! soil type
+    integer             :: IST               ! surface type 1-soil; 2-lake
     real, allocatable, dimension(:) :: zsoil   ! depth of layer-bottom from soil surface
     real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
     real, allocatable, dimension(:) :: zsnso   ! depth of snow/soil layer-bottom
   
     contains
   
-    procedure, public  :: Init         
-    procedure, private :: InitAllocate 
-    procedure, private :: InitDefault     
+      procedure, public  :: Init         
+      procedure, private :: InitAllocate 
+      procedure, private :: InitDefault     
+      procedure, public  :: InitTransfer
   
   end type domain_type
   
   contains   
   
-    subroutine Init(this,noahowpgrid)
+    subroutine Init(this, namelist)
   
-      class(domain_type)                    :: this
-      type(noahowpgrid_type), intent(in)    :: noahowpgrid
-
-      call this%InitAllocate(noahowpgrid)
+      class(domain_type)  :: this
+      type(namelist_type) :: namelist
+  
+      call this%InitAllocate(namelist)
       call this%InitDefault()
   
     end subroutine Init
   
-    subroutine InitAllocate(this,noahowpgrid)
+    subroutine InitAllocate(this, namelist)
   
-      class(domain_type)                    :: this
-      type(noahowpgrid_type), intent(in)    :: noahowpgrid
+      class(domain_type) :: this
+      type(namelist_type) :: namelist
   
-      allocate(this%zsoil (noahowpgrid%nsoil))
-      allocate(this%dzsnso(-noahowpgrid%nsnow+1:noahowpgrid%nsoil))
-      allocate(this%zsnso (-noahowpgrid%nsnow+1:noahowpgrid%nsoil))
+      allocate(this%zsoil (namelist%nsoil))  ; this%zsoil  (:)   = huge(1.0)
+      allocate(this%dzsnso(-namelist%nsnow+1:namelist%nsoil))  ; this%dzsnso (:)   = huge(1.0)
+      allocate(this%zsnso(-namelist%nsnow+1:namelist%nsoil))  ; this%zsnso (:)   = huge(1.0)
   
     end subroutine InitAllocate
   
@@ -91,11 +92,9 @@ module DomainType
       this%croptype       = huge(1)
       this%isltyp         = huge(1)
       this%IST            = huge(1)
-      this%zsoil(:)       = huge(1.0)
-      this%dzsnso(:)      = huge(1.0)
-      this%zsnso(:)       = huge(1.0)
   
     end subroutine InitDefault
   
   end module DomainType
+  
   
