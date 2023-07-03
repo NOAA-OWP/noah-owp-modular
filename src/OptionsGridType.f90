@@ -121,7 +121,7 @@ contains
     class(optionsgrid_type)              :: this
     type(namelist_type)                  :: namelist
 
-    call this%InitAllocate(namelsit)
+    call this%InitAllocate(namelist)
     call this%InitDefault()
 
   end subroutine Init
@@ -131,23 +131,28 @@ contains
     class(optionsgrid_type)             :: this
     type(namelist_type),     intent(in) :: namelist
 
-    allocate(this%opt_snf(namelist%n_x,namelist%n_y))
-    allocate(this%opt_run(namelist%n_x,namelist%n_y))
-    allocate(this%opt_drn(namelist%n_x,namelist%n_y))
-    allocate(this%opt_inf(namelist%n_x,namelist%n_y))
-    allocate(this%opt_infdv(namelist%n_x,namelist%n_y))
-    allocate(this%dveg(namelist%n_x,namelist%n_y))
-    allocate(this%opt_alb(namelist%n_x,namelist%n_y))
-    allocate(this%opt_rad(namelist%n_x,namelist%n_y))
-    allocate(this%opt_sfc(namelist%n_x,namelist%n_y))
-    allocate(this%opt_crs(namelist%n_x,namelist%n_y))
-    allocate(this%opt_crop(namelist%n_x,namelist%n_y))
-    allocate(this%opt_stc(namelist%n_x,namelist%n_y))
-    allocate(this%opt_tbot(namelist%n_x,namelist%n_y)) 
-    allocate(this%opt_frz(namelist%n_x,namelist%n_y))   
-    allocate(this%opt_btr(namelist%n_x,namelist%n_y))
-    allocate(this%opt_rsf(namelist%n_x,namelist%n_y))   
-    allocate(this%opt_sub(namelist%n_x,namelist%n_y)) 
+    associate(n_x => namelist%n_x, &
+              n_y => namelist%n_y)
+
+    allocate(this%opt_snf(n_x,n_y))
+    allocate(this%opt_run(n_x,n_y))
+    allocate(this%opt_drn(n_x,n_y))
+    allocate(this%opt_inf(n_x,n_y))
+    allocate(this%opt_infdv(n_x,n_y))
+    allocate(this%dveg(n_x,n_y))
+    allocate(this%opt_alb(n_x,n_y))
+    allocate(this%opt_rad(n_x,n_y))
+    allocate(this%opt_sfc(n_x,n_y))
+    allocate(this%opt_crs(n_x,n_y))
+    allocate(this%opt_crop(n_x,n_y))
+    allocate(this%opt_stc(n_x,n_y))
+    allocate(this%opt_tbot(n_x,n_y)) 
+    allocate(this%opt_frz(n_x,n_y))   
+    allocate(this%opt_btr(n_x,n_y))
+    allocate(this%opt_rsf(n_x,n_y))   
+    allocate(this%opt_sub(n_x,n_y)) 
+
+    end associate
 
   end subroutine InitAllocate
 
@@ -200,4 +205,4 @@ contains
 
   end subroutine InitTransfer
 
-end module OptionsType
+end module OptionsGridType
