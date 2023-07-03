@@ -9,13 +9,28 @@ F90FLAGS := -cpp ${F90FLAGS}
 
 OBJS = ErrorCheckModule.o \
        NamelistRead.o \
+       ParametersRead.o  \
        LevelsType.o   \
+       LevelsGridType.o   \
+       LevelsTypeTransfer.o   \
        DomainType.o   \
+       DomainGridType.o   \
+       DomainTypeTransfer.o   \
        OptionsType.o  \
+       OptionsGridType.o  \
+       OptionsTypeTransfer.o  \
        ParametersType.o  \
+       ParametersGridType.o  \
+       ParametersTypeTransfer.o  \
        ForcingType.o \
+       ForcingGridType.o \
+       ForcingTypeTransfer.o \
        EnergyType.o \
+       EnergyGridType.o \
+       EnergyTypeTransfer.o \
        WaterType.o  \
+       WaterGridType.o  \
+       WaterTypeTransfer.o  \
        WaterModule.o \
        CanopyWaterModule.o \
        SnowWaterModule.o \
@@ -39,13 +54,12 @@ OBJS = ErrorCheckModule.o \
        EnergyModule.o \
        UtilitiesModule.o \
        DateTimeUtilsModule.o \
-       NoahowpType.o \
        RunModule.o
 
 all:	$(OBJS)
 
 .f90.o:
-	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I./ $(*).f90
+	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../driver $(*).f90
 
 #
 # This command cleans up object (etc) files:
@@ -60,9 +74,9 @@ clean:
 
 NamelistRead.o: ErrorCheckModule.o
 LevelsType.o: NamelistRead.o
-DomainType.o: NamelistRead.o LevelsType.o DateTimeUtilsModule.o ../driver/NoahowpGridTypeModule.o
+DomainType.o: NamelistRead.o LevelsType.o DateTimeUtilsModule.o
 OptionsType.o: NamelistRead.o
-ParametersType.o: NamelistRead.o
+ParametersType.o: NamelistRead.o ParametersRead.o
 ForcingType.o: NamelistRead.o
 EnergyType.o: NamelistRead.o
 WaterType.o: NamelistRead.o
@@ -109,5 +123,4 @@ RunModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType
                 ForcingType.o WaterType.o NamelistRead.o ../driver/AsciiReadModule.o \
                 ../driver/OutputModule.o UtilitiesModule.o ForcingModule.o InterceptionModule.o \
                 EnergyModule.o WaterModule.o DateTimeUtilsModule.o
-NoahowpType.o: NamelistRead.o LevelsType.o DomainType.o OptionsType.o ParametersType.o \
-                   WaterType.o ForcingType.o EnergyType.o
+
