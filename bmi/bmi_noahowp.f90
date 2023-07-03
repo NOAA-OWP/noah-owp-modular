@@ -185,7 +185,7 @@ contains
     integer :: bmi_status
 
     if (len(config_file) > 0) then
-       call NoahowpReadNamelist(this%noahowpgrid,config_file)
+       call initialize_from_file(this%noahowpgrid,config_file)
     else
        !call initialize_from_defaults(this%model)
     end if
