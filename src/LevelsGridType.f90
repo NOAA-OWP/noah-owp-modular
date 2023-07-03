@@ -36,8 +36,13 @@ contains
     class(levelsgrid_type)          :: this
     type(namelist_type),intent(in)  :: namelist
 
-    allocate(this%nsoil(namelist%n_x,namelist%n_y))
-    allocate(this%nsnow(namelist%n_x,namelist%n_y))
+    associate(n_x => namelist%n_x, &
+             n_y => namelist%n_y)
+
+    allocate(this%nsoil(n_x,n_y))
+    allocate(this%nsnow(n_x,n_y))
+
+    end associate
 
   end subroutine InitAllocate
 
@@ -62,4 +67,4 @@ contains
 
   end subroutine InitTransfer
 
-end module LevelsType
+end module LevelsGridType
