@@ -36,7 +36,7 @@ module OptionsTypeTransfer
 
   end subroutine OptionsVarInTransfer
 
-  subroutine OptionsVarOutTransfer(noahowp, optionsgrid)
+  subroutine OptionsVarOutTransfer(options, optionsgrid, ix, iy)
 
     implicit none
 
