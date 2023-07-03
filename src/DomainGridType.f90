@@ -59,18 +59,25 @@ module DomainGridType
       class(domaingrid_type) :: this
       type(namelist_type)    :: namelist
   
-      allocate(this%lat             (namelist%n_x,namelist%n_y))
-      allocate(this%lon             (namelist%n_x,namelist%n_y))
-      allocate(this%terrain_slope   (namelist%n_x,namelist%n_y))
-      allocate(this%azimuth         (namelist%n_x,namelist%n_y))
-      allocate(this%ZREF            (namelist%n_x,namelist%n_y))
-      allocate(this%vegtyp          (namelist%n_x,namelist%n_y))
-      allocate(this%croptype        (namelist%n_x,namelist%n_y))
-      allocate(this%isltyp          (namelist%n_x,namelist%n_y))
-      allocate(this%IST             (namelist%n_x,namelist%n_y))
-      allocate(this%zsoil           (namelist%n_x,namelist%n_y,namelist%nsoil))                   
-      allocate(this%dzsnso          (namelist%n_x,namelist%n_y,-namelist%nsnow+1:namelist%nsoil)) 
-      allocate(this%zsnso           (namelist%n_x,namelist%n_y,-namelist%nsnow+1:namelist%nsoil)) 
+      associate(n_x => namelist%n_x,     &
+                n_y => namelist%n_y,     &
+                nsoil => namelist%nsoil, &
+                nsnow => namelist%nsnow)
+
+      allocate(this%lat             (n_x,n_y))
+      allocate(this%lon             (n_x,n_y))
+      allocate(this%terrain_slope   (n_x,n_y))
+      allocate(this%azimuth         (n_x,n_y))
+      allocate(this%ZREF            (n_x,n_y))
+      allocate(this%vegtyp          (n_x,n_y))
+      allocate(this%croptype        (n_x,n_y))
+      allocate(this%isltyp          (n_x,n_y))
+      allocate(this%IST             (n_x,n_y))
+      allocate(this%zsoil           (n_x,n_y,nsoil))                   
+      allocate(this%dzsnso          (n_x,n_y,-nsnow+1:nsoil)) 
+      allocate(this%zsnso           (n_x,n_y,-nsnow+1:nsoil)) 
+
+      end associate
   
     end subroutine InitAllocate
   
