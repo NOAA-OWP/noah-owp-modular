@@ -16,9 +16,9 @@ module LevelsTypeTransfer
     integer,               intent(in)    :: ix
     integer,               intent(in)    :: iy
 
-    levels%nsoil = levelsgrid%nsoil
-    levels%nsnow = levelsgrid%nsnow
-    levels%nveg = levelsgrid%nveg()
+    levels%nsoil = levelsgrid%nsoil(ix,iy)
+    levels%nsnow = levelsgrid%nsnow(ix,iy)
+    levels%nveg = levelsgrid%nveg
 
   end subroutine LevelsVarInTransfer
 
