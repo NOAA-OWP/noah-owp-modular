@@ -33,7 +33,8 @@ module DomainType
     real, allocatable, dimension(:) :: zsoil   ! depth of layer-bottom from soil surface
     real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
     real, allocatable, dimension(:) :: zsnso   ! depth of snow/soil layer-bottom
-  
+    integer                         :: soilcolor
+
     contains
   
       procedure, public  :: Init         

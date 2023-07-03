@@ -29,9 +29,10 @@ module DomainGridType
     integer, allocatable, dimension(:,:)  :: croptype          ! crop type
     integer, allocatable, dimension(:,:)  :: isltyp            ! soil type
     integer, allocatable, dimension(:,:)  :: IST               ! surface type 1-soil; 2-lake
-    real, allocatable, dimension(:,:,:)   :: zsoil   ! depth of layer-bottom from soil surface
-    real, allocatable, dimension(:,:,:)   :: dzsnso  ! snow/soil layer thickness [m]
-    real, allocatable, dimension(:,:,:)   :: zsnso   ! depth of snow/soil layer-bottom
+    real, allocatable, dimension(:,:,:)   :: zsoil             ! depth of layer-bottom from soil surface
+    real, allocatable, dimension(:,:,:)   :: dzsnso            ! snow/soil layer thickness [m]
+    real, allocatable, dimension(:,:,:)   :: zsnso             ! depth of snow/soil layer-bottom
+    integer, allocatable, dimension(:,:)  :: soilcolor         !
   
     contains
   
