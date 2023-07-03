@@ -1,95 +1,89 @@
 module ForcingTypeTransfer
 
-    use NoahowpGridTypeModule
-    use NoahowpType
+    use ForcingType
+    use ForcingGridType
 
     implicit none
   
   contains
   
-  subroutine ForcingVarInTransfer(noahowp, noahowpgrid)
+  subroutine ForcingVarInTransfer(forcing, forcinggrid, ix, iy)
 
     implicit none
 
-    type(noahowpgrid_type), intent(in)    :: noahowpgrid
-    type(noahowp_type),     intent(inout) :: noahowp
+    type(forcinggrid_type), intent(in)    :: forcinggrid
+    type(forcing_type),     intent(inout) :: forcing
+    integer,                intent(in)    :: ix
+    integer,                intent(in)    :: iy
 
-    associate(ix   => noahowpgrid%ix, &
-              iy   => noahowpgrid%iy)
-
-    noahowp%forcing%SFCPRS = noahowpgrid%SFCPRS(ix,iy)
-    noahowp%forcing%SFCTMP = noahowpgrid%SFCTMP(ix,iy)
-    noahowp%forcing%Q2 = noahowpgrid%Q2(ix,iy)
-    noahowp%forcing%PRCP = noahowpgrid%PRCP(ix,iy)
-    noahowp%forcing%PRCPCONV = noahowpgrid%PRCPCONV(ix,iy)
-    noahowp%forcing%PRCPNONC = noahowpgrid%PRCPNONC(ix,iy)
-    noahowp%forcing%PRCPSHCV = noahowpgrid%PRCPSHCV(ix,iy)
-    noahowp%forcing%PRCPSNOW = noahowpgrid%PRCPSNOW(ix,iy)
-    noahowp%forcing%PRCPGRPL = noahowpgrid%PRCPGRPL(ix,iy)
-    noahowp%forcing%PRCPHAIL = noahowpgrid%PRCPHAIL(ix,iy)            
-    noahowp%forcing%SOLDN = noahowpgrid%SOLDN(ix,iy)
-    noahowp%forcing%LWDN = noahowpgrid%LWDN(ix,iy)
-    noahowp%forcing%FOLN = noahowpgrid%FOLN(ix,iy)
-    noahowp%forcing%O2PP = noahowpgrid%O2PP(ix,iy)
-    noahowp%forcing%CO2PP = noahowpgrid%CO2PP(ix,iy) 
-    noahowp%forcing%UU = noahowpgrid%UU(ix,iy)
-    noahowp%forcing%VV = noahowpgrid%VV(ix,iy)
-    noahowp%forcing%TBOT = noahowpgrid%TBOT(ix,iy)
-    noahowp%forcing%UR = noahowpgrid%UR(ix,iy)
-    noahowp%forcing%THAIR = noahowpgrid%THAIR(ix,iy)
-    noahowp%forcing%QAIR = noahowpgrid%QAIR(ix,iy)
-    noahowp%forcing%EAIR = noahowpgrid%EAIR(ix,iy)
-    noahowp%forcing%RHOAIR = noahowpgrid%RHOAIR(ix,iy)
-    noahowp%forcing%FPICE = noahowpgrid%FPICE(ix,iy)
-    noahowp%forcing%SWDOWN = noahowpgrid%SWDOWN(ix,iy)
-    noahowp%forcing%JULIAN = noahowpgrid%JULIAN
-    noahowp%forcing%YEARLEN = noahowpgrid%YEARLEN
-    noahowp%forcing%SOLAD(:) = noahowpgrid%SOLAD(ix,iy,:)
-    noahowp%forcing%SOLAI(:) = noahowpgrid%SOLAI(ix,iy,:)
-
-    end associate
+    forcing%SFCPRS = forcinggrid%SFCPRS(ix,iy)
+    forcing%SFCTMP = forcinggrid%SFCTMP(ix,iy)
+    forcing%Q2 = forcinggrid%Q2(ix,iy)
+    forcing%PRCP = forcinggrid%PRCP(ix,iy)
+    forcing%PRCPCONV = forcinggrid%PRCPCONV(ix,iy)
+    forcing%PRCPNONC = forcinggrid%PRCPNONC(ix,iy)
+    forcing%PRCPSHCV = forcinggrid%PRCPSHCV(ix,iy)
+    forcing%PRCPSNOW = forcinggrid%PRCPSNOW(ix,iy)
+    forcing%PRCPGRPL = forcinggrid%PRCPGRPL(ix,iy)
+    forcing%PRCPHAIL = forcinggrid%PRCPHAIL(ix,iy)            
+    forcing%SOLDN = forcinggrid%SOLDN(ix,iy)
+    forcing%LWDN = forcinggrid%LWDN(ix,iy)
+    forcing%FOLN = forcinggrid%FOLN(ix,iy)
+    forcing%O2PP = forcinggrid%O2PP(ix,iy)
+    forcing%CO2PP = forcinggrid%CO2PP(ix,iy) 
+    forcing%UU = forcinggrid%UU(ix,iy)
+    forcing%VV = forcinggrid%VV(ix,iy)
+    forcing%TBOT = forcinggrid%TBOT(ix,iy)
+    forcing%UR = forcinggrid%UR(ix,iy)
+    forcing%THAIR = forcinggrid%THAIR(ix,iy)
+    forcing%QAIR = forcinggrid%QAIR(ix,iy)
+    forcing%EAIR = forcinggrid%EAIR(ix,iy)
+    forcing%RHOAIR = forcinggrid%RHOAIR(ix,iy)
+    forcing%FPICE = forcinggrid%FPICE(ix,iy)
+    forcing%SWDOWN = forcinggrid%SWDOWN(ix,iy)
+    forcing%JULIAN = forcinggrid%JULIAN
+    forcing%YEARLEN = forcinggrid%YEARLEN
+    forcing%SOLAD(:) = forcinggrid%SOLAD(ix,iy,:)
+    forcing%SOLAI(:) = forcinggrid%SOLAI(ix,iy,:)
 
   end subroutine
 
-  subroutine ForcingVarOutTransfer(noahowp, noahowpgrid)
+  subroutine ForcingVarOutTransfer(forcing, forcinggrid, ix, iy)
 
     implicit none
 
-    type(noahowpgrid_type), intent(inout) :: noahowpgrid
-    type(noahowp_type),     intent(in)    :: noahowp
+    type(forcinggrid_type), intent(inout)    :: forcinggrid
+    type(forcing_type),     intent(in)       :: forcing
+    integer,                intent(in)       :: ix
+    integer,                intent(in)       :: iy
 
-    associate(ix   => noahowpgrid%ix, &
-              iy   => noahowpgrid%iy)
-
-    noahowpgrid%SFCPRS(ix,iy) = noahowp%forcing%SFCPRS
-    noahowpgrid%SFCTMP(ix,iy) = noahowp%forcing%SFCTMP
-    noahowpgrid%Q2(ix,iy) = noahowp%forcing%Q2
-    noahowpgrid%PRCP(ix,iy) = noahowp%forcing%PRCP
-    noahowpgrid%PRCPCONV(ix,iy) = noahowp%forcing%PRCPCONV
-    noahowpgrid%PRCPNONC(ix,iy) = noahowp%forcing%PRCPNONC
-    noahowpgrid%PRCPSHCV(ix,iy) = noahowp%forcing%PRCPSHCV
-    noahowpgrid%PRCPSNOW(ix,iy) = noahowp%forcing%PRCPSNOW
-    noahowpgrid%PRCPGRPL(ix,iy) = noahowp%forcing%PRCPGRPL
-    noahowpgrid%PRCPHAIL(ix,iy) = noahowp%forcing%PRCPHAIL
-    noahowpgrid%SOLDN(ix,iy) = noahowp%forcing%SOLDN
-    noahowpgrid%LWDN(ix,iy) = noahowp%forcing%LWDN
-    noahowpgrid%FOLN(ix,iy) = noahowp%forcing%FOLN
-    noahowpgrid%O2PP(ix,iy) = noahowp%forcing%O2PP
-    noahowpgrid%CO2PP(ix,iy) = noahowp%forcing%CO2PP
-    noahowpgrid%UU(ix,iy) = noahowp%forcing%UU
-    noahowpgrid%VV(ix,iy) = noahowp%forcing%VV
-    noahowpgrid%TBOT(ix,iy) = noahowp%forcing%TBOT
-    noahowpgrid%UR(ix,iy) = noahowp%forcing%UR
-    noahowpgrid%THAIR(ix,iy) = noahowp%forcing%THAIR
-    noahowpgrid%QAIR(ix,iy) = noahowp%forcing%QAIR
-    noahowpgrid%EAIR(ix,iy) = noahowp%forcing%EAIR
-    noahowpgrid%RHOAIR(ix,iy) = noahowp%forcing%RHOAIR
-    noahowpgrid%FPICE(ix,iy) = noahowp%forcing%FPICE
-    noahowpgrid%SWDOWN(ix,iy) = noahowp%forcing%SWDOWN
-    noahowpgrid%SOLAD(ix,iy,:) = noahowp%forcing%SOLAD(:)
-    noahowpgrid%SOLAI(ix,iy,:) = noahowp%forcing%SOLAI(:)
-
-    end associate
+    forcinggrid%SFCPRS(ix,iy) = forcing%SFCPRS
+    forcinggrid%SFCTMP(ix,iy) = forcing%SFCTMP
+    forcinggrid%Q2(ix,iy) = forcing%Q2
+    forcinggrid%PRCP(ix,iy) = forcing%PRCP
+    forcinggrid%PRCPCONV(ix,iy) = forcing%PRCPCONV
+    forcinggrid%PRCPNONC(ix,iy) = forcing%PRCPNONC
+    forcinggrid%PRCPSHCV(ix,iy) = forcing%PRCPSHCV
+    forcinggrid%PRCPSNOW(ix,iy) = forcing%PRCPSNOW
+    forcinggrid%PRCPGRPL(ix,iy) = forcing%PRCPGRPL
+    forcinggrid%PRCPHAIL(ix,iy) = forcing%PRCPHAIL
+    forcinggrid%SOLDN(ix,iy) = forcing%SOLDN
+    forcinggrid%LWDN(ix,iy) = forcing%LWDN
+    forcinggrid%FOLN(ix,iy) = forcing%FOLN
+    forcinggrid%O2PP(ix,iy) = forcing%O2PP
+    forcinggrid%CO2PP(ix,iy) = forcing%CO2PP
+    forcinggrid%UU(ix,iy) = forcing%UU
+    forcinggrid%VV(ix,iy) = forcing%VV
+    forcinggrid%TBOT(ix,iy) = forcing%TBOT
+    forcinggrid%UR(ix,iy) = forcing%UR
+    forcinggrid%THAIR(ix,iy) = forcing%THAIR
+    forcinggrid%QAIR(ix,iy) = forcing%QAIR
+    forcinggrid%EAIR(ix,iy) = forcing%EAIR
+    forcinggrid%RHOAIR(ix,iy) = forcing%RHOAIR
+    forcinggrid%FPICE(ix,iy) = forcing%FPICE
+    forcinggrid%SWDOWN(ix,iy) = forcing%SWDOWN
+    forcinggrid%SOLAD(ix,iy,:) = forcing%SOLAD(:)
+    forcinggrid%SOLAI(ix,iy,:) = forcing%SOLAI(:)
 
   end subroutine ForcingVarOutTransfer
 
