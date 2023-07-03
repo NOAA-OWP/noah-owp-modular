@@ -9,6 +9,13 @@ module RunModule
   use WaterType
   use ForcingType
   use EnergyType
+  use LevelsGridType
+  use DomainGridType
+  use OptionsGridType
+  use ParametersGridType
+  use WaterGridType
+  use ForcingGridType
+  use EnergyGridType
   use AsciiReadModule
   use OutputModule
   use UtilitiesModule
@@ -20,6 +27,31 @@ module RunModule
   use NoahowpType
   
   implicit none
+
+  type :: noahowp_type
+
+    type(levels_type)     :: levels
+    type(domain_type)     :: domain
+    type(options_type)    :: options
+    type(parameters_type) :: parameters
+    type(water_type)      :: water
+    type(forcing_type)    :: forcing
+    type(energy_type)     :: energy
+    
+  end type noahowp_type
+
+  type :: noahowpgrid_type
+
+    type(namelist)                :: namelist
+    type(levelsgrid_type)         :: levels_grid
+    type(domaingrid_type)         :: domain_grid
+    type(optionsgrid_type)        :: options_grid
+    type(parametersgrid_type)     :: parameters_grid
+    type(watergrid_type)          :: water_grid
+    type(forcinggrid_type)        :: forcing_grid
+    type(energygrid_type)         :: energy_grid
+  
+  end type
 
 contains
   
@@ -33,153 +65,145 @@ contains
     integer                                 :: forcing_timestep         ! integer time step (set to dt) for some subroutine calls
     integer                                 :: ii
         
+    associate(namelist   => noahowpgrid%namelist,   &
+      levelsgrid     => noahowpgrid%levelsgrid,     &
+      domaingrid     => noahowpgrid%domaingrid,     &
+      optionsgrid    => noahowpgrid%optionsgrid,    &
+      parametersgrid => noahowpgrid%parametersgrid, &
+      watergrid      => noahowpgrid%watergrid,      &
+      forcinggrid    => noahowpgrid%forcinggrid,    &
+      energygrid     => noahowpgrid%energygrid)
+
       !---------------------------------------------------------------------
       !  initialize
       !---------------------------------------------------------------------
       call namelist%ReadNamelist(config_filename)
 
-      !call levels%Init
-      !call levels%InitTransfer(namelist)
-      call noahowpgrid_init_level_vars(noahowpgrid)
-      !call noahowpgrid_transfer_levels_vars(noahowpgrid,namelist)
+      call levelsgrid%Init(namelist)
+      call levelsgrid%InitTransfer(namelist)
 
-      !call domain%Init(namelist)
-      !call domain%InitTransfer(namelist)
-      call noahowpgrid_init_domain_vars(noahowpgrid)
-      !call noahowpgrid_transfer_domain_vars(noahowpgrid,namelist)
+      call domaingrid%Init(namelist)
+      call domaingrid%InitTransfer(namelist)
 
+      call optionsgrid%Init()
+      call optionsgrid%InitTransfer(namelist)
 
-      !call options%Init()
-      !call options%InitTransfer(namelist)
-      call noahowpgrid_init_options_vars(noahowpgrid)
-      !call noahowpgrid_transfer_options_vars(noahowpgrid,namelist)
+      call parametersgrid%Init(namelist)
+      call parametersgrid%paramRead(namelist)
 
+      call forcinggrid%Init(namelist)
+      call forcinggrid%InitTransfer(namelist)
 
-      !call parameters%Init(namelist)
-      !call parameters%paramRead(namelist)
-      call noahowpgrid_init_parameters_vars(noahowpgrid)
-      !call noahowpgrid_transfer_parameters_vars(noahowpgrid,namelist)
+      call energygrid%Init(namelist)
+      call energygrid%InitTransfer(namelist)
 
-
-      !call forcing%Init(namelist)
-      !call forcing%InitTransfer(namelist)
-      call noahowpgrid_init_forcing_vars(noahowpgrid)
-      !call noahowpgrid_transfer_forcing_vars(noahowpgrid,namelist)
-
-      !call energy%Init(namelist)
-      !call energy%InitTransfer(namelist)
-      call noahowpgrid_init_energy_vars(noahowpgrid)
-      !call noahowpgrid_transfer_energy_vars(noahowpgrid,namelist)
-
-      !call water%Init(namelist)
-      !call water%InitTransfer(namelist)
-      call noahowpgrid_init_water_vars(noahowpgrid)
-      !call noahowpgrid_transfer_water_vars(noahowpgrid,namelist)
+      call watergrid%Init(namelist)
+      call watergrid%InitTransfer(namelist)
 
       ! Initializations
       ! for soil water
       !water%zwt       = -100.0       ! should only be needed for run=1
-      noahowpgrid%smcwtd(:,:)    = 0.0          ! should only be needed for run=5
-      noahowpgrid%deeprech(:,:)  = 0.0          ! should only be needed for run=5
-      noahowpgrid%qinsur(:,:)    = 0.0          !
-      noahowpgrid%runsrf(:,:)    = 0.0          !
-      noahowpgrid%runsub(:,:)    = 0.0          !
-      noahowpgrid%qdrain(:,:)    = 0.0          !
-      noahowpgrid%wcnd(:,:)      = 0.0          !
-      noahowpgrid%fcrmax(:,:)    = 0.0          !
-      noahowpgrid%snoflow(:,:)   = 0.0          ! glacier outflow for all RUNSUB options, [mm/s]
-      noahowpgrid%qseva(:,:)     = 0.0          ! soil evaporation [mm/s]
-      noahowpgrid%etrani(:,:)    = 0.0          ! transpiration from each level[mm/s]
-      noahowpgrid%btrani(:,:)    = 0.0          ! soil water transpiration factor (0 to 1) by soil layer
-      noahowpgrid%btran(:,:)     = 0.0          ! soil water transpiration factor (0 to 1)
-
+      watergrid%smcwtd    = 0.0          ! should only be needed for run=5
+      watergrid%deeprech  = 0.0          ! should only be needed for run=5
+      watergrid%qinsur    = 0.0          !
+      watergrid%runsrf    = 0.0          !
+      watergrid%runsub    = 0.0          !
+      watergrid%qdrain    = 0.0          !
+      watergrid%wcnd      = 0.0          !
+      watergrid%fcrmax    = 0.0          !
+      watergrid%snoflow   = 0.0          ! glacier outflow for all RUNSUB options, [mm/s]
+      watergrid%qseva     = 0.0          ! soil evaporation [mm/s]
+      watergrid%etrani    = 0.0          ! transpiration from each level[mm/s]
+      watergrid%btrani    = 0.0          ! soil water transpiration factor (0 to 1) by soil layer
+      watergrid%btran     = 0.0          ! soil water transpiration factor (0 to 1)
+  
       ! for canopy water
-      noahowpgrid%RAIN(:,:)      = 0.0          ! rainfall mm/s
-      noahowpgrid%SNOW(:,:)      = 0.0          ! snowfall mm/s
-      noahowpgrid%BDFALL(:,:)    = 0.0        ! bulk density of snowfall (kg/m3)
-      noahowpgrid%FB_snow(:,:)   = 0.0          ! canopy fraction buried by snow (computed from phenology)
-      noahowpgrid%FP(:,:)        = 1.0          ! fraction of the gridcell that receives precipitation
-      noahowpgrid%CANLIQ(:,:)    = 0.0          ! canopy liquid water [mm]
-      noahowpgrid%CANICE(:,:)    = 0.0          ! canopy frozen water [mm]
-      noahowpgrid%FWET(:,:)      = 0.0          ! canopy fraction wet or snow
-      noahowpgrid%CMC(:,:)       = 0.0          ! intercepted water per ground area (mm)
-      noahowpgrid%QINTR(:,:)     = 0.0           ! interception rate for rain (mm/s)
-      noahowpgrid%QDRIPR(:,:)    = 0.0           ! drip rate for rain (mm/s)
-      noahowpgrid%QTHROR(:,:)    = 0.0           ! throughfall for rain (mm/s)
-      noahowpgrid%QINTS(:,:)     = 0.0           ! interception (loading) rate for snowfall (mm/s)
-      noahowpgrid%QDRIPS(:,:)    = 0.0           ! drip (unloading) rate for intercepted snow (mm/s)
-      noahowpgrid%QTHROS(:,:)    = 0.0           ! throughfall of snowfall (mm/s)
-      noahowpgrid%QRAIN(:,:)     = 0.0           ! rain at ground srf (mm/s) [+]
-      noahowpgrid%QSNOW(:,:)     = 0.0           ! snow at ground srf (mm/s) [+]
-      noahowpgrid%SNOWHIN(:,:)   = 0.0           ! snow depth increasing rate (m/s)
-      noahowpgrid%ECAN(:,:)      = 0.0           ! evap of intercepted water (mm/s) [+]
-      noahowpgrid%ETRAN(:,:)     = 0.0           ! transpiration rate (mm/s) [+]
-
+      watergrid%RAIN      = 0.0          ! rainfall mm/s
+      watergrid%SNOW      = 0.0          ! snowfall mm/s
+      watergrid%BDFALL    = 0.0        ! bulk density of snowfall (kg/m3)
+      watergrid%FB_snow   = 0.0          ! canopy fraction buried by snow (computed from phenology)
+      watergrid%FP        = 1.0          ! fraction of the gridcell that receives precipitation
+      watergrid%CANLIQ    = 0.0          ! canopy liquid water [mm]
+      watergrid%CANICE    = 0.0          ! canopy frozen water [mm]
+      watergrid%FWET      = 0.0          ! canopy fraction wet or snow
+      watergrid%CMC       = 0.0          ! intercepted water per ground area (mm)
+      watergrid%QINTR    = 0.0           ! interception rate for rain (mm/s)
+      watergrid%QDRIPR   = 0.0           ! drip rate for rain (mm/s)
+      watergrid%QTHROR   = 0.0           ! throughfall for rain (mm/s)
+      watergrid%QINTS    = 0.0           ! interception (loading) rate for snowfall (mm/s)
+      watergrid%QDRIPS   = 0.0           ! drip (unloading) rate for intercepted snow (mm/s)
+      watergrid%QTHROS   = 0.0           ! throughfall of snowfall (mm/s)
+      watergrid%QRAIN    = 0.0           ! rain at ground srf (mm/s) [+]
+      watergrid%QSNOW    = 0.0           ! snow at ground srf (mm/s) [+]
+      watergrid%SNOWHIN  = 0.0           ! snow depth increasing rate (m/s)
+      watergrid%ECAN     = 0.0           ! evap of intercepted water (mm/s) [+]
+      watergrid%ETRAN    = 0.0           ! transpiration rate (mm/s) [+]
+  
       ! for snow water
-      noahowpgrid%QVAP(:,:)      = 0.0           ! evaporation/sublimation rate mm/s 
-      noahowpgrid%ISNOW(:,:)     = 0
-      noahowpgrid%SNOWH(:,:)     = 0.0
-      noahowpgrid%SNEQV(:,:)     = 0.0
-      noahowpgrid%SNEQVO(:,:)    = 0.0
-      noahowpgrid%BDSNO(:,:)     = 0.0
-      noahowpgrid%PONDING(:,:)   = 0.0
-      noahowpgrid%PONDING1(:,:)  = 0.0
-      noahowpgrid%PONDING2(:,:)  = 0.0
-      noahowpgrid%QSNBOT(:,:)    = 0.0
-      noahowpgrid%QSNFRO(:,:)    = 0.0
-      noahowpgrid%QSNSUB(:,:)    = 0.0
-      noahowpgrid%QDEW(:,:)      = 0.0
-      noahowpgrid%QSDEW(:,:)     = 0.0
-      noahowpgrid%SNICE(:,:)     = 0.0
-      noahowpgrid%SNLIQ(:,:)     = 0.0
-      noahowpgrid%FICEOLD(:,:)   = 0.0
-      noahowpgrid%FSNO(:,:)      = 0.0
-
+      watergrid%QVAP     = 0.0           ! evaporation/sublimation rate mm/s 
+      watergrid%ISNOW    = 0
+      watergrid%SNOWH    = 0.0
+      watergrid%SNEQV    = 0.0
+      watergrid%SNEQVO   = 0.0
+      watergrid%BDSNO    = 0.0
+      watergrid%PONDING  = 0.0
+      watergrid%PONDING1 = 0.0
+      watergrid%PONDING2 = 0.0
+      watergrid%QSNBOT   = 0.0
+      watergrid%QSNFRO   = 0.0
+      watergrid%QSNSUB   = 0.0
+      watergrid%QDEW     = 0.0
+      watergrid%QSDEW    = 0.0
+      watergrid%SNICE    = 0.0
+      watergrid%SNLIQ    = 0.0
+      watergrid%FICEOLD  = 0.0
+      watergrid%FSNO     = 0.0
+  
       ! for energy-related variable
-      noahowpgrid%TV(:,:)      = 298.0        ! leaf temperature [K]
-      noahowpgrid%TG(:,:)      = 298.0        ! ground temperature [K]
-      noahowpgrid%CM(:,:)      = 0.0          ! momentum drag coefficient
-      noahowpgrid%CH(:,:)      = 0.0          ! heat drag coefficient
-      noahowpgrid%FCEV(:,:)    = 5.0          ! constant canopy evaporation (w/m2) [+ to atm ]
-      noahowpgrid%FCTR(:,:)    = 5.0          ! constant transpiration (w/m2) [+ to atm]
-      noahowpgrid%IMELT(:,:)   = 1 ! freeze
-      noahowpgrid%STC(:,:)     = 298.0
-      noahowpgrid%COSZ(:,:)    = 0.7        ! cosine of solar zenith angle
-      noahowpgrid%ICE(:,:)     = 0          ! 1 if sea ice, -1 if glacier, 0 if no land ice (seasonal snow)
-      noahowpgrid%ALB(:,:)     = 0.6        ! initialize snow albedo in CLASS routine
-      noahowpgrid%ALBOLD(:,:)  = 0.6        ! initialize snow albedo in CLASS routine
-      noahowpgrid%FROZEN_CANOPY(:,:) = .false. ! used to define latent heat pathway
-      noahowpgrid%FROZEN_GROUND(:,:) = .false. 
+      energygrid%TV      = 298.0        ! leaf temperature [K]
+      energygrid%TG      = 298.0        ! ground temperature [K]
+      energygrid%CM      = 0.0          ! momentum drag coefficient
+      energygrid%CH      = 0.0          ! heat drag coefficient
+      energygrid%FCEV    = 5.0          ! constant canopy evaporation (w/m2) [+ to atm ]
+      energygrid%FCTR    = 5.0          ! constant transpiration (w/m2) [+ to atm]
+      energygrid%IMELT   = 1 ! freeze
+      energygrid%STC     = 298.0
+      energygrid%COSZ    = 0.7        ! cosine of solar zenith angle
+      energygrid%ICE     = 0          ! 1 if sea ice, -1 if glacier, 0 if no land ice (seasonal snow)
+      energygrid%ALB     = 0.6        ! initialize snow albedo in CLASS routine
+      energygrid%ALBOLD  = 0.6        ! initialize snow albedo in CLASS routine
+      energygrid%FROZEN_CANOPY = .false. ! used to define latent heat pathway
+      energygrid%FROZEN_GROUND = .false. 
 
       ! -- forcings 
       ! these are initially set to huge(1) -- to trap errors may want to set to a recognizable flag if they are
       !   supposed to be assigned below (eg -9999)
-      !noahowpgrid%UU(:,:)       = 0.0        ! wind speed in u direction (m s-1)
-      !noahowpgrid%VV(:,:)       = 0.0        ! wind speed in v direction (m s-1)
-      !noahowpgrid%SFCPRS(:,:)   = 0.0        ! pressure (pa)
-      !noahowpgrid%SFCTMP(:,:)   = 0.0        ! surface air temperature [k]
-      !noahowpgrid%Q2(:,:)       = 0.0        ! mixing ratio (kg/kg)
-      !noahowpgrid%PRCP(:,:)     = 0.0        ! convective precipitation entering  [mm/s]    ! MB/AN : v3.7
-      !noahowpgrid%SOLDN(:,:)    = 0.0        ! downward shortwave radiation (w/m2)
-      !noahowpgrid%LWDN(:,:)     = 0.0        ! downward longwave radiation (w/m2)
+      !forcinggrid%UU       = 0.0        ! wind speed in u direction (m s-1)
+      !forcinggrid%VV       = 0.0        ! wind speed in v direction (m s-1)
+      !forcinggrid%SFCPRS   = 0.0        ! pressure (pa)
+      !forcinggrid%SFCTMP   = 0.0        ! surface air temperature [k]
+      !forcinggrid%Q2       = 0.0        ! mixing ratio (kg/kg)
+      !forcinggrid%PRCP     = 0.0        ! convective precipitation entering  [mm/s]    ! MB/AN : v3.7
+      !forcinggrid%SOLDN    = 0.0        ! downward shortwave radiation (w/m2)
+      !forcinggrid%LWDN     = 0.0        ! downward longwave radiation (w/m2)
       
       ! forcing-related variables
-      noahowpgrid%PRCPCONV(:,:) = 0.0        ! convective precipitation entering  [mm/s]    ! MB/AN : v3.7
-      noahowpgrid%PRCPNONC(:,:) = 0.0        ! non-convective precipitation entering [mm/s] ! MB/AN : v3.7
-      noahowpgrid%PRCPSHCV(:,:) = 0.0        ! shallow convective precip entering  [mm/s]   ! MB/AN : v3.7
-      noahowpgrid%PRCPSNOW(:,:) = 0.0        ! snow entering land model [mm/s]              ! MB/AN : v3.7
-      noahowpgrid%PRCPGRPL(:,:) = 0.0        ! graupel entering land model [mm/s]           ! MB/AN : v3.7
-      noahowpgrid%PRCPHAIL(:,:) = 0.0        ! hail entering land model [mm/s]              ! MB/AN : v3.7
-      noahowpgrid%THAIR(:,:)    = 0.0        ! potential temperature (k)
-      noahowpgrid%QAIR(:,:)     = 0.0        ! specific humidity (kg/kg) (q2/(1+q2))
-      noahowpgrid%EAIR(:,:)     = 0.0        ! vapor pressure air (pa)
-      noahowpgrid%RHOAIR(:,:)   = 0.0        ! density air (kg/m3)
-      noahowpgrid%SWDOWN(:,:)   = 0.0        ! downward solar filtered by sun angle [w/m2]
-      noahowpgrid%FPICE(:,:)    = 0.0        ! fraction of ice                AJN
-      noahowpgrid%JULIAN(:,:)   = 0.0        ! Setting arbitrary julian day
-      noahowpgrid%YEARLEN(:,:)  = 365        ! Setting year to be normal (i.e. not a leap year)  
-      noahowpgrid%FOLN(:,:)     = 1.0        ! foliage nitrogen concentration (%); for now, set to nitrogen saturation
-      noahowpgrid%TBOT(:,:)     = 285.0      ! bottom condition for soil temperature [K]
+      forcinggrid%PRCPCONV = 0.0        ! convective precipitation entering  [mm/s]    ! MB/AN : v3.7
+      forcinggrid%PRCPNONC = 0.0        ! non-convective precipitation entering [mm/s] ! MB/AN : v3.7
+      forcinggrid%PRCPSHCV = 0.0        ! shallow convective precip entering  [mm/s]   ! MB/AN : v3.7
+      forcinggrid%PRCPSNOW = 0.0        ! snow entering land model [mm/s]              ! MB/AN : v3.7
+      forcinggrid%PRCPGRPL = 0.0        ! graupel entering land model [mm/s]           ! MB/AN : v3.7
+      forcinggrid%PRCPHAIL = 0.0        ! hail entering land model [mm/s]              ! MB/AN : v3.7
+      forcinggrid%THAIR    = 0.0        ! potential temperature (k)
+      forcinggrid%QAIR     = 0.0        ! specific humidity (kg/kg) (q2/(1+q2))
+      forcinggrid%EAIR     = 0.0        ! vapor pressure air (pa)
+      forcinggrid%RHOAIR   = 0.0        ! density air (kg/m3)
+      forcinggrid%SWDOWN   = 0.0        ! downward solar filtered by sun angle [w/m2]
+      forcinggrid%FPICE    = 0.0        ! fraction of ice                AJN
+      forcinggrid%JULIAN   = 0.0        ! Setting arbitrary julian day
+      forcinggrid%YEARLEN  = 365        ! Setting year to be normal (i.e. not a leap year)  
+      forcinggrid%FOLN     = 1.0        ! foliage nitrogen concentration (%); for now, set to nitrogen saturation
+      forcinggrid%TBOT     = 285.0      ! bottom condition for soil temperature [K]
 
       ! domain variables
       do ii = -namelist%nsnow+1, 0
@@ -287,17 +311,12 @@ contains
     noahowpgrid%UU(:,:)     = read_UU
 
   #endif
-      
-    !Initialize local instance of noahowp_type (noahowpgrid is needed to set z dim length. Or we could just pass nsoil and nsnow)
-    call noahowp%Init(noahowpgrid)
 
     !Iterate over x and y dimensions
     do ix = 1, noahowpgrid%n_x
       do iy = 1, noahowpgrid%n_y
 
-        !Give ix and iy to noahowp_type
-        noahowpgrid%ix = ix
-        noahowpgrid%iy = iy
+        
 
         !Transfer variable values from noahowpgrid_type to noahowp_type
         call DomainVarInTransfer       (noahowp, noahowpgrid)
