@@ -39,7 +39,8 @@ module DomainTypeTransfer
     domain%IST = domaingrid%IST(ix,iy)      
     domain%zsoil(:) = domaingrid%zsoil(ix,iy,:)    
     domain%dzsnso(:) = domaingrid%dzsnso(ix,iy,:)   
-    domain%zsnso(:) = domaingrid%zsnso(ix,iy,:)    
+    domain%zsnso(:) = domaingrid%zsnso(ix,iy,:)
+    domain%soilcolor = domaingrid%soilcolor(ix,iy)    
 
   end subroutine
 
