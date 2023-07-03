@@ -1,7 +1,6 @@
 module DomainType
 
   use NamelistRead, only: namelist_type
-  use DomainGridType
   use DateTimeUtilsModule
   
   implicit none
@@ -40,7 +39,6 @@ module DomainType
       procedure, public  :: Init         
       procedure, private :: InitAllocate 
       procedure, private :: InitDefault     
-      procedure, public  :: InitTransfer
   
   end type domain_type
   

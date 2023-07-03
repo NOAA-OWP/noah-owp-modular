@@ -85,8 +85,6 @@ module DomainGridType
   
       class(domaingrid_type) :: this
   
-      this%iloc                = huge(1)
-      this%jloc                = huge(1)
       this%dt                  = huge(1.0)
       this%startdate           = 'EMPTYDATE999'
       this%enddate             = 'EMPTYDATE999'
@@ -106,9 +104,9 @@ module DomainGridType
       this%croptype(:,:)       = huge(1)
       this%isltyp(:,:)         = huge(1)
       this%IST(:,:)            = huge(1)
-      this%zsoil(:,:)          = huge(1)
-      this%dzsnso(:,:)         = huge(1)
-      this%zsnso(:,:)          = huge(1)
+      this%zsoil(:,:,:)        = huge(1)
+      this%dzsnso(:,:,:)       = huge(1)
+      this%zsnso(:,:,:)        = huge(1)
 
     end subroutine InitDefault
   
@@ -117,30 +115,29 @@ module DomainGridType
       class(domaingrid_type)         :: this
       type(namelist_type),intent(in) :: namelist
       integer                        :: ii
-  
-      this%dt                  = namelist%dt
-      this%startdate           = namelist%startdate
-      this%enddate             = namelist%enddate
-      this%lat(:,:)            = namelist%lat
-      this%lon(:,:)            = namelist%lon
-      this%terrain_slope(:,:)  = namelist%terrain_slope
-      this%azimuth(:,:)        = namelist%azimuth
-      this%ZREF(:,:)           = namelist%ZREF
-      this%vegtyp(:,:)         = namelist%vegtyp
-      this%croptype(:,:)       = namelist%croptype
-      this%isltyp(:,:)         = namelist%isltyp
-      this%IST(:,:)            = namelist%sfctyp
-      this%start_datetime      = date_to_unix(namelist%startdate)  ! returns seconds-since-1970-01-01
-      this%end_datetime        = date_to_unix(namelist%enddate)
+
+      this%dt                   = namelist%dt
+      this%startdate            = namelist%startdate
+      this%enddate              = namelist%enddate
+      this%lat(:,:)             = namelist%lat
+      this%lon(:,:)             = namelist%lon
+      this%terrain_slope(:,:)   = namelist%terrain_slope
+      this%azimuth(:,:)         = namelist%azimuth
+      this%ZREF(:,:)            = namelist%ZREF
+      this%vegtyp(:,:)          = namelist%vegtyp
+      this%croptype(:,:)        = namelist%croptype
+      this%isltyp(:,:)          = namelist%isltyp
+      this%IST(:,:)             = namelist%sfctyp
+      this%start_datetime       = date_to_unix(namelist%startdate)  ! returns seconds-since-1970-01-01
+      this%end_datetime         = date_to_unix(namelist%enddate)
       do ii = 1, namelist%nsoil
-        this%zsoil(:,:,ii)     = namelist%zsoil(ii)
+        this%zsoil(:,:,ii)      = namelist%zsoil(ii)
       end do
       do ii = -namelist%nsnow+1, namelist%nsoil
-        this%dzsnso(:,:,ii)    = namelist%dzsnso(ii)
-        this%zsnso(:,:,ii)     = namelist%zsnso(ii)
+        this%dzsnso(:,:,ii)     = namelist%dzsnso(ii) 
       end do
 
     end subroutine InitTransfer
   
-  end module DomainType
+  end module DomainGridType
   

@@ -23,7 +23,6 @@ module DomainTypeTransfer
     domain%start_datetime = domaingrid%start_datetime  
     domain%end_datetime = domaingrid%end_datetime  
     domain%curr_datetime = domaingrid%sim_datetimes(domaingrid%itime)    
-    domain%sim_datetimes = domaingrid%sim_datetimes
     domain%itime = domaingrid%itime          
     domain%ntime = domaingrid%ntime          
     domain%time_dbl = domaingrid%time_dbl
@@ -42,8 +41,6 @@ module DomainTypeTransfer
     domain%dzsnso(:) = domaingrid%dzsnso(ix,iy,:)   
     domain%zsnso(:) = domaingrid%zsnso(ix,iy,:)    
 
-    end associate
-
   end subroutine
 
   subroutine DomainVarOutTransfer(domain, domaingrid, ix, iy)
@@ -55,15 +52,10 @@ module DomainTypeTransfer
     integer, intent(in)                  :: ix
     integer, intent(in)                  :: iy
 
-    associate(ix   => domaingrid%ix, &
-              iy   => domaingrid%iy)
-
     domaingrid%zsoil(ix,iy,:) = domain%zsoil(:) 
     domaingrid%dzsnso(ix,iy,:) = domain%dzsnso(:)  
     domaingrid%zsnso(ix,iy,:) = domain%zsnso(:)   
     domaingrid%nowdate = domain%nowdate !this needs to be kept here until nowdate is updated in domaingriddedDriverModule
-
-    end associate
 
   end subroutine DomainVarOutTransfer
 
