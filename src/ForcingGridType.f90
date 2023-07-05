@@ -56,8 +56,9 @@ contains
   subroutine Init(this)
 
     class(forcinggrid_type)    :: this
+    type(namelist_type)        :: namelist
 
-    call this%InitAllocate()
+    call this%InitAllocate(namelist)
     call this%InitDefault()
 
   end subroutine Init
@@ -67,33 +68,38 @@ contains
     class(forcinggrid_type)               :: this
     type(namelist_type),intent(in)        :: namelist
 
-    allocate(this%SFCPRS(namelist%n_x,namelist%n_y))
-    allocate(this%SFCTMP(namelist%n_x,namelist%n_y))
-    allocate(this%Q2(namelist%n_x,namelist%n_y))
-    allocate(this%PRCP(namelist%n_x,namelist%n_y))
-    allocate(this%PRCPCONV(namelist%n_x,namelist%n_y))
-    allocate(this%PRCPNONC(namelist%n_x,namelist%n_y))
-    allocate(this%PRCPSHCV(namelist%n_x,namelist%n_y))
-    allocate(this%PRCPSNOW(namelist%n_x,namelist%n_y))
-    allocate(this%PRCPGRPL(namelist%n_x,namelist%n_y))
-    allocate(this%PRCPHAIL(namelist%n_x,namelist%n_y))
-    allocate(this%SOLDN(namelist%n_x,namelist%n_y))
-    allocate(this%LWDN(namelist%n_x,namelist%n_y))
-    allocate(this%FOLN(namelist%n_x,namelist%n_y))
-    allocate(this%O2PP(namelist%n_x,namelist%n_y))
-    allocate(this%CO2PP(namelist%n_x,namelist%n_y))
-    allocate(this%UU(namelist%n_x,namelist%n_y))
-    allocate(this%VV(namelist%n_x,namelist%n_y))
-    allocate(this%TBOT(namelist%n_x,namelist%n_y))
-    allocate(this%UR(namelist%n_x,namelist%n_y))
-    allocate(this%THAIR(namelist%n_x,namelist%n_y))
-    allocate(this%QAIR(namelist%n_x,namelist%n_y))
-    allocate(this%EAIR(namelist%n_x,namelist%n_y))
-    allocate(this%RHOAIR(namelist%n_x,namelist%n_y))
-    allocate(this%FPICE(namelist%n_x,namelist%n_y))
-    allocate(this%SWDOWN(namelist%n_x,namelist%n_y))
-    allocate(this%SOLAD(namelist%n_x,namelist%n_y,2))
-    allocate(this%SOLAI(namelist%n_x,namelist%n_y,2))
+    associate(n_x => namelist%n_x, &
+              n_y => namelist%n_y)
+
+    allocate(this%SFCPRS(n_x,n_y))
+    allocate(this%SFCTMP(n_x,n_y))
+    allocate(this%Q2(n_x,n_y))
+    allocate(this%PRCP(n_x,n_y))
+    allocate(this%PRCPCONV(n_x,n_y))
+    allocate(this%PRCPNONC(n_x,n_y))
+    allocate(this%PRCPSHCV(n_x,n_y))
+    allocate(this%PRCPSNOW(n_x,n_y))
+    allocate(this%PRCPGRPL(n_x,n_y))
+    allocate(this%PRCPHAIL(n_x,n_y))
+    allocate(this%SOLDN(n_x,n_y))
+    allocate(this%LWDN(n_x,n_y))
+    allocate(this%FOLN(n_x,n_y))
+    allocate(this%O2PP(n_x,n_y))
+    allocate(this%CO2PP(n_x,n_y))
+    allocate(this%UU(n_x,n_y))
+    allocate(this%VV(n_x,n_y))
+    allocate(this%TBOT(n_x,n_y))
+    allocate(this%UR(n_x,n_y))
+    allocate(this%THAIR(n_x,n_y))
+    allocate(this%QAIR(n_x,n_y))
+    allocate(this%EAIR(n_x,n_y))
+    allocate(this%RHOAIR(n_x,n_y))
+    allocate(this%FPICE(n_x,n_y))
+    allocate(this%SWDOWN(n_x,n_y))
+    allocate(this%SOLAD(n_x,n_y,2))
+    allocate(this%SOLAI(n_x,n_y,2))
+
+    end associate
 
   end subroutine InitAllocate
 
@@ -142,4 +148,4 @@ contains
 
   end subroutine InitTransfer
 
-end module ForcingType
+end module ForcingGridType
