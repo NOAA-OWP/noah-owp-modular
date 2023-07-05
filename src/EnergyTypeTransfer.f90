@@ -148,7 +148,7 @@ module EnergyTypeTransfer
 
   end subroutine EnergyVarInTransfer
 
-  subroutine EnergyVarOutTransfer(energy, energygrid)
+  subroutine EnergyVarOutTransfer(energy, energygrid, ix, iy)
 
     implicit none
 
