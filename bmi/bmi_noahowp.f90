@@ -8,17 +8,14 @@ module bminoahowp
    use bmif_2_0
 #endif
 
-  use NoahowpGridTypeModule
-  use NoahowpReadNamelistModule
-  use OutputModule
-  use NoahowpGridDriverModule
+  use RunModule
   use, intrinsic :: iso_c_binding, only: c_ptr, c_loc, c_f_pointer
   
   implicit none
 
   type, extends (bmi) :: bmi_noahowp
      private
-     type(noahowpgrid_type) :: noahowpgrid
+     type(noahowpgrid_type) :: model
    contains
      procedure :: get_component_name => noahowp_component_name
      procedure :: get_input_item_count => noahowp_input_item_count
@@ -185,7 +182,7 @@ contains
     integer :: bmi_status
 
     if (len(config_file) > 0) then
-       call initialize_from_file(this%noahowpgrid,config_file)
+       call initialize_from_file(this%model,config_file)
     else
        !call initialize_from_defaults(this%model)
     end if
@@ -217,7 +214,7 @@ contains
     double precision, intent(out) :: time
     integer :: bmi_status
 
-    time = dble(this%noahowpgrid%ntime * this%noahowpgrid%dt)
+    time = dble(this%model%domaingrid%ntime * this%model%domaingrid%dt)
     bmi_status = BMI_SUCCESS
   end function noahowp_end_time
 
@@ -227,7 +224,7 @@ contains
     double precision, intent(out) :: time
     integer :: bmi_status
 
-    time = dble(this%noahowpgrid%time_dbl)
+    time = dble(this%model%domaingrid%time_dbl)
     bmi_status = BMI_SUCCESS
   end function noahowp_current_time
 
@@ -237,7 +234,7 @@ contains
     double precision, intent(out) :: time_step
     integer :: bmi_status
 
-    time_step = dble(this%noahowpgrid%dt)
+    time_step = dble(this%model%domaingrid%dt)
     bmi_status = BMI_SUCCESS
   end function noahowp_time_step
 
@@ -256,7 +253,7 @@ contains
     class (bmi_noahowp), intent(inout) :: this
     integer :: bmi_status
 
-    call NoahowpGridDriverMain(this%noahowpgrid)
+    call advance_in_time(this%model)
 
     bmi_status = BMI_SUCCESS
   end function noahowp_update
@@ -269,12 +266,12 @@ contains
     double precision :: n_steps_real
     integer :: n_steps, i, s
 
-    if (time < this%noahowpgrid%time_dbl) then
+    if (time < this%model%domaingrid%time_dbl) then
        bmi_status = BMI_FAILURE
        return
     end if
 
-    n_steps_real = (time - this%noahowpgrid%time_dbl) / this%noahowpgrid%dt
+    n_steps_real = (time - this%model%domaingrid%time_dbl) / this%model%domaingrid%dt
     n_steps = floor(n_steps_real)
     do i = 1, n_steps
        s = this%update()
@@ -336,48 +333,6 @@ contains
    case('TGS')
      grid = 15
      bmi_status = BMI_SUCCESS
-   case('lat')
-     grid = 16
-     bmi_status = BMI_SUCCESS
-   case('lon')
-     grid = 17
-     bmi_status = BMI_SUCCESS
-   case('terrain_slope')
-     grid = 18
-     bmi_status = BMI_SUCCESS
-   case('azimuth')
-     grid = 19
-     bmi_status = BMI_SUCCESS
-   case('vegtyp')
-     grid = 20
-     bmi_status = BMI_SUCCESS
-   case('croptype')
-     grid = 21
-     bmi_status = BMI_SUCCESS
-   case('isltyp')
-     grid = 22
-     bmi_status = BMI_SUCCESS
-   case('IST')
-     grid = 23
-     bmi_status = BMI_SUCCESS
-   case('soilcolor')
-     grid = 24
-     bmi_status = BMI_SUCCESS
-  case('smc')
-     grid = 25
-     bmi_status = BMI_SUCCESS
-  case('sice')
-     grid = 26
-     bmi_status = BMI_SUCCESS
-  case('sh2o')
-     grid = 27
-     bmi_status = BMI_SUCCESS
-  case('SNICE')
-     grid = 28
-     bmi_status = BMI_SUCCESS
-  case('SNLIQ')
-     grid = 29
-     bmi_status = BMI_SUCCESS
    case default
      grid = -1
      bmi_status = BMI_FAILURE
@@ -392,7 +347,7 @@ contains
    integer :: bmi_status
 
    select case(grid)
-   case(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29)
+   case(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
      type = "uniform_rectilinear"
      bmi_status = BMI_SUCCESS
    case(0)
@@ -412,12 +367,9 @@ contains
    integer :: bmi_status
 
    select case(grid)
-   case(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24)
+   case(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
       rank = 2
       bmi_status = BMI_SUCCESS
-   case(25,27,28,29)
-        rank = 3
-        bmi_status = BMI_SUCCESS
    case default
       rank = -1
       bmi_status = BMI_FAILURE
@@ -438,12 +390,9 @@ contains
 !        shape(:) = [this%model%n_y, this%model%n_x]
 !        bmi_status = BMI_SUCCESS
 
-   case(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24)
-      shape = [this%noahowpgrid%n_y, this%noahowpgrid%n_x]
+   case(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
+      shape = [this%model%namelist%n_y, this%model%namelist%n_x]
       bmi_status = BMI_SUCCESS
-   case(25,26,27,28,29)
-     shape = [this%noahowpgrid%nsoil,this%noahowpgrid%n_y, this%noahowpgrid%n_x]
-     bmi_status = BMI_SUCCESS
    case default
       shape(:) = -1
       bmi_status = BMI_FAILURE
@@ -458,8 +407,8 @@ contains
    integer :: bmi_status
 
    select case(grid)
-   case(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24)
-     size = this%noahowpgrid%n_x * this%noahowpgrid%n_y
+   case(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
+     size = this%model%namelist%n_x * this%model%namelist%n_y
      bmi_status = BMI_SUCCESS
    case(0)
       size = 1
@@ -654,12 +603,8 @@ contains
 
    select case(name)
    case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! forcing vars
-        'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS',    & ! output vars
-        'lat','lon','terrain_slope','azimuth')                               ! model setup vars
+        'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS')      ! output vars
       type = "real"
-      bmi_status = BMI_SUCCESS
-  case('vegtyp','croptype','isltyp','IST','soilcolor')
-      type = "integer"
       bmi_status = BMI_SUCCESS
    case default
       type = "-"
@@ -700,19 +645,11 @@ contains
    case("SNEQV")
       units = "mm"
       bmi_status = BMI_SUCCESS
-   case('lat','lon','terrain_slope')
-     units = 'degrees'
-     bmi_status = BMI_SUCCESS
-   case('azimuth')
-     units = 'degrees clockwise from north'
-     bmi_status = BMI_SUCCESS
-   case('vegtyp','croptype','isltyp','IST','soilcolor')
-     units = 'none'
-     bmi_status = BMI_SUCCESS
    case default
       units = "-"
       bmi_status = BMI_FAILURE
    end select
+
  end function noahowp_var_units
 
   ! Memory use per array element.
@@ -722,83 +659,63 @@ contains
    integer, intent(out) :: size
    integer :: bmi_status
 
+   associate(forcinggrid => this%model%forcinggrid, &
+             watergrid   => this%model%watergrid,   &
+             energygrid  => this%model%energygrid)
+
    select case(name)
    case("SFCPRS")
-      size = sizeof(this%noahowpgrid%sfcprs(1,1)) ! 'sizeof' in gcc & ifort
+      size = sizeof(forcinggrid%sfcprs(1,1)) ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("SFCTMP")
-      size = sizeof(this%noahowpgrid%sfctmp(1,1))             ! 'sizeof' in gcc & ifort
+      size = sizeof(forcinggrid%sfctmp(1,1))             ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("SOLDN")
-      size = sizeof(this%noahowpgrid%soldn(1,1))                ! 'sizeof' in gcc & ifort
+      size = sizeof(forcinggrid%soldn(1,1))                ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("LWDN")
-      size = sizeof(this%noahowpgrid%lwdn(1,1))                ! 'sizeof' in gcc & ifort
+      size = sizeof(forcinggrid%lwdn(1,1))                ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("UU")
-      size = sizeof(this%noahowpgrid%uu(1,1))                ! 'sizeof' in gcc & ifort
+      size = sizeof(forcinggrid%uu(1,1))                ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("VV")
-      size = sizeof(this%noahowpgrid%vv(1,1))                ! 'sizeof' in gcc & ifort
+      size = sizeof(forcinggrid%vv(1,1))                ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("Q2")
-      size = sizeof(this%noahowpgrid%q2(1,1))                ! 'sizeof' in gcc & ifort
+      size = sizeof(forcinggrid%q2(1,1))                ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("PRCPNONC")
-      size = sizeof(this%noahowpgrid%prcpnonc(1,1))                ! 'sizeof' in gcc & ifort
+      size = sizeof(forcinggrid%prcpnonc(1,1))                ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("QINSUR")
-      size = sizeof(this%noahowpgrid%qinsur(1,1))                ! 'sizeof' in gcc & ifort
+      size = sizeof(watergrid%qinsur(1,1))                ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("ETRAN")
-      size = sizeof(this%noahowpgrid%etran(1,1))                ! 'sizeof' in gcc & ifort
+      size = sizeof(watergrid%etran(1,1))                ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("QSEVA")
-      size = sizeof(this%noahowpgrid%qseva(1,1))                ! 'sizeof' in gcc & ifort
+      size = sizeof(watergrid%qseva(1,1))                ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("EVAPOTRANS")
-      size = sizeof(this%noahowpgrid%evapotrans(1,1))            ! 'sizeof' in gcc & ifort
+      size = sizeof(watergrid%evapotrans(1,1))            ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("TG")
-      size = sizeof(this%noahowpgrid%tg(1,1))            ! 'sizeof' in gcc & ifort
+      size = sizeof(energygrid%tg(1,1))            ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("SNEQV")
-      size = sizeof(this%noahowpgrid%sneqv(1,1))            ! 'sizeof' in gcc & ifort
+      size = sizeof(watergrid%sneqv(1,1))            ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("TGS")
-      size = sizeof(this%noahowpgrid%tgs(1,1))            ! 'sizeof' in gcc & ifort
-      bmi_status = BMI_SUCCESS
-   case("lat")
-      size = sizeof(this%noahowpgrid%lat(1,1))    
-      bmi_status = BMI_SUCCESS
-   case("lon")
-      size = sizeof(this%noahowpgrid%lon(1,1))    
-      bmi_status = BMI_SUCCESS    
-   case("terrain_slope")
-      size = sizeof(this%noahowpgrid%terrain_slope(1,1))    
-      bmi_status = BMI_SUCCESS
-   case("azimuth")
-      size = sizeof(this%noahowpgrid%azimuth(1,1))    
-      bmi_status = BMI_SUCCESS  
-   case("vegtyp")
-      size = sizeof(this%noahowpgrid%vegtyp(1,1))    
-      bmi_status = BMI_SUCCESS
-   case("croptype")
-      size = sizeof(this%noahowpgrid%croptype(1,1))    
-      bmi_status = BMI_SUCCESS    
-   case("isltyp")
-      size = sizeof(this%noahowpgrid%isltyp(1,1))    
-      bmi_status = BMI_SUCCESS
-   case("IST")
-      size = sizeof(this%noahowpgrid%IST(1,1))    
-      bmi_status = BMI_SUCCESS
-   case("soilcolor")
-      size = sizeof(this%noahowpgrid%soilcolor(1,1))    
+      size = sizeof(energygrid%tgs(1,1))            ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case default
       size = -1
       bmi_status = BMI_FAILURE
    end select
+
+   end associate
+
   end function noahowp_var_itemsize
 
   ! The size of the given variable.
@@ -844,21 +761,6 @@ contains
    integer :: bmi_status
 
    select case(name)
-   case("vegtyp")
-     dest = reshape(this%noahowpgrid%vegtyp,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
-     bmi_status = BMI_SUCCESS
-   case("croptype")
-     dest = reshape(this%noahowpgrid%croptype,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
-     bmi_status = BMI_SUCCESS    
-   case("isltyp")
-     dest = reshape(this%noahowpgrid%isltyp,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
-     bmi_status = BMI_SUCCESS
-   case("IST")
-     dest = reshape(this%noahowpgrid%IST,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
-     bmi_status = BMI_SUCCESS
-   case("soilcolor")
-     dest = reshape(this%noahowpgrid%soilcolor,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
-     bmi_status = BMI_SUCCESS
 !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR INTEGER VARS =================
 !     case("model__identification_number")
 !        dest = [this%model%id]
@@ -876,73 +778,67 @@ contains
    real, intent(inout) :: dest(:)
    integer :: bmi_status, ix, iy, iz, iflat, n_x, n_y, n_z
 
+   associate(forcinggrid => this%model%forcinggrid, &
+             watergrid   => this%model%watergrid,   &
+             energygrid  => this%model%energygrid,  &
+             n_x         => this%model%namelist%n_x, &
+             n_y         => this%model%namelist%n_y)
+
    select case(name)
    case("SFCPRS")
-      dest = reshape(this%noahowpgrid%sfcprs,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
+      dest = reshape(forcinggrid%sfcprs,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("SFCTMP")
-      dest = reshape(this%noahowpgrid%sfctmp,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
+      dest = reshape(forcinggrid%sfctmp,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("SOLDN")
-      dest = reshape(this%noahowpgrid%soldn,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
+      dest = reshape(forcinggrid%soldn,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("LWDN")
-      dest = reshape(this%noahowpgrid%lwdn,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
+      dest = reshape(forcinggrid%lwdn,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("UU")
-      dest = reshape(this%noahowpgrid%uu,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
+      dest = reshape(forcinggrid%uu,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("VV")
-      dest = reshape(this%noahowpgrid%vv,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
+      dest = reshape(forcinggrid%vv,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("Q2")
-      dest = reshape(this%noahowpgrid%q2,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
+      dest = reshape(forcinggrid%q2,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("PRCPNONC")
-      dest = reshape(this%noahowpgrid%prcpnonc,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
+      dest = reshape(forcinggrid%prcpnonc,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("QINSUR")
-      dest = reshape(this%noahowpgrid%qinsur,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
+      dest = reshape(watergrid%qinsur,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("ETRAN")
-      dest = reshape(this%noahowpgrid%etran,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
+      dest = reshape(watergrid%etran,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("QSEVA")
-      dest = reshape(this%noahowpgrid%qseva,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
+      dest = reshape(watergrid%qseva,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("EVAPOTRANS")
-      dest = reshape(this%noahowpgrid%evapotrans,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
+      dest = reshape(watergrid%evapotrans,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("TG")
-      dest = reshape(this%noahowpgrid%tg,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
+      dest = reshape(energygrid%tg,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("SNEQV")
-      dest = reshape(this%noahowpgrid%sneqv,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
+      dest = reshape(watergrid%sneqv,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("TGS")
-      dest = reshape(this%noahowpgrid%tgs,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
+      dest = reshape(energygrid%tgs,[n_x*n_y])
       bmi_status = BMI_SUCCESS
-   case("lat")
-      dest = reshape(this%noahowpgrid%lat,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
-      bmi_status = BMI_SUCCESS
-   case("lon")
-      dest = reshape(this%noahowpgrid%lon,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
-      bmi_status = BMI_SUCCESS
-   case("terrain_slope")
-      dest = reshape(this%noahowpgrid%terrain_slope,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
-      bmi_status = BMI_SUCCESS
-   case("azimuth")
-      dest = reshape(this%noahowpgrid%azimuth,[this%noahowpgrid%n_x*this%noahowpgrid%n_y])
-      bmi_status = BMI_SUCCESS
-   case("smc")
-     dest = reshape(this%noahowpgrid%smc,[this%noahowpgrid%n_x*this%noahowpgrid%n_y*this%noahowpgrid%nsoil])
-     bmi_status = BMI_SUCCESS
    case default
       dest(:) = -1.0
       bmi_status = BMI_FAILURE
    end select
    ! NOTE, if vars are gridded, then use:
    ! dest = reshape(this%model%temperature, [this%model%n_x*this%model%n_y]) 
+
+   end associate
+
  end function noahowp_get_float
 
   ! Get a copy of a double variable's values, flattened.
@@ -1081,21 +977,6 @@ contains
       !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR INTEGER VARS =================
   
       select case(name)
-      case('vegtyp')
-        this%noahowpgrid%vegtyp = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
-        bmi_status = BMI_SUCCESS
-      case('croptype')
-        this%noahowpgrid%croptype = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
-        bmi_status = BMI_SUCCESS
-      case('isltyp')
-        this%noahowpgrid%isltyp = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
-        bmi_status = BMI_SUCCESS
-      case('IST')
-        this%noahowpgrid%IST = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
-        bmi_status = BMI_SUCCESS
-      case('soilcolor')
-        this%noahowpgrid%soilcolor = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
-        bmi_status = BMI_SUCCESS
   !     case("model__identification_number")
   !        this%model%id = src(1)
   !        bmi_status = BMI_SUCCESS
@@ -1111,72 +992,65 @@ contains
    real, intent(in) :: src(:)
    integer :: bmi_status
 
+   associate(forcinggrid => this%model%forcinggrid,  &
+             watergrid   => this%model%watergrid,    &
+             energygrid  => this%model%energygrid,   &
+             n_x         => this%model%namelist%n_x, &
+             n_y         => this%model%namelist%n_y)
+
    select case(name)
    case("SFCPRS")
-     this%noahowpgrid%sfcprs = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
+      forcinggrid%sfcprs = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("SFCTMP")
-     this%noahowpgrid%sfctmp = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
+      forcinggrid%sfctmp = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("SOLDN")
-     this%noahowpgrid%soldn = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
+      forcinggrid%soldn = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("LWDN")
-     this%noahowpgrid%lwdn = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
+      forcinggrid%lwdn = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("UU")
-     this%noahowpgrid%uu = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
+      forcinggrid%uu = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("VV")
-     this%noahowpgrid%vv = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
+      forcinggrid%vv = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("Q2")
-     this%noahowpgrid%q2 = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
+      forcinggrid%q2 = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("PRCPNONC")
-     this%noahowpgrid%prcpnonc = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
+      forcinggrid%prcpnonc = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("QINSUR")
-     this%noahowpgrid%qinsur = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
+      watergrid%qinsur = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("ETRAN")
-     this%noahowpgrid%etran = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
+      watergrid%etran = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("QSEVA")
-     this%noahowpgrid%qseva = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
+      watergrid%qseva = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("EVAPOTRANS")
-     this%noahowpgrid%evapotrans = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
+      watergrid%evapotrans = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("TG")
-     this%noahowpgrid%tg = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
+      energygrid%tg = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("SNEQV")
-     this%noahowpgrid%sneqv = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
+      watergrid%sneqv = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("TGS")
-     this%noahowpgrid%tgs = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
+      energygrid%tgs = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
-   case("terrain_slope")
-     this%noahowpgrid%terrain_slope = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
-      bmi_status = BMI_SUCCESS
-   case("azimuth")
-     this%noahowpgrid%azimuth = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
-      bmi_status = BMI_SUCCESS
-   case("lat")
-     this%noahowpgrid%lat = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
-      bmi_status = BMI_SUCCESS
-   case("lon")
-     this%noahowpgrid%lon = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y])
-      bmi_status = BMI_SUCCESS
-   case("smc")
-     this%noahowpgrid%smc = reshape(src,[this%noahowpgrid%n_x,this%noahowpgrid%n_y,this%noahowpgrid%nsoil])
-     bmi_status = BMI_SUCCESS
    case default
       bmi_status = BMI_FAILURE
    end select
    ! NOTE, if vars are gridded, then use:
    ! this%model%temperature = reshape(src, [this%model%n_y, this%model%n_x])
+   end associate
+
  end function noahowp_set_float
 
   ! Set new double values.
