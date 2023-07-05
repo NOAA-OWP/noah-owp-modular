@@ -60,10 +60,15 @@ module DomainType
       class(domain_type) :: this
       type(namelist_type) :: namelist
   
-      allocate(this%zsoil (namelist%nsoil))  ; this%zsoil  (:)   = huge(1.0)
-      allocate(this%dzsnso(-namelist%nsnow+1:namelist%nsoil))  ; this%dzsnso (:)   = huge(1.0)
-      allocate(this%zsnso(-namelist%nsnow+1:namelist%nsoil))  ; this%zsnso (:)   = huge(1.0)
+      associate(nsoil => namelist%nsoil, &
+                nsnow => namelist%nsnow)
+
+      if(.NOT.allocated(this%zsoil))  allocate(this%zsoil  (nsoil))
+      if(.NOT.allocated(this%dzsnso)) allocate(this%dzsnso (-nsnow+1:nsoil))
+      if(.NOT.allocated(this%zsnso))  allocate(this%zsnso  (-nsnow+1:nsoil))
   
+      end associate
+
     end subroutine InitAllocate
   
     subroutine InitDefault(this)
@@ -91,6 +96,10 @@ module DomainType
       this%croptype       = huge(1)
       this%isltyp         = huge(1)
       this%IST            = huge(1)
+      this%soilcolor      = huge(1)
+      this%zsoil(:)       = huge(1.0)
+      this%dzsnso(:)      = huge(1.0)
+      this%zsnso(:)       = huge(1.0)
   
     end subroutine InitDefault
   

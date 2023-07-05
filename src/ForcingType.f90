@@ -65,8 +65,8 @@ contains
 
     class(forcing_type) :: this
 
-    allocate(this%SOLAD (2)); this%SOLAD(:) = huge(1.0) 
-    allocate(this%SOLAI (2)); this%SOLAI(:) = huge(1.0) 
+    if(.NOT.allocated(this%SOLAD)) allocate(this%SOLAD (2))
+    if(.NOT.allocated(this%SOLAI)) allocate(this%SOLAI (2))
 
   end subroutine InitAllocate
 
