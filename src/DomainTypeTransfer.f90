@@ -13,8 +13,8 @@ module DomainTypeTransfer
 
     type(domain_type),     intent(inout) :: domain
     type(domaingrid_type), intent(in)    :: domaingrid
-    integer, intent(in)                  :: ix
-    integer, intent(in)                  :: iy
+    integer,               intent(in)    :: ix
+    integer,               intent(in)    :: iy
 
     domain%DT = domaingrid%DT
     domain%startdate = domaingrid%startdate 

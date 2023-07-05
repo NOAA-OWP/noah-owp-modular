@@ -158,7 +158,7 @@ contains
 
   subroutine InitDefault(this)
 
-    class(optionsgrid_type), intent(out) :: this
+    class(optionsgrid_type) :: this
 
     this%opt_snf(:,:)   = huge(1)
     this%opt_run(:,:)   = huge(1)
