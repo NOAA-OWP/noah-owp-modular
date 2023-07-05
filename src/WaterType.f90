@@ -1,6 +1,6 @@
 module WaterType
 
-use NoahowpGridTypeModule
+use NamelistRead, only: namelist_type
 
 implicit none
 save
@@ -89,36 +89,41 @@ end type water_type
 
 contains   
 
-  subroutine Init(this, noahowpgrid)
+  subroutine Init(this, namelist)
 
-    class(water_type)                     :: this
-    type(noahowpgrid_type), intent(in)    :: noahowpgrid
+    class(water_type)         :: this
+    type(namelist_type)       :: namelist
 
-    call this%InitAllocate(noahowpgrid)
+    call this%InitAllocate(namelist)
     call this%InitDefault()
 
   end subroutine Init
 
-  subroutine InitAllocate(this, noahowpgrid)
+  subroutine InitAllocate(this, namelist)
 
-    class(water_type) :: this
-    type(noahowpgrid_type), intent(in)    :: noahowpgrid
+    class(water_type)         :: this
+    type(namelist_type)       :: namelist
 
-    allocate(this%smc     (noahowpgrid%nsoil))
-    allocate(this%smc_init(noahowpgrid%nsoil))
-    allocate(this%sice    (noahowpgrid%nsoil))
-    allocate(this%sh2o    (noahowpgrid%nsoil))
-    allocate(this%etrani  (noahowpgrid%nsoil))
-    allocate(this%btrani  (noahowpgrid%nsoil))
-    allocate(this%wcnd    (noahowpgrid%nsoil))
-    allocate(this%fcr     (noahowpgrid%nsoil))
-    allocate(this%FICEOLD (-noahowpgrid%nsnow+1:0))
-    allocate(this%SNICE   (-noahowpgrid%nsnow+1:0))
-    allocate(this%SNLIQ   (-noahowpgrid%nsnow+1:0))
-    allocate(this%SNICEV  (-noahowpgrid%nsnow+1:0))
-    allocate(this%SNLIQV  (-noahowpgrid%nsnow+1:0))
-    allocate(this%FICE    (-noahowpgrid%nsnow+1:0))
-    allocate(this%EPORE   (-noahowpgrid%nsnow+1:0))
+    associate(nsoil => namelist%nsoil, &
+              nsnow => namelist%nsnow)
+
+    allocate(this%smc     (nsoil))
+    allocate(this%smc_init(nsoil))
+    allocate(this%sice    (nsoil))
+    allocate(this%sh2o    (nsoil))
+    allocate(this%etrani  (nsoil))
+    allocate(this%btrani  (nsoil))
+    allocate(this%wcnd    (nsoil))
+    allocate(this%fcr     (nsoil))
+    allocate(this%FICEOLD (-nsnow+1:0))
+    allocate(this%SNICE   (-nsnow+1:0))
+    allocate(this%SNLIQ   (-nsnow+1:0))
+    allocate(this%SNICEV  (-nsnow+1:0))
+    allocate(this%SNLIQV  (-nsnow+1:0))
+    allocate(this%FICE    (-nsnow+1:0))
+    allocate(this%EPORE   (-nsnow+1:0))
+
+    end associate
 
   end subroutine InitAllocate
 
