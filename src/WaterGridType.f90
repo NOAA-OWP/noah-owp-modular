@@ -104,9 +104,9 @@ contains
     class(watergrid_type) :: this
     type(namelist_type)                   :: namelist
 
-    associate(n_x   => namelist%n_x,
-              n_y   => namelist%n_y,
-              nsoil => namelist%nsoil,
+    associate(n_x   => namelist%n_x,   &
+              n_y   => namelist%n_y,   &
+              nsoil => namelist%nsoil, &
               nsnow => namelist%nsnow)
 
     allocate(this%qinsur(n_x,n_y))
@@ -275,4 +275,4 @@ contains
     
   end subroutine InitTransfer
 
-end module WaterType
+end module WaterGridType
