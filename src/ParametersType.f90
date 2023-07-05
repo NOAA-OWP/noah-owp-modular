@@ -169,14 +169,18 @@ module ParametersType
       class(parameters_type)            :: this
       class(namelist_type), intent(in)  :: namelist
   
-      allocate(this%bexp   (namelist%nsoil))  ; this%bexp   (:) = huge(1.0)
-      allocate(this%smcmax (namelist%nsoil))  ; this%smcmax (:) = huge(1.0)
-      allocate(this%smcwlt (namelist%nsoil))  ; this%smcwlt (:) = huge(1.0)
-      allocate(this%smcref (namelist%nsoil))  ; this%smcref (:) = huge(1.0)
-      allocate(this%dksat  (namelist%nsoil))  ; this%dksat  (:) = huge(1.0)
-      allocate(this%dwsat  (namelist%nsoil))  ; this%dwsat  (:) = huge(1.0)
-      allocate(this%psisat (namelist%nsoil))  ; this%psisat (:) = huge(1.0)
-  
+      associate(nsoil => namelist%nsoil)
+
+      if(.NOT.allocated(this%bexp))   allocate(this%bexp   (nsoil))
+      if(.NOT.allocated(this%smcmax)) allocate(this%smcmax (nsoil))
+      if(.NOT.allocated(this%smcwlt)) allocate(this%smcwlt (nsoil))
+      if(.NOT.allocated(this%smcref)) allocate(this%smcref (nsoil))
+      if(.NOT.allocated(this%dksat))  allocate(this%dksat  (nsoil))
+      if(.NOT.allocated(this%dwsat))  allocate(this%dwsat  (nsoil))
+      if(.NOT.allocated(this%psisat)) allocate(this%psisat (nsoil))
+      
+      end associate
+
     end subroutine InitAllocate
   
     subroutine InitDefault(this)
@@ -191,6 +195,13 @@ module ParametersType
       this%VAI        = huge(1.0)
       this%VEG        = .true.
       this%FVEG       = huge(1.0)
+      this%bexp(:)    = huge(1.0)
+      this%smcmax(:)  = huge(1.0)
+      this%smcwlt(:)  = huge(1.0)
+      this%smcref(:)  = huge(1.0)
+      this%dksat(:)   = huge(1.0)
+      this%dwsat(:)   = huge(1.0)
+      this%psisat(:)  = huge(1.0)
   
     end subroutine InitDefault
   

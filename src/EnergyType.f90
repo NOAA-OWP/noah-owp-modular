@@ -182,32 +182,37 @@ module EnergyType
       class(energy_type) :: this
       type(namelist_type) :: namelist
   
-      allocate(this%IMELT (-namelist%nsnow+1:namelist%nsoil)); this%IMELT(:) = huge(1)
-      allocate(this%STC   (-namelist%nsnow+1:namelist%nsoil)); this%STC(:)   = huge(1.0)
-      allocate(this%DF    (-namelist%nsnow+1:namelist%nsoil)); this%DF(:)    = huge(1.0)
-      allocate(this%HCPCT (-namelist%nsnow+1:namelist%nsoil)); this%HCPCT(:) = huge(1.0)
-      allocate(this%FACT  (-namelist%nsnow+1:namelist%nsoil)); this%FACT(:)  = huge(1.0)
-      
-      allocate(this%ALBD (1:2)); this%ALBD(:)      = huge(1.0) 
-      allocate(this%ALBI (1:2)); this%ALBI(:)      = huge(1.0) 
-      allocate(this%ALBGRD (1:2)); this%ALBGRD(:)  = huge(1.0) 
-      allocate(this%ALBGRI (1:2)); this%ALBGRI(:)  = huge(1.0) 
-      allocate(this%ALBSND (1:2)); this%ALBSND(:)  = huge(1.0) 
-      allocate(this%ALBSNI (1:2)); this%ALBSNI(:)  = huge(1.0) 
-      
-      allocate(this%FABD (1:2)); this%FABD(:)      = huge(1.0) 
-      allocate(this%FABI (1:2)); this%FABI(:)      = huge(1.0) 
-      allocate(this%FTDD (1:2)); this%FTDD(:)      = huge(1.0) 
-      allocate(this%FTDI (1:2)); this%FTDI(:)      = huge(1.0) 
-      allocate(this%FTID (1:2)); this%FTID(:)      = huge(1.0) 
-      allocate(this%FTII (1:2)); this%FTII(:)      = huge(1.0) 
-      allocate(this%FREVD (1:2)); this%FREVD(:)    = huge(1.0) 
-      allocate(this%FREVI (1:2)); this%FREVI(:)    = huge(1.0) 
-      allocate(this%FREGD (1:2)); this%FREGD(:)    = huge(1.0) 
-      allocate(this%FREGI (1:2)); this%FREGI(:)    = huge(1.0) 
-      allocate(this%RHO (1:2)); this%RHO(:)        = huge(1.0) 
-      allocate(this%TAU (1:2)); this%TAU(:)        = huge(1.0) 
+      associate(nsnow => namelist%nsnow, &
+                nsoil => namelist%nsoil)
+
+      if(.NOT.allocated(this%IMELT))  allocate(this%IMELT   (-nsnow+1:nsoil))
+      if(.NOT.allocated(this%STC))    allocate(this%STC     (-nsnow+1:nsoil))
+      if(.NOT.allocated(this%DF))     allocate(this%DF      (-nsnow+1:nsoil))
+      if(.NOT.allocated(this%HCPCT))  allocate(this%HCPCT   (-nsnow+1:nsoil))
+      if(.NOT.allocated(this%FACT))   allocate(this%FACT    (-nsnow+1:nsoil))
+
+      if(.NOT.allocated(this%ALBD))   allocate(this%ALBD    (2))
+      if(.NOT.allocated(this%ALBI))   allocate(this%ALBI    (2))
+      if(.NOT.allocated(this%ALBGRD)) allocate(this%ALBGRD  (2))
+      if(.NOT.allocated(this%ALBGRI)) allocate(this%ALBGRI  (2))
+      if(.NOT.allocated(this%ALBSND)) allocate(this%ALBSND  (2))
+      if(.NOT.allocated(this%ALBSNI)) allocate(this%ALBSNI  (2))
+
+      if(.NOT.allocated(this%FABD))   allocate(this%FABD    (2))
+      if(.NOT.allocated(this%FABI))   allocate(this%FABI    (2))
+      if(.NOT.allocated(this%FTDD))   allocate(this%FTDD    (2))
+      if(.NOT.allocated(this%FTDI))   allocate(this%FTDI    (2))
+      if(.NOT.allocated(this%FTID))   allocate(this%FTID    (2))
+      if(.NOT.allocated(this%FTII))   allocate(this%FTII    (2))
+      if(.NOT.allocated(this%FREVD))  allocate(this%FREVD   (2))
+      if(.NOT.allocated(this%FREVI))  allocate(this%FREVI   (2))
+      if(.NOT.allocated(this%FREGD))  allocate(this%FREGD   (2))
+      if(.NOT.allocated(this%FREGI))  allocate(this%FREGI   (2))
+      if(.NOT.allocated(this%RHO))    allocate(this%RHO     (2))
+      if(.NOT.allocated(this%TAU))    allocate(this%TAU     (2))
   
+      end associate
+
     end subroutine InitAllocate
   
     subroutine InitDefault(this)
@@ -326,10 +331,33 @@ module EnergyType
   
       this%LH        = huge(1.0)    
       this%TGS       = huge(1.0)    
-      
       this%ICE       = huge(1)    
       
-      
+      this%IMELT(:)  = huge(1)
+      this%STC(:)    = huge(1.0)
+      this%DF(:)     = huge(1.0)
+      this%HCPCT(:)  = huge(1.0)
+      this%FACT(:)   = huge(1.0)
+
+      this%ALBD(:)    = huge(1.0)
+      this%ALBI(:)    = huge(1.0)
+      this%ALBGRD(:)    = huge(1.0)
+      this%ALBGRI(:)    = huge(1.0)
+      this%ALBSND(:)    = huge(1.0)
+      this%ALBSNI(:)    = huge(1.0)
+
+      this%FABD(:)    = huge(1.0)
+      this%FABI(:)    = huge(1.0)
+      this%FTDD(:)    = huge(1.0)
+      this%FTDI(:)    = huge(1.0)
+      this%FTID(:)    = huge(1.0)
+      this%FTII(:)    = huge(1.0)
+      this%FREVD(:)    = huge(1.0)
+      this%FREVI(:)    = huge(1.0)
+      this%FREGD(:)    = huge(1.0)
+      this%FREGI(:)    = huge(1.0)
+      this%RHO(:)    = huge(1.0)
+      this%TAU(:)    = huge(1.0)
       
     end subroutine InitDefault
   
