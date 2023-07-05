@@ -293,7 +293,8 @@ contains
     real                                  :: read_SOLDN, read_LWDN, read_PRCP                    !to read in forcing
     integer                               :: idt                                                 !to iterate nowdate
 
-    associate(domain         => noahowp%domain,             &
+    associate(namelist       => noahowpgrid%namelist,       &
+              domain         => noahowp%domain,             &
               levels         => noahowp%levels,             &
               energy         => noahowp%energy,             &
               forcing        => noahowp%forcing,            &
@@ -340,6 +341,14 @@ contains
     do ix = 1, noahowpgrid%namelist%n_x
       do iy = 1, noahowpgrid%namelist%n_y
 
+        !Reinitialize column model variables
+        call levels%Init()
+        call domain%Init(namelist)
+        call options%Init()
+        call parameters%Init(namelist)
+        call forcing%Init()
+        call energy%Init(namelist)
+        call water%Init(namelist)
 
         !Transfer variable values from noahowpgrid_type to noahowp_type
         call DomainVarInTransfer       (domain,     domaingrid,     ix, iy)
