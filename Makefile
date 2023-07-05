@@ -5,8 +5,8 @@
 
 all: user_build_options
 	(cd src;		make)
-	(cd driver;		make)
 	(cd bmi;		make)
+	(cd driver;		make)
 	(cd run;		make)
 
 clean:
@@ -17,8 +17,8 @@ clean:
 
 testBMI:
 	(cd src;		make)
-	(cd driver;		make)
 	(cd bmi;		make)
+	(cd driver;		make)
 	(cd test;		make)
 
 testBMI_clean:
