@@ -47,13 +47,14 @@ real, allocatable, dimension(:,:,:)               :: SOLAI  !incoming diffuse so
 
     procedure, public  :: Init         
     procedure, private :: InitAllocate        
-    procedure, private :: InitDefault     
+    procedure, private :: InitDefault
+    procedure, public  :: InitTransfer     
 
 end type
 
 contains   
 
-  subroutine Init(this)
+  subroutine Init(this,namelist)
 
     class(forcinggrid_type)    :: this
     type(namelist_type)        :: namelist

@@ -110,7 +110,7 @@ type, public :: optionsgrid_type
     procedure, public  :: Init         
     procedure, private :: InitDefault     
     procedure, private :: InitAllocate     
-    procedure, private :: InitTransfer 
+    procedure, public  :: InitTransfer 
 
 end type optionsgrid_type
 

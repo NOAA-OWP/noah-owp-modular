@@ -7,15 +7,16 @@ private
 
 type, public :: levelsgrid_type
 
-  integer, allocatable, dimension(:,:) :: nsoil  ! number of soil layers
-  integer, allocatable, dimension(:,:) :: nsnow  ! number of snow layers
-  integer                              :: nveg   ! number of vegetation types in chosen table
+  integer :: nsoil  ! number of soil layers
+  integer :: nsnow  ! number of snow layers
+  integer :: nveg   ! number of vegetation types in chosen table
 
   contains
 
     procedure, public  :: Init         
     procedure, private :: InitDefault  
-    procedure, private :: InitAllocate       
+    procedure, private :: InitAllocate
+    procedure, public  :: InitTransfer       
 
 end type
 
@@ -36,13 +37,7 @@ contains
     class(levelsgrid_type)          :: this
     type(namelist_type),intent(in)  :: namelist
 
-    associate(n_x => namelist%n_x, &
-             n_y => namelist%n_y)
-
-    allocate(this%nsoil(n_x,n_y))
-    allocate(this%nsnow(n_x,n_y))
-
-    end associate
+    ! Nothing to do
 
   end subroutine InitAllocate
 
@@ -50,9 +45,9 @@ contains
 
     class(levelsgrid_type) :: this
 
-    this%nsoil(:,:)  = huge(1)
-    this%nsnow(:,:)  = huge(1)
-    this%nveg        = huge(1)    
+    this%nsoil = huge(1)
+    this%nsnow = huge(1)
+    this%nveg  = huge(1)    
 
   end subroutine InitDefault
 
@@ -61,9 +56,9 @@ contains
     class(levelsgrid_type)          :: this
     type(namelist_type),intent(in)  :: namelist
 
-    this%nsoil(:,:)  = namelist%nsoil
-    this%nsnow(:,:)  = namelist%nsnow
-    this%nveg        = namelist%nveg    
+    this%nsoil = namelist%nsoil
+    this%nsnow = namelist%nsnow
+    this%nveg  = namelist%nveg    
 
   end subroutine InitTransfer
 

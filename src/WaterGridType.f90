@@ -84,6 +84,7 @@ type, public :: watergrid_type
     procedure, public  :: Init         
     procedure, private :: InitAllocate 
     procedure, private :: InitDefault     
+    procedure, public  :: InitTransfer
 
 end type watergrid_type
 
