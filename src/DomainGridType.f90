@@ -74,6 +74,7 @@ module DomainGridType
       allocate(this%croptype        (n_x,n_y))
       allocate(this%isltyp          (n_x,n_y))
       allocate(this%IST             (n_x,n_y))
+      allocate(this%soilcolor       (n_x,n_y))
       allocate(this%zsoil           (n_x,n_y,nsoil))                   
       allocate(this%dzsnso          (n_x,n_y,-nsnow+1:nsoil)) 
       allocate(this%zsnso           (n_x,n_y,-nsnow+1:nsoil)) 
@@ -129,6 +130,7 @@ module DomainGridType
       this%croptype(:,:)        = namelist%croptype
       this%isltyp(:,:)          = namelist%isltyp
       this%IST(:,:)             = namelist%sfctyp
+      this%soilcolor(:,:)       = namelist%soilcolor
       this%start_datetime       = date_to_unix(namelist%startdate)  ! returns seconds-since-1970-01-01
       this%end_datetime         = date_to_unix(namelist%enddate)
       do ii = 1, namelist%nsoil
