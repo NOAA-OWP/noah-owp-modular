@@ -1,8 +1,8 @@
 # Noah-OWP-Modular
 
-This repo contains an extended, refactored version of the Noah-MP land surface model, adapted from the single-file source code: <https://github.com/NCAR/noahmp/>. In order to ease readability, adaptability, and interoperability, the model has been broken out into a series of modules and data types that represent various components of model information and parameters as well as the energy and water balances.
+This repo contains an extended, gridded version of the Noah-MP land surface model, adapted from NOAA OWP's previously refactored Noah-MP column model (https://github.com/NOAA-OWP/noah-owp-modular).  
 
-There is currently one core version being developed from the original code (branched as of early to mid 2021). This is the modularized model with a full set of hydrologic subroutines and components (initially excluding crop and carbon). The model driver is reformulated to use function calls from the Basic Model Interface, and to accept compiler directives to be compatible with running within the NOAA-NWS Office of Water Prediction Nextgen modeling framework. In addition, a subsurface option has been added to allow running the model with the original Noah-MP subsurface or with alternative subsurface treatments.  
+This gridded version of the Noah-MP land surface model contains a full set of hydrologic subroutines and components (initially excluding crop and carbon). This version of the Noah-MP land surface model also includes Basic Model Interface (BMI) functions and compiler directives to be compatible with the NOAA-NWS Office of Water Prediction Nextgen modeling framework. 
 
 Noah-OWP-Modular is in active development. Check back often for project updates.
 
@@ -38,5 +38,5 @@ We encourage community involvement in code development. For more info, please ch
 
 ## Credits and references
 
-1. This modularized code base was developed from the single-file [Noah-MP source code](https://github.com/NCAR/noahmp/). Noah-MP was developed primarily with US Government funding and was spun out of the Noah Land Surface Model, which was originally a collaboration between the National Centers for Environmental Prediction, Oregon State University, the United States Air Force, and the NOAA Hydrologic Research Lab (HRL, now the NOAA-NWS Office of Water Prediction). 
-2. The simple 1D driver included with the code was developed from the [Noah-MP 1.1 driver](https://ral.ucar.edu/solutions/products/noah-multiparameterization-land-surface-model-noah-mp-lsm).
+1. This gridded Noah-MP code base was extended from NOAA-NWS Office of Water Prediction's previously refactored Noah-MP column model (https://github.com/NOAA-OWP/noah-owp-modular), which was refactored from from the NCAR single-file [Noah-MP source code](https://github.com/NCAR/noahmp/). The Noah-MP model was developed primarily with US Government funding and was spun out of the Noah Land Surface Model, which was originally a collaboration between the National Centers for Environmental Prediction, Oregon State University, the United States Air Force, and the NOAA Hydrologic Research Lab (HRL, now the NOAA-NWS Office of Water Prediction). 
+2. The 2D driver included in this code base was extended from National Center for Atmospheric Research (NCAR) version of Noah-MP (v5.0) (https://github.com/NCAR/noahmp)
