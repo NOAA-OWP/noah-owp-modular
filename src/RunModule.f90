@@ -259,17 +259,18 @@ contains
 
   END SUBROUTINE initialize_from_file   
 
-  SUBROUTINE cleanup()
+  SUBROUTINE cleanup(model)
     implicit none
+    type(noahowpgrid_type), intent(inout) :: model
       
-    !---------------------------------------------------------------------
-    ! Compiler directive NGEN_OUTPUT_ACTIVE to be defined if 
-    ! Nextgen is writing model output (https://github.com/NOAA-OWP/ngen)
-    !---------------------------------------------------------------------
+      !---------------------------------------------------------------------
+      ! Compiler directive NGEN_OUTPUT_ACTIVE to be defined if 
+      ! Nextgen is writing model output (https://github.com/NOAA-OWP/ngen)
+      !---------------------------------------------------------------------
 #ifndef NGEN_OUTPUT_ACTIVE
-    call finalize_output()
+      call finalize_output()
 #endif
-    
+  
   END SUBROUTINE cleanup
 
   SUBROUTINE advance_in_time(noahowpgrid)
@@ -311,16 +312,12 @@ contains
 
 #ifndef NGEN_FORCING_ACTIVE
 
-    !ifndef NGEN_FORCING_ACTIVE, read forcings for time step, else then 
-    !forcings must be updated/set via bmi function calls prior to call 
-    !to bmi_update/NoahowpGridDriverMain
-
     !Update noahowpgrid%nowdate 
     !I think this needs to be done here rather than in UtilitiesMain if NGEN isn't doing forcing
     !idt = noahowpgrid%itime * (noahowpgrid%dt / 60)
     !call geth_newdate(noahowpgrid%startdate, idt, noahowpgrid%nowdate)
 
-    !Read for forcings for nowdate
+    !Read forcings for nowdate
     call read_forcing_text(iunit, domaingrid%nowdate, int(domaingrid%dt), &
           read_UU, read_VV, read_SFCTMP, read_Q2, read_SFCPRS, read_SOLDN, read_LWDN, read_PRCP, ierr)
 
@@ -342,6 +339,7 @@ contains
       do iy = 1, noahowpgrid%namelist%n_y
 
         !Reinitialize column model variables
+        !This should be unnecessary but doing it to be safe
         call levels%Init()
         call domain%Init(namelist)
         call options%Init()

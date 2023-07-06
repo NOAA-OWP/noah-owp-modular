@@ -194,7 +194,7 @@ contains
     class (bmi_noahowp), intent(inout) :: this
     integer :: bmi_status
 
-    call cleanup()
+    call cleanup(this%model)
     bmi_status = BMI_SUCCESS
   end function noahowp_finalize
 
