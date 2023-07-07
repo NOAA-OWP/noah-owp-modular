@@ -115,7 +115,7 @@ contains
     ! Used in opt_snf 6 and 7
     IF(options%OPT_SNF == 6 .or. options%OPT_SNF == 7) THEN
       rh = 0.263 * forcing%SFCPRS * forcing%Q2 * &
-           ((exp((17.67 * (forcing%SFCTMP - 273.15)) / (forcing%SFCTMP - 29.65)))**(-1))
+           ((exp((17.67 * (forcing%SFCTMP - 273.15)) / (forcing%SFCTMP - 29.65)))**-1)
       rh = min(rh, 100.0) ! in case estimated rh > 100     
     ENDIF
     
