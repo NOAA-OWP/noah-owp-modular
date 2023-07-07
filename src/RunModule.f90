@@ -62,24 +62,23 @@ module RunModule
 
 contains
   
-  SUBROUTINE initialize_from_file(noahowpgrid, config_filename)
+  SUBROUTINE initialize_from_file(model, config_filename)
 
     implicit none
     
-    type (noahowpgrid_type), intent (inout) :: noahowpgrid
+    type (noahowpgrid_type), intent (inout) :: model
     character(len=*), intent (in)           :: config_filename    ! config file from command line argument
-    type(namelist_type)                     :: namelist
     integer                                 :: forcing_timestep         ! integer time step (set to dt) for some subroutine calls
     integer                                 :: ii
         
-    associate(namelist       => noahowpgrid%namelist,       &
-              levelsgrid     => noahowpgrid%levelsgrid,     &
-              domaingrid     => noahowpgrid%domaingrid,     &
-              optionsgrid    => noahowpgrid%optionsgrid,    &
-              parametersgrid => noahowpgrid%parametersgrid, &
-              watergrid      => noahowpgrid%watergrid,      &
-              forcinggrid    => noahowpgrid%forcinggrid,    &
-              energygrid     => noahowpgrid%energygrid)
+    associate(namelist       => model%namelist,       &
+              levelsgrid     => model%levelsgrid,     &
+              domaingrid     => model%domaingrid,     &
+              optionsgrid    => model%optionsgrid,    &
+              parametersgrid => model%parametersgrid, &
+              watergrid      => model%watergrid,      &
+              forcinggrid    => model%forcinggrid,    &
+              energygrid     => model%energygrid)
 
       !---------------------------------------------------------------------
       !  initialize
@@ -273,13 +272,14 @@ contains
   
   END SUBROUTINE cleanup
 
-  SUBROUTINE advance_in_time(noahowpgrid)
-    type (noahowpgrid_type), intent (inout) :: noahowpgrid
+  SUBROUTINE advance_in_time(model)
+    
+    implicit none
+    type (noahowpgrid_type), intent (inout) :: model
 
-    call solve_noahowp_grid(noahowpgrid)
-
-    noahowpgrid%domaingrid%itime    = noahowpgrid%domaingrid%itime + 1 ! increment the integer time by 1
-    noahowpgrid%domaingrid%time_dbl = dble(noahowpgrid%domaingrid%time_dbl + noahowpgrid%domaingrid%dt) ! increment model time in seconds by DT
+    call solve_noahowp_grid(model)
+    model%domaingrid%itime    = model%domaingrid%itime + 1 ! increment the integer time by 1
+    model%domaingrid%time_dbl = dble(model%domaingrid%time_dbl + model%domaingrid%dt) ! increment model time in seconds by DT
 
   END SUBROUTINE advance_in_time
 
@@ -334,12 +334,15 @@ contains
 
 #endif
 
-    !Iterate over x and y dimensions
+    !---------------------------------------------------------------------
+    ! Iterate over x and y dimensions
+    !---------------------------------------------------------------------
     do ix = 1, noahowpgrid%namelist%n_x
       do iy = 1, noahowpgrid%namelist%n_y
 
-        !Reinitialize column model variables
-        !This should be unnecessary but doing it to be safe
+        !---------------------------------------------------------------------
+        ! Reinitialize noahowp_type variables (unneccesary?)
+        !---------------------------------------------------------------------
         call levels%Init()
         call domain%Init(namelist)
         call options%Init()
@@ -348,7 +351,9 @@ contains
         call energy%Init(namelist)
         call water%Init(namelist)
 
-        !Transfer variable values from noahowpgrid_type to noahowp_type
+        !---------------------------------------------------------------------
+        ! Transfer variable values from noahowpgrid_type to noahowp_type
+        !---------------------------------------------------------------------
         call DomainVarInTransfer       (domain,     domaingrid,     ix, iy)
         call LevelsVarInTransfer       (levels,     levelsgrid,     ix, iy)
         call EnergyVarInTransfer       (energy,     energygrid,     ix, iy)
@@ -357,10 +362,14 @@ contains
         call ParametersVarInTransfer   (parameters, parametersgrid, ix, iy)
         call WaterVarInTransfer        (water,      watergrid,      ix, iy)
         
-        !Execute column model
+        !---------------------------------------------------------------------
+        ! Execute the column model
+        !---------------------------------------------------------------------
         call solve_noahowp             (noahowp)
 
-        !Transfer variable values from noahowp_type back to noahowpgrid_type
+        !---------------------------------------------------------------------
+        ! Transfer variable values from noahowp_type back to noahowpgrid_type
+        !---------------------------------------------------------------------
         call DomainVarOutTransfer      (domain,     domaingrid,     ix, iy)
         call LevelsVarOutTransfer      (levels,     levelsgrid,     ix, iy)
         call EnergyVarOutTransfer      (energy,     energygrid,     ix, iy)
@@ -423,10 +432,11 @@ contains
     ! Nextgen is writing model output (https://github.com/NOAA-OWP/ngen)
     !---------------------------------------------------------------------
 #ifndef NGEN_OUTPUT_ACTIVE
-    call add_to_output(domain, water, energy, forcing, domain%itime, levels%nsoil,levels%nsnow)
+    call add_to_output(domain, water, energy, forcing, domain%itime, levels%nsoil, levels%nsnow)
 #endif
     
     end associate ! terminate associate block
+
   END SUBROUTINE solve_noahowp
 
 end module RunModule
