@@ -59,13 +59,13 @@ OBJS =  ../src/ErrorCheckModule.o \
         ../bmi/bmi.o \
         ./noahowp_bmi_test.o
 
-CMD = noahowp_bmi_test_program.exe
+CMD = noahowp_test.exe
 all:	$(CMD)
 
-noahowp_bmi_test.o: noahowp_bmi_test.f90
-	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../src -I../driver -I../bmi $(*).f90 
+noahowp_driver_test.o: noahowp_driver_test.f90
+	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../src -I./ -I../bmi $(*).f90 
 
-noahowp_bmi_test_program.exe: $(OBJS)
+noahowp_test.exe: $(OBJS)
 	$(COMPILERF90) -o $(@) -I../driver -I../src $(OBJS) $(NETCDFLIB)
 
 # This command cleans up
@@ -75,5 +75,5 @@ clean:
 #
 # Dependencies:
 #
-noahowp_bmi_test.o: ../bmi/bmi_noahowp.o \
+noahowp_driver_test.o: ../bmi/bmi_noahowp.o \
                ../bmi/bmi.o
