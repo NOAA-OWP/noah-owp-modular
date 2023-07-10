@@ -26,4 +26,3 @@ testBMI_clean:
 	(cd bmi;		make clean)
 	(cd driver;		make clean)
 	(cd test;		make clean)
-
