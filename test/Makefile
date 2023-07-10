@@ -59,7 +59,7 @@ OBJS =  ../src/ErrorCheckModule.o \
         ../bmi/bmi_noahowp.o \
         ../bmi/bmi.o
 
-        
+
 CMD = noahowp_test.exe
 all:	$(CMD)
 
