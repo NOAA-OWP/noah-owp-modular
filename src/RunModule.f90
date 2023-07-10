@@ -296,18 +296,18 @@ contains
 
     associate(namelist       => noahowpgrid%namelist,       &
               domain         => noahowp%domain,             &
-              levels         => noahowp%levels,             &
-              energy         => noahowp%energy,             &
-              forcing        => noahowp%forcing,            &
-              options        => noahowp%options,            &
-              parameters     => noahowp%parameters,         &
-              water          => noahowp%water,              &
               domaingrid     => noahowpgrid%domaingrid,     &
+              levels         => noahowp%levels,             &
               levelsgrid     => noahowpgrid%levelsgrid,     &
+              energy         => noahowp%energy,             &
               energygrid     => noahowpgrid%energygrid,     &
+              forcing        => noahowp%forcing,            &
               forcinggrid    => noahowpgrid%forcinggrid,    &
+              options        => noahowp%options,            &
               optionsgrid    => noahowpgrid%optionsgrid,    &
+              parameters     => noahowp%parameters,         &
               parametersgrid => noahowpgrid%parametersgrid, &
+              water          => noahowp%water,              &
               watergrid      => noahowpgrid%watergrid)
 
 #ifndef NGEN_FORCING_ACTIVE
