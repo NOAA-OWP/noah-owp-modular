@@ -52,25 +52,3 @@ more than zero.
 # ======= ICE =======
 set in driver -- 1 if sea ice (do nothing), -1 if land ice point (calls glacier), 0 if neither sea ice or land ice (call SFLX)
   use 0 
-
-
-Grey Evenson notes:
-
-./EtFluxModule.f90, line 708: energy%LATHEA was changed to energy%LATHEAV because energy%LATHEA 
-was set to huge(1.) and causing arithmetic error. Is this change acceptable/scientifically valid?
-
-../driver/NoahowpGridDriverModule.f90: I think we may be incorrectly reading in daily forcing when NGEN_FORCING_ACTIVE 
-is undefined (i.e., when NGEN does not provide forcings). AsciiReadModule:read_forcing_text uses nowdate which
-isn't updated for the given time step until UtilitiesMain. I placed code that would fix this problem within 
-NoahowpGridDriverMain, which simply requires a call to UtilitiesModule:geth_newdate. However, I commented it 
-out because implementing the fix changes model output such that it can no longer be compared to the output from 
-a clean build of the noah column model with the expectation of a perfect match.
-
-../driver/NoahowpReadNamelistModule.f90: There is a lot going on in this module. We might consider further
-refractoring it.
-
-../test/analysis/compare_outputnc.py: This script will compare two versions of output.nc - one from a clean build of
-noahowp and the other from this modified/gridded build of noahowp. The output from a clean build and this modified/gridded
-noaohowp implementation should be exactly the same assuming the executibles are given the same namelist.input. Thus,
-this script reads output.nc and compares values for every grid cell against the values from the clean build. If any 
-value does not match, the test fails.
