@@ -1,8 +1,7 @@
 # Noah-OWP-Modular
 
-This repo contains an extended, gridded version of the Noah-MP land surface model, adapted from NOAA OWP's previously refactored Noah-MP column model (https://github.com/NOAA-OWP/noah-owp-modular).  
-
-This gridded version of the Noah-MP land surface model contains a full set of hydrologic subroutines and components (initially excluding crop and carbon). This version of the Noah-MP land surface model also includes Basic Model Interface (BMI) functions and compiler directives to be compatible with the NOAA-NWS Office of Water Prediction Nextgen modeling framework. 
+This repo contains a gridded version of the Noah-MP land surface model[1,2]. This gridded version of the OWP's Noah-MP model
+was extend from from NOAA OWP's previously refactored Noah-MP column model (https://github.com/NOAA-OWP/noah-owp-modular) and therefore contains a full set of hydrologic subroutines and components (excluding crop and carbon), and Basic Model Interface (BMI) functions and compiler directives to be compatible with the NOAA-NWS Office of Water Prediction Nextgen modeling framework. 
 
 Noah-OWP-Modular is in active development. Check back often for project updates.
 
