@@ -54,11 +54,12 @@ OBJS =  ../src/ErrorCheckModule.o \
         ../src/DateTimeUtilsModule.o \
         ../src/RunModule.o \
         ../driver/OutputModule.o \
+        ./noahowp_driver_test.o \
         ../driver/AsciiReadModule.o \
         ../bmi/bmi_noahowp.o \
-        ../bmi/bmi.o \
-        ./noahowp_bmi_test.o
+        ../bmi/bmi.o
 
+        
 CMD = noahowp_test.exe
 all:	$(CMD)
 
