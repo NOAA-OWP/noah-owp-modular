@@ -288,51 +288,10 @@ contains
    integer :: bmi_status
 
    select case(name)
-   case('SFCPRS')
-     grid = 1
-     bmi_status = BMI_SUCCESS
-   case('SFCTMP')
-     grid = 2
-     bmi_status = BMI_SUCCESS
-   case('SOLDN')
-     grid = 3
-     bmi_status = BMI_SUCCESS
-   case('LWDN')
-     grid = 4
-     bmi_status = BMI_SUCCESS
-   case('UU')
-     grid = 5
-     bmi_status = BMI_SUCCESS
-   case('VV')
-     grid = 6
-     bmi_status = BMI_SUCCESS
-   case('Q2')
-     grid = 7
-     bmi_status = BMI_SUCCESS
-   case('PRCPNONC')
-     grid = 8
-     bmi_status = BMI_SUCCESS
-   case('QINSUR')
-     grid = 9
-     bmi_status = BMI_SUCCESS
-   case('ETRAN')
-     grid = 10
-     bmi_status = BMI_SUCCESS
-   case('QSEVA')
-     grid = 11
-     bmi_status = BMI_SUCCESS
-   case('EVAPOTRANS')
-     grid = 12
-     bmi_status = BMI_SUCCESS
-   case('TG')
-     grid = 13
-     bmi_status = BMI_SUCCESS
-   case('SNEQV')
-     grid = 14
-     bmi_status = BMI_SUCCESS
-   case('TGS')
-     grid = 15
-     bmi_status = BMI_SUCCESS
+   case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! input vars
+      'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS')             ! output vars
+    grid = 1
+    bmi_status = BMI_SUCCESS
    case default
      grid = -1
      bmi_status = BMI_FAILURE
@@ -347,12 +306,12 @@ contains
    integer :: bmi_status
 
    select case(grid)
-   case(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
-     type = "uniform_rectilinear"
-     bmi_status = BMI_SUCCESS
    case(0)
       type = "scalar"
       bmi_status = BMI_SUCCESS
+   case(1)
+     type = "uniform_rectilinear"
+     bmi_status = BMI_SUCCESS
    case default
       type = "-"
       bmi_status = BMI_FAILURE
@@ -367,7 +326,10 @@ contains
    integer :: bmi_status
 
    select case(grid)
-   case(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
+   case(0)
+      rank = 0
+      bmi_status = BMI_SUCCESS
+   case(1)
       rank = 2
       bmi_status = BMI_SUCCESS
    case default
@@ -384,13 +346,7 @@ contains
    integer :: bmi_status
 
    select case(grid)
-!================================ IMPLEMENT WHEN noahowp DONE IN GRID ======================
-! NOTE: Scalar "grids" do not have dimensions, ie. there is no case(0)
-!     case(1)
-!        shape(:) = [this%model%n_y, this%model%n_x]
-!        bmi_status = BMI_SUCCESS
-
-   case(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
+   case(1)
       shape = [this%model%namelist%n_y, this%model%namelist%n_x]
       bmi_status = BMI_SUCCESS
    case default
@@ -407,16 +363,12 @@ contains
    integer :: bmi_status
 
    select case(grid)
-   case(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
-     size = this%model%namelist%n_x * this%model%namelist%n_y
-     bmi_status = BMI_SUCCESS
    case(0)
       size = 1
       bmi_status = BMI_SUCCESS
-!================================ IMPLEMENT WHEN noahowp DONE IN GRID ======================
-!     case(1)
-!        size = this%model%n_y * this%model%n_x
-!        bmi_status = BMI_SUCCESS
+   case(1)
+      size = this%model%namelist%n_x * this%model%namelist%n_y
+      bmi_status = BMI_SUCCESS
    case default
       size = -1
       bmi_status = BMI_FAILURE
