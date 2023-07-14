@@ -6,7 +6,6 @@ module OutputModule
 !---------------------------------------------------------------------
 #ifndef NGEN_OUTPUT_ACTIVE
   use netcdf
-#endif
   use WaterType
   use EnergyType
   use DomainType
@@ -82,8 +81,6 @@ subroutine initialize_output(output_filename, ntime, nsoil, nsnow, n_x, n_y)
   character (len=*), parameter :: time_units = "seconds since 1970-01-01 00:00:00"
   integer                      :: iret   ! error code
 
-#ifndef NGEN_OUTPUT_ACTIVE
-
   ! create output file and define structure (dimensions)
   iret = nf90_create(trim(output_filename), NF90_CLOBBER, ncid)
   iret = nf90_def_dim(ncid, "time", ntime, time_dim)
@@ -149,8 +146,6 @@ subroutine initialize_output(output_filename, ntime, nsoil, nsnow, n_x, n_y)
   
   iret = nf90_enddef(ncid)
 
-#endif
-
 end subroutine initialize_output
 
 subroutine add_to_output(domain, water, energy, forcing, itime, nsoil, nsnow)
@@ -163,8 +158,6 @@ subroutine add_to_output(domain, water, energy, forcing, itime, nsoil, nsnow)
   integer, intent(in)               :: itime
   integer, intent(in)               :: nsoil
   integer, intent(in)               :: nsnow
-  
-#ifndef NGEN_OUTPUT_ACTIVE
 
   ! associate variables to keep variable names intact in the code below  
   associate(&
@@ -230,16 +223,12 @@ subroutine add_to_output(domain, water, energy, forcing, itime, nsoil, nsnow)
   
   end associate
 
-#endif
-
 end subroutine add_to_output
 
 ! close output file(s)
 subroutine finalize_output()
 
-#ifndef NGEN_OUTPUT_ACTIVE
   iret = nf90_close(ncid)
-#endif
 
 end subroutine finalize_output
 
@@ -248,15 +237,15 @@ subroutine check (status, info, error)
   integer, intent (in) :: status
   character (len=*), intent (in) :: info
   integer, intent (out) :: error
-
-#ifndef NGEN_OUTPUT_ACTIVE
+  
   if (status /= nf90_noerr) then
     print *, trim (info) // ": " // trim (nf90_strerror(status))
     error = 1
   end if
-#endif
 
 end subroutine check  
+
+#endif     ! end of block to remove output if NGEN_OUTPUT_ACTIVE directive is True
 
 end module OutputModule
 
