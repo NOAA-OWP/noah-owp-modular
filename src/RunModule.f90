@@ -66,7 +66,7 @@ contains
 
     implicit none
     
-    type (noahowpgrid_type), intent (inout) :: model
+    type (noahowpgrid_type), intent (out)   :: model
     character(len=*), intent (in)           :: config_filename    ! config file from command line argument
     integer                                 :: forcing_timestep         ! integer time step (set to dt) for some subroutine calls
     integer                                 :: ii
@@ -212,9 +212,7 @@ contains
       forcinggrid%TBOT(:,:)     = 285.0      ! bottom condition for soil temperature [K]
 
       ! domain variables
-      do ii = -namelist%nsnow+1, 0
-        domaingrid%zsnso(:,:,ii) = 0.0
-      end do
+      domaingrid%zsnso(:,:,-namelist%nsnow+1:0) = 0.0
       do ii = 1, namelist%nsoil
         domaingrid%zsnso(:,:,ii) = namelist%zsoil(ii)
       end do
@@ -312,11 +310,6 @@ contains
 
 #ifndef NGEN_FORCING_ACTIVE
 
-    !Update noahowpgrid%nowdate 
-    !I think this needs to be done here rather than in UtilitiesMain if NGEN isn't doing forcing
-    !idt = noahowpgrid%itime * (noahowpgrid%dt / 60)
-    !call geth_newdate(noahowpgrid%startdate, idt, noahowpgrid%nowdate)
-
     !Read forcings for nowdate
     call read_forcing_text(iunit, domaingrid%nowdate, int(domaingrid%dt), &
           read_UU, read_VV, read_SFCTMP, read_Q2, read_SFCPRS, read_SOLDN, read_LWDN, read_PRCP, ierr)
@@ -335,21 +328,21 @@ contains
 #endif
 
     !---------------------------------------------------------------------
+    ! Initialize noahowp_type variables
+    !---------------------------------------------------------------------
+    call levels%Init()
+    call domain%Init(namelist)
+    call options%Init()
+    call parameters%Init(namelist)
+    call forcing%Init()
+    call energy%Init(namelist)
+    call water%Init(namelist)
+
+    !---------------------------------------------------------------------
     ! Iterate over x and y dimensions
     !---------------------------------------------------------------------
     do ix = 1, noahowpgrid%namelist%n_x
       do iy = 1, noahowpgrid%namelist%n_y
-
-        !---------------------------------------------------------------------
-        ! Reinitialize noahowp_type variables (unneccesary?)
-        !---------------------------------------------------------------------
-        call levels%Init()
-        call domain%Init(namelist)
-        call options%Init()
-        call parameters%Init(namelist)
-        call forcing%Init()
-        call energy%Init(namelist)
-        call water%Init(namelist)
 
         !---------------------------------------------------------------------
         ! Transfer variable values from noahowpgrid_type to noahowp_type
@@ -358,7 +351,7 @@ contains
         call LevelsVarInTransfer       (levels,     levelsgrid,     ix, iy)
         call EnergyVarInTransfer       (energy,     energygrid,     ix, iy)
         call ForcingVarInTransfer      (forcing,    forcinggrid,    ix, iy)
-        call OptionsVarInTransfer      (options,    optionsgrid,    ix, iy)
+        call OptionsVarInTransfer      (options,    optionsgrid           )
         call ParametersVarInTransfer   (parameters, parametersgrid, ix, iy)
         call WaterVarInTransfer        (water,      watergrid,      ix, iy)
         
@@ -374,7 +367,7 @@ contains
         call LevelsVarOutTransfer      (levels,     levelsgrid,     ix, iy)
         call EnergyVarOutTransfer      (energy,     energygrid,     ix, iy)
         call ForcingVarOutTransfer     (forcing,    forcinggrid,    ix, iy)
-        call OptionsVarOutTransfer     (options,    optionsgrid,    ix, iy)
+        call OptionsVarOutTransfer     (options,    optionsgrid           )
         call ParametersVarOutTransfer  (parameters, parametersgrid, ix, iy)
         call WaterVarOutTransfer       (water,      watergrid,      ix, iy)
 
