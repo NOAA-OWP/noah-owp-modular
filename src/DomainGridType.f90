@@ -20,9 +20,9 @@ module DomainGridType
     integer                               :: itime             ! current integer time step of model run
     integer                               :: ntime             ! total number of integer time steps in model run
     double precision                      :: time_dbl          ! current time of model run in seconds from beginning
-    real, allocatable, dimension(:,:)     :: lat               ! latitude (°)
-    real, allocatable, dimension(:,:)     :: lon               ! longitude (°)
-    real, allocatable, dimension(:,:)     :: ZREF              ! measurement height of wind speed (m)
+    real                                  :: lat               ! latitude (°)
+    real                                  :: lon               ! longitude (°)
+    real                                  :: ZREF              ! measurement height of wind speed (m)
     real, allocatable, dimension(:,:)     :: terrain_slope     ! terrain slope (°)
     real, allocatable, dimension(:,:)     :: azimuth           ! terrain azimuth or aspect (° clockwise from north)
     integer, allocatable, dimension(:,:)  :: vegtyp            ! land cover type
