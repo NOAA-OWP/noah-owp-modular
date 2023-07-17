@@ -65,11 +65,8 @@ module DomainGridType
                 nsoil => namelist%nsoil, &
                 nsnow => namelist%nsnow)
 
-      allocate(this%lat             (n_x,n_y))
-      allocate(this%lon             (n_x,n_y))
       allocate(this%terrain_slope   (n_x,n_y))
       allocate(this%azimuth         (n_x,n_y))
-      allocate(this%ZREF            (n_x,n_y))
       allocate(this%vegtyp          (n_x,n_y))
       allocate(this%croptype        (n_x,n_y))
       allocate(this%isltyp          (n_x,n_y))
