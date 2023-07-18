@@ -10,6 +10,8 @@ private
 type, public :: namelist_type
 
   real               :: dt                 ! model timestep (s)
+  real               :: dx
+  real               :: dy
   character(len=12)  :: startdate          ! UTC start datetime of the model run ( YYYYMMDDHHmm )
   character(len=12)  :: enddate            ! UTC end datetime of the model run ( YYYYMMDDHHmm )
   character(len=256) :: forcing_filename     ! directory/name of the input/forcing file
