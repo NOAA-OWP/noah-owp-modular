@@ -207,12 +207,12 @@ contains
     UC = UR*LOG((HCAN-energy%ZPD+Z0M)/Z0M)/LOG(ZLVL/Z0M)   ! MB: add ZPD v3.7
     IF((HCAN-energy%ZPD) <= 0.) THEN
       WRITE(message,*) "CRITICAL PROBLEM: HCAN <= ZPD"
-      WRITE(message,*) 'i,j point=',domain%ILOC, domain%JLOC
+      WRITE(message,*) 'x,y point=',domain%ix, domain%iy
       WRITE(message,*) 'HCAN  =', HCAN
       WRITE(message,*) 'ZPD   =', energy%ZPD
       write (message, *) 'SNOWH =', water%SNOWH
       WRITE(*,*) "CRITICAL PROBLEM: HCAN <= ZPD"
-      WRITE(*,*) 'i,j point=', domain%ILOC, domain%JLOC
+      WRITE(*,*) 'x,y point=', domain%ix, domain%iy
       WRITE(*,*) 'HCAN  = ', HCAN
       WRITE(*,*) 'ZPD   = ', energy%ZPD
       write(*,*) 'SNOWH = ', water%SNOWH      
