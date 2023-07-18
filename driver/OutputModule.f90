@@ -164,8 +164,8 @@ subroutine add_to_output(domain, water, energy, forcing, itime, nsoil, nsnow)
     dt         => domain%dt          ,&   ! intent(in)    : model timestep (s)  
     dzsnso     => domain%dzsnso      ,&   ! intent(in)    : model layer thickness [m] 
     zsnso      => domain%dzsnso      ,&   ! intent(in)    : layer depth [m] 
-    iloc       => domain%iloc        ,&
-    jloc       => domain%jloc         &
+    iloc       => domain%ix          ,&
+    jloc       => domain%iy           &
   ) ! ---- end associate defs --------------------------------------------------------------------
   
   ! === store current timestep variable data in output file ===

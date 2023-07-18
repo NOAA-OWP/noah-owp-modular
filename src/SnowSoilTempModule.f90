@@ -111,7 +111,7 @@ contains
        WRITE(message,*) 'TSNOSOI is losing(-)/gaining(+) false energy', ERR_EST,' W/m2'
        !call wrf_message(trim(message))
        WRITE(message,'(i6,1x,i6,1x,i3,F18.13,5F20.12)') &
-            domain%ILOC, domain%JLOC, domain%IST, ERR_EST, SSOIL, SNOWH, TG, STC(ISNOW+1), EFLXB
+            domain%ix, domain%iy, domain%IST, ERR_EST, SSOIL, SNOWH, TG, STC(ISNOW+1), EFLXB
        !call wrf_message(trim(message))
        !niu      STOP
     END IF
