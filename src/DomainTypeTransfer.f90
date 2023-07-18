@@ -17,6 +17,12 @@ module DomainTypeTransfer
     integer,               intent(in)    :: iy
 
     domain%DT = domaingrid%DT
+    domain%ix = ix 
+    domain%iy = iy 
+    domain%dx = domaingrid%dx
+    domain%dy = domaingrid%dy
+    domain%n_x = domaingrid%n_x
+    domain%n_y = domaingrid%n_y
     domain%startdate = domaingrid%startdate 
     domain%enddate = domaingrid%enddate    
     domain%nowdate = domaingrid%nowdate           
@@ -26,8 +32,6 @@ module DomainTypeTransfer
     domain%itime = domaingrid%itime          
     domain%ntime = domaingrid%ntime          
     domain%time_dbl = domaingrid%time_dbl
-    domain%iloc = ix 
-    domain%jloc = iy 
     domain%lat = domaingrid%lat  
     domain%lon = domaingrid%lon   
     domain%ZREF = domaingrid%ZREF        

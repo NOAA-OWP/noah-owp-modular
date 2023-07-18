@@ -10,6 +10,10 @@ module DomainGridType
   type, public :: domaingrid_type
   
     real                                  :: DT                ! run timestep (s)
+    integer                               :: n_x               !
+    integer                               :: n_y               !
+    real                                  :: dx
+    real                                  :: dy
     character(len=12)                     :: startdate         ! Start date of the model run ( YYYYMMDDHHmm ) 
     character(len=12)                     :: enddate           ! End date of the model run ( YYYYMMDDHHmm ) 
     character(len=12)                     :: nowdate           ! Current date of the model run ( YYYYMMDDHHmm ) 
@@ -85,6 +89,8 @@ module DomainGridType
       class(domaingrid_type) :: this
   
       this%dt                  = huge(1.0)
+      this%n_x                 = huge(1)
+      this%n_y                 = huge(1)
       this%startdate           = 'EMPTYDATE999'
       this%enddate             = 'EMPTYDATE999'
       this%nowdate             = 'EMPTYDATE999'
@@ -116,6 +122,10 @@ module DomainGridType
       integer                        :: ii
 
       this%dt                   = namelist%dt
+      this%dx                   = namelist%dx
+      this%dy                   = namelist%dy
+      this%n_x                  = namelist%n_x
+      this%n_y                  = namelist%n_y
       this%startdate            = namelist%startdate
       this%enddate              = namelist%enddate
       this%lat                  = namelist%lat

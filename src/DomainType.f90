@@ -9,8 +9,12 @@ module DomainType
   
   type, public :: domain_type
   
-    integer             :: iloc              ! i index in grid  
-    integer             :: jloc              ! j index in grid
+    integer             :: ix                ! i index in grid  
+    integer             :: iy                ! j index in grid
+    integer             :: n_x               ! 
+    integer             :: n_y               !
+    real                :: dx
+    real                :: dy
     real                :: DT                ! run timestep (s)
     character(len=12)   :: startdate         ! Start date of the model run ( YYYYMMDDHHmm ) 
     character(len=12)   :: enddate           ! End date of the model run ( YYYYMMDDHHmm ) 
@@ -75,8 +79,10 @@ module DomainType
   
       class(domain_type) :: this
   
-      this%iloc           = huge(1)
-      this%jloc           = huge(1)
+      this%ix             = huge(1)
+      this%iy             = huge(1)
+      this%n_x            = huge(1)
+      this%n_y            = huge(1)
       this%dt             = huge(1.0)
       this%startdate      = 'EMPTYDATE999'
       this%enddate        = 'EMPTYDATE999'
