@@ -84,6 +84,16 @@ contains
       !  initialize
       !---------------------------------------------------------------------
       call namelist%ReadNamelist(config_filename)
+      
+      !---------------------------------------------------------------------
+      !*********************************************************************
+      ! HARD CODING UNTIL READ-IN VIA namelist%ReadNamelist
+      namelist%n_x = 2
+      namelist%n_y = 3
+      namelist%dx  = 100
+      namelist%dy  = 100
+      !*********************************************************************
+      !---------------------------------------------------------------------
 
       call levelsgrid%Init(namelist)
       call levelsgrid%InitTransfer(namelist)
@@ -219,7 +229,7 @@ contains
 
       ! time variables
       domaingrid%nowdate   = domaingrid%startdate ! start the model with nowdate = startdate
-      forcing_timestep      = domaingrid%dt        ! integer timestep for some subroutine calls
+      forcing_timestep     = domaingrid%dt        ! integer timestep for some subroutine calls
       domaingrid%itime     = 1                     ! initialize the time loop counter at 1
       domaingrid%time_dbl  = 0.d0                  ! start model run at t = 0
       
@@ -249,7 +259,7 @@ contains
       ! Nextgen is writing model output (https://github.com/NOAA-OWP/ngen)
       !---------------------------------------------------------------------
 #ifndef NGEN_OUTPUT_ACTIVE
-      call initialize_output(namelist%output_filename, domaingrid%ntime, levelsgrid%nsoil, levelsgrid%nsnow, namelist%n_x, namelist%n_y)
+      call initialize_output(namelist%output_filename, domaingrid%ntime, levelsgrid%nsoil, levelsgrid%nsnow, domaingrid%n_x, domaingrid%n_y)
 #endif
 
       end associate
@@ -341,8 +351,8 @@ contains
     !---------------------------------------------------------------------
     ! Iterate over x and y dimensions
     !---------------------------------------------------------------------
-    do ix = 1, noahowpgrid%namelist%n_x
-      do iy = 1, noahowpgrid%namelist%n_y
+    do ix = 1, noahowpgrid%domaingrid%n_x
+      do iy = 1, noahowpgrid%domaingrid%n_y
 
         !---------------------------------------------------------------------
         ! Transfer variable values from noahowpgrid_type to noahowp_type
