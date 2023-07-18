@@ -58,8 +58,8 @@ program noahmp_driver_test
     integer                                           :: grid_size        ! size of grid (ie. nX * nY)
     double precision, dimension(2)                    :: grid_spacing     ! resolution of grid in X & Y (change dims if not X * Y grid)
     double precision, dimension(2)                    :: grid_origin      ! X & Y origin of grid (change dims if not X * Y grid)
-    double precision, dimension(1)                    :: grid_x           ! X coordinate of grid nodes (change dims if multiple nodes)
-    double precision, dimension(1)                    :: grid_y           ! Y coordinate of grid nodes (change dims if multiple nodes)
+    double precision, allocatable, dimension(:)       :: grid_x           ! X coordinate of grid nodes (change dims if multiple nodes)
+    double precision, allocatable, dimension(:)       :: grid_y           ! Y coordinate of grid nodes (change dims if multiple nodes)
     double precision, dimension(1)                    :: grid_z           ! Z coordinate of grid nodes (change dims if multiple nodes)
     integer                                           :: ix,iy,iz,n_x,n_y,n_z,iflat    ! 
     real, pointer                                     :: var_value_get_ptr(:) ! value of a variable for get_value_ptr
@@ -432,21 +432,21 @@ program noahmp_driver_test
     ! All vars currently have same spatial discretization
     ! Modify to test all discretizations if > 1
     
-  print*,''
-  print*,"TEST GRID INFO FUNCTIONALITY WITH BMI***************************************"
-  do iBMI = 1, size(names_all)
+    print*,''
+    print*,"TEST GRID INFO FUNCTIONALITY WITH BMI***************************************"
 
     ! get_var_grid
-    status = m%get_var_grid(trim(names_all(iBMI)), grid_int)
-    print*, "The integer value for the ", trim(names_all(iBMI)), " grid is ", grid_int
+    iBMI = 1
+    status = m%get_var_grid(trim(names_outputs(iBMI)), grid_int)
+    print*, "The integer value for the ", trim(names_outputs(iBMI)), " grid is ", grid_int
     
     ! get_grid_type
     status = m%get_grid_type(grid_int, grid_type)
-    print*, "The grid type for ", trim(names_all(iBMI)), " is ", trim(grid_type)
+    print*, "The grid type for ", trim(names_outputs(iBMI)), " is ", trim(grid_type)
     
     ! get_grid_rank
     status = m%get_grid_rank(grid_int, grid_rank)
-    print*, "The grid rank for ", trim(names_all(iBMI)), " is ", grid_rank
+    print*, "The grid rank for ", trim(names_outputs(iBMI)), " is ", grid_rank
     
     ! get_grid_shape
     ! only scalars implemented thus far
@@ -459,13 +459,15 @@ program noahmp_driver_test
     
     ! get_grid_size
     status = m%get_grid_size(grid_int, grid_size)
-    print*, "The grid size for ", trim(names_all(iBMI)), " is ", grid_size
+    print*, "The grid size for ", trim(names_outputs(iBMI)), " is ", grid_size
     
     ! get_grid_spacing
     ! only scalars implemented thus far
     status = m%get_grid_spacing(grid_int, grid_spacing)
     if(grid_spacing(1) == -1.d0) then
       print*, "No grid spacing for the grid type/rank"
+    else
+      print*, "The grid spacing for the ",trim(names_all(iBMI)), " grid is ", grid_spacing
     end if
     
     ! get_grid_origin
@@ -473,18 +475,22 @@ program noahmp_driver_test
     status = m%get_grid_origin(grid_int, grid_origin)
     if(grid_origin(1) == -1.d0) then
       print*, "No grid origin for the grid type/rank"
+    else
+      print*, "The grid origin for the ",trim(names_all(iBMI)), " grid is ", grid_origin
     end if
     
     ! get_grid_x/y/z
     ! should return 0 for a 1 node "grid" because not currently spatially explicit
+    if(allocated(grid_x)) deallocate(grid_x)
+    if(allocated(grid_y)) deallocate(grid_y)
+    allocate(grid_x(grid_shape(2)))
+    allocate(grid_y(grid_shape(1)))
     status = m%get_grid_x(grid_int, grid_x)
     status = m%get_grid_y(grid_int, grid_y)
     status = m%get_grid_z(grid_int, grid_z)
     print*, "The X coord for grid ", grid_int, " is ", grid_x
     print*, "The Y coord for grid ", grid_int, " is ", grid_y
     print*, "The Z coord for grid ", grid_int, " is ", grid_z
-
-  end do
 
   !---------------------------------------------------------------------
   ! The following functions are not implemented/only return BMI_FAILURE

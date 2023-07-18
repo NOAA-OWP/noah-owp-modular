@@ -400,11 +400,9 @@ contains
     integer :: bmi_status
 
     select case(grid)
-!================================ IMPLEMENT WHEN noahowp DONE IN GRID ======================
-! NOTE: Scalar "grids" do not have coordinates, ie. there is no case(0)
-!     case(1)
-!        origin(:) = [0.d0, 0.d0]
-!        bmi_status = BMI_SUCCESS
+    case(1)
+      origin(:) = [0.d0, 0.d0]
+      bmi_status = BMI_SUCCESS
     case default
        origin(:) = -1.d0
        bmi_status = BMI_FAILURE
@@ -413,36 +411,60 @@ contains
 
   ! X-coordinates of grid nodes.
   function noahowp_grid_x(this, grid, x) result (bmi_status)
-    class (bmi_noahowp), intent(in) :: this
-    integer, intent(in) :: grid
+    class (bmi_noahowp), intent(in)             :: this
+    integer, intent(in)                         :: grid
     double precision, dimension(:), intent(out) :: x
-    integer :: bmi_status
+    integer                                     :: bmi_status
+    integer,dimension(2)                        :: grid_1_shape
+    double precision, dimension(2)              :: grid_1_space
+    integer                                     :: ii
 
-    select case(grid)
+    case_grid_x: select case(grid)
     case(0)
        x(:) = [0.d0]
-       bmi_status = BMI_SUCCESS
+       bmi_status = BMI_SUCCESS 
+    case(1)
+       bmi_status = this%get_grid_shape(1,grid_1_shape)
+       if(bmi_status == BMI_FAILURE) exit case_grid_x
+       bmi_status = this%get_grid_spacing(1,grid_1_space)
+       if(bmi_status == BMI_FAILURE) exit case_grid_x
+       do ii = 1, grid_1_shape(2)
+         x(ii) = (ii-1)*grid_1_space(2)+grid_1_space(2)*0.5
+       end do
+       bmi_status = BMI_SUCCESS 
     case default
        x(:) = -1.d0
        bmi_status = BMI_FAILURE
-    end select
+    end select case_grid_x
   end function noahowp_grid_x
 
   ! Y-coordinates of grid nodes.
   function noahowp_grid_y(this, grid, y) result (bmi_status)
-    class (bmi_noahowp), intent(in) :: this
-    integer, intent(in) :: grid
-    double precision, dimension(:), intent(out) :: y
-    integer :: bmi_status
+   class (bmi_noahowp), intent(in)             :: this
+   integer, intent(in)                         :: grid
+   double precision, dimension(:), intent(out) :: y
+   integer                                     :: bmi_status
+   integer,dimension(2)                        :: grid_1_shape
+   double precision, dimension(2)              :: grid_1_space
+   integer                                     :: ii
 
-    select case(grid)
+    case_grid_y: select case(grid)
     case(0)
        y(:) = [0.d0]
+       bmi_status = BMI_SUCCESS
+    case(1)
+       bmi_status = this%get_grid_shape(1,grid_1_shape)
+       if(bmi_status == BMI_FAILURE) exit case_grid_y
+       bmi_status = this%get_grid_spacing(1,grid_1_space)
+       if(bmi_status == BMI_FAILURE) exit case_grid_y
+       do ii = 0, grid_1_shape(1)-1
+         y(ii+1) = ii*grid_1_space(1)+grid_1_space(1)*0.5
+       end do
        bmi_status = BMI_SUCCESS
     case default
        y(:) = -1.d0
        bmi_status = BMI_FAILURE
-    end select
+    end select case_grid_y
   end function noahowp_grid_y
 
   ! Z-coordinates of grid nodes.
