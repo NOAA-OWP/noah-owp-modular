@@ -383,11 +383,9 @@ contains
     integer :: bmi_status
 
     select case(grid)
-!================================ IMPLEMENT WHEN noahowp DONE IN GRID ======================
-! NOTE: Scalar "grids" do not have spacing, ie. there is no case(0)
-!     case(1)
-!        spacing(:) = [this%model%dy, this%model%dx]
-!        bmi_status = BMI_SUCCESS
+    case(1)
+      spacing(:) = [this%model%domaingrid%dy,this%model%domaingrid%dx]
+      bmi_status = BMI_SUCCESS
     case default
        spacing(:) = -1.d0
        bmi_status = BMI_FAILURE
