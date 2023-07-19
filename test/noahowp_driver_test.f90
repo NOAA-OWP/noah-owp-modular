@@ -32,6 +32,7 @@ program noahmp_driver_test
     character (len = BMI_MAX_VAR_NAME), pointer       :: names_inputs(:)  ! var names
     character (len = BMI_MAX_VAR_NAME), pointer       :: names_outputs(:) ! var names
     character (len = BMI_MAX_VAR_NAME),allocatable,dimension(:) :: names_all
+    character (len = BMI_MAX_VAR_NAME)                :: iname
     integer                                           :: n_inputs         ! n input vars
     integer                                           :: n_outputs        ! n output vars
     integer                                           :: iBMI             ! loop counter
@@ -110,29 +111,25 @@ program noahmp_driver_test
     ! Sum input and outputs to get total vars
     count = n_inputs + n_outputs
 
-    ! Create list of all variable names
-    allocate(names_all(n_inputs+n_outputs))
-    do iBMI = 1, n_inputs
-      names_all(iBMI) = names_inputs(iBMI)
-    end do
-    do iBMI = 1, n_outputs
-      names_all(iBMI+n_inputs) = names_outputs(iBMI)
-    end do
-
-    ! Print basic variable information
+    ! Get other variable info
     print*,''
     print*,"VARIALBE INFORMTION*************************************************************"
-    do j = 1, size(names_all)
-      status = m%get_var_grid(trim(names_all(j)),grid_int)
+    do j = 1, count
+      if(j <= n_inputs) then
+        iname = trim(names_inputs(j))
+      else
+        iname = trim(names_outputs(j - n_inputs))
+      end if
+      status = m%get_var_grid(trim(iname),grid_int)
       status = m%get_grid_shape(grid_int, grid_shape)
       status = m%get_grid_size(grid_int, grid_size)
-      status = m%get_var_type(trim(names_all(j)), var_type)
-      status = m%get_var_units(trim(names_all(j)), var_units)
-      status = m%get_var_itemsize(trim(names_all(j)), var_itemsize)
-      status = m%get_var_nbytes(trim(names_all(j)), var_nbytes)
+      status = m%get_var_type(trim(iname), var_type)
+      status = m%get_var_units(trim(iname), var_units)
+      status = m%get_var_itemsize(trim(iname), var_itemsize)
+      status = m%get_var_nbytes(trim(iname), var_nbytes)
       n_x = grid_shape(2)
       n_y = grid_shape(1)
-      print*, "The variable ", trim(names_all(j))
+      print*, "The variable ", trim(iname)
       print*, "    has a grid id of ",grid_int
       print*, "    has a grid row count (n_y) of ",n_y
       print*, "    has a grid column count (n_x) of ",n_x
