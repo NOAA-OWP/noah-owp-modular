@@ -362,10 +362,6 @@ contains
     this%realMissing                 = realMissing
     this%stringMissing               = stringMissing 
 
-    !hardcode n_x and n_y
-    this%n_x = 2
-    this%n_y = 3
-
   end subroutine ReadNamelist
 
 end module NamelistRead
