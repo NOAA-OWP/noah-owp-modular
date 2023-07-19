@@ -347,7 +347,7 @@ contains
 
    select case(grid)
    case(1)
-      shape = [this%model%namelist%n_y, this%model%namelist%n_x]
+      shape = [this%model%domaingrid%n_y, this%model%domaingrid%n_x]
       bmi_status = BMI_SUCCESS
    case default
       shape(:) = -1
@@ -367,7 +367,7 @@ contains
       size = 1
       bmi_status = BMI_SUCCESS
    case(1)
-      size = this%model%namelist%n_x * this%model%namelist%n_y
+      size = this%model%domaingrid%n_x * this%model%domaingrid%n_y
       bmi_status = BMI_SUCCESS
    case default
       size = -1
@@ -753,8 +753,8 @@ contains
    associate(forcinggrid => this%model%forcinggrid, &
              watergrid   => this%model%watergrid,   &
              energygrid  => this%model%energygrid,  &
-             n_x         => this%model%namelist%n_x, &
-             n_y         => this%model%namelist%n_y)
+             n_x         => this%model%domaingrid%n_x, &
+             n_y         => this%model%domaingrid%n_y)
 
    select case(name)
    case("SFCPRS")
@@ -967,8 +967,8 @@ contains
    associate(forcinggrid => this%model%forcinggrid,  &
              watergrid   => this%model%watergrid,    &
              energygrid  => this%model%energygrid,   &
-             n_x         => this%model%namelist%n_x, &
-             n_y         => this%model%namelist%n_y)
+             n_x         => this%model%domaingrid%n_x, &
+             n_y         => this%model%domaingrid%n_y)
 
    select case(name)
    case("SFCPRS")
