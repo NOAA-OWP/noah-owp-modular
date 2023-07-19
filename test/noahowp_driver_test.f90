@@ -31,7 +31,6 @@ program noahmp_driver_test
     integer                                           :: count            ! var counts
     character (len = BMI_MAX_VAR_NAME), pointer       :: names_inputs(:)  ! var names
     character (len = BMI_MAX_VAR_NAME), pointer       :: names_outputs(:) ! var names
-    character (len = BMI_MAX_VAR_NAME),allocatable,dimension(:) :: names_all
     character (len = BMI_MAX_VAR_NAME)                :: iname
     integer                                           :: n_inputs         ! n input vars
     integer                                           :: n_outputs        ! n output vars
@@ -55,7 +54,7 @@ program noahmp_driver_test
     integer                                           :: grid_rank        ! rank of grid
     integer, dimension(2)                             :: grid_shape       ! shape of grid (change dims if not X * Y grid)
     integer, dimension(3)                             :: grid_shape3d
-    integer                                           :: j                ! generic index
+    integer                                           :: i, j                ! generic index
     integer                                           :: grid_size        ! size of grid (ie. nX * nY)
     double precision, dimension(2)                    :: grid_spacing     ! resolution of grid in X & Y (change dims if not X * Y grid)
     double precision, dimension(2)                    :: grid_origin      ! X & Y origin of grid (change dims if not X * Y grid)
@@ -198,16 +197,21 @@ program noahmp_driver_test
 
     print*,''
     print*,"TEST get/set_value FUNCTIONALITY WITH BMI  (2D VARIABLES ONLY)********************"
-    do iBMI = 1, size(names_all)
+    do i = 1, count
+      if(i <= n_inputs) then
+        iname = trim(names_inputs(i))
+      else
+        iname = trim(names_outputs(i - n_inputs))
+      end if
 
       ! Get variable name and shape/size
-      status = m%get_var_type(trim(names_all(iBMI)), var_type)
-      status = m%get_var_grid(trim(names_all(iBMI)),grid_int)
+      status = m%get_var_type(trim(iname), var_type)
+      status = m%get_var_grid(trim(iname),grid_int)
       status = m%get_grid_size(grid_int, grid_size)
       status = m%get_grid_shape(grid_int, grid_shape)
       n_x = grid_shape(2)
       n_y = grid_shape(1)
-      print*,trim(names_all(iBMI))
+      print*,trim(trim(iname))
       print*,'    column count (n_x) = ',n_x
       print*,'    row count (n_y) = ',n_y
 
@@ -233,7 +237,7 @@ program noahmp_driver_test
 
         ! Print existing value(s)
         call cpu_time(time_1)
-        status = m%get_value(trim(names_all(iBMI)), var_value_get_real)
+        status = m%get_value(trim(iname), var_value_get_real)
         call cpu_time(time_2)
         print*, "    get_value function cpu time (s) =",time_2-time_1
         print*, "    from get_value (flattened) ="
@@ -262,12 +266,12 @@ program noahmp_driver_test
           write(*,*) ''
         end do
         call cpu_time(time_1)
-        status = m%set_value(trim(names_all(iBMI)), var_value_set_real)
+        status = m%set_value(trim(iname), var_value_set_real)
         call cpu_time(time_2)
         print*, "    set_value function cpu time (s) =",time_2-time_1
 
         ! Print updated values
-        status = m%get_value(trim(names_all(iBMI)), var_value_get_real)
+        status = m%get_value(trim(iname), var_value_get_real)
         print*, "    and the new value (flattened) = "
         print*, var_value_get_real
         print*, "    and the new value (in XY) = "
@@ -301,7 +305,7 @@ program noahmp_driver_test
 
         ! Print existing value(s)
         call cpu_time(time_1)
-        status = m%get_value(trim(names_all(iBMI)), var_value_get_int)
+        status = m%get_value(trim(iname), var_value_get_int)
         call cpu_time(time_2)
         print*, "    get_value function cpu time (s) =",time_2-time_1
         print*, "    from get_value (flattened) ="
@@ -330,12 +334,12 @@ program noahmp_driver_test
           write(*,*) ''
         end do
         call cpu_time(time_1)
-        status = m%set_value(trim(names_all(iBMI)), var_value_set_int)
+        status = m%set_value(trim(iname), var_value_set_int)
         call cpu_time(time_2)
         print*, "    set_value function cpu time (s) =",time_2-time_1
 
         ! Print updated values
-        status = m%get_value(trim(names_all(iBMI)), var_value_get_int)
+        status = m%get_value(trim(iname), var_value_get_int)
         print*, "    and the new value (flattened) ="
         print*, var_value_get_int
         print*, "    and the new value (in XY) ="
@@ -434,16 +438,16 @@ program noahmp_driver_test
 
     ! get_var_grid
     iBMI = 1
-    status = m%get_var_grid(trim(names_outputs(iBMI)), grid_int)
-    print*, "The integer value for the ", trim(names_outputs(iBMI)), " grid is ", grid_int
+    status = m%get_var_grid(trim(names_inputs(iBMI)), grid_int)
+    print*, "The integer value for the ", trim(names_inputs(iBMI)), " grid is ", grid_int
     
     ! get_grid_type
     status = m%get_grid_type(grid_int, grid_type)
-    print*, "The grid type for ", trim(names_outputs(iBMI)), " is ", trim(grid_type)
+    print*, "The grid type for ", trim(names_inputs(iBMI)), " is ", trim(grid_type)
     
     ! get_grid_rank
     status = m%get_grid_rank(grid_int, grid_rank)
-    print*, "The grid rank for ", trim(names_outputs(iBMI)), " is ", grid_rank
+    print*, "The grid rank for ", trim(names_inputs(iBMI)), " is ", grid_rank
     
     ! get_grid_shape
     ! only scalars implemented thus far
@@ -451,12 +455,12 @@ program noahmp_driver_test
     if(grid_shape(1) == -1) then
       print*, "No grid shape for the grid type/rank"
     else
-      print*, "The grid shape for the ",trim(names_all(iBMI)), " grid is ", grid_shape
+      print*, "The grid shape for the ",trim(names_inputs(iBMI)), " grid is ", grid_shape
     end if
     
     ! get_grid_size
     status = m%get_grid_size(grid_int, grid_size)
-    print*, "The grid size for ", trim(names_outputs(iBMI)), " is ", grid_size
+    print*, "The grid size for ", trim(names_inputs(iBMI)), " is ", grid_size
     
     ! get_grid_spacing
     ! only scalars implemented thus far
@@ -464,7 +468,7 @@ program noahmp_driver_test
     if(grid_spacing(1) == -1.d0) then
       print*, "No grid spacing for the grid type/rank"
     else
-      print*, "The grid spacing for the ",trim(names_all(iBMI)), " grid is ", grid_spacing
+      print*, "The grid spacing for the ",trim(names_inputs(iBMI)), " grid is ", grid_spacing
     end if
     
     ! get_grid_origin
@@ -473,7 +477,7 @@ program noahmp_driver_test
     if(grid_origin(1) == -1.d0) then
       print*, "No grid origin for the grid type/rank"
     else
-      print*, "The grid origin for the ",trim(names_all(iBMI)), " grid is ", grid_origin
+      print*, "The grid origin for the ",trim(names_inputs(iBMI)), " grid is ", grid_origin
     end if
     
     ! get_grid_x/y/z
