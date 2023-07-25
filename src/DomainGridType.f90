@@ -24,8 +24,8 @@ module DomainGridType
     integer                               :: itime             ! current integer time step of model run
     integer                               :: ntime             ! total number of integer time steps in model run
     double precision                      :: time_dbl          ! current time of model run in seconds from beginning
-    real                                  :: lat               ! latitude (°)
-    real                                  :: lon               ! longitude (°)
+    real, allocatable, dimension(:,:)     :: lat               ! latitude (°)
+    real, allocatable, dimension(:,:)     :: lon               ! longitude (°)
     real                                  :: ZREF              ! measurement height of wind speed (m)
     real, allocatable, dimension(:,:)     :: terrain_slope     ! terrain slope (°)
     real, allocatable, dimension(:,:)     :: azimuth           ! terrain azimuth or aspect (° clockwise from north)
@@ -69,6 +69,8 @@ module DomainGridType
                 nsoil => namelist%nsoil, &
                 nsnow => namelist%nsnow)
 
+      allocate(this%lat             (n_x,n_y))
+      allocate(this%lon             (n_x,n_y))
       allocate(this%terrain_slope   (n_x,n_y))
       allocate(this%azimuth         (n_x,n_y))
       allocate(this%vegtyp          (n_x,n_y))
@@ -100,8 +102,8 @@ module DomainGridType
       this%itime               = huge(1) 
       this%ntime               = huge(1) 
       this%time_dbl            = huge(1.d0)
-      this%lat                 = huge(1.0)
-      this%lon                 = huge(1.0)
+      this%lat(:,:)            = huge(1.0)
+      this%lon(:,:)            = huge(1.0)
       this%terrain_slope(:,:)  = huge(1.0)
       this%azimuth(:,:)        = huge(1.0)
       this%ZREF                = huge(1.0)
@@ -128,8 +130,8 @@ module DomainGridType
       this%n_y                  = namelist%n_y
       this%startdate            = namelist%startdate
       this%enddate              = namelist%enddate
-      this%lat                  = namelist%lat
-      this%lon                  = namelist%lon
+      this%lat(:,:)             = namelist%lat
+      this%lon(:,:)             = namelist%lon
       this%terrain_slope(:,:)   = namelist%terrain_slope
       this%azimuth(:,:)         = namelist%azimuth
       this%ZREF                 = namelist%ZREF
