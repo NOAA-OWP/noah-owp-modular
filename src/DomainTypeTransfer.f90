@@ -32,8 +32,8 @@ module DomainTypeTransfer
     domain%itime = domaingrid%itime          
     domain%ntime = domaingrid%ntime          
     domain%time_dbl = domaingrid%time_dbl
-    domain%lat = domaingrid%lat  
-    domain%lon = domaingrid%lon   
+    domain%lat = domaingrid%lat(ix,iy)  
+    domain%lon = domaingrid%lon(ix,iy)   
     domain%ZREF = domaingrid%ZREF        
     domain%terrain_slope = domaingrid%terrain_slope(ix,iy) 
     domain%azimuth = domaingrid%azimuth(ix,iy)          
