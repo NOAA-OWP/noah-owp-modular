@@ -14,7 +14,7 @@ module bminoahowp
   implicit none
 
   type, extends (bmi) :: bmi_noahowp
-     !private
+     private
      type(noahowpgrid_type) :: model
    contains
      procedure :: get_component_name => noahowp_component_name
@@ -415,27 +415,18 @@ contains
     integer, intent(in)                         :: grid
     double precision, dimension(:), intent(out) :: x
     integer                                     :: bmi_status
-    integer,dimension(2)                        :: grid_1_shape
-    double precision, dimension(2)              :: grid_1_space
-    integer                                     :: ii
 
-    case_grid_x: select case(grid)
+    select case(grid)
     case(0)
        x(:) = [0.d0]
        bmi_status = BMI_SUCCESS 
     case(1)
-       bmi_status = this%get_grid_shape(1,grid_1_shape)
-       if(bmi_status == BMI_FAILURE) exit case_grid_x
-       bmi_status = this%get_grid_spacing(1,grid_1_space)
-       if(bmi_status == BMI_FAILURE) exit case_grid_x
-       do ii = 1, grid_1_shape(2)
-         x(ii) = (ii-1)*grid_1_space(2)+grid_1_space(2)*0.5
-       end do
+       x(:) = this%model%domaingrid%lon(:,1)
        bmi_status = BMI_SUCCESS 
     case default
        x(:) = -1.d0
        bmi_status = BMI_FAILURE
-    end select case_grid_x
+    end select 
   end function noahowp_grid_x
 
   ! Y-coordinates of grid nodes.
@@ -444,27 +435,18 @@ contains
    integer, intent(in)                         :: grid
    double precision, dimension(:), intent(out) :: y
    integer                                     :: bmi_status
-   integer,dimension(2)                        :: grid_1_shape
-   double precision, dimension(2)              :: grid_1_space
-   integer                                     :: ii
 
-    case_grid_y: select case(grid)
+    select case(grid)
     case(0)
        y(:) = [0.d0]
        bmi_status = BMI_SUCCESS
     case(1)
-       bmi_status = this%get_grid_shape(1,grid_1_shape)
-       if(bmi_status == BMI_FAILURE) exit case_grid_y
-       bmi_status = this%get_grid_spacing(1,grid_1_space)
-       if(bmi_status == BMI_FAILURE) exit case_grid_y
-       do ii = 0, grid_1_shape(1)-1
-         y(ii+1) = ii*grid_1_space(1)+grid_1_space(1)*0.5
-       end do
+       y(:) = this%model%domaingrid%lat(1,:)
        bmi_status = BMI_SUCCESS
     case default
        y(:) = -1.d0
        bmi_status = BMI_FAILURE
-    end select case_grid_y
+    end select
   end function noahowp_grid_y
 
   ! Z-coordinates of grid nodes.
