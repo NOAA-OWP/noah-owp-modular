@@ -85,16 +85,6 @@ contains
       !---------------------------------------------------------------------
       call namelist%ReadNamelist(config_filename)
       
-      !---------------------------------------------------------------------
-      !*********************************************************************
-      ! HARD CODING UNTIL READ-IN VIA namelist%ReadNamelist
-      namelist%n_x = 2
-      namelist%n_y = 3
-      namelist%dx  = 100
-      namelist%dy  = 100
-      !*********************************************************************
-      !---------------------------------------------------------------------
-
       call levelsgrid%Init(namelist)
       call levelsgrid%InitTransfer(namelist)
 

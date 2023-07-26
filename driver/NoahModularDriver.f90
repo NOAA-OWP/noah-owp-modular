@@ -28,6 +28,10 @@ program model_driver
   !---------------------------------------------------------------------
   print*, "Initializing..."
   call get_command_argument(1, arg)
+  m%model%domaingrid%n_x = 2
+  m%model%domaingrid%n_y = 3
+  m%model%domaingrid%dx  = 100.
+  m%model%domaingrid%dy  = 100.
   status = m%initialize(arg)
 
   !---------------------------------------------------------------------
