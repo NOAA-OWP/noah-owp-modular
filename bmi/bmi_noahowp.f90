@@ -14,7 +14,7 @@ module bminoahowp
   implicit none
 
   type, extends (bmi) :: bmi_noahowp
-     private
+     !private
      type(noahowpgrid_type) :: model
    contains
      procedure :: get_component_name => noahowp_component_name
