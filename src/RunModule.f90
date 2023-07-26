@@ -84,6 +84,10 @@ contains
       !  initialize
       !---------------------------------------------------------------------
       call namelist%ReadNamelist(config_filename)
+      namelist%n_x = 2
+      namelist%n_y = 4
+      namelist%dx = 100.
+      namelist%dy = 100.
       
       call levelsgrid%Init(namelist)
       call levelsgrid%InitTransfer(namelist)
