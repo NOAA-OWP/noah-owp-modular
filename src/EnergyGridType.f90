@@ -1,6 +1,7 @@
 module EnergyGridType
 
   use NamelistRead, only: namelist_type
+  use GridlistRead, only: gridlist_type
   
   implicit none
   save
@@ -163,23 +164,25 @@ module EnergyGridType
   
   contains   
   
-    subroutine Init(this, namelist)
+    subroutine Init(this, namelist, gridlist)
   
       class(energygrid_type)                :: this
       type(namelist_type)                   :: namelist
+      type(gridlist_type)                   :: gridlist
   
-      call this%InitAllocate(namelist)
+      call this%InitAllocate(namelist,gridlist)
       call this%InitDefault()
   
     end subroutine Init
   
-    subroutine InitAllocate(this, namelist)
+    subroutine InitAllocate(this, namelist, gridlist)
   
       class(energygrid_type)                :: this
       type(namelist_type),intent(in)        :: namelist
+      type(gridlist_type),intent(in)        :: gridlist
   
-      associate(n_x   => namelist%n_x,   &
-                n_y   => namelist%n_y,   &
+      associate(n_x   => gridlist%n_x,   &
+                n_y   => gridlist%n_y,   &
                 nsoil => namelist%nsoil, &
                 nsnow => namelist%nsnow)
 
