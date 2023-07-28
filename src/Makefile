@@ -9,6 +9,7 @@ F90FLAGS := -cpp ${F90FLAGS}
 
 OBJS = ErrorCheckModule.o \
        NamelistRead.o \
+       GridlistRead.o \
        ParametersRead.o  \
        LevelsType.o   \
        LevelsGridType.o   \
@@ -73,11 +74,17 @@ clean:
 #
 
 NamelistRead.o: ErrorCheckModule.o
-LevelsType.o: NamelistRead.o
-DomainType.o: NamelistRead.o LevelsType.o DateTimeUtilsModule.o
+GridlistRead.o: NamelistRead.o
+# LevelsType.o: 
+LevelsGridType.o: NamelistRead.o
+DomainType.o: NamelistRead.o
+DomainGridType.o: NamelistRead.o GridlistRead.o DateTimeUtilsModule.o
 OptionsType.o: NamelistRead.o
-ParametersType.o: NamelistRead.o ParametersRead.o
-ForcingType.o: NamelistRead.o
+OptionsGridType.o: NamelistRead.o
+ParametersType.o: NamelistRead.o
+ParametersGridType.o: NamelistRead.o GridlistRead.o ParametersRead.o DomainGridType.o
+# ForcingType.o:
+ForcingGridType.o: NamelistRead.o GridlistRead.o
 EnergyType.o: NamelistRead.o
 WaterType.o: NamelistRead.o
 WaterModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
@@ -122,5 +129,7 @@ UtilitiesModule.o: DomainType.o ForcingType.o EnergyType.o
 RunModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
                 ForcingType.o WaterType.o NamelistRead.o ../driver/AsciiReadModule.o \
                 ../driver/OutputModule.o UtilitiesModule.o ForcingModule.o InterceptionModule.o \
-                EnergyModule.o WaterModule.o DateTimeUtilsModule.o
+                EnergyModule.o WaterModule.o DateTimeUtilsModule.o OptionsGridType.o \
+                LevelsGridType.o DomainGridType.o ParametersGridType.o EnergyGridType.o \
+                ForcingGridType.o WaterGridType.o GridlistRead.o
 
