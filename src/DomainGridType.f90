@@ -1,6 +1,7 @@
 module DomainGridType
   
   use NamelistRead, only: namelist_type
+  use GridlistRead, only: gridlist_type
   use DateTimeUtilsModule
   
   implicit none
@@ -53,19 +54,21 @@ module DomainGridType
   
       class(domaingrid_type) :: this
       type(namelist_type)    :: namelist
+      type(gridlist_type)    :: gridlist
   
-      call this%InitAllocate(namelist)
+      call this%InitAllocate(namelist,gridlist)
       call this%InitDefault()
   
     end subroutine Init
   
-    subroutine InitAllocate(this, namelist)
+    subroutine InitAllocate(this, namelist, gridlist)
   
-      class(domaingrid_type) :: this
-      type(namelist_type)    :: namelist
+      class(domaingrid_type)          :: this
+      type(namelist_type), intent(in) :: namelist
+      type(gridlist_type), intent(in) :: gridlist
   
-      associate(n_x => namelist%n_x,     &
-                n_y => namelist%n_y,     &
+      associate(n_x   => gridlist%n_x,   &
+                n_y   => gridlist%n_y,   &
                 nsoil => namelist%nsoil, &
                 nsnow => namelist%nsnow)
 
@@ -117,17 +120,18 @@ module DomainGridType
 
     end subroutine InitDefault
   
-    subroutine InitTransfer(this,namelist)
+    subroutine InitTransfer(this,namelist,gridlist)
   
       class(domaingrid_type)         :: this
       type(namelist_type),intent(in) :: namelist
+      type(gridlist_type),intent(in) :: gridlist
       integer                        :: ii
 
       this%dt                   = namelist%dt
-      this%dx                   = namelist%dx
-      this%dy                   = namelist%dy
-      this%n_x                  = namelist%n_x
-      this%n_y                  = namelist%n_y
+      this%dx                   = gridlist%dx
+      this%dy                   = gridlist%dy
+      this%n_x                  = gridlist%n_x
+      this%n_y                  = gridlist%n_y
       this%startdate            = namelist%startdate
       this%enddate              = namelist%enddate
       this%lat(:,:)             = namelist%lat
@@ -135,7 +139,7 @@ module DomainGridType
       this%terrain_slope(:,:)   = namelist%terrain_slope
       this%azimuth(:,:)         = namelist%azimuth
       this%ZREF                 = namelist%ZREF
-      this%vegtyp(:,:)          = namelist%vegtyp
+      this%vegtyp(:,:)          = gridlist%vegtyp(:,:)
       this%croptype(:,:)        = namelist%croptype
       this%isltyp(:,:)          = namelist%isltyp
       this%IST(:,:)             = namelist%sfctyp
