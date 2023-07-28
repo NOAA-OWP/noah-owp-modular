@@ -14,12 +14,17 @@ module GridlistRead
   integer                            :: dy
   integer,allocatable,dimension(:,:) :: vegtyp
 
+  contains
+
+    procedure, public  :: ReadGridlist
+
   end type
 
 contains
 
   subroutine ReadGridlist(this,namelist)
 
+    class(gridlist_type)               :: this
     type(namelist_type),intent(in)     :: namelist 
     logical                            :: lexist
     character*256                      :: name
@@ -37,12 +42,14 @@ contains
     character*256                      :: name_dim_x 
     character*256                      :: name_att_dy 
     character*256                      :: name_att_dx 
+    character*256                      :: name_var_x 
+    character*256                      :: name_var_y 
     character*256                      :: name_var_vegtyp 
     integer,allocatable,dimension(:,:) :: read_vegtyp
 
-    associate(filename       => namelist%netcdfin_filename, &
+    associate(filename       => namelist%grid_filename,  &
               integerMissing => namelist%integerMissing, &
-              realMissing    => namelist%realMissing, &
+              realMissing    => namelist%realMissing,    &
               ncid           => this%ncid)
 
     !----------------------------------------------------------------------------
@@ -57,7 +64,7 @@ contains
     name_var_vegtyp = 'vegtyp'
 
     !----------------------------------------------------------------------------
-    ! Set to scalars to missing values
+    ! Set scalars to missing values
     !----------------------------------------------------------------------------
     read_nx          = realMissing
     read_ny          = realMissing
