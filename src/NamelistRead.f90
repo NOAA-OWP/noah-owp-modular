@@ -10,11 +10,10 @@ private
 type, public :: namelist_type
 
   real               :: dt                 ! model timestep (s)
-  real               :: dx
-  real               :: dy
   character(len=12)  :: startdate          ! UTC start datetime of the model run ( YYYYMMDDHHmm )
   character(len=12)  :: enddate            ! UTC end datetime of the model run ( YYYYMMDDHHmm )
   character(len=256) :: forcing_filename     ! directory/name of the input/forcing file
+  character(len=256) :: grid_filename
   character(len=256) :: output_filename    ! directory/name of the output file
   character(len=256) :: parameter_dir      ! name of the directory where parameter TBLs reside
   character(len=256) :: noahowp_table       ! name of noahowp parameter table
@@ -34,12 +33,9 @@ type, public :: namelist_type
   integer            :: nsnow              ! number of snow layers
   integer            :: nveg               ! number of vegetation types
   real               :: soil_depth         ! soil layer thickness
-  integer            :: vegtyp             ! land cover type
   integer            :: croptype           ! crop type (SET TO 0, no crops currently supported)
   integer            :: sfctyp             ! surface type (1 = land, 2 = lake)
   integer            :: soilcolor          ! soil color code
-  integer            :: n_x                !
-  integer            :: n_y                !
 
   real, allocatable, dimension(:) :: zsoil   ! depth of layer-bottom from soil surface
   real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
@@ -98,6 +94,7 @@ contains
     character(len=12)  :: startdate
     character(len=12)  :: enddate
     character(len=256) :: forcing_filename
+    character(len=256) :: grid_filename
     character(len=256) :: output_filename
     character(len=256) :: parameter_dir
     character(len=256) :: soil_table
@@ -154,7 +151,7 @@ contains
     !--------------------------- !
     !   define namelist groups   !
     !--------------------------- !
-    namelist / timing          / dt,startdate,enddate,forcing_filename,output_filename
+    namelist / timing          / dt,startdate,enddate,forcing_filename,grid_filename,output_filename
     namelist / parameters      / parameter_dir, soil_table, general_table, noahowp_table,&
                                  soil_class_name, veg_class_name
     namelist / location        / lat,lon,terrain_slope,azimuth
@@ -185,6 +182,7 @@ contains
     startdate        = stringMissing
     enddate          = stringMissing
     forcing_filename   = stringMissing
+    grid_filename    = stringMissing
     output_filename  = stringMissing
     parameter_dir    = stringMissing
     soil_table       = stringMissing
@@ -308,6 +306,7 @@ contains
     if(startdate        /= stringMissing) then; this%startdate = startdate; else; write(*,'(A)') 'ERROR: required entry startdate not found in namelist'; stop; end if
     if(enddate          /= stringMissing) then; this%enddate = enddate; else; write(*,'(A)') 'ERROR: required entry enddate not found in namelist'; stop; end if
     if(forcing_filename /= stringMissing) then; this%forcing_filename = forcing_filename; else; write(*,'(A)') 'ERROR: required entry forcing_filename not found in namelist'; stop; end if
+    if(grid_filename    /= stringMissing) then; this%grid_filename = grid_filename; else; write(*,'(A)') 'ERROR: required entry grid_filename not found in namelist'; stop; end if
     if(output_filename  /= stringMissing) then; this%output_filename = output_filename; else; write(*,'(A)') 'ERROR: required entry output_filename not found in namelist'; stop; end if
     if(parameter_dir    /= stringMissing) then; this%parameter_dir = parameter_dir; else; write(*,'(A)') 'ERROR: required entry parameter_dir not found in namelist'; stop; end if
     if(soil_table       /= stringMissing) then; this%soil_table = soil_table; else; write(*,'(A)') 'ERROR: required entry soil_table  not found in namelist'; stop; end if
@@ -328,7 +327,7 @@ contains
     if(nsnow      /= integerMissing) then; this%nsnow = nsnow; else; write(*,'(A)') 'ERROR: required entry nsnow not found in namelist'; stop; end if
     if(nveg       /= integerMissing) then; this%nveg = nveg; else; write(*,'(A)') 'ERROR: required entry nveg not found in namelist'; stop; end if
     if(soil_depth /= integerMissing) then; this%soil_depth = soil_depth; else; write(*,'(A)') 'ERROR: required entry soil_depth not found in namelist'; stop; end if
-    if(vegtyp     /= integerMissing) then; this%vegtyp = vegtyp; else; write(*,'(A)') 'ERROR: required entry vegtyp not found in namelist'; stop; end if
+    !if(vegtyp     /= integerMissing) then; this%vegtyp = vegtyp; else; write(*,'(A)') 'ERROR: required entry vegtyp not found in namelist'; stop; end if
     if(croptype   /= integerMissing) then; this%croptype = croptype; else; write(*,'(A)') 'ERROR: required entry croptype not found in namelist'; stop; end if
     if(sfctyp     /= integerMissing) then; this%sfctyp = sfctyp; else; write(*,'(A)') 'ERROR: required entry sfctyp not found in namelist'; stop; end if
     if(soilcolor  /= integerMissing) then; this%soilcolor = soilcolor; else; write(*,'(A)') 'ERROR: required entry soilcolor not found in namelist'; stop; end if
