@@ -1,6 +1,7 @@
 module WaterGridType
 
 use NamelistRead, only: namelist_type
+use GridlistRead, only: gridlist_type
 
 implicit none
 save
@@ -90,23 +91,25 @@ end type watergrid_type
 
 contains   
 
-  subroutine Init(this, namelist)
+  subroutine Init(this, namelist, gridlist)
 
-    class(watergrid_type)                     :: this
-    type(namelist_type)                   :: namelist
+    class(watergrid_type)   :: this
+    type(namelist_type)     :: namelist
+    type(gridlist_type)     :: gridlist
 
-    call this%InitAllocate(namelist)
+    call this%InitAllocate(namelist,gridlist)
     call this%InitDefault()
 
   end subroutine Init
 
-  subroutine InitAllocate(this, namelist)
+  subroutine InitAllocate(this, namelist, gridlist)
 
-    class(watergrid_type) :: this
-    type(namelist_type)                   :: namelist
+    class(watergrid_type)          :: this
+    type(namelist_type),intent(in) :: namelist
+    type(gridlist_type),intent(in) :: gridlist
 
-    associate(n_x   => namelist%n_x,   &
-              n_y   => namelist%n_y,   &
+    associate(n_x   => gridlist%n_x,   &
+              n_y   => gridlist%n_y,   &
               nsoil => namelist%nsoil, &
               nsnow => namelist%nsnow)
 
@@ -258,14 +261,15 @@ contains
 
   end subroutine InitDefault
 
-  subroutine InitTransfer(this, namelist)
+  subroutine InitTransfer(this, namelist, gridlist)
 
-    class(watergrid_type) :: this
-    type(namelist_type) :: namelist
-    integer              :: ix, iy
+    class(watergrid_type)           :: this
+    type(namelist_type),intent(in)  :: namelist
+    type(gridlist_type),intent(in)  :: gridlist
+    integer                         :: ix, iy
 
-    do ix = 1, namelist%n_x
-      do iy = 1, namelist%n_y
+    do ix = 1, gridlist%n_x
+      do iy = 1, gridlist%n_y
         this%sh2o(ix,iy,:)     = namelist%sh2o(:)
         this%sice(ix,iy,:)     = namelist%sice(:)
         this%smc(ix,iy,:)      = this%sh2o(ix,iy,:) + this%sice(ix,iy,:)  ! volumetric soil water

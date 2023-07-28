@@ -50,7 +50,7 @@ module DomainGridType
   
   contains   
   
-    subroutine Init(this, namelist)
+    subroutine Init(this, namelist, gridlist)
   
       class(domaingrid_type) :: this
       type(namelist_type)    :: namelist

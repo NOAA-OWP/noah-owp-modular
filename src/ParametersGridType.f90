@@ -1,6 +1,7 @@
 module ParametersGridType
 
   use NamelistRead, only: namelist_type
+  use GridlistRead, only: gridlist_type
   use ParametersRead
   use DomainGridType
 
@@ -155,25 +156,27 @@ module ParametersGridType
 
   contains
 
-  subroutine Init(this, namelist)
+  subroutine Init(this, namelist, gridlist)
 
     implicit none
     class(parametersgrid_type)            :: this
     type(namelist_type)                   :: namelist
+    type(gridlist_type)                   :: gridlist
 
-    call this%InitAllocate(namelist)
+    call this%InitAllocate(namelist,gridlist)
     call this%InitDefault()
 
   end subroutine Init
 
-  subroutine InitAllocate(this, namelist)
+  subroutine InitAllocate(this, namelist, gridlist)
 
     implicit none
-    class(parametersgrid_type)   :: this
-    type(namelist_type)          :: namelist
+    class(parametersgrid_type)     :: this
+    type(namelist_type),intent(in) :: namelist
+    type(gridlist_type),intent(in) :: gridlist
 
-    associate(n_x   => namelist%n_x,  &
-              n_y   => namelist%n_y,  &
+    associate(n_x   => gridlist%n_x,  &
+              n_y   => gridlist%n_y,  &
               nsoil => namelist%nsoil)
 
     allocate(this%bexp(n_x,n_y,nsoil))
@@ -535,8 +538,8 @@ module ParametersGridType
     this%PSIWLT(:,:)               = -150.0      ! originally a fixed parameter set in ENERGY()
     this%TBOT(:,:)                 = 263.0       ! (K) can be updated depending on option OPT_TBOT
     
-    do ix = 1, namelist%n_x
-      do iy = 1, namelist%n_y
+    do ix = 1, domaingrid%n_x
+      do iy = 1, domaingrid%n_y
 
         associate(isltyp    => domaingrid%isltyp(ix,iy), &
                   vegtyp    => domaingrid%vegtyp(ix,iy), &
