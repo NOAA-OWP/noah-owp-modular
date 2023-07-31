@@ -90,7 +90,7 @@ contains
       call gridlist%ReadGridlist(namelist)
       
       call levelsgrid%Init(namelist)
-      call levelsgrid%InitTransfer(namelist)
+      call levelsgrid%InitTransfer(namelist,gridlist)
 
       call domaingrid%Init(namelist,gridlist)
       call domaingrid%InitTransfer(namelist,gridlist)
@@ -99,7 +99,7 @@ contains
       call optionsgrid%InitTransfer(namelist)
 
       call parametersgrid%Init(namelist,gridlist)
-      call parametersgrid%paramRead(namelist,domaingrid)
+      call parametersgrid%paramRead(namelist,gridlist,domaingrid)
 
       call forcinggrid%Init(gridlist)
       call forcinggrid%InitTransfer(namelist)
