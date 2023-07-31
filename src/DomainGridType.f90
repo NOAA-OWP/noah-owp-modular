@@ -134,8 +134,8 @@ module DomainGridType
       this%n_y                  = gridlist%n_y
       this%startdate            = namelist%startdate
       this%enddate              = namelist%enddate
-      this%lat(:,:)             = namelist%lat
-      this%lon(:,:)             = namelist%lon
+      this%lat(:,:)             = gridlist%lat(:,:)
+      this%lon(:,:)             = gridlist%lon(:,:)
       this%terrain_slope(:,:)   = namelist%terrain_slope
       this%azimuth(:,:)         = namelist%azimuth
       this%ZREF                 = namelist%ZREF
