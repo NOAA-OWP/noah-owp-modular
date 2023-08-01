@@ -3,7 +3,7 @@ import pandas as pd
 from netCDF4 import Dataset
 import sys
 
-nc_cntrl = Dataset("../../../old/noah-owp-modular-clean/data/output.nc")
+nc_cntrl = Dataset("../../../noah-owp-modular-clean/data/output.nc")
 nc_grid = Dataset("../../data/output.nc")
 
 for var in nc_cntrl.variables.keys():
