@@ -7,16 +7,16 @@ module GridlistRead
 
   type, public :: gridlist_type
   
-  integer                            :: ncid  
-  integer                            :: n_x
-  integer                            :: n_y
-  real                               :: dx
-  real                               :: dy
-  integer                            :: nveg
-  character*256                      :: veg_class_name
-  integer,allocatable,dimension(:,:) :: vegtyp
-  real,allocatable,dimension(:,:)    :: lat 
-  real,allocatable,dimension(:,:)    :: lon   
+  integer                            :: ncid              ! netcdf file id
+  integer                            :: n_x               ! number of grid cells in x dimension
+  integer                            :: n_y               ! number of grid cells in y dimension
+  real                               :: dx                ! distance between grid cell nodes in x dimension
+  real                               :: dy                ! distance between grid cell nodes in y dimension
+  integer                            :: nveg              ! number of vegetation types
+  character*256                      :: veg_class_name    ! vegetation class data source - "MODIFIED_IGBP_MODIS_NOAH" or "USGS"
+  integer,allocatable,dimension(:,:) :: vegtyp            ! vegetation type
+  real,allocatable,dimension(:,:)    :: lat               ! latitude [degrees]  (-90 to 90)
+  real,allocatable,dimension(:,:)    :: lon               ! longitude [degrees] (-180 to 180)
 
   contains
 
