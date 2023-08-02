@@ -77,57 +77,57 @@ module ParametersGridType
     real,allocatable,dimension(:,:,:)                 :: RHOS                      ! stem reflectance (1 = vis, 2 = NIR)
     real,allocatable,dimension(:,:,:)                 :: TAUL                      ! leaf transmittance (1 = vis, 2 = NIR)
     real,allocatable,dimension(:,:,:)                 :: TAUS                      ! stem transmittance (1 = vis, 2 = NIR)
-    real,allocatable,dimension(:,:)                   :: TFRZ                      ! freezing/melting point (k)
-    real,allocatable,dimension(:,:)                   :: HSUB                      ! latent heat of sublimation (j/kg)
-    real,allocatable,dimension(:,:)                   :: HVAP                      ! latent heat of vaporization (j/kg)
-    real,allocatable,dimension(:,:)                   :: HFUS                      ! latent heat of fusion (j/kg)
-    real,allocatable,dimension(:,:)                   :: CWAT                      ! specific heat capacity of water (j/m3/k)
-    real,allocatable,dimension(:,:)                   :: CICE                      ! specific heat capacity of ice (j/m3/k)
-    real,allocatable,dimension(:,:)                   :: CPAIR                     ! heat capacity dry air at const pres (j/kg/k)
-    real,allocatable,dimension(:,:)                   :: TKWAT                     ! thermal conductivity of water (w/m/k)
-    real,allocatable,dimension(:,:)                   :: TKICE                     ! thermal conductivity of ice (w/m/k)
-    real,allocatable,dimension(:,:)                   :: TKAIR                     ! thermal conductivity of air (w/m/k) (not used MB: 20140718)
-    real,allocatable,dimension(:,:)                   :: RAIR                      ! gas constant for dry air (j/kg/k)
-    real,allocatable,dimension(:,:)                   :: RW                        ! gas constant for  water vapor (j/kg/k)
-    real,allocatable,dimension(:,:)                   :: DENH2O                    ! density of water (kg/m3)
-    real,allocatable,dimension(:,:)                   :: DENICE                    ! density of ice (kg/m3)
-    real,allocatable,dimension(:,:)                   :: THKW                      ! thermal conductivity of water in soil module (W/m/K)
-    real,allocatable,dimension(:,:)                   :: THKO                      ! thermal conductivity of for other soil components in soil module (W/m/K)
-    real,allocatable,dimension(:,:)                   :: THKQTZ                    ! thermal conductivity of quartz in soil module (W/m/K)
+    real                                              :: TFRZ                      ! freezing/melting point (k)
+    real                                              :: HSUB                      ! latent heat of sublimation (j/kg)
+    real                                              :: HVAP                      ! latent heat of vaporization (j/kg)
+    real                                              :: HFUS                      ! latent heat of fusion (j/kg)
+    real                                              :: CWAT                      ! specific heat capacity of water (j/m3/k)
+    real                                              :: CICE                      ! specific heat capacity of ice (j/m3/k)
+    real                                              :: CPAIR                     ! heat capacity dry air at const pres (j/kg/k)
+    real                                              :: TKWAT                     ! thermal conductivity of water (w/m/k)
+    real                                              :: TKICE                     ! thermal conductivity of ice (w/m/k)
+    real                                              :: TKAIR                     ! thermal conductivity of air (w/m/k) (not used MB: 20140718)
+    real                                              :: RAIR                      ! gas constant for dry air (j/kg/k)
+    real                                              :: RW                        ! gas constant for  water vapor (j/kg/k)
+    real                                              :: DENH2O                    ! density of water (kg/m3)
+    real                                              :: DENICE                    ! density of ice (kg/m3)
+    real                                              :: THKW                      ! thermal conductivity of water in soil module (W/m/K)
+    real                                              :: THKO                      ! thermal conductivity of for other soil components in soil module (W/m/K)
+    real                                              :: THKQTZ                    ! thermal conductivity of quartz in soil module (W/m/K)
     real,allocatable,dimension(:,:)                   :: SSI                       ! liquid water holding capacity for snowpack (m3/m3)
     real,allocatable,dimension(:,:)                   :: MFSNO                     ! fractional snow covered area (FSNO) curve parameter
     real,allocatable,dimension(:,:)                   :: Z0SNO                     ! snow surface roughness length (m)
-    real,allocatable,dimension(:,:)                   :: SWEMX                     ! new SWE required (QSNOW * dt) to fully cover old snow (mm)
-    real,allocatable,dimension(:,:)                   :: TAU0                      ! tau0 from Yang97 eqn. 10a
-    real,allocatable,dimension(:,:)                   :: GRAIN_GROWTH              ! growth from vapor diffusion Yang97 eqn. 10b
-    real,allocatable,dimension(:,:)                   :: EXTRA_GROWTH              ! extra growth near freezing Yang97 eqn. 10c
-    real,allocatable,dimension(:,:)                   :: DIRT_SOOT                 ! dirt and soot term Yang97 eqn. 10d
-    real,allocatable,dimension(:,:)                   :: BATS_COSZ                 ! zenith angle snow albedo adjustment; b in Yang97 eqn. 15
-    real,allocatable,dimension(:,:)                   :: BATS_VIS_NEW              ! new snow visible albedo
-    real,allocatable,dimension(:,:)                   :: BATS_NIR_NEW              ! new snow NIR albedo
-    real,allocatable,dimension(:,:)                   :: BATS_VIS_AGE              ! age factor for diffuse visible snow albedo Yang97 eqn. 17
-    real,allocatable,dimension(:,:)                   :: BATS_NIR_AGE              ! age factor for diffuse NIR snow albedo Yang97 eqn. 18
-    real ,allocatable,dimension(:,:)                  :: BATS_VIS_DIR              ! cosz factor for direct visible snow albedo Yang97 eqn. 15
-    real,allocatable,dimension(:,:)                   :: BATS_NIR_DIR              ! cosz factor for direct NIR snow albedo Yang97 eqn. 16
+    real                                              :: SWEMX                     ! new SWE required (QSNOW * dt) to fully cover old snow (mm)
+    real                                              :: TAU0                      ! tau0 from Yang97 eqn. 10a
+    real                                              :: GRAIN_GROWTH              ! growth from vapor diffusion Yang97 eqn. 10b
+    real                                              :: EXTRA_GROWTH              ! extra growth near freezing Yang97 eqn. 10c
+    real                                              :: DIRT_SOOT                 ! dirt and soot term Yang97 eqn. 10d
+    real                                              :: BATS_COSZ                 ! zenith angle snow albedo adjustment; b in Yang97 eqn. 15
+    real                                              :: BATS_VIS_NEW              ! new snow visible albedo
+    real                                              :: BATS_NIR_NEW              ! new snow NIR albedo
+    real                                              :: BATS_VIS_AGE              ! age factor for diffuse visible snow albedo Yang97 eqn. 17
+    real                                              :: BATS_NIR_AGE              ! age factor for diffuse NIR snow albedo Yang97 eqn. 18
+    real                                              :: BATS_VIS_DIR              ! cosz factor for direct visible snow albedo Yang97 eqn. 15
+    real                                              :: BATS_NIR_DIR              ! cosz factor for direct NIR snow albedo Yang97 eqn. 16
     real,allocatable,dimension(:,:)                   :: RSURF_SNOW                ! surface resistence for snow [s/m]
     real,allocatable,dimension(:,:)                   :: RSURF_EXP                 ! exponent in the shape parameter for soil resistance option 1
     real,allocatable,dimension(:,:,:)                 :: ALBSAT                    ! saturated soil albedo (1=vis, 2=nir)
     real,allocatable,dimension(:,:,:)                 :: ALBDRY                    ! dry soil albedo (1=vis, 2=nir)
-    real,allocatable,dimension(:,:,:)                 :: ALBICE                    ! Land ice albedo (1=vis, 2=nir)
-    real,allocatable,dimension(:,:,:)                 :: ALBLAK                    ! Lake ice albedo (1=vis, 2=nir)
-    real,allocatable,dimension(:,:,:)                 :: OMEGAS                    ! two-stream parameter omega for snow (1=vis, 2=nir)
-    real,allocatable,dimension(:,:)                   :: BETADS                    ! two-stream parameter betad for snow
-    real,allocatable,dimension(:,:)                   :: BETAIS                    ! two-stream parameter betaI for snow
+    real,dimension(2)                                 :: ALBICE                    ! Land ice albedo (1=vis, 2=nir)
+    real,dimension(2)                                 :: ALBLAK                    ! Lake ice albedo (1=vis, 2=nir)
+    real,dimension(2)                                 :: OMEGAS                    ! two-stream parameter omega for snow (1=vis, 2=nir)
+    real                                              :: BETADS                    ! two-stream parameter betad for snow
+    real                                              :: BETAIS                    ! two-stream parameter betaI for snow
     real,allocatable,dimension(:,:,:)                 :: EG                        ! emissivity of land surface (1=soil,2=lake)
     real,allocatable,dimension(:,:)                   :: WSLMAX                    ! maximum lake water storage (mm)
     real,allocatable,dimension(:,:)                   :: max_liq_mass_fraction     ! For snow water retention
     real,allocatable,dimension(:,:)                   :: SNOW_RET_FAC              ! snowpack water release timescale factor (1/s)
     real,allocatable,dimension(:,:)                   :: TOPT                      ! Optimum transpiration air temperature [K]
-    real,allocatable,dimension(:,:)                   :: O2                        ! o2 partial pressure, from MPTABLE.TBL
-    real,allocatable,dimension(:,:)                   :: CO2                       ! co2 partial pressure, from MPTABLE.TBL
+    real                                              :: O2                        ! o2 partial pressure, from MPTABLE.TBL
+    real                                              :: CO2                       ! co2 partial pressure, from MPTABLE.TBL
     real,allocatable,dimension(:,:)                   :: PSIWLT                    ! matric potential for wilting point (m)  (orig a fixed param.)
     real,allocatable,dimension(:,:)                   :: TBOT                      ! bottom condition for soil temp. (k)
-    real,allocatable,dimension(:,:)                   :: GRAV                      ! acceleration due to gravity (m/s2)
+    real                                              :: GRAV                      ! acceleration due to gravity (m/s2)
     real,allocatable,dimension(:,:)                   :: rain_snow_thresh          ! user-defined rain-snow temperature threshold (°C)
     integer                                           :: ISURBAN                   ! vegtype code for urban land cover
     integer                                           :: ISWATER                   ! vegtype code for water
@@ -169,8 +169,8 @@ module ParametersGridType
   subroutine InitAllocate(this, namelist)
 
     implicit none
-    class(parametersgrid_type)   :: this
-    type(namelist_type)          :: namelist
+    class(parametersgrid_type)     :: this
+    type(namelist_type),intent(in) :: namelist
 
     associate(n_x   => namelist%n_x,  &
               n_y   => namelist%n_y,  &
@@ -243,57 +243,20 @@ module ParametersGridType
     allocate(this%RHOS(n_x,n_y,2))
     allocate(this%TAUL(n_x,n_y,2))
     allocate(this%TAUS(n_x,n_y,2))
-    allocate(this%TFRZ(n_x,n_y))
-    allocate(this%HSUB(n_x,n_y))
-    allocate(this%HVAP(n_x,n_y))
-    allocate(this%HFUS(n_x,n_y))
-    allocate(this%CWAT(n_x,n_y))
-    allocate(this%CICE(n_x,n_y))
-    allocate(this%CPAIR(n_x,n_y))
-    allocate(this%TKWAT(n_x,n_y))
-    allocate(this%TKICE(n_x,n_y))
-    allocate(this%TKAIR(n_x,n_y))
-    allocate(this%RAIR(n_x,n_y))
-    allocate(this%RW(n_x,n_y))
-    allocate(this%DENH2O(n_x,n_y))
-    allocate(this%DENICE(n_x,n_y))
-    allocate(this%THKW(n_x,n_y))
-    allocate(this%THKO(n_x,n_y))
-    allocate(this%THKQTZ(n_x,n_y))
     allocate(this%SSI(n_x,n_y))
     allocate(this%MFSNO(n_x,n_y))
     allocate(this%Z0SNO(n_x,n_y))
-    allocate(this%SWEMX(n_x,n_y))
-    allocate(this%TAU0(n_x,n_y))
-    allocate(this%GRAIN_GROWTH(n_x,n_y))
-    allocate(this%EXTRA_GROWTH(n_x,n_y))
-    allocate(this%DIRT_SOOT(n_x,n_y))
-    allocate(this%BATS_COSZ(n_x,n_y))
-    allocate(this%BATS_VIS_NEW(n_x,n_y))
-    allocate(this%BATS_NIR_NEW(n_x,n_y))
-    allocate(this%BATS_VIS_AGE(n_x,n_y))
-    allocate(this%BATS_NIR_AGE(n_x,n_y))
-    allocate(this%BATS_VIS_DIR(n_x,n_y))
-    allocate(this%BATS_NIR_DIR(n_x,n_y))
     allocate(this%RSURF_SNOW(n_x,n_y))
     allocate(this%RSURF_EXP(n_x,n_y))
     allocate(this%ALBSAT(n_x,n_y,2))
     allocate(this%ALBDRY(n_x,n_y,2))
-    allocate(this%ALBICE(n_x,n_y,2))
-    allocate(this%ALBLAK(n_x,n_y,2))
-    allocate(this%OMEGAS(n_x,n_y,2))
-    allocate(this%BETADS(n_x,n_y))
-    allocate(this%BETAIS(n_x,n_y))
     allocate(this%EG(n_x,n_y,2))
     allocate(this%WSLMAX(n_x,n_y))
     allocate(this%max_liq_mass_fraction(n_x,n_y))
     allocate(this%SNOW_RET_FAC(n_x,n_y))
     allocate(this%TOPT(n_x,n_y))
-    allocate(this%O2(n_x,n_y))
-    allocate(this%CO2(n_x,n_y))
     allocate(this%PSIWLT(n_x,n_y))
     allocate(this%TBOT(n_x,n_y))
-    allocate(this%GRAV(n_x,n_y))
     allocate(this%rain_snow_thresh(n_x,n_y))
 
     end associate
@@ -372,57 +335,57 @@ module ParametersGridType
     this%RHOS(:,:,:) = huge(1.0)
     this%TAUL(:,:,:) = huge(1.0)
     this%TAUS(:,:,:) = huge(1.0)
-    this%TFRZ(:,:) = huge(1.0)
-    this%HSUB(:,:) = huge(1.0)
-    this%HVAP(:,:) = huge(1.0)
-    this%HFUS(:,:) = huge(1.0)
-    this%CWAT(:,:) = huge(1.0)
-    this%CICE(:,:) = huge(1.0)
-    this%CPAIR(:,:) = huge(1.0)
-    this%TKWAT(:,:) = huge(1.0)
-    this%TKICE(:,:) = huge(1.0)
-    this%TKAIR(:,:) = huge(1.0)
-    this%RAIR(:,:) = huge(1.0)
-    this%RW(:,:) = huge(1.0)
-    this%DENH2O(:,:) = huge(1.0)
-    this%DENICE(:,:) = huge(1.0)
-    this%THKW(:,:) = huge(1.0)
-    this%THKO(:,:) = huge(1.0)
-    this%THKQTZ(:,:) = huge(1.0)
+    this%TFRZ = huge(1.0)
+    this%HSUB = huge(1.0)
+    this%HVAP = huge(1.0)
+    this%HFUS = huge(1.0)
+    this%CWAT = huge(1.0)
+    this%CICE = huge(1.0)
+    this%CPAIR = huge(1.0)
+    this%TKWAT = huge(1.0)
+    this%TKICE = huge(1.0)
+    this%TKAIR = huge(1.0)
+    this%RAIR = huge(1.0)
+    this%RW = huge(1.0)
+    this%DENH2O = huge(1.0)
+    this%DENICE = huge(1.0)
+    this%THKW = huge(1.0)
+    this%THKO = huge(1.0)
+    this%THKQTZ = huge(1.0)
     this%SSI(:,:) = huge(1.0)
     this%MFSNO(:,:) = huge(1.0)
     this%Z0SNO(:,:) = huge(1.0)
-    this%SWEMX(:,:) = huge(1.0)
-    this%TAU0(:,:) = huge(1.0)
-    this%GRAIN_GROWTH(:,:) = huge(1.0)
-    this%EXTRA_GROWTH(:,:) = huge(1.0)
-    this%DIRT_SOOT(:,:) = huge(1.0)
-    this%BATS_COSZ(:,:) = huge(1.0)
-    this%BATS_VIS_NEW(:,:) = huge(1.0)
-    this%BATS_NIR_NEW(:,:) = huge(1.0)
-    this%BATS_VIS_AGE(:,:) = huge(1.0)
-    this%BATS_NIR_AGE(:,:) = huge(1.0)
-    this%BATS_VIS_DIR(:,:) = huge(1.0)
-    this%BATS_NIR_DIR(:,:) = huge(1.0)
+    this%SWEMX = huge(1.0)
+    this%TAU0 = huge(1.0)
+    this%GRAIN_GROWTH = huge(1.0)
+    this%EXTRA_GROWTH = huge(1.0)
+    this%DIRT_SOOT = huge(1.0)
+    this%BATS_COSZ = huge(1.0)
+    this%BATS_VIS_NEW = huge(1.0)
+    this%BATS_NIR_NEW = huge(1.0)
+    this%BATS_VIS_AGE = huge(1.0)
+    this%BATS_NIR_AGE = huge(1.0)
+    this%BATS_VIS_DIR = huge(1.0)
+    this%BATS_NIR_DIR = huge(1.0)
     this%RSURF_SNOW(:,:) = huge(1.0)
     this%RSURF_EXP(:,:) = huge(1.0)
     this%ALBSAT(:,:,:) = huge(1.0)
     this%ALBDRY(:,:,:) = huge(1.0)
-    this%ALBICE(:,:,:) = huge(1.0)
-    this%ALBLAK(:,:,:) = huge(1.0)
-    this%OMEGAS(:,:,:) = huge(1.0)
-    this%BETADS(:,:) = huge(1.0)
-    this%BETAIS(:,:) = huge(1.0)
+    this%ALBICE(:) = huge(1.0)
+    this%ALBLAK(:) = huge(1.0)
+    this%OMEGAS(:) = huge(1.0)
+    this%BETADS = huge(1.0)
+    this%BETAIS = huge(1.0)
     this%EG(:,:,:) = huge(1.0)
     this%WSLMAX(:,:) = huge(1.0)
     this%max_liq_mass_fraction(:,:) = huge(1.0)
     this%SNOW_RET_FAC(:,:) = huge(1.0)
     this%TOPT(:,:) = huge(1.0)
-    this%O2(:,:) = huge(1.0)
-    this%CO2(:,:) = huge(1.0)
+    this%O2 = huge(1.0)
+    this%CO2 = huge(1.0)
     this%PSIWLT(:,:) = huge(1.0)
     this%TBOT(:,:) = huge(1.0)
-    this%GRAV(:,:) = huge(1.0)
+    this%GRAV = huge(1.0)
     this%rain_snow_thresh(:,:) = huge(1.0)
 
     this%ISURBAN = huge(1)
@@ -473,22 +436,22 @@ module ParametersGridType
     this%ZBOT(:,:)                 = ZBOT_TABLE
     this%SSI(:,:)                  = SSI_TABLE
     this%Z0SNO(:,:)                = Z0SNO_TABLE
-    this%SWEMX(:,:)                = SWEMX_TABLE
-    this%TAU0(:,:)                 = TAU0_TABLE
-    this%GRAIN_GROWTH(:,:)         = GRAIN_GROWTH_TABLE
-    this%EXTRA_GROWTH(:,:)         = EXTRA_GROWTH_TABLE
-    this%DIRT_SOOT(:,:)            = DIRT_SOOT_TABLE
-    this%BATS_COSZ(:,:)            = BATS_COSZ_TABLE
-    this%BATS_VIS_NEW(:,:)         = BATS_VIS_NEW_TABLE
-    this%BATS_NIR_NEW(:,:)         = BATS_NIR_NEW_TABLE
-    this%BATS_VIS_AGE(:,:)         = BATS_VIS_AGE_TABLE
-    this%BATS_NIR_AGE(:,:)         = BATS_NIR_AGE_TABLE
-    this%BATS_VIS_DIR(:,:)         = BATS_VIS_DIR_TABLE
-    this%BATS_NIR_DIR(:,:)         = BATS_NIR_DIR_TABLE
+    this%SWEMX                     = SWEMX_TABLE
+    this%TAU0                      = TAU0_TABLE
+    this%GRAIN_GROWTH              = GRAIN_GROWTH_TABLE
+    this%EXTRA_GROWTH              = EXTRA_GROWTH_TABLE
+    this%DIRT_SOOT                 = DIRT_SOOT_TABLE
+    this%BATS_COSZ                 = BATS_COSZ_TABLE
+    this%BATS_VIS_NEW              = BATS_VIS_NEW_TABLE
+    this%BATS_NIR_NEW              = BATS_NIR_NEW_TABLE
+    this%BATS_VIS_AGE              = BATS_VIS_AGE_TABLE
+    this%BATS_NIR_AGE              = BATS_NIR_AGE_TABLE
+    this%BATS_VIS_DIR              = BATS_VIS_DIR_TABLE
+    this%BATS_NIR_DIR              = BATS_NIR_DIR_TABLE
     this%RSURF_SNOW(:,:)           = RSURF_SNOW_TABLE
     this%RSURF_EXP(:,:)            = RSURF_EXP_TABLE
-    this%BETADS(:,:)               = BETADS_TABLE
-    this%BETAIS(:,:)               = BETAIS_TABLE
+    this%BETADS                    = BETADS_TABLE
+    this%BETAIS                    = BETAIS_TABLE
     this%slope(:,:)                = SLOPE_TABLE(1)
     this%ISURBAN                   = ISURBAN_TABLE
     this%ISWATER                   = ISWATER_TABLE
@@ -504,39 +467,39 @@ module ParametersGridType
     this%urban_flag(:,:)           = .false.
     this%timean(:,:)               = 10.5
     this%fsatmx(:,:)               = 0.38
-    this%GRAV(:,:)                 = 9.80616
+    this%GRAV                      = 9.80616
     this%SB                        = 5.67E-08
     this%VKC                       = 0.40
-    this%TFRZ(:,:)                 = 273.16
-    this%HSUB(:,:)                 = 2.8440E06
-    this%HVAP(:,:)                 = 2.5104E06
-    this%HFUS(:,:)                 = 0.3336E06
-    this%CWAT(:,:)                 = 4.188E06
-    this%CICE(:,:)                 = 2.094E06
-    this%CPAIR(:,:)                = 1004.64
-    this%TKWAT(:,:)                = 0.6
-    this%TKICE(:,:)                = 2.2
-    this%TKAIR(:,:)                = 0.023
-    this%RAIR(:,:)                 = 287.04
-    this%RW(:,:)                   = 461.269
-    this%DENH2O(:,:)               = 1000.0
-    this%DENICE(:,:)               = 917.0
-    this%THKW(:,:)                 = 0.57
-    this%THKO(:,:)                 = 2.0
-    this%THKQTZ(:,:)               = 7.7
+    this%TFRZ                      = 273.16
+    this%HSUB                      = 2.8440E06
+    this%HVAP                      = 2.5104E06
+    this%HFUS                      = 0.3336E06
+    this%CWAT                      = 4.188E06
+    this%CICE                      = 2.094E06
+    this%CPAIR                     = 1004.64
+    this%TKWAT                     = 0.6
+    this%TKICE                     = 2.2
+    this%TKAIR                     = 0.023
+    this%RAIR                      = 287.04
+    this%RW                        = 461.269
+    this%DENH2O                    = 1000.0
+    this%DENICE                    = 917.0
+    this%THKW                      = 0.57
+    this%THKO                      = 2.0
+    this%THKQTZ                    = 7.7
     this%WSLMAX(:,:)               = 5000.0
     this%max_liq_mass_fraction(:,:) = 0.4
     this%SNOW_RET_FAC(:,:)         = 5.e-5
     this%NBAND                     = 2           ! do not change
     this%MPE                       = 1.E-06      ! do not change ! need to make this a parameter
     this%TOPT(:,:)                 = 1.E-06      ! Optimum transpiration air temperature [K]
-    this%CO2(:,:)                  = 395.e-06    ! co2 partial pressure, from CO2_TABLE var (set in MPTABLE.TBL)
-    this%O2(:,:)                   = 0.209       ! o2 partial pressure, from O2_TABLE var (set in MPTABLE.TBL)
+    this%CO2                       = 395.e-06    ! co2 partial pressure, from CO2_TABLE var (set in MPTABLE.TBL)
+    this%O2                        = 0.209       ! o2 partial pressure, from O2_TABLE var (set in MPTABLE.TBL)
     this%PSIWLT(:,:)               = -150.0      ! originally a fixed parameter set in ENERGY()
     this%TBOT(:,:)                 = 263.0       ! (K) can be updated depending on option OPT_TBOT
     
-    do ix = 1, namelist%n_x
-      do iy = 1, namelist%n_y
+    do ix = 1, domaingrid%n_x
+      do iy = 1, domaingrid%n_y
 
         associate(isltyp    => domaingrid%isltyp(ix,iy), &
                   vegtyp    => domaingrid%vegtyp(ix,iy), &
@@ -602,20 +565,20 @@ module ParametersGridType
         this%ALBSAT(ix,iy,2) = ALBSAT_TABLE(soilcolor, 2)
         this%ALBDRY(ix,iy,1) = ALBDRY_TABLE(soilcolor, 1)
         this%ALBDRY(ix,iy,2) = ALBDRY_TABLE(soilcolor, 2)
-        this%ALBICE(ix,iy,:) = ALBICE_TABLE
-        this%ALBLAK(ix,iy,:) = ALBLAK_TABLE
-        this%OMEGAS(ix,iy,:) = OMEGAS_TABLE
+        this%ALBICE(:) = ALBICE_TABLE
+        this%ALBLAK(:) = ALBLAK_TABLE
+        this%OMEGAS(:) = OMEGAS_TABLE
         this%EG(ix,iy,:)     = EG_TABLE
 
         ! Assign rain-snow threshold based on option
         IF(namelist%precip_phase_option == 2) THEN
-          this%rain_snow_thresh(ix,iy) = this%TFRZ(ix,iy) + 2.2
+          this%rain_snow_thresh(ix,iy) = this%TFRZ + 2.2
         ELSE IF(namelist%precip_phase_option == 3) THEN
-          this%rain_snow_thresh(ix,iy) = this%TFRZ(ix,iy)
+          this%rain_snow_thresh(ix,iy) = this%TFRZ
         ELSE IF(namelist%precip_phase_option == 5 .or. namelist%precip_phase_option == 6) THEN
-          this%rain_snow_thresh(ix,iy) = this%TFRZ(ix,iy) + namelist%rain_snow_thresh
+          this%rain_snow_thresh(ix,iy) = this%TFRZ + namelist%rain_snow_thresh
         ELSE 
-          this%rain_snow_thresh(ix,iy) = this%TFRZ(ix,iy) ! set to TFRZ as a backup
+          this%rain_snow_thresh(ix,iy) = this%TFRZ ! set to TFRZ as a backup
         ENDIF
         
         end associate
