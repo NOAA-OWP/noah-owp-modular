@@ -1,7 +1,7 @@
 module ForcingGridType
 
 use NamelistRead, only: namelist_type
-use GridlistRead, only: gridlist_type
+use GridInfoType, only: gridinfo_type
 implicit none
 save
 private
@@ -55,23 +55,23 @@ end type
 
 contains   
 
-  subroutine Init(this,gridlist)
+  subroutine Init(this,gridinfo)
 
     class(forcinggrid_type) :: this
-    type(gridlist_type)     :: gridlist
+    type(gridlist_type)     :: gridinfo
 
-    call this%InitAllocate(gridlist)
+    call this%InitAllocate(gridinfo)
     call this%InitDefault()
 
   end subroutine Init
   
-  subroutine InitAllocate(this, gridlist)
+  subroutine InitAllocate(this, gridinfo)
 
     class(forcinggrid_type)        :: this
-    type(gridlist_type),intent(in) :: gridlist
+    type(gridinfo_type),intent(in) :: gridinfo
 
-    associate(n_x => gridlist%n_x, &
-              n_y => gridlist%n_y)
+    associate(n_x => gridinfo%n_x, &
+              n_y => gridinfo%n_y)
 
     allocate(this%SFCPRS(n_x,n_y))
     allocate(this%SFCTMP(n_x,n_y))
