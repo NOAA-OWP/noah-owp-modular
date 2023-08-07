@@ -18,13 +18,13 @@ module GridInfoType
 
   contains
 
-    procedure, public  :: ReadGridlist
+    procedure, public  :: ReadGridInfo
 
   end type
 
 contains
 
-  subroutine ReadVegtyp(this,namelist)
+  subroutine ReadGridInfo(this,namelist)
 
     class(gridinfo_type)               :: this
     type(namelist_type),intent(in)     :: namelist 
@@ -51,15 +51,11 @@ contains
     real,allocatable,dimension(:)      :: read_lat                 ! read-in latitude values along y dimensional grid edge
 
     ! vegtyp variables and attributes
-    integer                            :: read_nveg                ! read-in nveg (number of vegtype / land use cover classes in classification scheme)
     integer                            :: varid_vegtyp             ! netcdf variable id for vegtyp variable
     character*256                      :: name_var_vegtyp          ! name of vegtyp variable in netcdf file
     integer,allocatable,dimension(:,:) :: read_vegtyp              ! to hold read-in vegtyp values before transferring to this%vegtyp
-    character*256                      :: read_veg_class_name      ! read-in veg_class_name, which must be associated with vegtyp variable
-    character*256                      :: name_att_nveg            ! name of nveg attribute, which must be associated with vegtyp variable
-    character*256                      :: name_att_veg_class_name  ! name of veg_class_name attribute, which must be associated with vegtyp variable
 
-    associate(filename       => namelist%grid_filename,  &
+    associate(filename       => namelist%vegtyp_filename,  &
               integerMissing => namelist%integerMissing, &
               realMissing    => namelist%realMissing,    &
               stringMissing  => namelist%stringMissing,  &
@@ -73,8 +69,6 @@ contains
     name_var_vegtyp         = 'vegtyp'
     name_att_dx             = 'dx'
     name_att_dy             = 'dy'
-    name_att_nveg           = 'nveg'
-    name_att_veg_class_name = 'veg_class_name'
 
 
     !----------------------------------------------------------------------------
@@ -84,13 +78,11 @@ contains
     read_ny             = integerMissing
     read_dx             = realMissing
     read_dy             = realMissing
-    read_nveg           = integerMissing
     varid_x             = integerMissing
     varid_y             = integerMissing
-    varid_vegtyp        = integerMissing
     dimid_x             = integerMissing
     dimid_y             = integerMissing
-    read_veg_class_name = stringMissing
+    varid_vegtyp        = integerMissing
 
     !----------------------------------------------------------------------------
     ! Open the netcdf input file
@@ -160,20 +152,6 @@ contains
     status = nf90_inq_varid(ncid, name_var_vegtyp, varid_vegtyp)
     if (status /= nf90_noerr) then
       write(*,*) 'Unable to find required variable ''',trim(name_var_vegtyp),''' in input netcdf file ''',trim(filename),''''
-      stop ":  ERROR EXIT"
-    end if
-
-    ! nveg attribute (associated with vegtyp variable)
-    status = nf90_inquire_attribute(ncid=ncid,varid=varid_vegtyp,name=name_att_nveg)
-    if (status /= nf90_noerr) then
-      write(*,*) 'Unable to find required attribute ''',trim(name_att_nveg),''' which should be associated with variable ''',trim(name_var_vegtyp),''' in input netcdf file ''',trim(filename),''''
-      stop ":  ERROR EXIT"
-    end if
-
-    ! veg_class_name attribute (associated with vegtyp variable)
-    status = nf90_inquire_attribute(ncid=ncid,varid=varid_vegtyp,name=name_att_veg_class_name)
-    if (status /= nf90_noerr) then
-      write(*,*) 'Unable to find required attribute ''',trim(name_att_veg_class_name),''' which should be associated with variable ''',trim(name_var_vegtyp),''' in input netcdf file ''',trim(filename),''''
       stop ":  ERROR EXIT"
     end if
 
@@ -255,22 +233,8 @@ contains
       stop ":  ERROR EXIT"
     end if
 
-    ! nveg
-    status = nf90_get_att(ncid=ncid, varid=varid_vegtyp, name=name_att_nveg, values=read_nveg)
-    if (status /= nf90_noerr) then
-      write(*,*) 'Unable to read attribute ''',trim(name_att_nveg),''' associated with variable ''',trim(name_var_vegtyp),''' from input netcdf file ''',trim(filename),''''
-      stop ":  ERROR EXIT"
-    end if
-
-    ! veg_class_name
-    status = nf90_get_att(ncid=ncid, varid=varid_vegtyp, name=name_att_veg_class_name, values=read_veg_class_name)
-    if (status /= nf90_noerr) then
-      write(*,*) 'Unable to read attribute ''',trim(name_att_veg_class_name),''' associated with variable ''',trim(name_var_vegtyp),''' from input netcdf file ''',trim(filename),''''
-      stop ":  ERROR EXIT"
-    end if
-
     !----------------------------------------------------------------------------
-    ! Transfer read-in values to gridlist_type 
+    ! Transfer read-in values to gridinfo_type 
     !----------------------------------------------------------------------------
 
     ! n_x
@@ -308,20 +272,6 @@ contains
       write(*,*) 'ERROR : problem reading vegtyp from input file ''',trim(filename),''''; stop
     end if
 
-    ! nveg
-    if(read_nveg /= integerMissing) then
-      this%nveg = read_nveg
-    else 
-      write(*,*) 'ERROR : problem reading nveg from input file ''',trim(filename),''''; stop
-    end if
-
-    ! veg_class_name
-    if(read_veg_class_name /= stringMissing) then
-      this%veg_class_name = read_veg_class_name
-    else 
-      write(*,*) 'ERROR : problem reading veg_class_name from input file ''',trim(filename),''''; stop
-    end if
-
     ! lon
     if(read_lon(1) /= realMissing) then
       do ix = 1, read_nx
@@ -342,6 +292,6 @@ contains
 
     end associate
 
-  end subroutine ReadGridlist 
+  end subroutine ReadGridInfo 
 
 end module GridInfoType
