@@ -58,7 +58,7 @@ contains
   subroutine Init(this,gridinfo)
 
     class(forcinggrid_type) :: this
-    type(gridlist_type)     :: gridinfo
+    type(gridinfo_type)     :: gridinfo
 
     call this%InitAllocate(gridinfo)
     call this%InitDefault()
