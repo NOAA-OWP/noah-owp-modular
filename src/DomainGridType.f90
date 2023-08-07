@@ -1,7 +1,7 @@
 module DomainGridType
   
   use NamelistRead, only: namelist_type
-  use GridlistRead, only: gridlist_type
+  use GridinfoType, only: gridinfo_type
   use DateTimeUtilsModule
   
   implicit none
@@ -50,25 +50,25 @@ module DomainGridType
   
   contains   
   
-    subroutine Init(this, namelist, gridlist)
+    subroutine Init(this, namelist, gridinfo)
   
       class(domaingrid_type) :: this
       type(namelist_type)    :: namelist
-      type(gridlist_type)    :: gridlist
+      type(gridinfo_type)    :: gridinfo
   
-      call this%InitAllocate(namelist,gridlist)
+      call this%InitAllocate(namelist,gridinfo)
       call this%InitDefault()
   
     end subroutine Init
   
-    subroutine InitAllocate(this, namelist, gridlist)
+    subroutine InitAllocate(this, namelist, gridinfo)
   
       class(domaingrid_type)          :: this
       type(namelist_type), intent(in) :: namelist
-      type(gridlist_type), intent(in) :: gridlist
+      type(gridinfo_type), intent(in) :: gridinfo
   
-      associate(n_x   => gridlist%n_x,   &
-                n_y   => gridlist%n_y,   &
+      associate(n_x   => gridinfo%n_x,   &
+                n_y   => gridinfo%n_y,   &
                 nsoil => namelist%nsoil, &
                 nsnow => namelist%nsnow)
 
@@ -120,26 +120,26 @@ module DomainGridType
 
     end subroutine InitDefault
   
-    subroutine InitTransfer(this,namelist,gridlist)
+    subroutine InitTransfer(this,namelist,gridinfo)
   
       class(domaingrid_type)         :: this
       type(namelist_type),intent(in) :: namelist
-      type(gridlist_type),intent(in) :: gridlist
+      type(gridinfo_type),intent(in) :: gridinfo
       integer                        :: ii
 
       this%dt                   = namelist%dt
-      this%dx                   = gridlist%dx
-      this%dy                   = gridlist%dy
-      this%n_x                  = gridlist%n_x
-      this%n_y                  = gridlist%n_y
+      this%dx                   = gridinfo%dx
+      this%dy                   = gridinfo%dy
+      this%n_x                  = gridinfo%n_x
+      this%n_y                  = gridinfo%n_y
       this%startdate            = namelist%startdate
       this%enddate              = namelist%enddate
-      this%lat(:,:)             = gridlist%lat(:,:)
-      this%lon(:,:)             = gridlist%lon(:,:)
+      this%lat(:,:)             = gridinfo%lat(:,:)
+      this%lon(:,:)             = gridinfo%lon(:,:)
       this%terrain_slope(:,:)   = namelist%terrain_slope
       this%azimuth(:,:)         = namelist%azimuth
       this%ZREF                 = namelist%ZREF
-      this%vegtyp(:,:)          = gridlist%vegtyp(:,:)
+      this%vegtyp(:,:)          = gridinfo%vegtyp(:,:)
       this%croptype(:,:)        = namelist%croptype
       this%isltyp(:,:)          = namelist%isltyp
       this%IST(:,:)             = namelist%sfctyp
