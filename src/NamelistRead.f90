@@ -13,13 +13,14 @@ type, public :: namelist_type
   character(len=12)  :: startdate          ! UTC start datetime of the model run ( YYYYMMDDHHmm )
   character(len=12)  :: enddate            ! UTC end datetime of the model run ( YYYYMMDDHHmm )
   character(len=256) :: forcing_filename   ! directory/name of the input/forcing file
-  character(len=256) :: grid_filename      ! directory/name of the grids / netcdf input file 
+  character(len=256) :: vegtyp_filename    ! directory/name of NetCDF file holding gridded vegtyp values 
   character(len=256) :: output_filename    ! directory/name of the output file
   character(len=256) :: parameter_dir      ! name of the directory where parameter TBLs reside
   character(len=256) :: noahowp_table      ! name of noahowp parameter table
   character(len=256) :: soil_table         ! name of soil parameter table
   character(len=256) :: general_table      ! name of general parameter table
   character(len=256) :: soil_class_name    ! name of soil classification (STAS or STAS-RUC)
+  character(len=256) :: veg_class_name     ! name of vegetation classification (MODIFIED_IGBP_MODIS_NOAH or USGS)
   real               :: terrain_slope      ! terrain slope (°)
   real               :: azimuth            ! terrain azimuth or aspect (° clockwise from north)
   real               :: ZREF               ! measurement height for wind speed (m)
@@ -28,6 +29,7 @@ type, public :: namelist_type
   integer            :: isltyp             ! soil type
   integer            :: nsoil              ! number of soil layers
   integer            :: nsnow              ! number of snow layers
+  integer            :: nveg               ! number of vegetation types
   real               :: soil_depth         ! soil layer thickness
   integer            :: croptype           ! crop type (SET TO 0, no crops currently supported)
   integer            :: sfctyp             ! surface type (1 = land, 2 = lake)
@@ -90,10 +92,11 @@ contains
     character(len=12)  :: startdate
     character(len=12)  :: enddate
     character(len=256) :: forcing_filename
-    character(len=256) :: grid_filename
+    character(len=256) :: vegtyp_filename
     character(len=256) :: output_filename
     character(len=256) :: parameter_dir
     character(len=256) :: soil_table
+    character(len=256) :: veg_class_name
     character(len=256) :: general_table
     character(len=256) :: noahowp_table
     character(len=256) :: soil_class_name
@@ -105,6 +108,7 @@ contains
     integer       :: isltyp
     integer       :: nsoil
     integer       :: nsnow
+    integer       :: nveg
     real          :: soil_depth
     integer       :: croptype
     integer       :: sfctyp
@@ -142,9 +146,9 @@ contains
     !--------------------------- !
     !   define namelist groups   !
     !--------------------------- !
-    namelist / timing          / dt,startdate,enddate,forcing_filename,grid_filename,output_filename
+    namelist / timing          / dt,startdate,enddate,forcing_filename,vegtyp_filename,output_filename
     namelist / parameters      / parameter_dir, soil_table, general_table, noahowp_table,&
-                                 soil_class_name
+                                 soil_class_name, veg_class_name
     namelist / location        / terrain_slope,azimuth
     namelist / forcing         / ZREF,rain_snow_thresh
     namelist / model_options   / precip_phase_option,runoff_option,drainage_option,frozen_soil_option,&
@@ -153,7 +157,7 @@ contains
                                  crop_model_option,snowsoil_temp_time_option,soil_temp_boundary_option,&
                                  supercooled_water_option,stomatal_resistance_option,&
                                  evap_srfc_resistance_option,subsurface_option
-    namelist / structure       / isltyp,nsoil,nsnow,croptype,sfctyp,soilcolor
+    namelist / structure       / isltyp,nsoil,nsnow,nveg,croptype,sfctyp,soilcolor
     namelist / initial_values  / zsoil,dzsnso,sice,sh2o,zwt    
     
     ! missing values against which namelist options can be checked
@@ -172,8 +176,8 @@ contains
     dt               = realMissing
     startdate        = stringMissing
     enddate          = stringMissing
-    forcing_filename   = stringMissing
-    grid_filename    = stringMissing
+    forcing_filename = stringMissing
+    vegtyp_filename  = stringMissing
     output_filename  = stringMissing
     parameter_dir    = stringMissing
     soil_table       = stringMissing
@@ -187,6 +191,7 @@ contains
    
     isltyp           = integerMissing
     nsoil            = integerMissing
+    nveg             = integerMissing
     nsnow            = integerMissing
     croptype         = integerMissing
     sfctyp           = integerMissing
@@ -292,14 +297,15 @@ contains
     if(startdate        /= stringMissing) then; this%startdate = startdate; else; write(*,'(A)') 'ERROR: required entry startdate not found in namelist'; stop; end if
     if(enddate          /= stringMissing) then; this%enddate = enddate; else; write(*,'(A)') 'ERROR: required entry enddate not found in namelist'; stop; end if
     if(forcing_filename /= stringMissing) then; this%forcing_filename = forcing_filename; else; write(*,'(A)') 'ERROR: required entry forcing_filename not found in namelist'; stop; end if
-    if(grid_filename    /= stringMissing) then; this%grid_filename = grid_filename; else; write(*,'(A)') 'ERROR: required entry grid_filename not found in namelist'; stop; end if
+    if(vegtyp_filename  /= stringMissing) then; this%vegtyp_filename = vegtyp_filename; else; write(*,'(A)') 'ERROR: required entry vegtyp_filename not found in namelist'; stop; end if
     if(output_filename  /= stringMissing) then; this%output_filename = output_filename; else; write(*,'(A)') 'ERROR: required entry output_filename not found in namelist'; stop; end if
     if(parameter_dir    /= stringMissing) then; this%parameter_dir = parameter_dir; else; write(*,'(A)') 'ERROR: required entry parameter_dir not found in namelist'; stop; end if
     if(soil_table       /= stringMissing) then; this%soil_table = soil_table; else; write(*,'(A)') 'ERROR: required entry soil_table  not found in namelist'; stop; end if
     if(general_table    /= stringMissing) then; this%general_table = general_table; else; write(*,'(A)') 'ERROR: required entry general_table not found in namelist'; stop; end if
     if(noahowp_table    /= stringMissing) then; this%noahowp_table = noahowp_table; else; write(*,'(A)') 'ERROR: required entry noahowp_table not found in namelist'; stop; end if
     if(soil_class_name  /= stringMissing) then; this%soil_class_name = soil_class_name; else; write(*,'(A)') 'ERROR: required entry soil_class_name not found in namelist'; stop; end if
-    
+    if(veg_class_name   /= stringMissing) then; this%veg_class_name = veg_class_name; else; write(*,'(A)') 'ERROR: required entry veg_class_name not found in namelist'; stop; end if
+
     if(terrain_slope    /= realMissing) then; this%terrain_slope = terrain_slope; else; write(*,'(A)') 'ERROR: required entry terrain_slope not found in namelist'; stop; end if
     if(azimuth          /= realMissing) then; this%azimuth = azimuth; else; write(*,'(A)') 'ERROR: required entry azimuth not found in namelist'; stop; end if
     if(zref             /= realMissing) then; this%ZREF = ZREF; else; write(*,'(A)') 'ERROR: required entry ZREF not found in namelist'; stop; end if
@@ -308,6 +314,7 @@ contains
     if(isltyp     /= integerMissing) then; this%isltyp = isltyp; else; write(*,'(A)') 'ERROR: required entry isltyp not found in namelist'; stop; end if
     if(nsoil      /= integerMissing) then; this%nsoil = nsoil; else; write(*,'(A)') 'ERROR: required entry nsoil not found in namelist'; stop; end if
     if(nsnow      /= integerMissing) then; this%nsnow = nsnow; else; write(*,'(A)') 'ERROR: required entry nsnow not found in namelist'; stop; end if
+    if(nveg       /= integerMissing) then; this%nveg = nveg; else; write(*,'(A)') 'ERROR: required entry nveg not found in namelist'; stop; end if
     if(soil_depth /= integerMissing) then; this%soil_depth = soil_depth; else; write(*,'(A)') 'ERROR: required entry soil_depth not found in namelist'; stop; end if
     if(croptype   /= integerMissing) then; this%croptype = croptype; else; write(*,'(A)') 'ERROR: required entry croptype not found in namelist'; stop; end if
     if(sfctyp     /= integerMissing) then; this%sfctyp = sfctyp; else; write(*,'(A)') 'ERROR: required entry sfctyp not found in namelist'; stop; end if
