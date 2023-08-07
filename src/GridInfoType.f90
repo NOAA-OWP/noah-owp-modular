@@ -1,19 +1,17 @@
-module GridlistRead
+module GridinfoType
   
   use netcdf
   use NamelistRead, only: namelist_type
 
   implicit none
 
-  type, public :: gridlist_type
+  type, public :: gridinfo_type
   
   integer                            :: ncid              ! netcdf file id
   integer                            :: n_x               ! number of grid cells in x dimension
   integer                            :: n_y               ! number of grid cells in y dimension
   real                               :: dx                ! distance between grid cell nodes in x dimension
   real                               :: dy                ! distance between grid cell nodes in y dimension
-  integer                            :: nveg              ! number of vegetation types
-  character*256                      :: veg_class_name    ! vegetation class data source - "MODIFIED_IGBP_MODIS_NOAH" or "USGS"
   integer,allocatable,dimension(:,:) :: vegtyp            ! vegetation type
   real,allocatable,dimension(:,:)    :: lat               ! latitude [degrees]  (-90 to 90)
   real,allocatable,dimension(:,:)    :: lon               ! longitude [degrees] (-180 to 180)
@@ -26,9 +24,9 @@ module GridlistRead
 
 contains
 
-  subroutine ReadGridlist(this,namelist)
+  subroutine ReadVegtyp(this,namelist)
 
-    class(gridlist_type)               :: this
+    class(gridinfo_type)               :: this
     type(namelist_type),intent(in)     :: namelist 
     logical                            :: lexist
     integer                            :: status
@@ -346,4 +344,4 @@ contains
 
   end subroutine ReadGridlist 
 
-end module GridlistRead
+end module GridinfoType
