@@ -1,7 +1,6 @@
 module LevelsGridType
 
 use NamelistRead, only: namelist_type
-use GridlistRead, only: gridlist_type
 implicit none
 save
 private
@@ -52,15 +51,14 @@ contains
 
   end subroutine InitDefault
 
-  subroutine InitTransfer(this, namelist, gridlist)
+  subroutine InitTransfer(this, namelist)
 
     class(levelsgrid_type)          :: this
     type(namelist_type),intent(in)  :: namelist
-    type(gridlist_type),intent(in)  :: gridlist
 
     this%nsoil = namelist%nsoil
     this%nsnow = namelist%nsnow
-    this%nveg  = gridlist%nveg    
+    this%nveg  = namelist%nveg    
 
   end subroutine InitTransfer
 
