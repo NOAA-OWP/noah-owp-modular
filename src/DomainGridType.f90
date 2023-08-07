@@ -1,7 +1,7 @@
 module DomainGridType
   
   use NamelistRead, only: namelist_type
-  use GridinfoType, only: gridinfo_type
+  use GridInfoType, only: gridinfo_type
   use DateTimeUtilsModule
   
   implicit none
