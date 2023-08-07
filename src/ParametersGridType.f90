@@ -1,7 +1,7 @@
 module ParametersGridType
 
   use NamelistRead, only: namelist_type
-  use GridlistRead, only: gridlist_type
+  use GridInfoType, only: gridinfo_type
   use ParametersRead
   use DomainGridType
 
@@ -156,27 +156,27 @@ module ParametersGridType
 
   contains
 
-  subroutine Init(this, namelist, gridlist)
+  subroutine Init(this, namelist, gridinfo)
 
     implicit none
     class(parametersgrid_type)            :: this
     type(namelist_type)                   :: namelist
-    type(gridlist_type)                   :: gridlist
+    type(gridinfo_type)                   :: gridinfo
 
-    call this%InitAllocate(namelist,gridlist)
+    call this%InitAllocate(namelist,gridinfo)
     call this%InitDefault()
 
   end subroutine Init
 
-  subroutine InitAllocate(this, namelist, gridlist)
+  subroutine InitAllocate(this, namelist, gridinfo)
 
     implicit none
     class(parametersgrid_type)     :: this
     type(namelist_type),intent(in) :: namelist
-    type(gridlist_type),intent(in) :: gridlist
+    type(gridinfo_type),intent(in) :: gridinfo
 
-    associate(n_x   => gridlist%n_x,  &
-              n_y   => gridlist%n_y,  &
+    associate(n_x   => gridinfo%n_x,  &
+              n_y   => gridinfo%n_y,  &
               nsoil => namelist%nsoil)
 
     allocate(this%bexp(n_x,n_y,nsoil))
@@ -445,12 +445,11 @@ module ParametersGridType
 
   end subroutine InitDefault
 
-  subroutine paramRead(this, namelist, gridlist, domaingrid)
+  subroutine paramRead(this, namelist, domaingrid)
 
     implicit none
     class(parametersgrid_type)             :: this
     type(namelist_type), intent(in)        :: namelist
-    type(gridlist_type), intent(in)        :: gridlist
     type(domaingrid_type), intent(in)      :: domaingrid
     ! local variables
     integer                          :: ix, iy, ii
@@ -459,7 +458,7 @@ module ParametersGridType
     !dataset_identifier = "MODIFIED_IGBP_MODIS_NOAH"   ! This can be in namelist
     !call read_veg_parameters(namelist%parameter_dir, namelist%noahowp_table, dataset_identifier)
     call read_soil_parameters(namelist%parameter_dir, namelist%soil_table, namelist%general_table, namelist%soil_class_name)
-    call read_veg_parameters(namelist%parameter_dir, namelist%noahowp_table, gridlist%veg_class_name)
+    call read_veg_parameters(namelist%parameter_dir, namelist%noahowp_table, namelist%veg_class_name)
     !call read_soil_parameters(namelist%parameter_dir, namelist%soil_table, namelist%general_table)
 
     call read_rad_parameters(namelist%parameter_dir, namelist%noahowp_table)
