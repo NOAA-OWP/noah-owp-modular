@@ -1,4 +1,4 @@
-module GridinfoType
+module GridInfoType
   
   use netcdf
   use NamelistRead, only: namelist_type
@@ -344,4 +344,4 @@ contains
 
   end subroutine ReadGridlist 
 
-end module GridinfoType
+end module GridInfoType
