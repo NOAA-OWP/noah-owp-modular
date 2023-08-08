@@ -8,7 +8,6 @@ module GridInfoType
 
   type, public :: gridinfo_type
   
-  integer                            :: ncid_vegtyp         ! netcdf file id
   integer                            :: n_x                 ! number of grid cells in x dimension
   integer                            :: n_y                 ! number of grid cells in y dimension
   real                               :: dx                  ! distance between grid cell nodes in x dimension
