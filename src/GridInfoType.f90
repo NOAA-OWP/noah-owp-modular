@@ -40,16 +40,28 @@ contains
     class(gridinfo_type)               :: this
     type(namelist_type),intent(in)     :: namelist 
 
+    !----------------------------------------------------------------------------
+    ! Set expected names for all NetCDF-defined variables, dimensions and attributes
+    !----------------------------------------------------------------------------
     this%name_att_dx     = 'dx'    
     this%name_att_dy     = 'dy'       
     this%name_dim_x      = 'Longitude'
     this%name_dim_y      = 'Latitude'  
     this%name_var_vegtyp = 'vegtyp' 
+
+    !----------------------------------------------------------------------------
+    ! Use missing values from argument namelist_type
+    !----------------------------------------------------------------------------
     this%integerMissing  = namelist%integerMissing
     this%realMissing     = namelist%realMissing
     this%stringMissing   = namelist%stringMissing
 
+    !----------------------------------------------------------------------------
+    ! Call subroutines to read input NetCDF files
+    !----------------------------------------------------------------------------
     call this%ReadVegtyp(namelist%vegtyp_filename)
+    !call this%ReadSoils(namelist%soils_filename)
+    !call this%ReadSlope(namelist%slope_filename)
 
   end subroutine ReadGridInfo
 
@@ -96,7 +108,7 @@ contains
     end if
 
     !----------------------------------------------------------------------------
-    ! Allocate set local vegtyp array to missing values
+    ! Allocate and set local vegtyp array to missing values
     !----------------------------------------------------------------------------
     allocate(read_vegtyp(this%n_x,this%n_y))
     read_vegtyp(:,:) = this%integerMissing
