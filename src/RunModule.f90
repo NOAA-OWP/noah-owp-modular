@@ -32,6 +32,7 @@ module RunModule
   use WaterModule
   use DateTimeUtilsModule
   use NamelistRead
+  use GridInfoType
   
   implicit none
 
@@ -50,6 +51,7 @@ module RunModule
   type :: noahowpgrid_type
 
     type(namelist_type)       :: namelist
+    type(gridinfo_type)       :: gridinfo
     type(levelsgrid_type)     :: levelsgrid
     type(domaingrid_type)     :: domaingrid
     type(optionsgrid_type)    :: optionsgrid
@@ -72,6 +74,7 @@ contains
     integer                                 :: ii
         
     associate(namelist       => model%namelist,       &
+              gridinfo       => model%gridinfo,       &
               levelsgrid     => model%levelsgrid,     &
               domaingrid     => model%domaingrid,     &
               optionsgrid    => model%optionsgrid,    &
@@ -84,31 +87,28 @@ contains
       !  initialize
       !---------------------------------------------------------------------
       call namelist%ReadNamelist(config_filename)
-      namelist%n_x = 2
-      namelist%n_y = 4
-      namelist%dx = 100.
-      namelist%dy = 100.
+      call gridinfo%ReadGridInfo(namelist)
       
       call levelsgrid%Init(namelist)
       call levelsgrid%InitTransfer(namelist)
 
-      call domaingrid%Init(namelist)
-      call domaingrid%InitTransfer(namelist)
+      call domaingrid%Init(namelist,gridinfo)
+      call domaingrid%InitTransfer(namelist,gridinfo)
 
       call optionsgrid%Init(namelist)
       call optionsgrid%InitTransfer(namelist)
 
-      call parametersgrid%Init(namelist)
+      call parametersgrid%Init(namelist,gridinfo)
       call parametersgrid%paramRead(namelist,domaingrid)
 
-      call forcinggrid%Init(namelist)
+      call forcinggrid%Init(gridinfo)
       call forcinggrid%InitTransfer(namelist)
 
-      call energygrid%Init(namelist)
+      call energygrid%Init(namelist,gridinfo)
       call energygrid%InitTransfer(namelist)
 
-      call watergrid%Init(namelist)
-      call watergrid%InitTransfer(namelist)
+      call watergrid%Init(namelist,gridinfo)
+      call watergrid%InitTransfer(namelist,gridinfo)
 
       ! Initializations
       ! for soil water

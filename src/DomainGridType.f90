@@ -1,6 +1,7 @@
 module DomainGridType
   
   use NamelistRead, only: namelist_type
+  use GridInfoType, only: gridinfo_type
   use DateTimeUtilsModule
   
   implicit none
@@ -49,23 +50,25 @@ module DomainGridType
   
   contains   
   
-    subroutine Init(this, namelist)
+    subroutine Init(this, namelist, gridinfo)
   
       class(domaingrid_type) :: this
       type(namelist_type)    :: namelist
+      type(gridinfo_type)    :: gridinfo
   
-      call this%InitAllocate(namelist)
+      call this%InitAllocate(namelist,gridinfo)
       call this%InitDefault()
   
     end subroutine Init
   
-    subroutine InitAllocate(this, namelist)
+    subroutine InitAllocate(this, namelist, gridinfo)
   
-      class(domaingrid_type) :: this
-      type(namelist_type)    :: namelist
+      class(domaingrid_type)          :: this
+      type(namelist_type), intent(in) :: namelist
+      type(gridinfo_type), intent(in) :: gridinfo
   
-      associate(n_x => namelist%n_x,     &
-                n_y => namelist%n_y,     &
+      associate(n_x   => gridinfo%n_x,   &
+                n_y   => gridinfo%n_y,   &
                 nsoil => namelist%nsoil, &
                 nsnow => namelist%nsnow)
 
@@ -117,25 +120,26 @@ module DomainGridType
 
     end subroutine InitDefault
   
-    subroutine InitTransfer(this,namelist)
+    subroutine InitTransfer(this,namelist,gridinfo)
   
       class(domaingrid_type)         :: this
       type(namelist_type),intent(in) :: namelist
+      type(gridinfo_type),intent(in) :: gridinfo
       integer                        :: ii
 
       this%dt                   = namelist%dt
-      this%dx                   = namelist%dx
-      this%dy                   = namelist%dy
-      this%n_x                  = namelist%n_x
-      this%n_y                  = namelist%n_y
+      this%dx                   = gridinfo%dx
+      this%dy                   = gridinfo%dy
+      this%n_x                  = gridinfo%n_x
+      this%n_y                  = gridinfo%n_y
       this%startdate            = namelist%startdate
       this%enddate              = namelist%enddate
-      this%lat(:,:)             = namelist%lat
-      this%lon(:,:)             = namelist%lon
+      this%lat(:,:)             = gridinfo%lat(:,:)
+      this%lon(:,:)             = gridinfo%lon(:,:)
       this%terrain_slope(:,:)   = namelist%terrain_slope
       this%azimuth(:,:)         = namelist%azimuth
       this%ZREF                 = namelist%ZREF
-      this%vegtyp(:,:)          = namelist%vegtyp
+      this%vegtyp(:,:)          = gridinfo%vegtyp(:,:)
       this%croptype(:,:)        = namelist%croptype
       this%isltyp(:,:)          = namelist%isltyp
       this%IST(:,:)             = namelist%sfctyp

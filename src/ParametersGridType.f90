@@ -1,6 +1,7 @@
 module ParametersGridType
 
   use NamelistRead, only: namelist_type
+  use GridInfoType, only: gridinfo_type
   use ParametersRead
   use DomainGridType
 
@@ -155,25 +156,26 @@ module ParametersGridType
 
   contains
 
-  subroutine Init(this, namelist)
+  subroutine Init(this, namelist, gridinfo)
 
     implicit none
     class(parametersgrid_type)            :: this
     type(namelist_type)                   :: namelist
+    type(gridinfo_type)                   :: gridinfo
 
-    call this%InitAllocate(namelist)
+    call this%InitAllocate(namelist,gridinfo)
     call this%InitDefault()
 
   end subroutine Init
 
-  subroutine InitAllocate(this, namelist)
+  subroutine InitAllocate(this, namelist, gridinfo)
 
     implicit none
     class(parametersgrid_type)     :: this
     type(namelist_type),intent(in) :: namelist
 
     associate(n_x   => namelist%n_x,  &
-              n_y   => namelist%n_y,  &
+              n_y   => gridinfo%n_y,  &
               nsoil => namelist%nsoil)
 
     allocate(this%bexp(n_x,n_y,nsoil))

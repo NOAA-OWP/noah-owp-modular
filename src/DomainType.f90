@@ -1,7 +1,6 @@
 module DomainType
 
   use NamelistRead, only: namelist_type
-  use DateTimeUtilsModule
   
   implicit none
   save

@@ -10,20 +10,17 @@ private
 type, public :: namelist_type
 
   real               :: dt                 ! model timestep (s)
-  real               :: dx
-  real               :: dy
   character(len=12)  :: startdate          ! UTC start datetime of the model run ( YYYYMMDDHHmm )
   character(len=12)  :: enddate            ! UTC end datetime of the model run ( YYYYMMDDHHmm )
-  character(len=256) :: forcing_filename     ! directory/name of the input/forcing file
+  character(len=256) :: forcing_filename   ! directory/name of the input/forcing file
+  character(len=256) :: vegtyp_filename    ! directory/name of NetCDF file holding gridded vegtyp values 
   character(len=256) :: output_filename    ! directory/name of the output file
   character(len=256) :: parameter_dir      ! name of the directory where parameter TBLs reside
-  character(len=256) :: noahowp_table       ! name of noahowp parameter table
+  character(len=256) :: noahowp_table      ! name of noahowp parameter table
   character(len=256) :: soil_table         ! name of soil parameter table
   character(len=256) :: general_table      ! name of general parameter table
   character(len=256) :: soil_class_name    ! name of soil classification (STAS or STAS-RUC)
   character(len=256) :: veg_class_name     ! name of vegetation classification (MODIFIED_IGBP_MODIS_NOAH or USGS)
-  real               :: lat                ! latitude (°)
-  real               :: lon                ! longitude (°)
   real               :: terrain_slope      ! terrain slope (°)
   real               :: azimuth            ! terrain azimuth or aspect (° clockwise from north)
   real               :: ZREF               ! measurement height for wind speed (m)
@@ -34,12 +31,9 @@ type, public :: namelist_type
   integer            :: nsnow              ! number of snow layers
   integer            :: nveg               ! number of vegetation types
   real               :: soil_depth         ! soil layer thickness
-  integer            :: vegtyp             ! land cover type
   integer            :: croptype           ! crop type (SET TO 0, no crops currently supported)
   integer            :: sfctyp             ! surface type (1 = land, 2 = lake)
   integer            :: soilcolor          ! soil color code
-  integer            :: n_x                !
-  integer            :: n_y                !
 
   real, allocatable, dimension(:) :: zsoil   ! depth of layer-bottom from soil surface
   real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
@@ -98,6 +92,7 @@ contains
     character(len=12)  :: startdate
     character(len=12)  :: enddate
     character(len=256) :: forcing_filename
+    character(len=256) :: vegtyp_filename
     character(len=256) :: output_filename
     character(len=256) :: parameter_dir
     character(len=256) :: soil_table
@@ -105,8 +100,6 @@ contains
     character(len=256) :: general_table
     character(len=256) :: noahowp_table
     character(len=256) :: soil_class_name
-    real               :: lat
-    real               :: lon
     real               :: terrain_slope
     real               :: azimuth
     real               :: ZREF               ! measurement height for wind speed (m)
@@ -117,7 +110,6 @@ contains
     integer       :: nsnow
     integer       :: nveg
     real          :: soil_depth
-    integer       :: vegtyp
     integer       :: croptype
     integer       :: sfctyp
     integer       :: soilcolor
@@ -154,10 +146,10 @@ contains
     !--------------------------- !
     !   define namelist groups   !
     !--------------------------- !
-    namelist / timing          / dt,startdate,enddate,forcing_filename,output_filename
+    namelist / timing          / dt,startdate,enddate,forcing_filename,vegtyp_filename,output_filename
     namelist / parameters      / parameter_dir, soil_table, general_table, noahowp_table,&
                                  soil_class_name, veg_class_name
-    namelist / location        / lat,lon,terrain_slope,azimuth
+    namelist / location        / terrain_slope,azimuth
     namelist / forcing         / ZREF,rain_snow_thresh
     namelist / model_options   / precip_phase_option,runoff_option,drainage_option,frozen_soil_option,&
                                  dynamic_vic_option,dynamic_veg_option,snow_albedo_option,&
@@ -165,7 +157,7 @@ contains
                                  crop_model_option,snowsoil_temp_time_option,soil_temp_boundary_option,&
                                  supercooled_water_option,stomatal_resistance_option,&
                                  evap_srfc_resistance_option,subsurface_option
-    namelist / structure       / isltyp,nsoil,nsnow,nveg,vegtyp,croptype,sfctyp,soilcolor
+    namelist / structure       / isltyp,nsoil,nsnow,nveg,croptype,sfctyp,soilcolor
     namelist / initial_values  / zsoil,dzsnso,sice,sh2o,zwt    
     
     ! missing values against which namelist options can be checked
@@ -184,16 +176,14 @@ contains
     dt               = realMissing
     startdate        = stringMissing
     enddate          = stringMissing
-    forcing_filename   = stringMissing
+    forcing_filename = stringMissing
+    vegtyp_filename  = stringMissing
     output_filename  = stringMissing
     parameter_dir    = stringMissing
     soil_table       = stringMissing
-    veg_class_name   = stringMissing
     general_table    = stringMissing
     noahowp_table    = stringMissing
     soil_class_name  = stringMissing
-    lat              = realMissing
-    lon              = realMissing
     terrain_slope    = realMissing
     azimuth          = realMissing
     ZREF             = realMissing            
@@ -201,9 +191,8 @@ contains
    
     isltyp           = integerMissing
     nsoil            = integerMissing
-    nsnow            = integerMissing
     nveg             = integerMissing
-    vegtyp           = integerMissing
+    nsnow            = integerMissing
     croptype         = integerMissing
     sfctyp           = integerMissing
     soilcolor        = integerMissing
@@ -308,6 +297,7 @@ contains
     if(startdate        /= stringMissing) then; this%startdate = startdate; else; write(*,'(A)') 'ERROR: required entry startdate not found in namelist'; stop; end if
     if(enddate          /= stringMissing) then; this%enddate = enddate; else; write(*,'(A)') 'ERROR: required entry enddate not found in namelist'; stop; end if
     if(forcing_filename /= stringMissing) then; this%forcing_filename = forcing_filename; else; write(*,'(A)') 'ERROR: required entry forcing_filename not found in namelist'; stop; end if
+    if(vegtyp_filename  /= stringMissing) then; this%vegtyp_filename = vegtyp_filename; else; write(*,'(A)') 'ERROR: required entry vegtyp_filename not found in namelist'; stop; end if
     if(output_filename  /= stringMissing) then; this%output_filename = output_filename; else; write(*,'(A)') 'ERROR: required entry output_filename not found in namelist'; stop; end if
     if(parameter_dir    /= stringMissing) then; this%parameter_dir = parameter_dir; else; write(*,'(A)') 'ERROR: required entry parameter_dir not found in namelist'; stop; end if
     if(soil_table       /= stringMissing) then; this%soil_table = soil_table; else; write(*,'(A)') 'ERROR: required entry soil_table  not found in namelist'; stop; end if
@@ -315,9 +305,7 @@ contains
     if(noahowp_table    /= stringMissing) then; this%noahowp_table = noahowp_table; else; write(*,'(A)') 'ERROR: required entry noahowp_table not found in namelist'; stop; end if
     if(soil_class_name  /= stringMissing) then; this%soil_class_name = soil_class_name; else; write(*,'(A)') 'ERROR: required entry soil_class_name not found in namelist'; stop; end if
     if(veg_class_name   /= stringMissing) then; this%veg_class_name = veg_class_name; else; write(*,'(A)') 'ERROR: required entry veg_class_name not found in namelist'; stop; end if
-    
-    if(lat              /= realMissing) then; this%lat = lat; else; write(*,'(A)') 'ERROR: required entry lat not found in namelist'; stop; end if
-    if(lon              /= realMissing) then; this%lon = lon; else; write(*,'(A)') 'ERROR: required entry lon not found in namelist'; stop; end if
+
     if(terrain_slope    /= realMissing) then; this%terrain_slope = terrain_slope; else; write(*,'(A)') 'ERROR: required entry terrain_slope not found in namelist'; stop; end if
     if(azimuth          /= realMissing) then; this%azimuth = azimuth; else; write(*,'(A)') 'ERROR: required entry azimuth not found in namelist'; stop; end if
     if(zref             /= realMissing) then; this%ZREF = ZREF; else; write(*,'(A)') 'ERROR: required entry ZREF not found in namelist'; stop; end if
@@ -328,7 +316,6 @@ contains
     if(nsnow      /= integerMissing) then; this%nsnow = nsnow; else; write(*,'(A)') 'ERROR: required entry nsnow not found in namelist'; stop; end if
     if(nveg       /= integerMissing) then; this%nveg = nveg; else; write(*,'(A)') 'ERROR: required entry nveg not found in namelist'; stop; end if
     if(soil_depth /= integerMissing) then; this%soil_depth = soil_depth; else; write(*,'(A)') 'ERROR: required entry soil_depth not found in namelist'; stop; end if
-    if(vegtyp     /= integerMissing) then; this%vegtyp = vegtyp; else; write(*,'(A)') 'ERROR: required entry vegtyp not found in namelist'; stop; end if
     if(croptype   /= integerMissing) then; this%croptype = croptype; else; write(*,'(A)') 'ERROR: required entry croptype not found in namelist'; stop; end if
     if(sfctyp     /= integerMissing) then; this%sfctyp = sfctyp; else; write(*,'(A)') 'ERROR: required entry sfctyp not found in namelist'; stop; end if
     if(soilcolor  /= integerMissing) then; this%soilcolor = soilcolor; else; write(*,'(A)') 'ERROR: required entry soilcolor not found in namelist'; stop; end if
