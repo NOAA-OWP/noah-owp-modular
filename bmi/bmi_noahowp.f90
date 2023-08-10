@@ -107,7 +107,14 @@ module bminoahowp
    ! grid id assignments, indexed by input/output items
    integer :: input_grid(input_item_count) = 1
    ! could use different grids per variable by explicit assignment of grid id, e.g. [0, 0, 0, 1, 2, 2]
-   integer :: output_grid(output_item_count) = 1 
+   integer :: output_grid(output_item_count) = 1
+   ! grid/variable location mapping
+   character (len=BMI_MAX_LOCATION_NAME) :: &
+   output_location(output_item_count) = 'node'
+   ! can also be explicitly mapped per variable, indexed by input/output_item
+   ! input_location(4) = [character(BMI_MAX_LOCATION_NAME):: 'node', 'node', 'node', 'node']
+   character (len=BMI_MAX_LOCATION_NAME) :: &
+   input_location(input_item_count) = 'node'
 
 contains
 
@@ -717,13 +724,32 @@ contains
     class (bmi_noahowp), intent(in) :: this
     character (len=*), intent(in) :: name
     character (len=*), intent(out) :: location
-    integer :: bmi_status
-!==================== UPDATE IMPLEMENTATION IF NECESSARY WHEN RUN ON GRID =================
-    select case(name)
-    case default
-       location = "node"
-       bmi_status = BMI_SUCCESS
-    end select
+    integer :: bmi_status, i
+    
+    !checkout output vars
+    do  i = 1, size(output_items)
+      if(output_items(i) .eq. trim(name) ) then
+        location = output_location(i)
+        bmi_status = BMI_SUCCESS
+        return
+      endif
+    end do
+
+    !checkout input vars
+    do  i = 1, size(input_items)
+      if(input_items(i) .eq. trim(name) ) then
+        location = input_location(i)
+        bmi_status = BMI_SUCCESS
+        return
+      endif
+    end do
+  
+    !check any other vars???
+
+    !no matches
+    location = "-"
+    bmi_status = BMI_FAILURE
+
   end function noahowp_var_location
 
   ! Get a copy of a integer variable's values, flattened.
