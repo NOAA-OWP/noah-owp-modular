@@ -7,7 +7,7 @@ module bminoahowp
 #else
    use bmif_2_0
 #endif
-
+  use bmi_grid
   use RunModule
   use, intrinsic :: iso_c_binding, only: c_ptr, c_loc, c_f_pointer
   
@@ -116,6 +116,13 @@ module bminoahowp
    character (len=BMI_MAX_LOCATION_NAME) :: &
    input_location(input_item_count) = 'node'
 
+   ! grid meta structure
+   ! all variables are associated with a grid spec
+   ! by convention grids(1) is the "scalar" grid
+   ! for noah-owp-modular, grids(2) is the 2D grid
+   ! other grids/specs can be added as needed
+   type(GridType) :: grids(2)
+
 contains
 
   ! Get the name of the model.
@@ -197,6 +204,17 @@ contains
     else
        !call initialize_from_defaults(this%model)
     end if
+    ! initialize the grid meta data
+    ! params are grid_id, rank, type, units
+    call grids(1)%init(0, 0, scalar, none) !the scalar grid
+    call grids(2)$init(1, 2, uniform_rectilinear, none)
+    ! for now, use the domain info in the model read from its various files
+    ! TODO in the future, can use a config flag to indicate whether or not this is approriate
+    ! or whether we want dynamic grid allocation
+    ! even if the grid spec is initially empty cause the model domain is empty, we can still
+    ! update it later (just have to remember to adjust the model as well...)
+    ! at some point we can align these two things more and make that more cohesive
+    call set_grid_from_model(this%model)
     bmi_status = BMI_SUCCESS
   end function noahowp_initialize
 

@@ -33,7 +33,8 @@ module RunModule
   use DateTimeUtilsModule
   use NamelistRead
   use GridInfoType
-  
+  use bmi_grid
+
   implicit none
 
   type :: noahowp_type
@@ -63,7 +64,23 @@ module RunModule
   end type
 
 contains
+
+  ! This subroutine is a temporary way to connect BMI grid definitions to the NOAH-OWP-Modular domain
+  ! I think we can further refine/refactor the domain structure to take advantage of the same information/data stucture
+  subroutine set_grid_from_model(model, grid)
+    implicit none
+    ! A fully initialized model instance with domain information already set
+    type(noahowpgrid_type), intent (in) :: model
+    type(GridType), intent(out) :: grid
+    ! note these are in y, x order
+    grid%shape = ( size(model%domaingrid%lat), size(model%domaingrid%lon) )
+    grid%spacing = ( model%domaingrid%dy, model%domaingrid%dx )
+    grid%origin = ( model%domaingrid%lat(1), model%domaingrid%lon(1) ) !FIXME is this correct assumption for origin?
+    ! in a projected system, it is possible that grid spacing has units, for now just use none
+    grid%units = none
   
+  end subroutine
+
   SUBROUTINE initialize_from_file(model, config_filename)
 
     implicit none
