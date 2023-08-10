@@ -367,19 +367,18 @@ contains
    class (bmi_noahowp), intent(in) :: this
    integer, intent(in) :: grid
    integer, intent(out) :: rank
-   integer :: bmi_status
+   integer :: bmi_status, i
 
-   select case(grid)
-   case(0)
-      rank = 0
-      bmi_status = BMI_SUCCESS
-   case(1)
-      rank = 2
-      bmi_status = BMI_SUCCESS
-   case default
-      rank = -1
-      bmi_status = BMI_FAILURE
-   end select
+   ! Failure unless we find what we are looking for...
+   bmi_status = BMI_FAILURE
+   do i = 1, size(grids)
+     if ( grids(i)%id .eq. grid ) then
+       rank = grids(i)%rank
+       bmi_status = BMI_SUCCESS
+       return
+     end if
+   end do
+
  end function noahowp_grid_rank
 
   ! The dimensions of a grid.
@@ -387,16 +386,18 @@ contains
    class (bmi_noahowp), intent(in) :: this
    integer, intent(in) :: grid
    integer, dimension(:), intent(out) :: shape
-   integer :: bmi_status
+   integer :: bmi_status, i
 
-   select case(grid)
-   case(1)
-      shape = [this%model%domaingrid%n_y, this%model%domaingrid%n_x]
-      bmi_status = BMI_SUCCESS
-   case default
-      shape(:) = -1
-      bmi_status = BMI_FAILURE
-   end select
+   ! Failure unless we find what we are looking for...
+   bmi_status = BMI_FAILURE
+   do i = 1, size(grids)
+     if ( grids(i)%id .eq. grid ) then
+       rank = grids(i)%shape
+       bmi_status = BMI_SUCCESS
+       return
+     end if
+   end do
+
  end function noahowp_grid_shape
 
   ! The total number of elements in a grid.
@@ -404,19 +405,20 @@ contains
    class (bmi_noahowp), intent(in) :: this
    integer, intent(in) :: grid
    integer, intent(out) :: size
-   integer :: bmi_status
+   integer :: bmi_status, i, upper
 
-   select case(grid)
-   case(0)
-      size = 1
-      bmi_status = BMI_SUCCESS
-   case(1)
-      size = this%model%domaingrid%n_x * this%model%domaingrid%n_y
-      bmi_status = BMI_SUCCESS
-   case default
-      size = -1
-      bmi_status = BMI_FAILURE
-   end select
+   block
+     intrinsic :: size
+     upper = size(grids)
+   end block
+   do i = 1, upper
+     if ( grids(i)%id .eq. grid ) then
+       size = product( grids(i)%shape )
+       bmi_status = BMI_SUCCESS
+       return
+     end if
+   end do
+
  end function noahowp_grid_size
 
   ! The distance between nodes of a grid.
@@ -424,16 +426,17 @@ contains
     class (bmi_noahowp), intent(in) :: this
     integer, intent(in) :: grid
     double precision, dimension(:), intent(out) :: spacing
-    integer :: bmi_status
+    integer :: bmi_status, i
 
-    select case(grid)
-    case(1)
-      spacing(:) = [this%model%domaingrid%dy,this%model%domaingrid%dx]
-      bmi_status = BMI_SUCCESS
-    case default
-       spacing(:) = -1.d0
-       bmi_status = BMI_FAILURE
-    end select
+    bmi_status = BMI_FAILURE
+    do i = 1, size(grids)
+      if ( grids(i)%id .eq. grid ) then
+        spacing = grids(i)%spacing
+        bmi_status = BMI_SUCCESS
+        return
+      end if
+    end do
+
   end function noahowp_grid_spacing
 !
   ! Coordinates of grid origin.
@@ -441,16 +444,17 @@ contains
     class (bmi_noahowp), intent(in) :: this
     integer, intent(in) :: grid
     double precision, dimension(:), intent(out) :: origin
-    integer :: bmi_status
+    integer :: bmi_status, i
 
-    select case(grid)
-    case(1)
-      origin(:) = [0.d0, 0.d0]
-      bmi_status = BMI_SUCCESS
-    case default
-       origin(:) = -1.d0
-       bmi_status = BMI_FAILURE
-    end select
+    bmi_status = BMI_FAILURE
+    do i = 1, size(grids)
+      if ( grids(i)%id .eq. grid ) then
+        origin = grids(i)%origin
+        bmi_status = BMI_SUCCESS
+        return
+      end if
+    end do
+
   end function noahowp_grid_origin
 
   ! X-coordinates of grid nodes.
@@ -458,19 +462,16 @@ contains
     class (bmi_noahowp), intent(in)             :: this
     integer, intent(in)                         :: grid
     double precision, dimension(:), intent(out) :: x
-    integer                                     :: bmi_status
+    integer                                     :: bmi_status, i
 
-    select case(grid)
-    case(0)
-       x(:) = [0.d0]
-       bmi_status = BMI_SUCCESS 
-    case(1)
-       x(:) = this%model%domaingrid%lon(:,1)
-       bmi_status = BMI_SUCCESS 
-    case default
-       x(:) = -1.d0
-       bmi_status = BMI_FAILURE
-    end select 
+    bmi_status = BMI_FAILURE
+    do i = 1, size(grids)
+      if ( grids(i)%id .eq. grid ) then
+        call grids(i)%grid_x(x)
+        bmi_status = BMI_SUCCESS
+      end if
+    end do
+
   end function noahowp_grid_x
 
   ! Y-coordinates of grid nodes.
@@ -478,19 +479,16 @@ contains
    class (bmi_noahowp), intent(in)             :: this
    integer, intent(in)                         :: grid
    double precision, dimension(:), intent(out) :: y
-   integer                                     :: bmi_status
+   integer                                     :: bmi_status, i
 
-    select case(grid)
-    case(0)
-       y(:) = [0.d0]
+   bmi_status = BMI_FAILURE
+   do i = 1, size(grids)
+     if ( grids(i)%id .eq. grid ) then
+       call grids(i)%grid_y(y)
        bmi_status = BMI_SUCCESS
-    case(1)
-       y(:) = this%model%domaingrid%lat(1,:)
-       bmi_status = BMI_SUCCESS
-    case default
-       y(:) = -1.d0
-       bmi_status = BMI_FAILURE
-    end select
+     end if
+   end do
+
   end function noahowp_grid_y
 
   ! Z-coordinates of grid nodes.
@@ -498,16 +496,16 @@ contains
     class (bmi_noahowp), intent(in) :: this
     integer, intent(in) :: grid
     double precision, dimension(:), intent(out) :: z
-    integer :: bmi_status
+    integer :: bmi_status, i
 
-    select case(grid)
-    case(0)
-       z(:) = [0.d0]
-       bmi_status = BMI_SUCCESS
-    case default
-       z(:) = -1.d0
-       bmi_status = BMI_FAILURE
-    end select
+    bmi_status = BMI_FAILURE
+    do i = 1, size(grids)
+      if ( grids(i)%id .eq. grid ) then
+        call grids(i)%grid_z(z)
+        bmi_status = BMI_SUCCESS
+      end if
+    end do
+
   end function noahowp_grid_z
 
   ! Get the number of nodes in an unstructured grid.
@@ -728,13 +726,21 @@ contains
    s2 = this%get_grid_size(grid, grid_size)
    s3 = this%get_var_itemsize(name, item_size)
 
-   if ((s1 == BMI_SUCCESS).and.(s2 == BMI_SUCCESS).and.(s3 == BMI_SUCCESS)) then
-      nbytes = item_size * grid_size
+    if( grid .eq. 0) then
+      !these are the scalar values wrapped in an array
+      !not likely needed in this case unless scalars are re-introduced to this model
+      !but it is important to have this special case cause grid_size will return 0 for scalars
+      !since it is dependent on the rank, which is is 0 in the scalar case
+      nbytes = item_size
       bmi_status = BMI_SUCCESS
-   else
-      nbytes = -1
-      bmi_status = BMI_FAILURE
-   end if
+    else if ((s1 == BMI_SUCCESS).and.(s2 == BMI_SUCCESS).and.(s3 == BMI_SUCCESS)) then
+       nbytes = item_size * grid_size
+       bmi_status = BMI_SUCCESS
+    else
+       nbytes = -1
+       bmi_status = BMI_FAILURE
+    end if
+
  end function noahowp_var_nbytes
 
   ! The location (node, face, edge) of the given variable.
