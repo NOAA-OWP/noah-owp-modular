@@ -104,6 +104,10 @@ module bminoahowp
        dimension(input_item_count) :: input_items
   character (len=BMI_MAX_VAR_NAME), target, &
        dimension(output_item_count) :: output_items 
+   ! grid id assignments, indexed by input/output items
+   integer :: input_grid(input_item_count) = 1
+   ! could use different grids per variable by explicit assignment of grid id, e.g. [0, 0, 0, 1, 2, 2]
+   integer :: output_grid(output_item_count) = 1 
 
 contains
 
@@ -285,17 +289,32 @@ contains
    class (bmi_noahowp), intent(in) :: this
    character (len=*), intent(in) :: name
    integer, intent(out) :: grid
-   integer :: bmi_status
+   integer :: bmi_status, i
 
-   select case(name)
-   case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! input vars
-      'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS')             ! output vars
-    grid = 1
+      !checkout output vars
+      do  i = 1, size(output_items)
+         if(output_items(i) .eq. trim(name) ) then
+            grid = output_grid(i)
     bmi_status = BMI_SUCCESS
-   case default
+            return
+         endif
+      end do
+
+      !checkout input vars
+      do  i = 1, size(input_items)
+         if(input_items(i) .eq. trim(name) ) then
+            grid = input_grid(i)
+            bmi_status = BMI_SUCCESS
+            return
+         endif
+      end do
+
+      !check any other vars???
+
+      !no matches
      grid = -1
      bmi_status = BMI_FAILURE
-   end select
+
  end function noahowp_var_grid
 
   ! The type of a variable's grid.
