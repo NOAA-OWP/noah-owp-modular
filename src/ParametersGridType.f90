@@ -173,8 +173,9 @@ module ParametersGridType
     implicit none
     class(parametersgrid_type)     :: this
     type(namelist_type),intent(in) :: namelist
+    type(gridinfo_type),intent(in) :: gridinfo
 
-    associate(n_x   => namelist%n_x,  &
+    associate(n_x   => gridinfo%n_x,  &
               n_y   => gridinfo%n_y,  &
               nsoil => namelist%nsoil)
 
