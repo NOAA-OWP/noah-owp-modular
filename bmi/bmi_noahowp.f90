@@ -207,14 +207,15 @@ contains
     ! initialize the grid meta data
     ! params are grid_id, rank, type, units
     call grids(1)%init(0, 0, scalar, none) !the scalar grid
-    call grids(2)$init(1, 2, uniform_rectilinear, none)
+    call grids(2)%init(1, 2, uniform_rectilinear, none)
     ! for now, use the domain info in the model read from its various files
     ! TODO in the future, can use a config flag to indicate whether or not this is approriate
     ! or whether we want dynamic grid allocation
     ! even if the grid spec is initially empty cause the model domain is empty, we can still
     ! update it later (just have to remember to adjust the model as well...)
     ! at some point we can align these two things more and make that more cohesive
-    call set_grid_from_model(this%model)
+    call set_grid_from_model(this%model,grids(1))
+    call set_grid_from_model(this%model,grids(2))
     bmi_status = BMI_SUCCESS
   end function noahowp_initialize
 
@@ -392,7 +393,7 @@ contains
    bmi_status = BMI_FAILURE
    do i = 1, size(grids)
      if ( grids(i)%id .eq. grid ) then
-       rank = grids(i)%shape
+       shape = grids(i)%shape
        bmi_status = BMI_SUCCESS
        return
      end if
