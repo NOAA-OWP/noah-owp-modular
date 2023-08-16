@@ -13,6 +13,7 @@ module GridInfoType
   real                               :: dx                  ! distance between grid cell nodes in x dimension
   real                               :: dy                  ! distance between grid cell nodes in y dimension
   integer,allocatable,dimension(:,:) :: vegtyp              ! vegetation type
+  integer,allocatable,dimension(:,:) :: isltyp              ! soil type
   real,allocatable,dimension(:,:)    :: lat                 ! latitude [degrees]  (-90 to 90)
   real,allocatable,dimension(:,:)    :: lon                 ! longitude [degrees] (-180 to 180)
   character*256                      :: name_att_dx         ! name of dx attribute, which must be associated with x dimension variable 
@@ -20,6 +21,7 @@ module GridInfoType
   character*256                      :: name_dim_x          ! name of x dimension in netcdf file (e.g., 'Longitude'). Assume netcdf variable holding x dim coordinates (i.e., variable id = varid_x) has same name.
   character*256                      :: name_dim_y          ! name of y dimension in netcdf file (e.g., 'Latitude'). Assume netcdf variable holding y dim coordinates (i.e., variable id = varid_y) has same name.
   character*256                      :: name_var_vegtyp     ! name of vegtyp variable in netcdf file
+  character*256                      :: name_var_isltyp     ! name of isltyp variable in netcdf file
   integer                            :: integerMissing 
   real                               :: realMissing   
   character(len=12)                  :: stringMissing 
@@ -28,7 +30,8 @@ module GridInfoType
 
     procedure, public  :: ReadGridInfo
     procedure, private :: ReadSpatial
-    procedure, private :: ReadVegtyp  
+    procedure, private :: ReadLandUse  
+    procedure, private :: ReadSoils
 
   end type
 
@@ -47,38 +50,55 @@ contains
     this%name_dim_x      = 'Longitude'
     this%name_dim_y      = 'Latitude'  
     this%name_var_vegtyp = 'vegtyp' 
+    this%name_var_isltyp = 'isltyp'
 
     !----------------------------------------------------------------------------
-    ! Use missing values from argument namelist_type
+    ! Give missing values to gridinfo_type
     !----------------------------------------------------------------------------
     this%integerMissing  = namelist%integerMissing
     this%realMissing     = namelist%realMissing
     this%stringMissing   = namelist%stringMissing
 
     !----------------------------------------------------------------------------
-    ! Call subroutines to read input NetCDF files
+    ! Read spatial information from each NetCDF file
     !----------------------------------------------------------------------------
-    call this%ReadVegtyp(namelist%vegtyp_filename)
-    !call this%ReadSoils(namelist%soils_filename)
-    !call this%ReadSlope(namelist%slope_filename)
+    call this%ReadSpatial(namelist%vegtyp_filename)
+    call this%ReadSpatial(namelist%soils_filename)
+
+    !----------------------------------------------------------------------------
+    ! Allocate gridinfo_type arrays
+    !----------------------------------------------------------------------------
+    allocate(this%vegtyp(this%n_x,this%n_y)) ! land use
+    allocate(this%isltyp(this%n_x,this%n_y)) ! soils
+
+    !----------------------------------------------------------------------------
+    ! Set gridinfo_type arrays to missing values
+    !----------------------------------------------------------------------------
+    this%vegtyp(:,:) = this%integerMissing ! land use
+    this%isltyp(:,:) = this%integerMissing ! soils
+
+    !----------------------------------------------------------------------------
+    ! Read NetCDF files to populate gridinfo_type arrays
+    !----------------------------------------------------------------------------
+    call this%ReadLandUse(namelist%vegtyp_filename)
+    call this%ReadSoils(namelist%soils_filename)
 
   end subroutine ReadGridInfo
 
-  subroutine ReadVegtyp(this,filename)
+  subroutine ReadSoils(this,filename)
 
     class(gridinfo_type)               :: this
     character*256,intent(in)           :: filename 
     logical                            :: lexist
     integer                            :: status       
     integer                            :: ix, iy
-    integer                            :: ncid_vegtyp  ! NetCDF file ID number
-    integer                            :: varid_vegtyp ! NetCDF variable ID number for vegtyp variable
-    integer,allocatable,dimension(:,:) :: read_vegtyp  ! Local array to hold read-in vegtyp values before transferring to this%vegtyp
+    integer                            :: ncid     ! NetCDF file ID number
+    integer                            :: varid    ! NetCDF variable ID
+    integer,allocatable,dimension(:,:) :: read_var ! Local array to hold read-in values
 
-    associate(integerMissing  => this%integerMissing, &
-              realMissing     => this%realMissing,    &
-              stringMissing   => this%stringMissing,  &
-              name_var_vegtyp => this%name_var_vegtyp)
+    associate(name_var       => this%name_var_isltyp, &
+              var            => this%isltyp, &
+              integerMissing => this%integerMissing)
 
     !----------------------------------------------------------------------------
     ! Check that file exists and open it
@@ -87,73 +107,136 @@ contains
     if (.not. lexist) then
       write(*,*) 'ERROR Could not find ''',trim(filename),''''; stop ":  ERROR EXIT"
     endif
-    status = nf90_open(path = trim(filename), mode = nf90_nowrite, ncid = ncid_vegtyp)
+    status = nf90_open(path = trim(filename), mode = nf90_nowrite, ncid = ncid)
     if (status /= nf90_noerr) then
       write(*,*) 'ERROR Could not open ''',trim(filename),''''; stop ":  ERROR EXIT"
     endif
 
     !----------------------------------------------------------------------------
-    ! Read spatial information for file
+    ! Get NetCDF variable ID 
     !----------------------------------------------------------------------------
-    call this%ReadSpatial(filename,ncid_vegtyp)
-
-    !----------------------------------------------------------------------------
-    ! Get vegtyp variable id
-    !----------------------------------------------------------------------------
-    status = nf90_inq_varid(ncid_vegtyp, name_var_vegtyp, varid_vegtyp)
+    status = nf90_inq_varid(ncid = ncid, name = name_var, varid = varid)
     if (status /= nf90_noerr) then
-      write(*,*) 'Unable to find the variable ''',trim(name_var_vegtyp),''' in ''',trim(filename),''''
+      write(*,*) 'Unable to find the variable ''',trim(name_var),''' in ''',trim(filename),''''
       stop ":  ERROR EXIT"
     end if
 
     !----------------------------------------------------------------------------
-    ! Allocate and set local vegtyp array to missing values
+    ! Allocate and set local array to missing values
     !----------------------------------------------------------------------------
-    allocate(read_vegtyp(this%n_x,this%n_y))
-    read_vegtyp(:,:) = this%integerMissing
+    allocate(read_var(this%n_x,this%n_y))
+    read_var(:,:) = integerMissing
 
     !----------------------------------------------------------------------------
-    ! Read vegtyp from file
+    ! Read from NetCDF file
     !----------------------------------------------------------------------------
-    status = nf90_get_var(ncid_vegtyp,varid_vegtyp,read_vegtyp)
+    status = nf90_get_var(ncid = ncid,varid = varid, values = read_var)
     if (status /= nf90_noerr) then
-      write(*,*) 'Unable to read variable ''',trim(name_var_vegtyp),''' from ''',trim(filename),''''
+      write(*,*) 'Unable to read variable ''',trim(name_var),''' from ''',trim(filename),''''
       stop ":  ERROR EXIT"
     end if
-
-    !----------------------------------------------------------------------------
-    ! Allocate vegtyp array for 'this' instance of gridinfo_type
-    !----------------------------------------------------------------------------
-    allocate(this%vegtyp(this%n_x,this%n_y))
 
     !----------------------------------------------------------------------------
     ! Check and then transfer read-in values to gridinfo_type 
     !----------------------------------------------------------------------------
-    if(read_vegtyp(1,1) /= integerMissing) then
-      this%vegtyp(:,:) = read_vegtyp(:,:)
+    if(read_var(1,1) /= integerMissing) then
+      var(:,:) = read_var(:,:)
     else 
-      write(*,*) 'ERROR : problem reading vegtyp from ''',trim(filename),''''; stop
+      write(*,*) 'ERROR : problem reading ''',trim(name_var),''' from ''',trim(filename),''''; stop
     end if
 
     !----------------------------------------------------------------------------
     ! Close file
     !----------------------------------------------------------------------------
-    status = nf90_close(ncid_vegtyp)
+    status = nf90_close(ncid = ncid)
     if (status /= nf90_noerr) then
       write(*,*) 'Unable to close ''',trim(filename),''''; stop ":  ERROR EXIT" 
     end if
 
     end associate
 
-  end subroutine ReadVegtyp 
+  end subroutine ReadSoils 
 
-  subroutine ReadSpatial(this,filename,ncid)
+  subroutine ReadLandUse(this,filename)
+
+    class(gridinfo_type)               :: this
+    character*256,intent(in)           :: filename 
+    logical                            :: lexist
+    integer                            :: status       
+    integer                            :: ix, iy
+    integer                            :: ncid     ! NetCDF file ID number
+    integer                            :: varid    ! NetCDF variable ID
+    integer,allocatable,dimension(:,:) :: read_var ! Local array to hold read-in values
+
+    associate(name_var       => this%name_var_vegtyp, &
+              var            => this%vegtyp, &
+              integerMissing => this%integerMissing)
+
+    !----------------------------------------------------------------------------
+    ! Check that file exists and open it
+    !----------------------------------------------------------------------------
+    inquire(file = trim(filename), exist = lexist)
+    if (.not. lexist) then
+      write(*,*) 'ERROR Could not find ''',trim(filename),''''; stop ":  ERROR EXIT"
+    endif
+    status = nf90_open(path = trim(filename), mode = nf90_nowrite, ncid = ncid)
+    if (status /= nf90_noerr) then
+      write(*,*) 'ERROR Could not open ''',trim(filename),''''; stop ":  ERROR EXIT"
+    endif
+
+    !----------------------------------------------------------------------------
+    ! Get NetCDF variable ID 
+    !----------------------------------------------------------------------------
+    status = nf90_inq_varid(ncid = ncid, name = name_var, varid = varid)
+    if (status /= nf90_noerr) then
+      write(*,*) 'Unable to find the variable ''',trim(name_var),''' in ''',trim(filename),''''
+      stop ":  ERROR EXIT"
+    end if
+
+    !----------------------------------------------------------------------------
+    ! Allocate and set local array to missing values
+    !----------------------------------------------------------------------------
+    allocate(read_var(this%n_x,this%n_y))
+    read_var(:,:) = integerMissing
+
+    !----------------------------------------------------------------------------
+    ! Read from NetCDF file
+    !----------------------------------------------------------------------------
+    status = nf90_get_var(ncid = ncid,varid = varid, values = read_var)
+    if (status /= nf90_noerr) then
+      write(*,*) 'Unable to read variable ''',trim(name_var),''' from ''',trim(filename),''''
+      stop ":  ERROR EXIT"
+    end if
+
+    !----------------------------------------------------------------------------
+    ! Check and then transfer read-in values to gridinfo_type 
+    !----------------------------------------------------------------------------
+    if(read_var(1,1) /= integerMissing) then
+      var(:,:) = read_var(:,:)
+    else 
+      write(*,*) 'ERROR : problem reading ''',trim(name_var),''' from ''',trim(filename),''''; stop
+    end if
+
+    !----------------------------------------------------------------------------
+    ! Close file
+    !----------------------------------------------------------------------------
+    status = nf90_close(ncid = ncid)
+    if (status /= nf90_noerr) then
+      write(*,*) 'Unable to close ''',trim(filename),''''; stop ":  ERROR EXIT" 
+    end if
+
+    end associate
+
+  end subroutine ReadLandUse 
+
+  subroutine ReadSpatial(this,filename)
 
     class(gridinfo_type)           :: this
     character*256,intent(in)       :: filename
-    integer,intent(in)             :: ncid
     integer                        :: status
+    integer                        :: ncid
     integer                        :: ix, iy
+    logical                        :: lexist
     integer                        :: read_nx     ! read-in n_x value
     integer                        :: read_ny     ! read-in n_y value
     real                           :: read_dx     ! read-in dx value
@@ -186,31 +269,43 @@ contains
     dimid_y = integerMissing
 
     !----------------------------------------------------------------------------
+    ! Check that file exists and open it
+    !----------------------------------------------------------------------------
+    inquire(file = trim(filename), exist = lexist)
+    if (.not. lexist) then
+      write(*,*) 'ERROR Could not find ''',trim(filename),''''; stop ":  ERROR EXIT"
+    endif
+    status = nf90_open(path = trim(filename), mode = nf90_nowrite, ncid = ncid)
+    if (status /= nf90_noerr) then
+      write(*,*) 'ERROR Could not open ''',trim(filename),''''; stop ":  ERROR EXIT"
+    endif
+
+    !----------------------------------------------------------------------------
     ! Read n_x and n_y
     !----------------------------------------------------------------------------
-    status = nf90_inq_dimid(ncid, trim(name_dim_x), dimid_x)
+    status = nf90_inq_dimid(ncid = ncid, name = trim(name_dim_x), dimid = dimid_x)
     if (status /= nf90_noerr) then; write(*,*) 'Unable to find dimension ''',trim(name_dim_x),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    status = nf90_inq_dimid(ncid, trim(name_dim_y), dimid_y)
+    status = nf90_inq_dimid(ncid = ncid, name = trim(name_dim_y), dimid = dimid_y)
     if (status /= nf90_noerr) then; write(*,*) 'Unable to find dimension ''',trim(name_dim_y),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    status = nf90_inquire_dimension(ncid, dimid_x, len=read_nx)
+    status = nf90_inquire_dimension(ncid = ncid, dimid = dimid_x, len=read_nx)
     if (status /= nf90_noerr) then; write(*,*) 'Unable to read length of dimension ''',trim(name_dim_x),''' in ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
-    status = nf90_inquire_dimension(ncid, dimid_y, len=read_ny)
+    status = nf90_inquire_dimension(ncid = ncid, dimid = dimid_y, len=read_ny)
     if (status /= nf90_noerr) then; write(*,*) 'Unable to read length of dimension ''',trim(name_dim_y),''' in ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
 
     !----------------------------------------------------------------------------
     ! Read dx and dy
     !----------------------------------------------------------------------------
-    status = nf90_inq_varid(ncid, trim(name_dim_x), varid_x)
+    status = nf90_inq_varid(ncid = ncid, name = trim(name_dim_x), varid = varid_x)
     if (status /= nf90_noerr) then; write(*,*) 'Unable to find variable ''',trim(name_dim_x),''' in ''',trim(filename),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_inq_varid(ncid, trim(name_dim_y), varid_y)
+    status = nf90_inq_varid(ncid = ncid, name = trim(name_dim_y), varid = varid_y)
     if (status /= nf90_noerr) then; write(*,*) 'Unable to find variable ''',trim(name_dim_y),''' in ''',trim(filename),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_inquire_attribute(ncid=ncid,varid=varid_x,name=name_att_dx)
+    status = nf90_inquire_attribute(ncid = ncid, varid = varid_x, name = name_att_dx)
     if (status /= nf90_noerr) then; write(*,*) 'Unable to find attribute ''',trim(name_att_dx),''' with variable ''',trim(name_dim_x),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    status = nf90_inquire_attribute(ncid=ncid,varid=varid_y,name=name_att_dy)
+    status = nf90_inquire_attribute(ncid = ncid, varid = varid_y, name = name_att_dy)
     if (status /= nf90_noerr) then; write(*,*) 'Unable to find attribute ''',trim(name_att_dy),''' with variable ''',trim(name_dim_y),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    status = nf90_get_att(ncid=ncid, varid=varid_x, name=name_att_dx, values=read_dx)
+    status = nf90_get_att(ncid = ncid, varid = varid_x, name = name_att_dx, values = read_dx)
     if (status /= nf90_noerr) then; write(*,*) 'Unable to read attribute ''',trim(name_att_dx),''' with variable ''',trim(name_dim_x),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    status = nf90_get_att(ncid=ncid, varid=varid_y, name=name_att_dy, values=read_dy)
+    status = nf90_get_att(ncid = ncid, varid = varid_y, name = name_att_dy, values = read_dy)
     if (status /= nf90_noerr) then; write(*,*) 'Unable to read attribute ''',trim(name_att_dy),''' with variable ''',trim(name_dim_y),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
 
     !----------------------------------------------------------------------------
@@ -222,9 +317,9 @@ contains
     !----------------------------------------------------------------------------
     ! Read latitude and longitude values
     !----------------------------------------------------------------------------
-    status = nf90_get_var(ncid,varid_x,read_lon)
+    status = nf90_get_var(ncid = ncid, varid = varid_x, values = read_lon)
     if (status /= nf90_noerr) then; write(*,*) 'Unable to read variable ''',trim(name_dim_x),''' from ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
-    status = nf90_get_var(ncid,varid_y,read_lat)
+    status = nf90_get_var(ncid = ncid, varid = varid_y, values = read_lat)
     if (status /= nf90_noerr) then; write(*,*) 'Unable to read variable ''',trim(name_dim_y),''' from ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
 
     !----------------------------------------------------------------------------
@@ -246,10 +341,10 @@ contains
       !----------------------------------------------------------------------------
       ! Transfer values
       !----------------------------------------------------------------------------
-      if(read_nx /= integerMissing) then; this%n_x = read_nx; else; write(*,*) 'ERROR : problem reading n_x from ''',trim(filename),''''; stop; end if
-      if(read_ny /= integerMissing) then; this%n_y = read_ny; else; write(*,*) 'ERROR : problem reading n_y from ''',trim(filename),''''; stop; end if
-      if(read_dx /= realMissing)    then; this%dx  = read_dx; else; write(*,*) 'ERROR : problem reading dx from ''', trim(filename),''''; stop; end if
-      if(read_dy /= realMissing)    then; this%dy  = read_dy; else; write(*,*) 'ERROR : problem reading dy from ''', trim(filename),''''; stop; end if
+      if(read_nx /= integerMissing) then; this%n_x = read_nx; else; write(*,*) 'ERROR : problem reading x-dimension resolution from ''',trim(filename),''''; stop; end if
+      if(read_ny /= integerMissing) then; this%n_y = read_ny; else; write(*,*) 'ERROR : problem reading y-dimension resolution from ''',trim(filename),''''; stop; end if
+      if(read_dx /= realMissing)    then; this%dx  = read_dx; else; write(*,*) 'ERROR : problem reading x-dimension spacing from ''', trim(filename),''''; stop; end if
+      if(read_dy /= realMissing)    then; this%dy  = read_dy; else; write(*,*) 'ERROR : problem reading y-dimension spacing from ''', trim(filename),''''; stop; end if
       if(read_lon(1) /= realMissing) then
         do ix = 1, read_nx
           this%lon(ix,:) = read_lon(ix)
@@ -266,17 +361,25 @@ contains
       !----------------------------------------------------------------------------
       ! Check that values match
       !----------------------------------------------------------------------------
-      if(read_nx /= this%n_x) then; write(*,*) 'ERROR : n_x from ''',trim(filename),''' does not match n_x from other gridded inputs'; stop; end if
-      if(read_ny /= this%n_y) then; write(*,*) 'ERROR : n_y from ''',trim(filename),''' does not match n_y from other gridded inputs'; stop; end if
-      if(read_dx /= this%dx)  then; write(*,*) 'ERROR : dx from ''', trim(filename),''' does not match dx from other gridded inputs';  stop; end if
-      if(read_dy /= this%dy)  then; write(*,*) 'ERROR : dy from ''', trim(filename),''' does not match dy from other gridded inputs';  stop; end if
+      if(read_nx /= this%n_x) then; write(*,*) 'ERROR : x-dimension resolution from ''',trim(filename),''' does not match x-dimension resolution from other gridded inputs'; stop; end if
+      if(read_ny /= this%n_y) then; write(*,*) 'ERROR : y-dimension resolution from ''',trim(filename),''' does not match y-dimension resolution from other gridded inputs'; stop; end if
+      if(read_dx /= this%dx)  then; write(*,*) 'ERROR : x-dimension spacing from ''', trim(filename),''' does not match x-dimension spacing from other gridded inputs';  stop; end if
+      if(read_dy /= this%dy)  then; write(*,*) 'ERROR : y-dimension spacing from ''', trim(filename),''' does not match y-dimension spacing from other gridded inputs';  stop; end if
       do ix = 1, read_nx
-        if (all(read_lon(ix) /= this%lon(ix,:))) then; write(*,*) 'ERROR : lat values from ''', trim(filename),''' do not match lat values from other gridded inputs';  stop; end if
+        if (all(read_lon(ix) /= this%lon(ix,:))) then; write(*,*) 'ERROR : longitude values from ''', trim(filename),''' do not match longitude values from other gridded inputs';  stop; end if
       end do
       do iy = 1, read_ny
-        if (all(read_lat(iy) /= this%lon(:,iy))) then; write(*,*) 'ERROR : lat values from ''', trim(filename),''' do not match lat values from other gridded inputs';  stop; end if
+        if (all(read_lat(iy) /= this%lat(:,iy))) then; write(*,*) 'ERROR : latitude values from ''', trim(filename),''' do not match latitude values from other gridded inputs';  stop; end if
       end do
 
+    end if
+
+    !----------------------------------------------------------------------------
+    ! Close file
+    !----------------------------------------------------------------------------
+    status = nf90_close(ncid = ncid)
+    if (status /= nf90_noerr) then
+      write(*,*) 'Unable to close ''',trim(filename),''''; stop ":  ERROR EXIT" 
     end if
 
     end associate
