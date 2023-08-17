@@ -62,7 +62,7 @@ contains
     !----------------------------------------------------------------------------
     ! Read spatial information from each NetCDF file
     !----------------------------------------------------------------------------
-    call this%ReadSpatial(namelist%vegtyp_filename)
+    call this%ReadSpatial(namelist%landuse_filename)
     call this%ReadSpatial(namelist%soils_filename)
 
     !----------------------------------------------------------------------------
@@ -80,7 +80,7 @@ contains
     !----------------------------------------------------------------------------
     ! Read NetCDF files to populate gridinfo_type arrays
     !----------------------------------------------------------------------------
-    call this%ReadLandUse(namelist%vegtyp_filename)
+    call this%ReadLandUse(namelist%landuse_filename)
     call this%ReadSoils(namelist%soils_filename)
 
   end subroutine ReadGridInfo

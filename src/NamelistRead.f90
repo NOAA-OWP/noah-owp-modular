@@ -13,7 +13,7 @@ type, public :: namelist_type
   character(len=12)  :: startdate          ! UTC start datetime of the model run ( YYYYMMDDHHmm )
   character(len=12)  :: enddate            ! UTC end datetime of the model run ( YYYYMMDDHHmm )
   character(len=256) :: forcing_filename   ! directory/name of the input/forcing file
-  character(len=256) :: vegtyp_filename    ! directory/name of NetCDF file holding gridded land use (vegtyp) values 
+  character(len=256) :: landuse_filename   ! directory/name of NetCDF file holding gridded land use (vegtyp) values 
   character(len=256) :: soils_filename     ! directory/name of NetCDF file holding gridded soils (isltyp) values 
   character(len=256) :: output_filename    ! directory/name of the output file
   character(len=256) :: parameter_dir      ! name of the directory where parameter TBLs reside
@@ -92,7 +92,7 @@ contains
     character(len=12)  :: startdate
     character(len=12)  :: enddate
     character(len=256) :: forcing_filename
-    character(len=256) :: vegtyp_filename
+    character(len=256) :: landuse_filename
     character(len=256) :: soils_filename
     character(len=256) :: output_filename
     character(len=256) :: parameter_dir
@@ -146,7 +146,7 @@ contains
     !--------------------------- !
     !   define namelist groups   !
     !--------------------------- !
-    namelist / timing          / dt,startdate,enddate,forcing_filename,vegtyp_filename,soils_filename,output_filename
+    namelist / timing          / dt,startdate,enddate,forcing_filename,landuse_filename,soils_filename,output_filename
     namelist / parameters      / parameter_dir, soil_table, general_table, noahowp_table,&
                                  soil_class_name, veg_class_name
     namelist / location        / terrain_slope,azimuth
@@ -177,7 +177,7 @@ contains
     startdate        = stringMissing
     enddate          = stringMissing
     forcing_filename = stringMissing
-    vegtyp_filename  = stringMissing
+    landuse_filename = stringMissing
     soils_filename   = stringMissing
     output_filename  = stringMissing
     parameter_dir    = stringMissing
@@ -297,7 +297,7 @@ contains
     if(startdate        /= stringMissing) then; this%startdate = startdate; else; write(*,'(A)') 'ERROR: required entry startdate not found in namelist'; stop; end if
     if(enddate          /= stringMissing) then; this%enddate = enddate; else; write(*,'(A)') 'ERROR: required entry enddate not found in namelist'; stop; end if
     if(forcing_filename /= stringMissing) then; this%forcing_filename = forcing_filename; else; write(*,'(A)') 'ERROR: required entry forcing_filename not found in namelist'; stop; end if
-    if(vegtyp_filename  /= stringMissing) then; this%vegtyp_filename = vegtyp_filename; else; write(*,'(A)') 'ERROR: required entry vegtyp_filename not found in namelist'; stop; end if
+    if(landuse_filename /= stringMissing) then; this%landuse_filename = landuse_filename; else; write(*,'(A)') 'ERROR: required entry landuse_filename not found in namelist'; stop; end if
     if(soils_filename   /= stringMissing) then; this%soils_filename = soils_filename; else; write(*,'(A)') 'ERROR: required entry soils_filename not found in namelist'; stop; end if
     if(output_filename  /= stringMissing) then; this%output_filename = output_filename; else; write(*,'(A)') 'ERROR: required entry output_filename not found in namelist'; stop; end if
     if(parameter_dir    /= stringMissing) then; this%parameter_dir = parameter_dir; else; write(*,'(A)') 'ERROR: required entry parameter_dir not found in namelist'; stop; end if
