@@ -4,6 +4,7 @@
 .SUFFIXES: .o .f90
 
 all: user_build_options
+	(cd bmi;		make bmi_grid)
 	(cd src;		make)
 	(cd bmi;		make)
 	(cd driver;		make)
@@ -16,6 +17,7 @@ clean:
 	(cd run;		make clean)
 
 testBMI:
+	(cd bmi;		make bmi_grid)
 	(cd src;		make)
 	(cd bmi;		make)
 	(cd driver;		make)

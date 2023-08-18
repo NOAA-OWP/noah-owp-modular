@@ -8,7 +8,10 @@ include ../user_build_options
 F90FLAGS := -cpp ${F90FLAGS}
 
 OBJS = bmi_noahowp.o \
-       bmi.o
+       bmi.o \
+	   bmi_noahowp.f90
+
+.PHONY: bmi_grid
 
 all:	$(OBJS)
 
@@ -25,7 +28,8 @@ clean:
 #
 # Dependencies:
 #
+bmi_grid: bmi_grid.o
 
 bmi_noahowp.o: bmi.o \
+			   bmi_grid.o \
               ../src/RunModule.o
-

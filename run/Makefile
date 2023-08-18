@@ -59,14 +59,15 @@ OBJS = \
         ../driver/NoahModularDriver.o \
         ../driver/AsciiReadModule.o \
         ../bmi/bmi_noahowp.o \
-        ../bmi/bmi.o
+        ../bmi/bmi.o \
+        ../bmi/bmi_grid.o
 
 
 CMD = noah_owp_modular.exe
 all:	$(CMD)
 
 noah_owp_modular.exe: $(OBJS)
-	$(COMPILERF90) -o $(@) -I../driver -I../src $(OBJS) $(NETCDFLIB)
+	$(COMPILERF90) -o $(@) -I../driver -I../src -I../bmi $(OBJS) $(NETCDFLIB)
 
 # This command cleans up
 clean:
