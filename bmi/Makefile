@@ -9,7 +9,7 @@ F90FLAGS := -cpp ${F90FLAGS}
 
 OBJS = bmi_noahowp.o \
        bmi.o \
-	   bmi_noahowp.f90
+	   bmi_noahowp.o
 
 .PHONY: bmi_grid
 
