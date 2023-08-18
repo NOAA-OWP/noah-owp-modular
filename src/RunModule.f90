@@ -73,9 +73,10 @@ contains
     type(noahowpgrid_type), intent (in) :: model
     type(GridType), intent(inout) :: grid
     ! note these are in y, x order
-    grid%shape = ( size(model%domaingrid%lat), size(model%domaingrid%lon) )
-    grid%spacing = ( model%domaingrid%dy, model%domaingrid%dx )
-    grid%origin = ( /model%domaingrid%lat(1,1), model%domaingrid%lon(1,1) /) 
+    !TODO align model%domaingrid with GridType and reduce this redundancy
+    grid%shape = (/model%domaingrid%n_y, model%domaingrid%n_x/)
+    grid%spacing = (/model%domaingrid%dy, model%domaingrid%dx/)
+    grid%origin = (/model%domaingrid%lat(1,1), model%domaingrid%lon(1,1)/) 
     ! in a projected system, it is possible that grid spacing has units, for now just use none
     grid%units = none
   
