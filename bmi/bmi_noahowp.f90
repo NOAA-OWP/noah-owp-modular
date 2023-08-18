@@ -7,12 +7,12 @@ module bminoahowp
 #else
    use bmif_2_0
 #endif
-
+  use bmi_grid
   use RunModule
   use, intrinsic :: iso_c_binding, only: c_ptr, c_loc, c_f_pointer
   
   implicit none
-
+  integer, parameter :: BMI_MAX_LOCATION_NAME = 4 !only valid options are node, face, edge, s
   type, extends (bmi) :: bmi_noahowp
      private
      type(noahowpgrid_type) :: model
@@ -104,6 +104,24 @@ module bminoahowp
        dimension(input_item_count) :: input_items
   character (len=BMI_MAX_VAR_NAME), target, &
        dimension(output_item_count) :: output_items 
+   ! grid id assignments, indexed by input/output items
+   integer :: input_grid(input_item_count) = 1
+   ! could use different grids per variable by explicit assignment of grid id, e.g. [0, 0, 0, 1, 2, 2]
+   integer :: output_grid(output_item_count) = 1
+   ! grid/variable location mapping
+   character (len=BMI_MAX_LOCATION_NAME) :: &
+   output_location(output_item_count) = 'node'
+   ! can also be explicitly mapped per variable, indexed by input/output_item
+   ! input_location(4) = [character(BMI_MAX_LOCATION_NAME):: 'node', 'node', 'node', 'node']
+   character (len=BMI_MAX_LOCATION_NAME) :: &
+   input_location(input_item_count) = 'node'
+
+   ! grid meta structure
+   ! all variables are associated with a grid spec
+   ! by convention grids(1) is the "scalar" grid
+   ! for noah-owp-modular, grids(2) is the 2D grid
+   ! other grids/specs can be added as needed
+   type(GridType) :: grids(2)
 
 contains
 
@@ -186,6 +204,18 @@ contains
     else
        !call initialize_from_defaults(this%model)
     end if
+    ! initialize the grid meta data
+    ! params are grid_id, rank, type, units
+    call grids(1)%init(0, 0, scalar, none) !the scalar grid
+    call grids(2)%init(1, 2, uniform_rectilinear, none)
+    ! for now, use the domain info in the model read from its various files
+    ! TODO in the future, can use a config flag to indicate whether or not this is approriate
+    ! or whether we want dynamic grid allocation
+    ! even if the grid spec is initially empty cause the model domain is empty, we can still
+    ! update it later (just have to remember to adjust the model as well...)
+    ! at some point we can align these two things more and make that more cohesive
+    call set_grid_from_model(this%model,grids(1))
+    call set_grid_from_model(this%model,grids(2))
     bmi_status = BMI_SUCCESS
   end function noahowp_initialize
 
@@ -285,17 +315,32 @@ contains
    class (bmi_noahowp), intent(in) :: this
    character (len=*), intent(in) :: name
    integer, intent(out) :: grid
-   integer :: bmi_status
+   integer :: bmi_status, i
 
-   select case(name)
-   case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! input vars
-      'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS')             ! output vars
-    grid = 1
+      !checkout output vars
+      do  i = 1, size(output_items)
+         if(output_items(i) .eq. trim(name) ) then
+            grid = output_grid(i)
     bmi_status = BMI_SUCCESS
-   case default
+            return
+         endif
+      end do
+
+      !checkout input vars
+      do  i = 1, size(input_items)
+         if(input_items(i) .eq. trim(name) ) then
+            grid = input_grid(i)
+            bmi_status = BMI_SUCCESS
+            return
+         endif
+      end do
+
+      !check any other vars???
+
+      !no matches
      grid = -1
      bmi_status = BMI_FAILURE
-   end select
+
  end function noahowp_var_grid
 
   ! The type of a variable's grid.
@@ -323,19 +368,18 @@ contains
    class (bmi_noahowp), intent(in) :: this
    integer, intent(in) :: grid
    integer, intent(out) :: rank
-   integer :: bmi_status
+   integer :: bmi_status, i
 
-   select case(grid)
-   case(0)
-      rank = 0
-      bmi_status = BMI_SUCCESS
-   case(1)
-      rank = 2
-      bmi_status = BMI_SUCCESS
-   case default
-      rank = -1
-      bmi_status = BMI_FAILURE
-   end select
+   ! Failure unless we find what we are looking for...
+   bmi_status = BMI_FAILURE
+   do i = 1, size(grids)
+     if ( grids(i)%id .eq. grid ) then
+       rank = grids(i)%rank
+       bmi_status = BMI_SUCCESS
+       return
+     end if
+   end do
+
  end function noahowp_grid_rank
 
   ! The dimensions of a grid.
@@ -343,16 +387,18 @@ contains
    class (bmi_noahowp), intent(in) :: this
    integer, intent(in) :: grid
    integer, dimension(:), intent(out) :: shape
-   integer :: bmi_status
+   integer :: bmi_status, i
 
-   select case(grid)
-   case(1)
-      shape = [this%model%domaingrid%n_y, this%model%domaingrid%n_x]
-      bmi_status = BMI_SUCCESS
-   case default
-      shape(:) = -1
-      bmi_status = BMI_FAILURE
-   end select
+   ! Failure unless we find what we are looking for...
+   bmi_status = BMI_FAILURE
+   do i = 1, size(grids)
+     if ( grids(i)%id .eq. grid ) then
+       shape = grids(i)%shape
+       bmi_status = BMI_SUCCESS
+       return
+     end if
+   end do
+
  end function noahowp_grid_shape
 
   ! The total number of elements in a grid.
@@ -360,19 +406,20 @@ contains
    class (bmi_noahowp), intent(in) :: this
    integer, intent(in) :: grid
    integer, intent(out) :: size
-   integer :: bmi_status
+   integer :: bmi_status, i, upper
 
-   select case(grid)
-   case(0)
-      size = 1
-      bmi_status = BMI_SUCCESS
-   case(1)
-      size = this%model%domaingrid%n_x * this%model%domaingrid%n_y
-      bmi_status = BMI_SUCCESS
-   case default
-      size = -1
-      bmi_status = BMI_FAILURE
-   end select
+   block
+     intrinsic :: size
+     upper = size(grids)
+   end block
+   do i = 1, upper
+     if ( grids(i)%id .eq. grid ) then
+       size = product( grids(i)%shape )
+       bmi_status = BMI_SUCCESS
+       return
+     end if
+   end do
+
  end function noahowp_grid_size
 
   ! The distance between nodes of a grid.
@@ -380,16 +427,17 @@ contains
     class (bmi_noahowp), intent(in) :: this
     integer, intent(in) :: grid
     double precision, dimension(:), intent(out) :: spacing
-    integer :: bmi_status
+    integer :: bmi_status, i
 
-    select case(grid)
-    case(1)
-      spacing(:) = [this%model%domaingrid%dy,this%model%domaingrid%dx]
-      bmi_status = BMI_SUCCESS
-    case default
-       spacing(:) = -1.d0
-       bmi_status = BMI_FAILURE
-    end select
+    bmi_status = BMI_FAILURE
+    do i = 1, size(grids)
+      if ( grids(i)%id .eq. grid ) then
+        spacing = grids(i)%spacing
+        bmi_status = BMI_SUCCESS
+        return
+      end if
+    end do
+
   end function noahowp_grid_spacing
 !
   ! Coordinates of grid origin.
@@ -397,16 +445,17 @@ contains
     class (bmi_noahowp), intent(in) :: this
     integer, intent(in) :: grid
     double precision, dimension(:), intent(out) :: origin
-    integer :: bmi_status
+    integer :: bmi_status, i
 
-    select case(grid)
-    case(1)
-      origin(:) = [0.d0, 0.d0]
-      bmi_status = BMI_SUCCESS
-    case default
-       origin(:) = -1.d0
-       bmi_status = BMI_FAILURE
-    end select
+    bmi_status = BMI_FAILURE
+    do i = 1, size(grids)
+      if ( grids(i)%id .eq. grid ) then
+        origin = grids(i)%origin
+        bmi_status = BMI_SUCCESS
+        return
+      end if
+    end do
+
   end function noahowp_grid_origin
 
   ! X-coordinates of grid nodes.
@@ -414,19 +463,16 @@ contains
     class (bmi_noahowp), intent(in)             :: this
     integer, intent(in)                         :: grid
     double precision, dimension(:), intent(out) :: x
-    integer                                     :: bmi_status
+    integer                                     :: bmi_status, i
 
-    select case(grid)
-    case(0)
-       x(:) = [0.d0]
-       bmi_status = BMI_SUCCESS 
-    case(1)
-       x(:) = this%model%domaingrid%lon(:,1)
-       bmi_status = BMI_SUCCESS 
-    case default
-       x(:) = -1.d0
-       bmi_status = BMI_FAILURE
-    end select 
+    bmi_status = BMI_FAILURE
+    do i = 1, size(grids)
+      if ( grids(i)%id .eq. grid ) then
+        call grids(i)%grid_x(x)
+        bmi_status = BMI_SUCCESS
+      end if
+    end do
+
   end function noahowp_grid_x
 
   ! Y-coordinates of grid nodes.
@@ -434,19 +480,16 @@ contains
    class (bmi_noahowp), intent(in)             :: this
    integer, intent(in)                         :: grid
    double precision, dimension(:), intent(out) :: y
-   integer                                     :: bmi_status
+   integer                                     :: bmi_status, i
 
-    select case(grid)
-    case(0)
-       y(:) = [0.d0]
+   bmi_status = BMI_FAILURE
+   do i = 1, size(grids)
+     if ( grids(i)%id .eq. grid ) then
+       call grids(i)%grid_y(y)
        bmi_status = BMI_SUCCESS
-    case(1)
-       y(:) = this%model%domaingrid%lat(1,:)
-       bmi_status = BMI_SUCCESS
-    case default
-       y(:) = -1.d0
-       bmi_status = BMI_FAILURE
-    end select
+     end if
+   end do
+
   end function noahowp_grid_y
 
   ! Z-coordinates of grid nodes.
@@ -454,16 +497,16 @@ contains
     class (bmi_noahowp), intent(in) :: this
     integer, intent(in) :: grid
     double precision, dimension(:), intent(out) :: z
-    integer :: bmi_status
+    integer :: bmi_status, i
 
-    select case(grid)
-    case(0)
-       z(:) = [0.d0]
-       bmi_status = BMI_SUCCESS
-    case default
-       z(:) = -1.d0
-       bmi_status = BMI_FAILURE
-    end select
+    bmi_status = BMI_FAILURE
+    do i = 1, size(grids)
+      if ( grids(i)%id .eq. grid ) then
+        call grids(i)%grid_z(z)
+        bmi_status = BMI_SUCCESS
+      end if
+    end do
+
   end function noahowp_grid_z
 
   ! Get the number of nodes in an unstructured grid.
@@ -684,13 +727,21 @@ contains
    s2 = this%get_grid_size(grid, grid_size)
    s3 = this%get_var_itemsize(name, item_size)
 
-   if ((s1 == BMI_SUCCESS).and.(s2 == BMI_SUCCESS).and.(s3 == BMI_SUCCESS)) then
-      nbytes = item_size * grid_size
+    if( grid .eq. 0) then
+      !these are the scalar values wrapped in an array
+      !not likely needed in this case unless scalars are re-introduced to this model
+      !but it is important to have this special case cause grid_size will return 0 for scalars
+      !since it is dependent on the rank, which is is 0 in the scalar case
+      nbytes = item_size
       bmi_status = BMI_SUCCESS
-   else
-      nbytes = -1
-      bmi_status = BMI_FAILURE
-   end if
+    else if ((s1 == BMI_SUCCESS).and.(s2 == BMI_SUCCESS).and.(s3 == BMI_SUCCESS)) then
+       nbytes = item_size * grid_size
+       bmi_status = BMI_SUCCESS
+    else
+       nbytes = -1
+       bmi_status = BMI_FAILURE
+    end if
+
  end function noahowp_var_nbytes
 
   ! The location (node, face, edge) of the given variable.
@@ -698,13 +749,32 @@ contains
     class (bmi_noahowp), intent(in) :: this
     character (len=*), intent(in) :: name
     character (len=*), intent(out) :: location
-    integer :: bmi_status
-!==================== UPDATE IMPLEMENTATION IF NECESSARY WHEN RUN ON GRID =================
-    select case(name)
-    case default
-       location = "node"
-       bmi_status = BMI_SUCCESS
-    end select
+    integer :: bmi_status, i
+    
+    !checkout output vars
+    do  i = 1, size(output_items)
+      if(output_items(i) .eq. trim(name) ) then
+        location = output_location(i)
+        bmi_status = BMI_SUCCESS
+        return
+      endif
+    end do
+
+    !checkout input vars
+    do  i = 1, size(input_items)
+      if(input_items(i) .eq. trim(name) ) then
+        location = input_location(i)
+        bmi_status = BMI_SUCCESS
+        return
+      endif
+    end do
+  
+    !check any other vars???
+
+    !no matches
+    location = "-"
+    bmi_status = BMI_FAILURE
+
   end function noahowp_var_location
 
   ! Get a copy of a integer variable's values, flattened.

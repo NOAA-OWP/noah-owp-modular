@@ -58,7 +58,8 @@ OBJS =  ../src/ErrorCheckModule.o \
         ./noahowp_driver_test.o \
         ../driver/AsciiReadModule.o \
         ../bmi/bmi_noahowp.o \
-        ../bmi/bmi.o
+        ../bmi/bmi.o \
+        ../bmi/bmi_grid.o
 
 
 CMD = noahowp_test.exe
