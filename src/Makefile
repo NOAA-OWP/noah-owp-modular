@@ -60,7 +60,7 @@ OBJS = ErrorCheckModule.o \
 all:	$(OBJS)
 
 .f90.o:
-	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../driver $(*).f90
+	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../driver -I../bmi $(*).f90
 
 #
 # This command cleans up object (etc) files:
