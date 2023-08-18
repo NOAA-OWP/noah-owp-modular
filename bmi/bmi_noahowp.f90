@@ -12,7 +12,7 @@ module bminoahowp
   use, intrinsic :: iso_c_binding, only: c_ptr, c_loc, c_f_pointer
   
   implicit none
-
+  integer, parameter :: BMI_MAX_LOCATION_NAME = 4 !only valid options are node, face, edge, s
   type, extends (bmi) :: bmi_noahowp
      private
      type(noahowpgrid_type) :: model
