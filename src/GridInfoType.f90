@@ -104,21 +104,19 @@ contains
     ! Check that file exists and open it
     !----------------------------------------------------------------------------
     inquire(file = trim(filename), exist = lexist)
-    if (.not. lexist) then
+    if (lexist) then
+      status = nf90_open(path = trim(filename), mode = nf90_nowrite, ncid = ncid)
+      if (status /= nf90_noerr) then; write(*,*) 'ERROR Could not open ''',trim(filename),''''; stop ":  ERROR EXIT"; endif
+    else
       write(*,*) 'ERROR Could not find ''',trim(filename),''''; stop ":  ERROR EXIT"
-    endif
-    status = nf90_open(path = trim(filename), mode = nf90_nowrite, ncid = ncid)
-    if (status /= nf90_noerr) then
-      write(*,*) 'ERROR Could not open ''',trim(filename),''''; stop ":  ERROR EXIT"
-    endif
+    end if
 
     !----------------------------------------------------------------------------
     ! Get NetCDF variable ID 
     !----------------------------------------------------------------------------
     status = nf90_inq_varid(ncid = ncid, name = name_var, varid = varid)
     if (status /= nf90_noerr) then
-      write(*,*) 'Unable to find the variable ''',trim(name_var),''' in ''',trim(filename),''''
-      stop ":  ERROR EXIT"
+      write(*,*) 'Unable to find the variable ''',trim(name_var),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"
     end if
 
     !----------------------------------------------------------------------------
@@ -132,8 +130,7 @@ contains
     !----------------------------------------------------------------------------
     status = nf90_get_var(ncid = ncid,varid = varid, values = read_var)
     if (status /= nf90_noerr) then
-      write(*,*) 'Unable to read variable ''',trim(name_var),''' from ''',trim(filename),''''
-      stop ":  ERROR EXIT"
+      write(*,*) 'Unable to read variable ''',trim(name_var),''' from ''',trim(filename),''''; stop ":  ERROR EXIT"
     end if
 
     !----------------------------------------------------------------------------
@@ -176,12 +173,11 @@ contains
     ! Check that file exists and open it
     !----------------------------------------------------------------------------
     inquire(file = trim(filename), exist = lexist)
-    if (.not. lexist) then
+    if (lexist) then
+      status = nf90_open(path = trim(filename), mode = nf90_nowrite, ncid = ncid)
+      if (status /= nf90_noerr) then; write(*,*) 'ERROR Could not open ''',trim(filename),''''; stop ":  ERROR EXIT"; endif
+    else
       write(*,*) 'ERROR Could not find ''',trim(filename),''''; stop ":  ERROR EXIT"
-    endif
-    status = nf90_open(path = trim(filename), mode = nf90_nowrite, ncid = ncid)
-    if (status /= nf90_noerr) then
-      write(*,*) 'ERROR Could not open ''',trim(filename),''''; stop ":  ERROR EXIT"
     endif
 
     !----------------------------------------------------------------------------
@@ -189,8 +185,7 @@ contains
     !----------------------------------------------------------------------------
     status = nf90_inq_varid(ncid = ncid, name = name_var, varid = varid)
     if (status /= nf90_noerr) then
-      write(*,*) 'Unable to find the variable ''',trim(name_var),''' in ''',trim(filename),''''
-      stop ":  ERROR EXIT"
+      write(*,*) 'Unable to find the variable ''',trim(name_var),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"
     end if
 
     !----------------------------------------------------------------------------
@@ -204,8 +199,7 @@ contains
     !----------------------------------------------------------------------------
     status = nf90_get_var(ncid = ncid,varid = varid, values = read_var)
     if (status /= nf90_noerr) then
-      write(*,*) 'Unable to read variable ''',trim(name_var),''' from ''',trim(filename),''''
-      stop ":  ERROR EXIT"
+      write(*,*) 'Unable to read variable ''',trim(name_var),''' from ''',trim(filename),''''; stop ":  ERROR EXIT"
     end if
 
     !----------------------------------------------------------------------------
@@ -272,12 +266,11 @@ contains
     ! Check that file exists and open it
     !----------------------------------------------------------------------------
     inquire(file = trim(filename), exist = lexist)
-    if (.not. lexist) then
+    if (lexist) then
+      status = nf90_open(path = trim(filename), mode = nf90_nowrite, ncid = ncid)
+      if (status /= nf90_noerr) then; write(*,*) 'ERROR Could not open ''',trim(filename),''''; stop ":  ERROR EXIT"; endif
+    else
       write(*,*) 'ERROR Could not find ''',trim(filename),''''; stop ":  ERROR EXIT"
-    endif
-    status = nf90_open(path = trim(filename), mode = nf90_nowrite, ncid = ncid)
-    if (status /= nf90_noerr) then
-      write(*,*) 'ERROR Could not open ''',trim(filename),''''; stop ":  ERROR EXIT"
     endif
 
     !----------------------------------------------------------------------------
@@ -341,21 +334,13 @@ contains
       !----------------------------------------------------------------------------
       ! Transfer values
       !----------------------------------------------------------------------------
-      if(read_nx /= integerMissing) then; this%n_x = read_nx; else; write(*,*) 'ERROR : problem reading x-dimension resolution from ''',trim(filename),''''; stop; end if
-      if(read_ny /= integerMissing) then; this%n_y = read_ny; else; write(*,*) 'ERROR : problem reading y-dimension resolution from ''',trim(filename),''''; stop; end if
-      if(read_dx /= realMissing)    then; this%dx  = read_dx; else; write(*,*) 'ERROR : problem reading x-dimension spacing from ''', trim(filename),''''; stop; end if
-      if(read_dy /= realMissing)    then; this%dy  = read_dy; else; write(*,*) 'ERROR : problem reading y-dimension spacing from ''', trim(filename),''''; stop; end if
-      if(read_lon(1) /= realMissing) then
-        do ix = 1, read_nx
-          this%lon(ix,:) = read_lon(ix)
-        end do
-      else; write(*,*) 'ERROR : problem reading lon from ''',trim(filename),''''; stop; end if
-      if(read_lat(1) /= realMissing) then
-        do iy = 1, read_ny
-          this%lat(:,iy) = read_lat(iy)
-        end do
-      else; write(*,*) 'ERROR : problem reading lon from ''',trim(filename),''''; stop; end if
-    
+      if(read_nx /= integerMissing)  then; this%n_x = read_nx; else; write(*,*) 'ERROR : problem reading x-dimension resolution from ''',trim(filename),''''; stop; end if
+      if(read_ny /= integerMissing)  then; this%n_y = read_ny; else; write(*,*) 'ERROR : problem reading y-dimension resolution from ''',trim(filename),''''; stop; end if
+      if(read_dx /= realMissing)     then; this%dx  = read_dx; else; write(*,*) 'ERROR : problem reading x-dimension spacing from ''', trim(filename),''''; stop; end if
+      if(read_dy /= realMissing)     then; this%dy  = read_dy; else; write(*,*) 'ERROR : problem reading y-dimension spacing from ''', trim(filename),''''; stop; end if
+      if(read_lon(1) /= realMissing) then; this%lon(:,:) = spread(source=read_lon(:),dim=2,ncopies=read_ny); else; write(*,*) 'ERROR : problem reading lon from ''',trim(filename),''''; stop; end if
+      if(read_lat(1) /= realMissing) then; this%lat(:,:) = spread(source=read_lat(:),dim=1,ncopies=read_nx); else; write(*,*) 'ERROR : problem reading lon from ''',trim(filename),''''; stop; end if
+  
     else 
 
       !----------------------------------------------------------------------------
@@ -365,12 +350,8 @@ contains
       if(read_ny /= this%n_y) then; write(*,*) 'ERROR : y-dimension resolution from ''',trim(filename),''' does not match y-dimension resolution from other gridded inputs'; stop; end if
       if(read_dx /= this%dx)  then; write(*,*) 'ERROR : x-dimension spacing from ''', trim(filename),''' does not match x-dimension spacing from other gridded inputs';  stop; end if
       if(read_dy /= this%dy)  then; write(*,*) 'ERROR : y-dimension spacing from ''', trim(filename),''' does not match y-dimension spacing from other gridded inputs';  stop; end if
-      do ix = 1, read_nx
-        if (all(read_lon(ix) /= this%lon(ix,:))) then; write(*,*) 'ERROR : longitude values from ''', trim(filename),''' do not match longitude values from other gridded inputs';  stop; end if
-      end do
-      do iy = 1, read_ny
-        if (all(read_lat(iy) /= this%lat(:,iy))) then; write(*,*) 'ERROR : latitude values from ''', trim(filename),''' do not match latitude values from other gridded inputs';  stop; end if
-      end do
+      do ix = 1, read_nx; if (any(read_lon(ix) /= this%lon(ix,:))) then; write(*,*) 'ERROR : longitude values from ''', trim(filename),''' do not match longitude values from other gridded inputs';  stop; end if; end do
+      do iy = 1, read_ny; if (any(read_lat(iy) /= this%lat(:,iy))) then; write(*,*) 'ERROR : latitude values from ''', trim(filename),''' do not match latitude values from other gridded inputs';  stop; end if; end do
 
     end if
 
