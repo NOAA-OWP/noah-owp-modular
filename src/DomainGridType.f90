@@ -141,7 +141,7 @@ module DomainGridType
       this%ZREF                 = namelist%ZREF
       this%vegtyp(:,:)          = gridinfo%vegtyp(:,:)
       this%croptype(:,:)        = namelist%croptype
-      this%isltyp(:,:)          = namelist%isltyp
+      this%isltyp(:,:)          = gridinfo%isltyp(:,:)
       this%IST(:,:)             = namelist%sfctyp
       this%soilcolor(:,:)       = namelist%soilcolor
       this%start_datetime       = date_to_unix(namelist%startdate)  ! returns seconds-since-1970-01-01

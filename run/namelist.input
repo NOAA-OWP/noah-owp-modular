@@ -3,7 +3,8 @@
   startdate          = "199801010630"               ! UTC time start of simulation (YYYYMMDDhhmm)
   enddate            = "199901010630"               ! UTC time end of simulation (YYYYMMDDhhmm)
   forcing_filename   = "../data/bondville.dat"      ! file containing forcing data
-  vegtyp_filename    = "../data/netcdf_dummy.nc"
+  landuse_filename   = "../data/netcdf_landuse.nc"
+  soils_filename     = "../data/netcdf_soils.nc"
   output_filename    = "../data/output.nc"
 /
 
@@ -47,7 +48,6 @@
 /
 
 &structure
- isltyp           = 1               ! soil texture class
  nsoil            = 4               ! number of soil levels
  nsnow            = 3               ! number of snow levels
  nveg             = 20              ! number of vegetation types
