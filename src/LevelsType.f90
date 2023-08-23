@@ -1,5 +1,6 @@
 module LevelsType
 
+use LevelsGridType, only: levelsgrid_type
 implicit none
 save
 private
@@ -13,7 +14,8 @@ type, public :: levels_type
   contains
 
     procedure, public  :: Init         
-    procedure, private :: InitDefault         
+    procedure, private :: InitDefault 
+    procedure, public  :: InitTransfer        
 
 end type levels_type
 
@@ -36,5 +38,16 @@ contains
     this%nveg   = huge(1)    
 
   end subroutine InitDefault
+
+  subroutine InitTransfer(this,levelsgrid)
+
+    class(levels_type)    :: this
+    type(levelsgrid_type) :: levelsgrid
+
+    this%nsoil  = levelsgrid%nsoil
+    this%nsnow  = levelsgrid%nsnow
+    this%nveg   = levelsgrid%nveg   
+
+  end subroutine InitTransfer
 
 end module LevelsType
