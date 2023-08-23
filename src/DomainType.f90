@@ -1,7 +1,7 @@
 module DomainType
 
-  use NamelistRead, only: namelist_type
-  
+  use NamelistRead,   only: namelist_type
+  use DomainGridType, only: domaingrid_type
   implicit none
   save
   private
@@ -43,6 +43,7 @@ module DomainType
       procedure, public  :: Init         
       procedure, private :: InitAllocate 
       procedure, private :: InitDefault     
+      procedure, public  :: InitTransfer
   
   end type domain_type
   
@@ -108,6 +109,29 @@ module DomainType
   
     end subroutine InitDefault
   
+    subroutine InitTransfer(this,domaingrid)
+  
+      class(domain_type)     :: this
+      class(domaingrid_type) :: domaingrid
+  
+      this%DT = domaingrid%DT
+      this%dx = domaingrid%dx
+      this%dy = domaingrid%dy
+      this%n_x = domaingrid%n_x
+      this%n_y = domaingrid%n_y
+      this%startdate = domaingrid%startdate 
+      this%enddate = domaingrid%enddate    
+      this%nowdate = domaingrid%nowdate           
+      this%start_datetime = domaingrid%start_datetime  
+      this%end_datetime = domaingrid%end_datetime  
+      this%curr_datetime = domaingrid%sim_datetimes(domaingrid%itime)    
+      this%itime = domaingrid%itime          
+      this%ntime = domaingrid%ntime          
+      this%time_dbl = domaingrid%time_dbl
+      this%ZREF = domaingrid%ZREF        
+  
+    end subroutine InitTransfer
+
   end module DomainType
   
   
