@@ -1,7 +1,8 @@
 module EnergyType
 
-  use NamelistRead, only: namelist_type
-  
+  use NamelistRead,   only: namelist_type
+  use EnergyGridType, only: energygrid_type
+
   implicit none
   save
   private
@@ -361,11 +362,13 @@ module EnergyType
       
     end subroutine InitDefault
   
-    subroutine InitTransfer(this, namelist)
+    subroutine InitTransfer(this, energygrid)
   
-      class(energy_type) :: this
-      type(namelist_type) :: namelist
+      class(energy_type),    intent(inout) :: this
+      type(energygrid_type), intent(in)    :: energygrid
   
+      !Nothing to do
+
     end subroutine InitTransfer
   
   end module EnergyType

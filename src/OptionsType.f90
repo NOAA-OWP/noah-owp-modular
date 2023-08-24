@@ -1,5 +1,6 @@
 module OptionsType
 
+use OptionsGridType, only: optionsgrid_type
 implicit none
 save
 private
@@ -107,7 +108,8 @@ type, public :: options_type
   contains
 
     procedure, public  :: Init         
-    procedure, private :: InitDefault     
+    procedure, private :: InitDefault
+    procedure, public  :: InitTransfer     
 
 end type options_type
 
@@ -144,5 +146,30 @@ contains
     this%opt_sub    = huge(1)    
 
   end subroutine InitDefault
+
+  subroutine InitTransfer(this,optionsgrid)
+
+    class(options_type), intent(inout) :: this
+    type(optionsgrid_type), intent(in) :: optionsgrid
+
+    this%opt_snf   = optionsgrid%opt_snf
+    this%opt_run   = optionsgrid%opt_run
+    this%opt_drn   = optionsgrid%opt_drn
+    this%opt_inf   = optionsgrid%opt_inf
+    this%opt_infdv = optionsgrid%opt_infdv
+    this%dveg      = optionsgrid%dveg
+    this%opt_alb   = optionsgrid%opt_alb
+    this%opt_rad   = optionsgrid%opt_rad
+    this%opt_sfc   = optionsgrid%opt_sfc
+    this%opt_crs   = optionsgrid%opt_crs
+    this%opt_crop  = optionsgrid%opt_crop
+    this%opt_stc   = optionsgrid%opt_stc
+    this%opt_tbot  = optionsgrid%opt_tbot
+    this%opt_frz   = optionsgrid%opt_frz
+    this%opt_btr   = optionsgrid%opt_btr
+    this%opt_rsf   = optionsgrid%opt_rsf
+    this%opt_sub   = optionsgrid%opt_sub  
+
+  end subroutine InitTransfer
 
 end module OptionsType

@@ -1,5 +1,6 @@
 module ForcingType
 
+use ForcingGridType, only: forcinggrid_type
 implicit none
 save
 private
@@ -47,6 +48,7 @@ type, public :: forcing_type
     procedure, public  :: Init         
     procedure, private :: InitAllocate        
     procedure, private :: InitDefault     
+    procedure, public  :: InitTransfer
 
 end type forcing_type
 
@@ -118,5 +120,15 @@ contains
     this%SOLAI(:)  = huge(1.0) 
 
   end subroutine InitDefault
+
+  subroutine InitTransfer(this,forcinggrid)
+
+    class(forcing_type),    intent(inout) :: this
+    type(forcinggrid_type), intent(in)    :: forcinggrid
+
+    this%JULIAN = forcinggrid%JULIAN
+    this%YEARLEN = forcinggrid%YEARLEN
+
+  end subroutine InitTransfer
 
 end module ForcingType

@@ -1,6 +1,7 @@
 module WaterType
 
-use NamelistRead, only: namelist_type
+use NamelistRead,  only: namelist_type
+use WaterGridType, only: watergrid_type
 
 implicit none
 save
@@ -83,7 +84,8 @@ type, public :: water_type
 
     procedure, public  :: Init         
     procedure, private :: InitAllocate 
-    procedure, private :: InitDefault     
+    procedure, private :: InitDefault
+    procedure, public  :: InitTransfer     
 
 end type water_type
 
@@ -201,5 +203,15 @@ contains
     this%BTRAN       = huge(1.0)
 
   end subroutine InitDefault
+
+  subroutine InitTransfer(this,watergrid)
+
+    class(water_type),    intent(inout) :: this
+    type(watergrid_type), intent(in)    :: watergrid
+
+    ! Nothing to do
+
+  end subroutine InitTransfer
+
 
 end module WaterType
