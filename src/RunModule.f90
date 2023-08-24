@@ -350,7 +350,7 @@ contains
 #endif
 
     !---------------------------------------------------------------------
-    ! Initialize noahowp_type variables and transfer values
+    ! Initialize noahowp_type variables and transfer values for variables that do not vary in x and y dimensions
     !---------------------------------------------------------------------
     call levels%Init()
     call levels%InitTransfer(levelsgrid)
@@ -359,9 +359,13 @@ contains
     call options%Init()
     call options%InitTransfer(optionsgrid)
     call parameters%Init(namelist)
+    call parameters%InitTransfer(parametersgrid)
     call forcing%Init()
+    call forcing%InitTransfer(forcinggrid)
     call energy%Init(namelist)
+    call energy%InitTransfer(energygrid)
     call water%Init(namelist)
+    call water%InitTransfer(watergrid)
 
     !---------------------------------------------------------------------
     ! Iterate over x and y dimensions
@@ -370,13 +374,13 @@ contains
       do iy = 1, noahowpgrid%domaingrid%n_y
 
         !---------------------------------------------------------------------
-        ! Transfer variable values from noahowpgrid_type to noahowp_type
+        ! Transfer variable values from noahowpgrid_type to noahowp_type for variables that do vary in x and y dimensions
         !---------------------------------------------------------------------
         call DomainVarInTransfer       (domain,     domaingrid,     ix, iy)
         call LevelsVarInTransfer       (levels,     levelsgrid,     ix, iy)
         call EnergyVarInTransfer       (energy,     energygrid,     ix, iy)
         call ForcingVarInTransfer      (forcing,    forcinggrid,    ix, iy)
-        call OptionsVarInTransfer      (options,    optionsgrid,    ix, iy)           )
+        call OptionsVarInTransfer      (options,    optionsgrid,    ix, iy)
         call ParametersVarInTransfer   (parameters, parametersgrid, ix, iy)
         call WaterVarInTransfer        (water,      watergrid,      ix, iy)
         
