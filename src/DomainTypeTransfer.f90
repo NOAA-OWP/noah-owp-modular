@@ -16,7 +16,6 @@ module DomainTypeTransfer
     integer,               intent(in)    :: ix
     integer,               intent(in)    :: iy
 
-    !domain%DT = domaingrid%DT
     domain%ix = ix 
     domain%iy = iy 
     domain%curr_datetime = domaingrid%sim_datetimes(domaingrid%itime)    
