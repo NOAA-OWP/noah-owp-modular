@@ -64,7 +64,7 @@ module ForcingTypeTransfer
     forcinggrid%PRCPSHCV(ix,iy) = forcing%PRCPSHCV
     forcinggrid%PRCPSNOW(ix,iy) = forcing%PRCPSNOW
     forcinggrid%PRCPGRPL(ix,iy) = forcing%PRCPGRPL
-    forcinggrid%PRCPHAIL(ix,iy) = forcing%PRCPHAIL            
+    forcinggrid%PRCPHAIL(ix,iy) = forcing%PRCPHAIL
     forcinggrid%SOLDN(ix,iy) = forcing%SOLDN
     forcinggrid%LWDN(ix,iy) = forcing%LWDN
     forcinggrid%FOLN(ix,iy) = forcing%FOLN
