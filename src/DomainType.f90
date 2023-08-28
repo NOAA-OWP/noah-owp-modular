@@ -111,8 +111,8 @@ module DomainType
   
     subroutine InitTransfer(this,domaingrid)
   
-      class(domain_type)     :: this
-      class(domaingrid_type) :: domaingrid
+      class(domain_type),    intent(inout) :: this
+      type(domaingrid_type), intent(in)    :: domaingrid
   
       this%DT = domaingrid%DT
       this%dx = domaingrid%dx
