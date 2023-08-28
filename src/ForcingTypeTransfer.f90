@@ -55,33 +55,7 @@ module ForcingTypeTransfer
     integer,                intent(in)       :: ix
     integer,                intent(in)       :: iy
 
-    !forcinggrid%SFCPRS(ix,iy) = forcing%SFCPRS
-    !forcinggrid%SFCTMP(ix,iy) = forcing%SFCTMP
-    !forcinggrid%Q2(ix,iy) = forcing%Q2
-    !forcinggrid%PRCP(ix,iy) = forcing%PRCP
-    !forcinggrid%PRCPCONV(ix,iy) = forcing%PRCPCONV
-    !forcinggrid%PRCPNONC(ix,iy) = forcing%PRCPNONC
-    !forcinggrid%PRCPSHCV(ix,iy) = forcing%PRCPSHCV
-    !forcinggrid%PRCPSNOW(ix,iy) = forcing%PRCPSNOW
-    !forcinggrid%PRCPGRPL(ix,iy) = forcing%PRCPGRPL
-    !forcinggrid%PRCPHAIL(ix,iy) = forcing%PRCPHAIL
-    !forcinggrid%SOLDN(ix,iy) = forcing%SOLDN
-    !forcinggrid%LWDN(ix,iy) = forcing%LWDN
-    !forcinggrid%FOLN(ix,iy) = forcing%FOLN
-    !forcinggrid%O2PP(ix,iy) = forcing%O2PP
-    !forcinggrid%CO2PP(ix,iy) = forcing%CO2PP
-    !forcinggrid%UU(ix,iy) = forcing%UU
-    !forcinggrid%VV(ix,iy) = forcing%VV
-    !forcinggrid%TBOT(ix,iy) = forcing%TBOT
-    !forcinggrid%UR(ix,iy) = forcing%UR
-    !forcinggrid%THAIR(ix,iy) = forcing%THAIR
-    !forcinggrid%QAIR(ix,iy) = forcing%QAIR
-    !forcinggrid%EAIR(ix,iy) = forcing%EAIR
-    !forcinggrid%RHOAIR(ix,iy) = forcing%RHOAIR
-    !forcinggrid%FPICE(ix,iy) = forcing%FPICE
-    !forcinggrid%SWDOWN(ix,iy) = forcing%SWDOWN
-    !orcinggrid%SOLAD(ix,iy,:) = forcing%SOLAD(:)
-    !forcinggrid%SOLAI(ix,iy,:) = forcing%SOLAI(:)
+    !Nothing to do
 
   end subroutine ForcingVarOutTransfer
 
