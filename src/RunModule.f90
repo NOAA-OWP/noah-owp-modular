@@ -351,15 +351,15 @@ contains
     !---------------------------------------------------------------------
     ! Initialize noahowp_type variables and transfer values for spatial constants
     !---------------------------------------------------------------------
-    call levels%Init()
+    call levels%Init(namelist)
     call levels%InitTransfer(levelsgrid)
     call domain%Init(namelist)
     call domain%InitTransfer(domaingrid)
-    call options%Init()
+    call options%Init(namelist)
     call options%InitTransfer(optionsgrid)
     call parameters%Init(namelist)
     call parameters%InitTransfer(parametersgrid)
-    call forcing%Init()
+    call forcing%Init(namelist)
     call forcing%InitTransfer(forcinggrid)
     call energy%Init(namelist)
     call energy%InitTransfer(energygrid)
