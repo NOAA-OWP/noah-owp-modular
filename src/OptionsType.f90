@@ -1,5 +1,6 @@
 module OptionsType
 
+use NamelistRead,    only: namelist_type
 use OptionsGridType, only: optionsgrid_type
 implicit none
 save
@@ -115,9 +116,10 @@ end type options_type
 
 contains   
 
-  subroutine Init(this)
+  subroutine Init(this,namelist)
 
-    class(options_type), intent(out) :: this
+    class(options_type), intent(inout) :: this
+    type(namelist_type), intent(in)    :: namelist
 
     call this%InitDefault()
 
@@ -125,7 +127,7 @@ contains
 
   subroutine InitDefault(this)
 
-    class(options_type), intent(out) :: this
+    class(options_type), intent(inout) :: this
 
     this%opt_snf   = huge(1)
     this%opt_run   = huge(1)

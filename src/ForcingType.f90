@@ -1,5 +1,6 @@
 module ForcingType
 
+use NamelistRead,    only: namelist_type
 use ForcingGridType, only: forcinggrid_type
 implicit none
 save
@@ -54,9 +55,10 @@ end type forcing_type
 
 contains   
 
-  subroutine Init(this)
+  subroutine Init(this,namelist)
 
-    class(forcing_type)    :: this
+    class(forcing_type), intent(inout) :: this
+    type(namelist_type), intent(in)    :: namelist
 
     call this%InitAllocate()
     call this%InitDefault()
@@ -65,7 +67,7 @@ contains
   
   subroutine InitAllocate(this)
 
-    class(forcing_type) :: this
+    class(forcing_type), intent(inout) :: this
 
     if(.NOT.allocated(this%SOLAD)) allocate(this%SOLAD (2))
     if(.NOT.allocated(this%SOLAI)) allocate(this%SOLAI (2))
@@ -74,7 +76,7 @@ contains
 
   subroutine InitDefault(this)
 
-    class(forcing_type) :: this
+    class(forcing_type), intent(inout) :: this
 
     this%SFCPRS    = huge(1.0)
     this%SFCPRS    = huge(1.0)

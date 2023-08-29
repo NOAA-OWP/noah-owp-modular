@@ -1,5 +1,6 @@
 module LevelsType
 
+use NamelistRead, only: namelist_type
 use LevelsGridType, only: levelsgrid_type
 implicit none
 save
@@ -21,9 +22,10 @@ end type levels_type
 
 contains   
 
-  subroutine Init(this)
+  subroutine Init(this,namelist)
 
-    class(levels_type) :: this
+    class(levels_type),  intent(inout) :: this
+    type(namelist_type), intent(in)    :: namelist
 
     call this%InitDefault()
 
