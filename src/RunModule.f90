@@ -312,7 +312,6 @@ contains
     integer                               :: iunit = 10
     real                                  :: read_UU, read_VV, read_SFCTMP, read_Q2, read_SFCPRS !to read in forcing
     real                                  :: read_SOLDN, read_LWDN, read_PRCP                    !to read in forcing
-    integer                               :: idt                                                 !to iterate nowdate
 
     associate(namelist       => noahowpgrid%namelist,       &
               domain         => noahowp%domain,             &
@@ -350,7 +349,7 @@ contains
 #endif
 
     !---------------------------------------------------------------------
-    ! Initialize noahowp_type variables and transfer values for variables that do not vary in x and y dimensions
+    ! Initialize noahowp_type variables and transfer values for spatial constants
     !---------------------------------------------------------------------
     call levels%Init()
     call levels%InitTransfer(levelsgrid)
@@ -374,7 +373,7 @@ contains
       do iy = 1, noahowpgrid%domaingrid%n_y
 
         !---------------------------------------------------------------------
-        ! Transfer variable values from noahowpgrid_type to noahowp_type for variables that do vary in x and y dimensions
+        ! Transfer all other variable values from noahowpgrid_type to noahowp_type
         !---------------------------------------------------------------------
         call DomainVarInTransfer       (domain,     domaingrid,     ix, iy)
         call LevelsVarInTransfer       (levels,     levelsgrid,     ix, iy)
@@ -410,10 +409,6 @@ contains
   SUBROUTINE solve_noahowp(noahowp)
 
     type (noahowp_type), intent (inout) :: noahowp
-    integer, parameter                  :: iunit        = 10 ! Fortran unit number to attach to the opened file
-    integer                             :: forcing_timestep  ! integer time step (set to dt) for some subroutine calls
-    integer                             :: ierr              ! error code for reading forcing data
-    integer                             :: curr_yr, curr_mo, curr_dy, curr_hr, curr_min, curr_sec  ! current UNIX timestep details
 
     associate(levels     => noahowp%levels, &
               domain     => noahowp%domain, &
