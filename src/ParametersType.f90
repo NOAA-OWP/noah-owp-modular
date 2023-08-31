@@ -148,28 +148,30 @@ module ParametersType
       procedure, public  :: Init
       procedure, private :: InitAllocate
       procedure, private :: InitDefault
-      procedure, public  :: InitTransfer
+      procedure, private :: InitTransfer
   
   end type parameters_type
   
   contains
   
-    subroutine Init(this, namelist)
+    subroutine Init(this, namelist, parametersgrid)
   
       implicit none
-      class(parameters_type)           :: this
-      class(namelist_type), intent(in) :: namelist
+      class(parameters_type),    intent(inout) :: this
+      type(namelist_type),       intent(in)    :: namelist
+      type(parametersgrid_type), intent(in)    :: parametersgrid
   
       call this%InitAllocate(namelist)
       call this%InitDefault()
+      call this%InitTransfer(parametersgrid)
   
     end subroutine Init
   
     subroutine InitAllocate(this, namelist)
   
       implicit none
-      class(parameters_type)            :: this
-      class(namelist_type), intent(in)  :: namelist
+      class(parameters_type), intent(inout) :: this
+      type(namelist_type),    intent(in)    :: namelist
   
       associate(nsoil => namelist%nsoil)
 

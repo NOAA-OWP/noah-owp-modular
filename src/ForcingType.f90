@@ -49,19 +49,21 @@ type, public :: forcing_type
     procedure, public  :: Init         
     procedure, private :: InitAllocate        
     procedure, private :: InitDefault     
-    procedure, public  :: InitTransfer
+    procedure, private :: InitTransfer
 
 end type forcing_type
 
 contains   
 
-  subroutine Init(this,namelist)
+  subroutine Init(this,namelist,forcinggrid)
 
-    class(forcing_type), intent(inout) :: this
-    type(namelist_type), intent(in)    :: namelist
+    class(forcing_type),    intent(inout) :: this
+    type(namelist_type),    intent(in)    :: namelist
+    type(forcinggrid_type), intent(in)    :: forcinggrid
 
     call this%InitAllocate()
     call this%InitDefault()
+    call this%InitTransfer(forcinggrid)
 
   end subroutine Init
   

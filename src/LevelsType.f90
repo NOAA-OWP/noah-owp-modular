@@ -16,24 +16,26 @@ type, public :: levels_type
 
     procedure, public  :: Init         
     procedure, private :: InitDefault 
-    procedure, public  :: InitTransfer        
+    procedure, private :: InitTransfer        
 
 end type levels_type
 
 contains   
 
-  subroutine Init(this,namelist)
+  subroutine Init(this,namelist,levelsgrid)
 
-    class(levels_type),  intent(inout) :: this
-    type(namelist_type), intent(in)    :: namelist
+    class(levels_type),    intent(inout) :: this
+    type(namelist_type),   intent(in)    :: namelist
+    type(levelsgrid_type), intent(in)    :: levelsgrid
 
     call this%InitDefault()
+    call this%InitTransfer(levelsgrid)
 
   end subroutine Init
 
   subroutine InitDefault(this)
 
-    class(levels_type) :: this
+    class(levels_type), intent(inout) :: this
 
     this%nsoil  = huge(1)
     this%nsnow  = huge(1)
@@ -43,8 +45,8 @@ contains
 
   subroutine InitTransfer(this,levelsgrid)
 
-    class(levels_type)    :: this
-    type(levelsgrid_type) :: levelsgrid
+    class(levels_type),    intent(inout) :: this
+    type(levelsgrid_type), intent(in)    :: levelsgrid
 
     this%nsoil  = levelsgrid%nsoil
     this%nsnow  = levelsgrid%nsnow

@@ -162,26 +162,28 @@ module EnergyType
       procedure, public  :: Init
       procedure, private :: InitAllocate        
       procedure, private :: InitDefault     
-      procedure, public  :: InitTransfer
+      procedure, private :: InitTransfer
   
   end type energy_type
   
   contains   
   
-    subroutine Init(this, namelist)
+    subroutine Init(this, namelist, energygrid)
   
-      class(energy_type) :: this
-      type(namelist_type) :: namelist
+      class(energy_type),    intent(inout) :: this
+      type(namelist_type),   intent(in)    :: namelist
+      type(energygrid_type), intent(in)    :: energygrid
   
       call this%InitAllocate(namelist)
       call this%InitDefault()
+      call this%InitTransfer(energygrid)
   
     end subroutine Init
   
     subroutine InitAllocate(this, namelist)
   
-      class(energy_type) :: this
-      type(namelist_type) :: namelist
+      class(energy_type),  intent(inout) :: this
+      type(namelist_type), intent(in)    :: namelist
   
       associate(nsnow => namelist%nsnow, &
                 nsoil => namelist%nsoil)

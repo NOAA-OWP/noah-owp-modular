@@ -85,26 +85,28 @@ type, public :: water_type
     procedure, public  :: Init         
     procedure, private :: InitAllocate 
     procedure, private :: InitDefault
-    procedure, public  :: InitTransfer     
+    procedure, private :: InitTransfer     
 
 end type water_type
 
 contains   
 
-  subroutine Init(this, namelist)
+  subroutine Init(this, namelist, watergrid)
 
-    class(water_type)         :: this
-    type(namelist_type)       :: namelist
+    class(water_type),    intent(inout) :: this
+    type(namelist_type),  intent(in)    :: namelist
+    type(watergrid_type), intent(in)    :: watergrid
 
     call this%InitAllocate(namelist)
     call this%InitDefault()
+    call this%InitTransfer(watergrid)
 
   end subroutine Init
 
   subroutine InitAllocate(this, namelist)
 
-    class(water_type)         :: this
-    type(namelist_type)       :: namelist
+    class(water_type),   intent(inout) :: this
+    type(namelist_type), intent(in)    :: namelist
 
     associate(nsoil => namelist%nsoil, &
               nsnow => namelist%nsnow)
@@ -131,7 +133,7 @@ contains
 
   subroutine InitDefault(this)
 
-    class(water_type) :: this
+    class(water_type), intent(inout) :: this
 
     this%qinsur      = huge(1.0)
     this%qseva       = huge(1.0)

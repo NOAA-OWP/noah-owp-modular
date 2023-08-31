@@ -43,19 +43,21 @@ module DomainType
       procedure, public  :: Init         
       procedure, private :: InitAllocate 
       procedure, private :: InitDefault     
-      procedure, public  :: InitTransfer
+      procedure, private :: InitTransfer
   
   end type domain_type
   
   contains   
   
-    subroutine Init(this, namelist)
+    subroutine Init(this, namelist, domaingrid)
   
-      class(domain_type)  :: this
-      type(namelist_type) :: namelist
+      class(domain_type),    intent(inout) :: this
+      type(namelist_type),   intent(in)    :: namelist
+      type(domaingrid_type), intent(in)    :: domaingrid
   
       call this%InitAllocate(namelist)
       call this%InitDefault()
+      call this%InitTransfer(domaingrid)
   
     end subroutine Init
   

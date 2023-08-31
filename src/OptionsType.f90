@@ -110,18 +110,20 @@ type, public :: options_type
 
     procedure, public  :: Init         
     procedure, private :: InitDefault
-    procedure, public  :: InitTransfer     
+    procedure, private :: InitTransfer     
 
 end type options_type
 
 contains   
 
-  subroutine Init(this,namelist)
+  subroutine Init(this,namelist,optionsgrid)
 
-    class(options_type), intent(inout) :: this
-    type(namelist_type), intent(in)    :: namelist
+    class(options_type),    intent(inout) :: this
+    type(namelist_type),    intent(in)    :: namelist
+    type(optionsgrid_type), intent(in)    :: optionsgrid
 
     call this%InitDefault()
+    call this%InitTransfer(optionsgrid)
 
   end subroutine Init
 
