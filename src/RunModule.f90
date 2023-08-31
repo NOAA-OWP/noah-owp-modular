@@ -349,22 +349,15 @@ contains
 #endif
 
     !---------------------------------------------------------------------
-    ! Initialize noahowp_type variables and transfer values for spatial constants
+    ! Initialize noahowp_type subtypes
     !---------------------------------------------------------------------
-    call levels%Init(namelist)
-    call levels%InitTransfer(levelsgrid)
-    call domain%Init(namelist)
-    call domain%InitTransfer(domaingrid)
-    call options%Init(namelist)
-    call options%InitTransfer(optionsgrid)
-    call parameters%Init(namelist)
-    call parameters%InitTransfer(parametersgrid)
-    call forcing%Init(namelist)
-    call forcing%InitTransfer(forcinggrid)
-    call energy%Init(namelist)
-    call energy%InitTransfer(energygrid)
-    call water%Init(namelist)
-    call water%InitTransfer(watergrid)
+    call levels%Init      (namelist,  levelsgrid    )
+    call domain%Init      (namelist,  domaingrid    )
+    call options%Init     (namelist,  optionsgrid   )
+    call parameters%Init  (namelist,  parametersgrid)
+    call forcing%Init     (namelist,  forcinggrid   )
+    call energy%Init      (namelist,  energygrid    )
+    call water%Init       (namelist,  watergrid     )
 
     !---------------------------------------------------------------------
     ! Iterate over x and y dimensions
