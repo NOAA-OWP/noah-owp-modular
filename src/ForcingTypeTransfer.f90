@@ -41,8 +41,6 @@ module ForcingTypeTransfer
     forcing%RHOAIR = forcinggrid%RHOAIR(ix,iy)
     forcing%FPICE = forcinggrid%FPICE(ix,iy)
     forcing%SWDOWN = forcinggrid%SWDOWN(ix,iy)
-    forcing%JULIAN = forcinggrid%JULIAN
-    forcing%YEARLEN = forcinggrid%YEARLEN
     forcing%SOLAD(:) = forcinggrid%SOLAD(ix,iy,:)
     forcing%SOLAI(:) = forcinggrid%SOLAI(ix,iy,:)
 

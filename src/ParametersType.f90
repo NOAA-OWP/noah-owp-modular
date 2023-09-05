@@ -1,6 +1,7 @@
 module ParametersType
 
-  use NamelistRead, only: namelist_type
+  use NamelistRead,       only: namelist_type
+  use ParametersGridType, only: parametersgrid_type
   
   implicit none
   save
@@ -147,27 +148,30 @@ module ParametersType
       procedure, public  :: Init
       procedure, private :: InitAllocate
       procedure, private :: InitDefault
+      procedure, private :: InitTransfer
   
   end type parameters_type
   
   contains
   
-    subroutine Init(this, namelist)
+    subroutine Init(this, namelist, parametersgrid)
   
       implicit none
-      class(parameters_type)           :: this
-      class(namelist_type), intent(in) :: namelist
+      class(parameters_type),    intent(inout) :: this
+      type(namelist_type),       intent(in)    :: namelist
+      type(parametersgrid_type), intent(in)    :: parametersgrid
   
       call this%InitAllocate(namelist)
       call this%InitDefault()
+      call this%InitTransfer(parametersgrid)
   
     end subroutine Init
   
     subroutine InitAllocate(this, namelist)
   
       implicit none
-      class(parameters_type)            :: this
-      class(namelist_type), intent(in)  :: namelist
+      class(parameters_type), intent(inout) :: this
+      type(namelist_type),    intent(in)    :: namelist
   
       associate(nsoil => namelist%nsoil)
 
@@ -205,5 +209,62 @@ module ParametersType
   
     end subroutine InitDefault
   
+    subroutine InitTransfer(this,parametersgrid)
+  
+      implicit none
+      class(parameters_type),    intent(inout) :: this
+      type(parametersgrid_type), intent(in)    :: parametersgrid
+  
+      this%ISURBAN = parametersgrid%ISURBAN
+      this%ISWATER = parametersgrid%ISWATER
+      this%ISBARREN = parametersgrid%ISBARREN
+      this%ISICE = parametersgrid%ISICE
+      this%ISCROP = parametersgrid%ISCROP
+      this%EBLFOREST = parametersgrid%EBLFOREST
+      this%NATURAL = parametersgrid%NATURAL
+      this%LOW_DENSITY_RESIDENTIAL = parametersgrid%LOW_DENSITY_RESIDENTIAL
+      this%HIGH_DENSITY_RESIDENTIAL = parametersgrid%HIGH_DENSITY_RESIDENTIAL
+      this%HIGH_INTENSITY_INDUSTRIAL = parametersgrid%HIGH_INTENSITY_INDUSTRIAL
+      this%SB = parametersgrid%SB
+      this%VKC = parametersgrid%VKC
+      this%TFRZ = parametersgrid%TFRZ 
+      this%HSUB = parametersgrid%HSUB 
+      this%HVAP = parametersgrid%HVAP 
+      this%HFUS = parametersgrid%HFUS 
+      this%CWAT = parametersgrid%CWAT 
+      this%CICE = parametersgrid%CICE 
+      this%CPAIR = parametersgrid%CPAIR 
+      this%TKWAT = parametersgrid%TKWAT 
+      this%TKICE = parametersgrid%TKICE 
+      this%TKAIR = parametersgrid%TKAIR 
+      this%RAIR = parametersgrid%RAIR
+      this%RW = parametersgrid%RW 
+      this%DENH2O = parametersgrid%DENH2O 
+      this%DENICE = parametersgrid%DENICE 
+      this%THKW = parametersgrid%THKW 
+      this%THKO = parametersgrid%THKO 
+      this%THKQTZ = parametersgrid%THKQTZ 
+      this%SWEMX = parametersgrid%SWEMX 
+      this%TAU0 = parametersgrid%TAU0 
+      this%GRAIN_GROWTH = parametersgrid%GRAIN_GROWTH
+      this%EXTRA_GROWTH = parametersgrid%EXTRA_GROWTH
+      this%DIRT_SOOT = parametersgrid%DIRT_SOOT 
+      this%BATS_COSZ = parametersgrid%BATS_COSZ 
+      this%BATS_VIS_NEW = parametersgrid%BATS_VIS_NEW 
+      this%BATS_NIR_NEW = parametersgrid%BATS_NIR_NEW 
+      this%BATS_VIS_AGE = parametersgrid%BATS_VIS_AGE 
+      this%BATS_NIR_AGE = parametersgrid%BATS_NIR_AGE 
+      this%BATS_VIS_DIR = parametersgrid%BATS_VIS_DIR
+      this%BATS_NIR_DIR = parametersgrid%BATS_NIR_DIR
+      this%BETADS = parametersgrid%BETADS
+      this%BETAIS = parametersgrid%BETAIS
+      this%NBAND = parametersgrid%NBAND
+      this%MPE = parametersgrid%MPE
+      this%O2 = parametersgrid%O2
+      this%CO2 = parametersgrid%CO2
+      this%GRAV = parametersgrid%GRAV
+
+    end subroutine InitTransfer
+
   end module ParametersType
   

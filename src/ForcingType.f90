@@ -1,5 +1,7 @@
 module ForcingType
 
+use NamelistRead,    only: namelist_type
+use ForcingGridType, only: forcinggrid_type
 implicit none
 save
 private
@@ -47,23 +49,27 @@ type, public :: forcing_type
     procedure, public  :: Init         
     procedure, private :: InitAllocate        
     procedure, private :: InitDefault     
+    procedure, private :: InitTransfer
 
 end type forcing_type
 
 contains   
 
-  subroutine Init(this)
+  subroutine Init(this,namelist,forcinggrid)
 
-    class(forcing_type)    :: this
+    class(forcing_type),    intent(inout) :: this
+    type(namelist_type),    intent(in)    :: namelist
+    type(forcinggrid_type), intent(in)    :: forcinggrid
 
     call this%InitAllocate()
     call this%InitDefault()
+    call this%InitTransfer(forcinggrid)
 
   end subroutine Init
   
   subroutine InitAllocate(this)
 
-    class(forcing_type) :: this
+    class(forcing_type), intent(inout) :: this
 
     if(.NOT.allocated(this%SOLAD)) allocate(this%SOLAD (2))
     if(.NOT.allocated(this%SOLAI)) allocate(this%SOLAI (2))
@@ -72,7 +78,7 @@ contains
 
   subroutine InitDefault(this)
 
-    class(forcing_type) :: this
+    class(forcing_type), intent(inout) :: this
 
     this%SFCPRS    = huge(1.0)
     this%SFCPRS    = huge(1.0)
@@ -118,5 +124,15 @@ contains
     this%SOLAI(:)  = huge(1.0) 
 
   end subroutine InitDefault
+
+  subroutine InitTransfer(this,forcinggrid)
+
+    class(forcing_type),    intent(inout) :: this
+    type(forcinggrid_type), intent(in)    :: forcinggrid
+
+    this%JULIAN = forcinggrid%JULIAN
+    this%YEARLEN = forcinggrid%YEARLEN
+
+  end subroutine InitTransfer
 
 end module ForcingType

@@ -16,25 +16,11 @@ module DomainTypeTransfer
     integer,               intent(in)    :: ix
     integer,               intent(in)    :: iy
 
-    domain%DT = domaingrid%DT
     domain%ix = ix 
     domain%iy = iy 
-    domain%dx = domaingrid%dx
-    domain%dy = domaingrid%dy
-    domain%n_x = domaingrid%n_x
-    domain%n_y = domaingrid%n_y
-    domain%startdate = domaingrid%startdate 
-    domain%enddate = domaingrid%enddate    
-    domain%nowdate = domaingrid%nowdate           
-    domain%start_datetime = domaingrid%start_datetime  
-    domain%end_datetime = domaingrid%end_datetime  
     domain%curr_datetime = domaingrid%sim_datetimes(domaingrid%itime)    
-    domain%itime = domaingrid%itime          
-    domain%ntime = domaingrid%ntime          
-    domain%time_dbl = domaingrid%time_dbl
     domain%lat = domaingrid%lat(ix,iy)  
-    domain%lon = domaingrid%lon(ix,iy)   
-    domain%ZREF = domaingrid%ZREF        
+    domain%lon = domaingrid%lon(ix,iy)           
     domain%terrain_slope = domaingrid%terrain_slope(ix,iy) 
     domain%azimuth = domaingrid%azimuth(ix,iy)          
     domain%vegtyp = domaingrid%vegtyp(ix,iy)    
@@ -60,7 +46,6 @@ module DomainTypeTransfer
     domaingrid%zsoil(ix,iy,:) = domain%zsoil(:) 
     domaingrid%dzsnso(ix,iy,:) = domain%dzsnso(:)  
     domaingrid%zsnso(ix,iy,:) = domain%zsnso(:)   
-    domaingrid%nowdate = domain%nowdate !this needs to be kept here until nowdate is updated in domaingriddedDriverModule
 
   end subroutine DomainVarOutTransfer
 

@@ -1,7 +1,8 @@
 module EnergyType
 
-  use NamelistRead, only: namelist_type
-  
+  use NamelistRead,   only: namelist_type
+  use EnergyGridType, only: energygrid_type
+
   implicit none
   save
   private
@@ -161,26 +162,28 @@ module EnergyType
       procedure, public  :: Init
       procedure, private :: InitAllocate        
       procedure, private :: InitDefault     
-      procedure, public  :: InitTransfer
+      procedure, private :: InitTransfer
   
   end type energy_type
   
   contains   
   
-    subroutine Init(this, namelist)
+    subroutine Init(this, namelist, energygrid)
   
-      class(energy_type) :: this
-      type(namelist_type) :: namelist
+      class(energy_type),    intent(inout) :: this
+      type(namelist_type),   intent(in)    :: namelist
+      type(energygrid_type), intent(in)    :: energygrid
   
       call this%InitAllocate(namelist)
       call this%InitDefault()
+      call this%InitTransfer(energygrid)
   
     end subroutine Init
   
     subroutine InitAllocate(this, namelist)
   
-      class(energy_type) :: this
-      type(namelist_type) :: namelist
+      class(energy_type),  intent(inout) :: this
+      type(namelist_type), intent(in)    :: namelist
   
       associate(nsnow => namelist%nsnow, &
                 nsoil => namelist%nsoil)
@@ -361,11 +364,13 @@ module EnergyType
       
     end subroutine InitDefault
   
-    subroutine InitTransfer(this, namelist)
+    subroutine InitTransfer(this, energygrid)
   
-      class(energy_type) :: this
-      type(namelist_type) :: namelist
+      class(energy_type),    intent(inout) :: this
+      type(energygrid_type), intent(in)    :: energygrid
   
+      !Nothing to do
+
     end subroutine InitTransfer
   
   end module EnergyType

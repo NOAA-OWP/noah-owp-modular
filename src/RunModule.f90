@@ -312,7 +312,6 @@ contains
     integer                               :: iunit = 10
     real                                  :: read_UU, read_VV, read_SFCTMP, read_Q2, read_SFCPRS !to read in forcing
     real                                  :: read_SOLDN, read_LWDN, read_PRCP                    !to read in forcing
-    integer                               :: idt                                                 !to iterate nowdate
 
     associate(namelist       => noahowpgrid%namelist,       &
               domain         => noahowp%domain,             &
@@ -350,15 +349,15 @@ contains
 #endif
 
     !---------------------------------------------------------------------
-    ! Initialize noahowp_type variables
+    ! Initialize noahowp_type subtypes
     !---------------------------------------------------------------------
-    call levels%Init()
-    call domain%Init(namelist)
-    call options%Init()
-    call parameters%Init(namelist)
-    call forcing%Init()
-    call energy%Init(namelist)
-    call water%Init(namelist)
+    call levels%Init      (namelist,  levelsgrid    )
+    call domain%Init      (namelist,  domaingrid    )
+    call options%Init     (namelist,  optionsgrid   )
+    call parameters%Init  (namelist,  parametersgrid)
+    call forcing%Init     (namelist,  forcinggrid   )
+    call energy%Init      (namelist,  energygrid    )
+    call water%Init       (namelist,  watergrid     )
 
     !---------------------------------------------------------------------
     ! Iterate over x and y dimensions
@@ -367,13 +366,13 @@ contains
       do iy = 1, noahowpgrid%domaingrid%n_y
 
         !---------------------------------------------------------------------
-        ! Transfer variable values from noahowpgrid_type to noahowp_type
+        ! Transfer all other variable values from noahowpgrid_type to noahowp_type
         !---------------------------------------------------------------------
         call DomainVarInTransfer       (domain,     domaingrid,     ix, iy)
         call LevelsVarInTransfer       (levels,     levelsgrid,     ix, iy)
         call EnergyVarInTransfer       (energy,     energygrid,     ix, iy)
         call ForcingVarInTransfer      (forcing,    forcinggrid,    ix, iy)
-        call OptionsVarInTransfer      (options,    optionsgrid           )
+        call OptionsVarInTransfer      (options,    optionsgrid,    ix, iy)
         call ParametersVarInTransfer   (parameters, parametersgrid, ix, iy)
         call WaterVarInTransfer        (water,      watergrid,      ix, iy)
         
@@ -389,7 +388,7 @@ contains
         call LevelsVarOutTransfer      (levels,     levelsgrid,     ix, iy)
         call EnergyVarOutTransfer      (energy,     energygrid,     ix, iy)
         call ForcingVarOutTransfer     (forcing,    forcinggrid,    ix, iy)
-        call OptionsVarOutTransfer     (options,    optionsgrid           )
+        call OptionsVarOutTransfer     (options,    optionsgrid,    ix, iy)
         call ParametersVarOutTransfer  (parameters, parametersgrid, ix, iy)
         call WaterVarOutTransfer       (water,      watergrid,      ix, iy)
 
@@ -403,10 +402,6 @@ contains
   SUBROUTINE solve_noahowp(noahowp)
 
     type (noahowp_type), intent (inout) :: noahowp
-    integer, parameter                  :: iunit        = 10 ! Fortran unit number to attach to the opened file
-    integer                             :: forcing_timestep  ! integer time step (set to dt) for some subroutine calls
-    integer                             :: ierr              ! error code for reading forcing data
-    integer                             :: curr_yr, curr_mo, curr_dy, curr_hr, curr_min, curr_sec  ! current UNIX timestep details
 
     associate(levels     => noahowp%levels, &
               domain     => noahowp%domain, &
