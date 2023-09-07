@@ -75,18 +75,18 @@ clean:
 
 NamelistRead.o: ErrorCheckModule.o
 GridInfoType.o: NamelistRead.o
-# LevelsType.o: 
+LevelsType.o: NamelistRead.o LevelsGridType.o
 LevelsGridType.o: NamelistRead.o
-DomainType.o: NamelistRead.o
+DomainType.o: NamelistRead.o DomainGridType.o
 DomainGridType.o: NamelistRead.o GridInfoType.o DateTimeUtilsModule.o
-OptionsType.o: NamelistRead.o
+OptionsType.o: NamelistRead.o OptionsGridType.o
 OptionsGridType.o: NamelistRead.o
-ParametersType.o: NamelistRead.o
+ParametersType.o: NamelistRead.o ParametersGridType.o
 ParametersGridType.o: NamelistRead.o GridInfoType.o ParametersRead.o DomainGridType.o
-# ForcingType.o:
+ForcingType.o: NamelistRead.o ForcingGridType.o
 ForcingGridType.o: NamelistRead.o GridInfoType.o
-EnergyType.o: NamelistRead.o
-WaterType.o: NamelistRead.o
+EnergyType.o: NamelistRead.o EnergyGridType.o
+WaterType.o: NamelistRead.o WaterGridType.o
 WaterModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
                ForcingType.o WaterType.o SoilWaterModule.o CanopyWaterModule.o SnowWaterModule.o
 CanopyWaterModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
