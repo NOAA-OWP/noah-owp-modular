@@ -75,6 +75,8 @@ call output_NoahMP_NWM(trim(noah_lsm%outdir),igrid,noah_lsm%output_timestep,itim
 
 The call to output_NoahMP_NWM indicates that EDIRXY is being written for EDIR (see above). [EDIRXY is defined as having units of mm/s](https://github.com/NCAR/wrf_hydro_nwm_public/blob/5d9e489fed01ed7cbd6b5680616ee37812a7137a/src/Land_models/NoahMP/phys/module_sf_noahmpdrv.F#L271C1-L271C120) and [EDIRXY is set to ESOIL](https://github.com/NCAR/wrf_hydro_nwm_public/blob/5d9e489fed01ed7cbd6b5680616ee37812a7137a/src/Land_models/NoahMP/phys/module_sf_noahmpdrv.F#L1453), which [also has units of mm/s](https://github.com/NCAR/wrf_hydro_nwm_public/blob/5d9e489fed01ed7cbd6b5680616ee37812a7137a/src/Land_models/NoahMP/phys/module_sf_noahmpdrv.F#L420C95-L420C95). Thus, while the output file states that the variable's units are 'kg m-2 s-1', I do not see this to be the case.
 
+We can do the unit conversion if we need -- but need to confirm that NWM is providing in kg m-2 s-1 as specified.
+
 # SOILICE
 
 ### Spreadsheet notes
@@ -282,7 +284,7 @@ call output_NoahMP_NWM(trim(noah_lsm%outdir),igrid,noah_lsm%output_timestep,itim
 
 To be added to BMI output_vars and confirm that GH is weighted average of GHV (under canopy) and GHB (bare ground). Also note that all energy balance terms likely affected by pseudo-PET calculations in surface mode. Might require two-way coupling for enhanced accuracy.
 
-I don't see where GH is being calculated in Noah-OM.
+I don't see where GH is being calculated in Noah-OM. Thus, we'd need to calculate GH as weighted average of GHV and GHB.
 
 # TRAD
 
