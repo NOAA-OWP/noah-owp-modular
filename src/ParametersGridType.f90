@@ -1,7 +1,7 @@
 module ParametersGridType
 
-  use NamelistRead, only: namelist_type
-  use NetCDFVarsType
+  use NamelistRead,   only: namelist_type
+  use NetCDFVarsType, only: netcdfvars_type
   use ParametersRead
   use DomainGridType
 

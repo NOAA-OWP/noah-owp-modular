@@ -1,7 +1,7 @@
 module DomainGridType
   
-  use NamelistRead, only: namelist_type
-  use NetCDFVarsType
+  use NamelistRead,   only: namelist_type
+  use NetCDFVarsType, only: netcdfvars_type
   use DateTimeUtilsModule
   
   implicit none
@@ -67,8 +67,8 @@ module DomainGridType
       type(namelist_type),    intent(in)    :: namelist
       type(netcdfvars_type),  intent(in)    :: netcdfvars
   
-      associate(n_x   => netcdfvars%n_x,   &
-                n_y   => netcdfvars%n_y,   &
+      associate(n_x   => netcdfvars%metadata%n_x,   &
+                n_y   => netcdfvars%metadata%n_y,   &
                 nsoil => namelist%nsoil, &
                 nsnow => namelist%nsnow)
 
@@ -134,8 +134,8 @@ module DomainGridType
       this%n_y                  = netcdfvars%metadata%n_y
       this%startdate            = namelist%startdate
       this%enddate              = namelist%enddate
-      this%lat(:,:)             = spread(source=netcdfvars%lat(:),dim=1,ncopies=read_nx)
-      this%lon(:,:)             = spread(source=netcdfvars%lon(:),dim=2,ncopies=read_ny)
+      this%lat(:,:)             = spread(source=netcdfvars%lat(:),dim=1,ncopies=netcdfvars%metadata%n_x)
+      this%lon(:,:)             = spread(source=netcdfvars%lon(:),dim=2,ncopies=netcdfvars%metadata%n_y)
       this%terrain_slope(:,:)   = netcdfvars%slope%data(:,:)
       this%azimuth(:,:)         = netcdfvars%azimuth%data(:,:)
       this%ZREF                 = namelist%ZREF
