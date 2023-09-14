@@ -1,7 +1,7 @@
 module DomainGridType
   
   use NamelistRead, only: namelist_type
-  use GridInfoType, only: gridinfo_type
+  use NetCDFVarsType
   use DateTimeUtilsModule
   
   implicit none
@@ -50,25 +50,25 @@ module DomainGridType
   
   contains   
   
-    subroutine Init(this, namelist, gridinfo)
+    subroutine Init(this, namelist, netcdfvars)
   
       class(domaingrid_type) :: this
       type(namelist_type)    :: namelist
-      type(gridinfo_type)    :: gridinfo
+      type(netcdfvars_type)  :: netcdfvars
   
-      call this%InitAllocate(namelist,gridinfo)
+      call this%InitAllocate(namelist,netcdfvars)
       call this%InitDefault()
   
     end subroutine Init
   
-    subroutine InitAllocate(this, namelist, gridinfo)
+    subroutine InitAllocate(this, namelist, netcdfvars)
   
-      class(domaingrid_type)          :: this
-      type(namelist_type), intent(in) :: namelist
-      type(gridinfo_type), intent(in) :: gridinfo
+      class(domaingrid_type), intent(inout) :: this
+      type(namelist_type),    intent(in)    :: namelist
+      type(netcdfvars_type),  intent(in)    :: netcdfvars
   
-      associate(n_x   => gridinfo%n_x,   &
-                n_y   => gridinfo%n_y,   &
+      associate(n_x   => netcdfvars%n_x,   &
+                n_y   => netcdfvars%n_y,   &
                 nsoil => namelist%nsoil, &
                 nsnow => namelist%nsnow)
 
@@ -91,7 +91,7 @@ module DomainGridType
   
     subroutine InitDefault(this)
   
-      class(domaingrid_type) :: this
+      class(domaingrid_type), intent(inout) :: this
   
       this%dt                  = huge(1.0)
       this%n_x                 = huge(1)
@@ -120,30 +120,30 @@ module DomainGridType
 
     end subroutine InitDefault
   
-    subroutine InitTransfer(this,namelist,gridinfo)
+    subroutine InitTransfer(this,namelist,netcdfvars)
   
-      class(domaingrid_type)         :: this
-      type(namelist_type),intent(in) :: namelist
-      type(gridinfo_type),intent(in) :: gridinfo
-      integer                        :: ii
+      class(domaingrid_type), intent(inout) :: this
+      type(namelist_type),    intent(in)    :: namelist
+      type(netcdfvars_type),  intent(in)    :: netcdfvars
+      integer                               :: ii
 
       this%dt                   = namelist%dt
-      this%dx                   = gridinfo%dx
-      this%dy                   = gridinfo%dy
-      this%n_x                  = gridinfo%n_x
-      this%n_y                  = gridinfo%n_y
+      this%dx                   = netcdfvars%metadata%dx
+      this%dy                   = netcdfvars%metadata%dy
+      this%n_x                  = netcdfvars%metadata%n_x
+      this%n_y                  = netcdfvars%metadata%n_y
       this%startdate            = namelist%startdate
       this%enddate              = namelist%enddate
-      this%lat(:,:)             = gridinfo%lat(:,:)
-      this%lon(:,:)             = gridinfo%lon(:,:)
-      this%terrain_slope(:,:)   = namelist%terrain_slope
-      this%azimuth(:,:)         = namelist%azimuth
+      this%lat(:,:)             = spread(source=netcdfvars%lat(:),dim=1,ncopies=read_nx)
+      this%lon(:,:)             = spread(source=netcdfvars%lon(:),dim=2,ncopies=read_ny)
+      this%terrain_slope(:,:)   = netcdfvars%slope%data(:,:)
+      this%azimuth(:,:)         = netcdfvars%azimuth%data(:,:)
       this%ZREF                 = namelist%ZREF
-      this%vegtyp(:,:)          = gridinfo%vegtyp(:,:)
+      this%vegtyp(:,:)          = netcdfvars%vegtyp%data(:,:)
       this%croptype(:,:)        = namelist%croptype
-      this%isltyp(:,:)          = gridinfo%isltyp(:,:)
+      this%isltyp(:,:)          = netcdfvars%isltyp%data(:,:)
       this%IST(:,:)             = namelist%sfctyp
-      this%soilcolor(:,:)       = namelist%soilcolor
+      this%soilcolor(:,:)       = netcdfvars%soilcolor%data(:,:)
       this%start_datetime       = date_to_unix(namelist%startdate)  ! returns seconds-since-1970-01-01
       this%end_datetime         = date_to_unix(namelist%enddate)
       do ii = 1, namelist%nsoil
