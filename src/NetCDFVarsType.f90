@@ -86,7 +86,7 @@ module NetCDFVarsType
     !----------------------------------------------------------------------------
     ! Transfer values
     !----------------------------------------------------------------------------
-    this%metadata%filename           = namelist%netcdfinput_filename
+    this%metadata%filename           = namelist%netcdfin_filename
     this%metadata%ncid               = -1
     this%metadata%name_dim_x         = "Longitude" ! namelist%name_dim_x TODO: read-in from namelist.input
     this%metadata%name_dim_y         = "Latitude"  ! namelist%name_dim_y
