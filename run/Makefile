@@ -8,7 +8,7 @@ include ../user_build_options
 OBJS = \
         ../src/ErrorCheckModule.o \
         ../src/NamelistRead.o \
-        ../src/GridInfoType.o \
+        ../src/NetCDFVarsType.o \
         ../src/ParametersRead.o \
         ../src/LevelsType.o \
         ../src/LevelsGridType.o \
