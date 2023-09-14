@@ -368,7 +368,7 @@ module NetCDFVarsType
     end if
   
     !----------------------------------------------------------------------------
-    ! Check and then transfer read-in values to gridinfo_type 
+    ! Check values
     !----------------------------------------------------------------------------
     if(var(1,1).eq.realMissing) then
       write(*,*) 'ERROR : problem reading ''',trim(varname),''' from ''',trim(filename),''''; stop
