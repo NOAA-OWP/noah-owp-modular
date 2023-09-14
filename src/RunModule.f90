@@ -32,7 +32,7 @@ module RunModule
   use WaterModule
   use DateTimeUtilsModule
   use NamelistRead
-  use GridInfoType
+  use NetCDFVarsType
   use bmi_grid
 
   implicit none
@@ -52,7 +52,7 @@ module RunModule
   type :: noahowpgrid_type
 
     type(namelist_type)       :: namelist
-    type(gridinfo_type)       :: gridinfo
+    type(netcdfvars_type)     :: netcdfvars
     type(levelsgrid_type)     :: levelsgrid
     type(domaingrid_type)     :: domaingrid
     type(optionsgrid_type)    :: optionsgrid
@@ -92,7 +92,7 @@ contains
     integer                                 :: ii
         
     associate(namelist       => model%namelist,       &
-              gridinfo       => model%gridinfo,       &
+              netcdfvars     => model%netcdfvars,     &
               levelsgrid     => model%levelsgrid,     &
               domaingrid     => model%domaingrid,     &
               optionsgrid    => model%optionsgrid,    &
@@ -105,28 +105,28 @@ contains
       !  initialize
       !---------------------------------------------------------------------
       call namelist%ReadNamelist(config_filename)
-      call gridinfo%ReadGridInfo(namelist)
+      call netcdfvars%Init(namelist)
       
       call levelsgrid%Init(namelist)
       call levelsgrid%InitTransfer(namelist)
 
-      call domaingrid%Init(namelist,gridinfo)
-      call domaingrid%InitTransfer(namelist,gridinfo)
+      call domaingrid%Init(namelist,netcdfvars)
+      call domaingrid%InitTransfer(namelist,netcdfvars)
 
       call optionsgrid%Init(namelist)
       call optionsgrid%InitTransfer(namelist)
 
-      call parametersgrid%Init(namelist,gridinfo)
+      call parametersgrid%Init(namelist,netcdfvars)
       call parametersgrid%paramRead(namelist,domaingrid)
 
-      call forcinggrid%Init(gridinfo)
+      call forcinggrid%Init(netcdfvars)
       call forcinggrid%InitTransfer(namelist)
 
-      call energygrid%Init(namelist,gridinfo)
+      call energygrid%Init(namelist,netcdfvars)
       call energygrid%InitTransfer(namelist)
 
-      call watergrid%Init(namelist,gridinfo)
-      call watergrid%InitTransfer(namelist,gridinfo)
+      call watergrid%Init(namelist,netcdfvars)
+      call watergrid%InitTransfer(namelist,netcdfvars)
 
       ! Initializations
       ! for soil water
