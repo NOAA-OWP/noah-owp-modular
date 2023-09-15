@@ -25,6 +25,7 @@ module EnergyTypeTransfer
     energy%FROZEN_GROUND = energygrid%FROZEN_GROUND(ix,iy)
     energy%IMELT(:) = energygrid%IMELT(ix,iy,:)
     energy%STC(:) = energygrid%STC(ix,iy,:)
+    energy%SNOWT_AVG = energygrid%SNOWT_AVG(ix,iy)
     energy%DF(:) = energygrid%DF(ix,iy,:)
     energy%HCPCT(:) = energygrid%HCPCT(ix,iy,:)
     energy%FACT(:) = energygrid%FACT(ix,iy,:)
@@ -166,6 +167,7 @@ module EnergyTypeTransfer
     energygrid%FROZEN_GROUND(ix,iy) = energy%FROZEN_GROUND
     energygrid%IMELT(ix,iy,:) = energy%IMELT(:)
     energygrid%STC(ix,iy,:) = energy%STC(:)
+    energygrid%SNOWT_AVG(ix,iy) = energy%SNOWT_AVG
     energygrid%DF(ix,iy,:) = energy%DF(:)
     energygrid%HCPCT(ix,iy,:) = energy%HCPCT(:)
     energygrid%FACT(ix,iy,:) = energy%FACT(:)

@@ -93,6 +93,10 @@ contains
        domain%DZSNSO(IZ) = -domain%DZSNSO(IZ)
    END DO
 
+   ! NWM3.0 parameter
+   energy%SNOWT_AVG = SUM(energy%STC(-levels%nsnow+1:0)*(water%SNICE(-levels%nsnow+1:0)+water%SNLIQ(-levels%nsnow+1:0))) / &
+                      SUM(water%SNICE(-levels%nsnow+1:0)+water%SNLIQ(-levels%nsnow+1:0))
+
   END SUBROUTINE SnowWater
 
 end module SnowWaterModule

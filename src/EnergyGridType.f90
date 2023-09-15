@@ -18,6 +18,7 @@ module EnergyGridType
   logical,allocatable,dimension(:,:)                :: FROZEN_GROUND     ! binary frozen ground status (true when TG <= parameters%TFRZ)
   integer, allocatable, dimension(:,:,:)            :: IMELT             ! snow layer melting state index [0-no melt;1-melt]
   real,allocatable, dimension(:,:,:)                :: STC               ! snow/soil layer temperature [k]
+  real,allocatable, dimension(:,:)                  :: SNOWT_AVG         ! average snow temperature [k] (by layer mass) (a NWM 3.0 output variable)
   real,allocatable, dimension(:,:,:)                :: DF                ! snow and soil layer thermal conductivity [w/m/k]
   real,allocatable, dimension(:,:,:)                :: HCPCT             ! snow and soil layer heat capacity [j/m3/k]
   real,allocatable, dimension(:,:,:)                :: FACT              ! temporary variable used in phase change [s/j/m2/k]
@@ -289,6 +290,7 @@ module EnergyGridType
       allocate(this%SHG(n_x,n_y))
       allocate(this%SSOIL(n_x,n_y))
       allocate(this%STC(n_x,n_y,-nsnow+1:nsoil))
+      allocate(this%SNOWT_AVG(n_x,n_y))
       allocate(this%T2M(n_x,n_y))
       allocate(this%T2MB(n_x,n_y))
       allocate(this%T2MV(n_x,n_y))
@@ -427,6 +429,7 @@ module EnergyGridType
       this%SHG(:,:) = huge(1.0)
       this%SSOIL(:,:) = huge(1.0)
       this%STC(:,:,:) = huge(1.0)
+      this%SNOWT_AVG(:,:) = huge(1.0)
       this%T2M(:,:) = huge(1.0)
       this%T2MB(:,:) = huge(1.0)
       this%T2MV(:,:) = huge(1.0)
