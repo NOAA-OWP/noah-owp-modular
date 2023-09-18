@@ -16,6 +16,15 @@ Per spreadsheet notes and the above NWM calculation:
 ACSNOM(:,:) = watergrid_type%PONDING(:,:)+watergrid_type%PONDING1(:,:)+watergrid_type%PONDING2(:,:)+(watergrid_type%QSNBOT(:,:)*domaingrid_type%DT)
 ```
 
+Added to output_items
+Added to noahowp_get_float
+      Calculated as: dest = reshape(watergrid%PONDING(:,:)+watergrid%PONDING1(:,:)+watergrid%PONDING2(:,:)+(watergrid%QSNBOT(:,:)*domaingrid%DT),[n_x*n_y])
+Added to noahowp_var_type as "real"
+Added to noahowp_var_units as "mm"
+Added to noahowp_var_itemsize
+    Calculated as: sizeof(watergrid%PONDING(1,1)) 
+    So pointing to one of several real arrays used to calculated ACSNOM. Is this okay?
+
 # ACCET
 
 ### Spreadsheet notes
@@ -26,6 +35,18 @@ Per the spreadsheet:
 ```(Fortran)
 ACCET(:,:) = watergrid_type%evapotrans(:,:)*domaingrid_type%DT
 ```
+
+Already in output_items as "EVAPOTRANS"
+Changed noahowp_get_float listing for "EVAPOTRANS" from:
+   case("EVAPOTRANS")
+      dest = reshape(watergrid%evapotrans,[n_x*n_y])
+  to:
+   case("EVAPOTRANS")
+      dest = reshape(watergrid%evapotrans*domaingrid%DT*0.001,[n_x*n_y])
+  Multiplied by DT*0.001 to move from m/s to mm
+Alread listed noahowp_var_type as "real"
+Moved "EVAPOTRANS" listing in noahowp_var_units from "m/s" to "mm"
+Alread listed in noahowp_var_itemsize
 
 # SNOWT_AVG
 
@@ -59,6 +80,17 @@ end do
 
 The above requires iterating over the grid, which is not preferrable. Thus, it might be better to add SNOWT_AVG to watergrid_type and calculate it within the scope of solve_noahowp. This seems to be the case for several of the NWM variables.
 
+SNOWT_AVG was added as a member of energygrid_type and energy_type. Further, SNOWT_AVG calculation was added at the end of the SnowWater subroutine and calculated as:
+
+   energy%SNOWT_AVG = SUM(energy%STC(-levels%nsnow+1:0)*(water%SNICE(-levels%nsnow+1:0)+water%SNLIQ(-levels%nsnow+1:0))) / &
+                      SUM(water%SNICE(-levels%nsnow+1:0)+water%SNLIQ(-levels%nsnow+1:0))
+
+Added to output_items
+Added to noahowp_var_type
+Added to noahowp_get_float
+Added to noahowp_var_units as K
+Added to noahowp_var_itemsize
+
 # EDIR
 
 ### Spreadsheet notes
@@ -76,6 +108,17 @@ call output_NoahMP_NWM(trim(noah_lsm%outdir),igrid,noah_lsm%output_timestep,itim
 The call to output_NoahMP_NWM indicates that EDIRXY is being written for EDIR (see above). [EDIRXY is defined as having units of mm/s](https://github.com/NCAR/wrf_hydro_nwm_public/blob/5d9e489fed01ed7cbd6b5680616ee37812a7137a/src/Land_models/NoahMP/phys/module_sf_noahmpdrv.F#L271C1-L271C120) and [EDIRXY is set to ESOIL](https://github.com/NCAR/wrf_hydro_nwm_public/blob/5d9e489fed01ed7cbd6b5680616ee37812a7137a/src/Land_models/NoahMP/phys/module_sf_noahmpdrv.F#L1453), which [also has units of mm/s](https://github.com/NCAR/wrf_hydro_nwm_public/blob/5d9e489fed01ed7cbd6b5680616ee37812a7137a/src/Land_models/NoahMP/phys/module_sf_noahmpdrv.F#L420C95-L420C95). Thus, while the output file states that the variable's units are 'kg m-2 s-1', I do not see this to be the case.
 
 We can do the unit conversion if we need -- but need to confirm that NWM is providing in kg m-2 s-1 as specified.
+
+Given that EDIR is mm/s in NWM, we just need to convert QSEVA from m/sec to mm/sec.
+
+Already in output_items
+Changed noahowp_get_float listing for QSEVA from:
+      dest = reshape(watergrid%qseva,[n_x*n_y])
+to:
+      dest = reshape(watergrid%qseva*1000.,[n_x*n_y])
+Already in noahowp_var_type
+Changed noahowp_var_units listing from m/s to mm/s
+Already in noahowp_var_itemsize
 
 # SOILICE
 
@@ -133,6 +176,38 @@ do ix = 1, n_x
 end do
 ```
 
+# ISNOW
+
+Added to output_items
+Added to noahowp_var_type
+Added to noahowp_get_int
+Added to noahowp_var_units as "1"
+Added to noahowp_var_itemsize
+
+# QRAIN
+
+Added to output_items
+Added to noahowp_var_type
+Added to noahowp_get_float
+Added to noahowp_var_units as "mm/s"
+Added to noahowp_var_itemsize
+
+# FSNO
+
+Added to output_items
+Added to noahowp_var_type
+Added to noahowp_get_float
+Added to noahowp_var_units as "1"
+Added to noahowp_var_itemsize
+
+# SNOWH
+
+Added to output_items
+Added to noahowp_var_type
+Added to noahowp_get_float
+Added to noahowp_var_units as "m"
+Added to noahowp_var_itemsize
+
 # SNLIQ
 
 ### Spreadsheet notes
@@ -150,6 +225,24 @@ call output_NoahMP_NWM(trim(noah_lsm%outdir),igrid,noah_lsm%output_timestep,itim
 ```
 watergrid_type%SNLIQ(:,:,:)
 ```
+
+Added to output_items
+Added to noahowp_var_type
+Added to noahowp_get_float
+Added to noahowp_var_units as "mm"
+Added to noahowp_var_itemsize
+
+# SNEQV
+
+Nothing to do.
+
+# QSNOW
+
+Added to output_items
+Added to noahowp_var_type
+Added to noahowp_get_float
+Added to noahowp_var_units as "mm/s"
+Added to noahowp_var_itemsize
 
 # SOIL_T
 
@@ -212,8 +305,16 @@ call output_NoahMP_NWM(trim(noah_lsm%outdir),igrid,noah_lsm%output_timestep,itim
 
 Per spreadsheet:
 ```
-ACCECAN(:,:) = watergrid_type%qseva(:,:) * domaingrid_type%DT
+ACCECAN(:,:) = watergrid_type%ECAN(:,:) * domaingrid_type%DT
 ```
+
+Added to output_items
+Added to noahowp_var_type
+Added to noahowp_get_float as:
+   case("ECAN")
+      dest = reshape(watergrid%ECAN(:,:)*domaingrid%DT,[n_x*n_y])
+Added to noahowp_var_units as "mm"
+Added to noahowp_var_itemsize
 
 # ACCEDIR
 
@@ -251,6 +352,17 @@ Per spreadsheet:
 ACCEDIR(:,:) = watergrid_type%ETRAN(:,:) * domaingrid_type%DT
 ```
 
+Already in output_items
+Already in noahowp_var_type
+Changed listing in noahowp_get_float to:
+   case("ETRAN")
+      dest = reshape(watergrid%etran*domaingrid%DT,[n_x*n_y])
+   from:
+      case("ETRAN")
+      dest = reshape(watergrid%etran,[n_x*n_y])
+Changed listing in noahowp_var_units to "mm"
+Already in noahowp_var_itemsize
+
 # UGDRNOFF
 
 ### Spreadsheet notes
@@ -269,6 +381,8 @@ Suggestion:
 UGDRNOFF(:,:) = watergrid_type%runsub(:,:) * domaingrid_type%DT
 ```
 
+DID NOT ADD.
+
 # GRDFLX
 
 ### Spreadsheet notes
@@ -285,6 +399,20 @@ call output_NoahMP_NWM(trim(noah_lsm%outdir),igrid,noah_lsm%output_timestep,itim
 To be added to BMI output_vars and confirm that GH is weighted average of GHV (under canopy) and GHB (bare ground). Also note that all energy balance terms likely affected by pseudo-PET calculations in surface mode. Might require two-way coupling for enhanced accuracy.
 
 I don't see where GH is being calculated in Noah-OM. Thus, we'd need to calculate GH as weighted average of GHV and GHB.
+
+It looks like energy%SSOIL is a weighted average of GHV and GHB as it is calculated as:
+
+energy%SSOIL = parameters%FVEG * energy%GHV       + (1.0 - parameters%FVEG) * energy%GHB
+
+Because FVEG = 1, SSOIL is an area weighted average of GHV and GHB.
+
+As GH was already a member of energygrid_type and energy_type. So I added code to set GH within the EnergyMain subroutine, immediately following calculation of SSOIL. We could have just used SSOIL but I calculated GH because it was already in the model.
+
+Added to output_items
+Added to noahowp_var_type as 'real'
+Added to noahowp_get_float
+Added to noahowp_var_units as "W/m2"
+Added to noahowp_var_itemsize
 
 # TRAD
 
@@ -304,6 +432,12 @@ TRAD is a member of energygrid_type in Noah-OM:
 energygrid_type%TRAD(:,:)
 ```
 
+Added to output_items
+Added to noahowp_var_type as 'real'
+Added to noahowp_get_float
+Added to noahowp_var_units as "W/m2"
+Added to noahowp_var_itemsize
+
 # FSA
 
 ### Spreadsheet notes
@@ -322,6 +456,12 @@ FSA is a member of energygrid_type in Noah-OM:
 energygrid_type%FSA(:,:)
 ```
 
+Added to output_items
+Added to noahowp_var_type as 'real'
+Added to noahowp_get_float
+Added to noahowp_var_units as "W/m2"
+Added to noahowp_var_itemsize
+
 # CANWAT
 
 ### Spreadsheet notes
@@ -339,6 +479,13 @@ CANWAT is equivalent to CMC in Noah-OM, which is a member of watergrid_type:
 ```
 watergrid_type%CMC(:,:)
 ```
+
+Added to output_items
+Added to noahowp_var_type as 'real'
+Added to noahowp_get_float
+Added to noahowp_var_units as "mm"
+Added to noahowp_var_itemsize
+
 # LH
 
 ### Spreadsheet notes
@@ -356,6 +503,12 @@ LH is a member of energygrid_type in Noah-OM:
 ```
 energygrid_type%LH(:,:)
 ```
+
+Added to output_items
+Added to noahowp_var_type as 'real'
+Added to noahowp_get_float
+Added to noahowp_var_units as "W/m-2"
+Added to noahowp_var_itemsize
 
 # FIRA
 
@@ -375,6 +528,12 @@ FIRA is a member of energygrid_type in Noah-OM:
 energygrid_type%FIRA(:,:)
 ```
 
+Added to output_items
+Added to noahowp_var_type as 'real'
+Added to noahowp_get_float
+Added to noahowp_var_units as "W/m-2"
+Added to noahowp_var_itemsize
+
 # HFX
 
 ### Spreadsheet notes
@@ -392,3 +551,9 @@ Per spreadsheet, HFX is equivalent to FSH in Noah-OM, which is a member of energ
 ```
 energygrid_type%FSH(:,:)
 ```
+
+Added to output_items
+Added to noahowp_var_type as 'real'
+Added to noahowp_get_float
+Added to noahowp_var_units as "W/m-2"
+Added to noahowp_var_itemsize
