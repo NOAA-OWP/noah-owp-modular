@@ -45,7 +45,8 @@ module DomainTypeTransfer
 
     domaingrid%zsoil(ix,iy,:) = domain%zsoil(:) 
     domaingrid%dzsnso(ix,iy,:) = domain%dzsnso(:)  
-    domaingrid%zsnso(ix,iy,:) = domain%zsnso(:)   
+    domaingrid%zsnso(ix,iy,:) = domain%zsnso(:)
+    domaingrid%nowdate = domain%nowdate   
 
   end subroutine DomainVarOutTransfer
 
