@@ -294,7 +294,7 @@ module NetCDFVarsType
       write(*,*) 'Unable to get the number of dimensions for variable ''',trim(varname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"
     end if
     if (ndims.ne.2) then
-      write(*,*) 'The variable ''',trim(varname),''' in ''',trim(filename),''' is ',ndims,' but should be 2 because trying to populate netcdf2dvarINT (a 2D variable type)'
+      write(*,*) 'The variable ''',trim(varname),''' in ''',trim(filename),''' has ',ndims,' dimensions but should have 2'
       stop ":  ERROR EXIT"
     end if
     status = nf90_inquire_variable(ncid = ncid, varid = varid, dimids = dimids)
@@ -363,7 +363,7 @@ module NetCDFVarsType
       write(*,*) 'Unable to get the number of dimensions for variable ''',trim(varname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"
     end if
     if (ndims.ne.2) then
-      write(*,*) 'The variable ''',trim(varname),''' in ''',trim(filename),''' is ',ndims,' but should be 2 because trying to populate netcdf2dvarREAL (a 2D variable type)'
+      write(*,*) 'The variable ''',trim(varname),''' in ''',trim(filename),''' has ',ndims,' dimensions but should be 2'
       stop ":  ERROR EXIT"
     end if
     status = nf90_inquire_variable(ncid = ncid, varid = varid, dimids = dimids)
