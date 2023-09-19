@@ -41,50 +41,50 @@ def create_dummy():
   var_lat.dy = dy
 
   # Fill lat/lon
-  #var_lat[:] = np.array([lat+(i*dy*cnv_arcsec_to_degrees) for i in range(n_y)])
-  #var_lon[:] = np.array([lon+(i*dx*cnv_arcsec_to_degrees) for i in range(n_x)]) 
-  var_lat[:] = np.array([lat for i in range(n_y)])
-  var_lon[:] = np.array([lon for i in range(n_x)]) 
+  var_lat[:] = np.array([lat+(i*dy*cnv_arcsec_to_degrees) for i in range(n_y)])
+  var_lon[:] = np.array([lon+(i*dx*cnv_arcsec_to_degrees) for i in range(n_x)]) 
+  #var_lat[:] = np.array([lat for i in range(n_y)])
+  #var_lon[:] = np.array([lon for i in range(n_x)]) 
 
   # Fill slope
   var_slope[:,:] = np.full((n_y, n_x), slope)
   for x in range(n_x):
     for y in range(n_y):
       if x != 0 or y != 0:
-        #var_slope[y,x] = random.uniform(0,5)
-        pass
+        var_slope[y,x] = random.uniform(0,5)
+        #pass
 
   # Fill soils
   var_isltyp[:,:] = np.full((n_y, n_x), isltyp)
   for x in range(n_x):
     for y in range(n_y):
       if x != 0 or y != 0:
-        #var_isltyp[y,x] = random.randint(1,19)
-        pass
+        var_isltyp[y,x] = random.randint(1,19)
+        #pass
 
   # Fill land use
   var_vegtyp[:,:] = np.full((n_y, n_x), vegtyp)
   for x in range(n_x):
     for y in range(n_y):
       if x != 0 or y != 0:
-        #var_vegtyp[y,x] = random.randint(1,20)
-        pass
+        var_vegtyp[y,x] = random.randint(1,20)
+        #pass
 
   # Fill soil color
   var_soilcolor[:,:] = np.full((n_y, n_x), soilcolor)
   for x in range(n_x):
     for y in range(n_y):
       if x != 0 or y != 0:
-        #var_soilcolor[y,x] = random.randint(1,8)
-        pass
+        var_soilcolor[y,x] = random.randint(1,8)
+        #pass
 
   # Fill azimuth
   var_azimuth[:,:] = np.full((n_y, n_x), azimuth)
   for x in range(n_x):
     for y in range(n_y):
       if x != 0 or y != 0:
-        #var_azimuth[y,x] = random.uniform(1,360)
-        pass
+        var_azimuth[y,x] = random.uniform(1,360)
+        #pass
 
   # Print some stuff
   print('\n****************DIMENSIONS****************')
