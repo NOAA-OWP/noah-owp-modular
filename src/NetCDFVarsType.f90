@@ -49,27 +49,24 @@ module NetCDFVarsType
 
   type, public :: netcdfvars_type
 
-    type(netcdf2dmetadata_type)   :: metadata    ! Populated via call to netcdfvars_type%ReadVar
-    type(netcdf2dvarINT_type)     :: vegtyp      ! Populated via call to netcdfvars_type%ReadVar
-    type(netcdf2dvarINT_type)     :: isltyp      ! Populated via call to netcdfvars_type%ReadVar
-    type(netcdf2dvarINT_type)     :: soilcolor   ! Populated via call to netcdfvars_type%ReadVar
-    type(netcdf2dvarREAL_type)    :: slope       ! Populated via call to netcdfvars_type%ReadVar
-    type(netcdf2dvarREAL_type)    :: azimuth     ! Populated via call to netcdfvars_type%ReadVar
-    real,allocatable,dimension(:) :: lat         ! Populated via call to netcdfvars_type%ReadSpatial
-    real,allocatable,dimension(:) :: lon         ! Populated via call to netcdfvars_type%ReadSpatial
-    
-    character(len=max_file_name_length)   :: filename  ! NetCDF file name
-    integer                               :: ncid      ! NetCDF file ID
+    type(netcdf2dmetadata_type)           :: metadata    ! Populated via call to netcdfvars_type%ReadVar
+    type(netcdf2dvarINT_type)             :: vegtyp      ! Populated via call to netcdfvars_type%ReadVar
+    type(netcdf2dvarINT_type)             :: isltyp      ! Populated via call to netcdfvars_type%ReadVar
+    type(netcdf2dvarINT_type)             :: soilcolor   ! Populated via call to netcdfvars_type%ReadVar
+    type(netcdf2dvarREAL_type)            :: slope       ! Populated via call to netcdfvars_type%ReadVar
+    type(netcdf2dvarREAL_type)            :: azimuth     ! Populated via call to netcdfvars_type%ReadVar
+    real,allocatable,dimension(:)         :: lat         ! Populated via call to netcdfvars_type%ReadSpatial
+    real,allocatable,dimension(:)         :: lon         ! Populated via call to netcdfvars_type%ReadSpatial
+    character(len=max_file_name_length)   :: filename    ! NetCDF file name
+    integer                               :: ncid        ! NetCDF file ID
 
   contains
 
     procedure, public     :: Init
-    procedure, public     :: OpenNetcdf
-    procedure, public     :: CloseNetcdf
+    procedure, private    :: OpenNetcdf
+    procedure, private    :: CloseNetcdf
     procedure, private    :: ReadSpatial
-    procedure, pass(this) :: ReadVarINT
-    procedure, pass(this) :: ReadVarREAL
-    generic,   public     :: ReadVar => ReadVarINT, ReadVarREAL
+    procedure, private    :: ReadVar2D
 
   end type
 
@@ -108,11 +105,11 @@ module NetCDFVarsType
     !----------------------------------------------------------------------------
     ! Read variables
     !----------------------------------------------------------------------------
-    call this%ReadVar(this%vegtyp)
-    call this%ReadVar(this%isltyp)
-    call this%ReadVar(this%soilcolor)
-    call this%ReadVar(this%slope)
-    call this%ReadVar(this%azimuth)
+    call this%ReadVar2D(this%vegtyp)
+    call this%ReadVar2D(this%isltyp)
+    call this%ReadVar2D(this%soilcolor)
+    call this%ReadVar2D(this%slope)
+    call this%ReadVar2D(this%azimuth)
 
     !----------------------------------------------------------------------------
     ! Close the Netcdf file
@@ -180,8 +177,8 @@ module NetCDFVarsType
               name_att_dy    => this%metadata%name_att_dy,     & 
               name_dim_x     => this%metadata%name_dim_x,      & 
               name_dim_y     => this%metadata%name_dim_y,      & 
-              dimid_x        => this%metadata%dimid_x,      & 
-              dimid_y        => this%metadata%dimid_y,      & 
+              dimid_x        => this%metadata%dimid_x,         & 
+              dimid_y        => this%metadata%dimid_y,         & 
               filename       => this%filename,                 &
               integerMissing => this%metadata%integerMissing,  &
               realMissing    => this%metadata%realMissing)
@@ -256,10 +253,10 @@ module NetCDFVarsType
 
   end subroutine ReadSpatial
 
-  subroutine ReadVarINT(this,netcdf2dvarINT)
+  subroutine ReadVar2D(this,netcdf2dvar)
 
     class(netcdfvars_type),    intent(in)    :: this
-    type(netcdf2dvarINT_type), intent(inout) :: netcdf2dvarINT    
+    class(netcdf2dvar_type), intent(inout)   :: netcdf2dvar   
     integer                                  :: varid    
     integer                                  :: status
     integer                                  :: ndims
@@ -268,15 +265,24 @@ module NetCDFVarsType
     associate(ncid           => this%ncid,                    & 
               n_x            => this%metadata%n_x,            &
               n_y            => this%metadata%n_y,            &
-              varname        => netcdf2dvarINT%name,          &
+              varname        => netcdf2dvar%name,             &
               filename       => this%filename,                &
-              integerMissing => this%metadata%integerMissing)
-  
+              integerMissing => this%metadata%integerMissing, &
+              realMissing    => this%metadata%realMissing)
+
     !----------------------------------------------------------------------------
-    ! Allocate data array to be populated
+    ! Allocate array to be populated and set to missing value
     !----------------------------------------------------------------------------
-    if(allocated(netcdf2dvarINT%data)) deallocate(netcdf2dvarINT%data)
-    allocate(netcdf2dvarINT%data(this%metadata%n_x,this%metadata%n_y))
+    select type (netcdf2dvar)
+    type is (netcdf2dvarINT_type)
+      if(allocated(netcdf2dvar%data)) deallocate(netcdf2dvar%data)     ! Note that netcdf2dvar%data cannot be accessed outside the select type block. I tried and failed.
+      allocate(netcdf2dvar%data(this%metadata%n_x,this%metadata%n_y))
+      netcdf2dvar%data(:,:) = integerMissing
+    type is (netcdf2dvarREAL_type)
+      if(allocated(netcdf2dvar%data)) deallocate(netcdf2dvar%data)
+      allocate(netcdf2dvar%data(this%metadata%n_x,this%metadata%n_y))
+      netcdf2dvar%data(:,:) = realMissing
+    end select
 
     !----------------------------------------------------------------------------
     ! Get NetCDF variable ID 
@@ -305,94 +311,32 @@ module NetCDFVarsType
       write(*,*) 'The dimensions of variable ''',trim(varname),''' in ''',trim(filename),''' do not match name_dim_x and name_dim_y as provided in namelist.input'
       stop ":  ERROR EXIT"
     end if
-
-    !----------------------------------------------------------------------------
-    ! Read from NetCDF file
-    !----------------------------------------------------------------------------
-    status = nf90_get_var(ncid = ncid,varid = varid, values = netcdf2dvarINT%data)
-    if (status /= nf90_noerr) then
-      write(*,*) 'Unable to read variable ''',trim(varname),''' from ''',trim(filename),''''; stop ":  ERROR EXIT"
-    end if
   
     !----------------------------------------------------------------------------
-    ! Check values
+    ! Read from NetCDF file and check for missing values
     !----------------------------------------------------------------------------
-    if(netcdf2dvarINT%data(1,1) == integerMissing) then
-      write(*,*) 'ERROR : problem reading ''',trim(varname),''' from ''',trim(filename),''''; stop
-    end if
-  
-    end associate
-  
-  end subroutine ReadVarINT
-
-  subroutine ReadVarREAL(this,netcdf2dvarREAL)
-
-    class(netcdfvars_type),     intent(in)    :: this
-    type(netcdf2dvarREAL_type), intent(inout) :: netcdf2dvarREAL   
-    integer                                   :: varid    
-    integer                                   :: status
-    integer                                   :: ndims
-    integer,dimension(2)                      :: dimids
-  
-    associate(ncid           => this%ncid,                   & 
-              n_x            => this%metadata%n_x,           &
-              n_y            => this%metadata%n_y,           &
-              varname        => netcdf2dvarREAL%name,        &
-              filename       => this%filename,               &
-              realMissing    => this%metadata%realMissing)
-  
-    !----------------------------------------------------------------------------
-    ! Allocate data array to be populated
-    !----------------------------------------------------------------------------
-    if(allocated(netcdf2dvarREAL%data)) deallocate(netcdf2dvarREAL%data)
-    allocate(netcdf2dvarREAL%data(this%metadata%n_x,this%metadata%n_y))
-
-    !----------------------------------------------------------------------------
-    ! Get NetCDF variable ID 
-    !----------------------------------------------------------------------------
-    status = nf90_inq_varid(ncid = ncid, name = trim(varname), varid = varid)
-    if (status /= nf90_noerr) then
-      write(*,*) 'Unable to find the variable ''',trim(varname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"
-    end if
-  
-    !----------------------------------------------------------------------------
-    ! Check that variable dimensions are as expected
-    !----------------------------------------------------------------------------
-    status = nf90_inquire_variable(ncid = ncid, varid = varid, ndims = ndims)
-    if (status /= nf90_noerr) then
-      write(*,*) 'Unable to get the number of dimensions for variable ''',trim(varname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"
-    end if
-    if (ndims.ne.2) then
-      write(*,*) 'The variable ''',trim(varname),''' in ''',trim(filename),''' has ',ndims,' dimensions but should be 2'
-      stop ":  ERROR EXIT"
-    end if
-    status = nf90_inquire_variable(ncid = ncid, varid = varid, dimids = dimids)
-    if (status /= nf90_noerr) then
-      write(*,*) 'Unable to get dimension IDs for variable ''',trim(varname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"
-    end if
-    if(.NOT.(ANY(dimids == this%metadata%dimid_x)).or..NOT.(ANY(dimids == this%metadata%dimid_y))) then
-      write(*,*) 'The dimensions of variable ''',trim(varname),''' in ''',trim(filename),''' do not match name_dim_x and name_dim_y as provided in namelist.input'
-      stop ":  ERROR EXIT"
-    end if
-
-    !----------------------------------------------------------------------------
-    ! Read from NetCDF file
-    !----------------------------------------------------------------------------
-    status = nf90_get_var(ncid = ncid,varid = varid, values = netcdf2dvarREAL%data)
-    if (status /= nf90_noerr) then
-      write(*,*) 'Unable to read variable ''',trim(varname),''' from ''',trim(filename),''''; stop ":  ERROR EXIT"
-    end if
-  
-    !----------------------------------------------------------------------------
-    ! Check values
-    !----------------------------------------------------------------------------
-    if(netcdf2dvarREAL%data(1,1).eq.realMissing) then
-      write(*,*) 'ERROR : problem reading ''',trim(varname),''' from ''',trim(filename),''''; stop
-    end if
+    select type (netcdf2dvar)
+    type is (netcdf2dvarINT_type)
+      status = nf90_get_var(ncid = ncid,varid = varid, values = netcdf2dvar%data)
+      if (status /= nf90_noerr) then
+        write(*,*) 'Unable to read variable ''',trim(varname),''' from ''',trim(filename),''''; stop ":  ERROR EXIT"
+      end if
+      if(netcdf2dvar%data(1,1) == integerMissing) then
+        write(*,*) 'ERROR : problem reading ''',trim(varname),''' from ''',trim(filename),''''; stop
+      end if
+    type is (netcdf2dvarREAL_type)
+      status = nf90_get_var(ncid = ncid,varid = varid, values = netcdf2dvar%data)
+      if (status /= nf90_noerr) then
+        write(*,*) 'Unable to read variable ''',trim(varname),''' from ''',trim(filename),''''; stop ":  ERROR EXIT"
+      end if
+      if(netcdf2dvar%data(1,1) == realMissing) then
+        write(*,*) 'ERROR : problem reading ''',trim(varname),''' from ''',trim(filename),''''; stop
+      end if
+    end select
   
     end associate
-
-  end subroutine ReadVarREAL
+  
+  end subroutine ReadVar2D
 
   subroutine InitTransfer(this,namelist)
 
