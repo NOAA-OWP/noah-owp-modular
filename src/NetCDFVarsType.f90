@@ -4,7 +4,6 @@ module NetCDFVarsType
   use NamelistRead, only: namelist_type
 
   implicit none
-  save
   integer, parameter :: max_file_name_length = 512
   integer, parameter :: max_var_name_length  = 256
 
