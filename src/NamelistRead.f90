@@ -12,17 +12,14 @@ type, public :: namelist_type
   real               :: dt                 ! model timestep (s)
   character(len=12)  :: startdate          ! UTC start datetime of the model run ( YYYYMMDDHHmm )
   character(len=12)  :: enddate            ! UTC end datetime of the model run ( YYYYMMDDHHmm )
-  character(len=256) :: forcing_filename   ! directory/name of the input/forcing file
-  character(len=256) :: netcdfin_filename  ! directory/name of NetCDF file holding gridded model inputs
+  character(len=256) :: forcing_filename     ! directory/name of the input/forcing file
   character(len=256) :: output_filename    ! directory/name of the output file
   character(len=256) :: parameter_dir      ! name of the directory where parameter TBLs reside
-  character(len=256) :: noahowp_table      ! name of noahowp parameter table
+  character(len=256) :: noahowp_table       ! name of noahowp parameter table
   character(len=256) :: soil_table         ! name of soil parameter table
   character(len=256) :: general_table      ! name of general parameter table
   character(len=256) :: soil_class_name    ! name of soil classification (STAS or STAS-RUC)
   character(len=256) :: veg_class_name     ! name of vegetation classification (MODIFIED_IGBP_MODIS_NOAH or USGS)
-  real               :: terrain_slope      ! terrain slope (°)
-  real               :: azimuth            ! terrain azimuth or aspect (° clockwise from north)
   real               :: ZREF               ! measurement height for wind speed (m)
   real               :: rain_snow_thresh   ! rain-snow temperature threshold (°C)
 
@@ -31,8 +28,6 @@ type, public :: namelist_type
   integer            :: nveg               ! number of vegetation types
   real               :: soil_depth         ! soil layer thickness
   integer            :: croptype           ! crop type (SET TO 0, no crops currently supported)
-  integer            :: sfctyp             ! surface type (1 = land, 2 = lake)
-  integer            :: soilcolor          ! soil color code
 
   real, allocatable, dimension(:) :: zsoil   ! depth of layer-bottom from soil surface
   real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
@@ -61,6 +56,21 @@ type, public :: namelist_type
   integer       :: evap_srfc_resistance_option ! options for surface resistance to evaporation/sublimation (opt_rsf)
   integer       :: subsurface_option ! options for subsurface realization (opt_sub)
   
+  !--------------------!
+  !   NetCDF inputs    !
+  !--------------------!
+  character(len=256)  :: netcdfin_filename  ! directory/name of NetCDF file holding gridded model inputs
+  character(len=256)  :: name_var_vegtyp    ! name of NetCDF variable for vegtyp (land use)
+  character(len=256)  :: name_var_isltyp    ! name of NetCDF variable for isltyp (soils)
+  character(len=256)  :: name_var_soilcolor ! name of NetCDF variable for soilcolor
+  character(len=256)  :: name_var_slope     ! name of NetCDF variable for slope
+  character(len=256)  :: name_var_azimuth   ! name of NetCDF variable for azimuth
+  character(len=256)  :: name_dim_x         ! name of NetCDF 'x' dimension (longitude dimension)
+  character(len=256)  :: name_dim_y         ! name of NetCDF 'y' dimension (latitude dimension)
+  character(len=256)  :: name_att_dx        ! name of NetCDF 'x' dimension resolution (spacing)
+  character(len=256)  :: name_att_dy        ! name of NetCDF 'y' dimension resolution (spacing)
+
+
   ! define missing values against which namelist options can be checked
   integer            :: integerMissing
   real               :: realMissing
@@ -91,7 +101,6 @@ contains
     character(len=12)  :: startdate
     character(len=12)  :: enddate
     character(len=256) :: forcing_filename
-    character(len=256) :: netcdfin_filename
     character(len=256) :: output_filename
     character(len=256) :: parameter_dir
     character(len=256) :: soil_table
@@ -99,8 +108,6 @@ contains
     character(len=256) :: general_table
     character(len=256) :: noahowp_table
     character(len=256) :: soil_class_name
-    real               :: terrain_slope
-    real               :: azimuth
     real               :: ZREF               ! measurement height for wind speed (m)
     real               :: rain_snow_thresh
 
@@ -109,8 +116,6 @@ contains
     integer       :: nveg
     real          :: soil_depth
     integer       :: croptype
-    integer       :: sfctyp
-    integer       :: soilcolor
 
     real, allocatable, dimension(:) :: zsoil   ! depth of layer-bottom from soil surface
     real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
@@ -139,15 +144,28 @@ contains
     integer       :: evap_srfc_resistance_option
     integer       :: subsurface_option
     
+    !--------------------!
+    !   NetCDF inputs    !
+    !--------------------!
+    character(len=256)  :: netcdfin_filename  ! directory/name of NetCDF file holding gridded model inputs
+    character(len=256)  :: name_var_vegtyp    ! name of NetCDF variable for vegtyp (land use)
+    character(len=256)  :: name_var_isltyp    ! name of NetCDF variable for isltyp (soils)
+    character(len=256)  :: name_var_soilcolor ! name of NetCDF variable for soilcolor
+    character(len=256)  :: name_var_slope     ! name of NetCDF variable for slope
+    character(len=256)  :: name_var_azimuth   ! name of NetCDF variable for azimuth
+    character(len=256)  :: name_dim_x         ! name of NetCDF 'x' dimension (longitude dimension)
+    character(len=256)  :: name_dim_y         ! name of NetCDF 'y' dimension (latitude dimension)
+    character(len=256)  :: name_att_dx        ! name of NetCDF 'x' dimension resolution (spacing)
+    character(len=256)  :: name_att_dy        ! name of NetCDF 'y' dimension resolution (spacing)
+
     ! ----- END OF VARIABLE DECLARATIONS -------
     
     !--------------------------- !
     !   define namelist groups   !
     !--------------------------- !
-    namelist / timing          / dt,startdate,enddate,forcing_filename,netcdfin_filename,output_filename
+    namelist / timing          / dt,startdate,enddate,forcing_filename,output_filename
     namelist / parameters      / parameter_dir, soil_table, general_table, noahowp_table,&
                                  soil_class_name, veg_class_name
-    namelist / location        / terrain_slope,azimuth
     namelist / forcing         / ZREF,rain_snow_thresh
     namelist / model_options   / precip_phase_option,runoff_option,drainage_option,frozen_soil_option,&
                                  dynamic_vic_option,dynamic_veg_option,snow_albedo_option,&
@@ -155,9 +173,11 @@ contains
                                  crop_model_option,snowsoil_temp_time_option,soil_temp_boundary_option,&
                                  supercooled_water_option,stomatal_resistance_option,&
                                  evap_srfc_resistance_option,subsurface_option
-    namelist / structure       / nsoil,nsnow,nveg,croptype,sfctyp,soilcolor
+    namelist / structure       / nsoil,nsnow,nveg,croptype
     namelist / initial_values  / zsoil,dzsnso,sice,sh2o,zwt    
-    
+    namelist / netcdf_input    / netcdfin_filename,name_var_vegtyp,name_var_isltyp,name_var_soilcolor,&
+                                 name_var_slope,name_var_azimuth,name_dim_x,name_dim_y,name_att_dx,name_att_dy
+
     ! missing values against which namelist options can be checked
     integer            :: integerMissing
     real               :: realMissing
@@ -182,8 +202,6 @@ contains
     general_table    = stringMissing
     noahowp_table    = stringMissing
     soil_class_name  = stringMissing
-    terrain_slope    = realMissing
-    azimuth          = realMissing
     ZREF             = realMissing            
     rain_snow_thresh = realMissing
    
@@ -191,8 +209,6 @@ contains
     nveg             = integerMissing
     nsnow            = integerMissing
     croptype         = integerMissing
-    sfctyp           = integerMissing
-    soilcolor        = integerMissing
     zwt              = realMissing      
 
     precip_phase_option         = integerMissing
@@ -213,6 +229,17 @@ contains
     evap_srfc_resistance_option = integerMissing
     subsurface_option           = integerMissing
 
+    netcdfin_filename  = stringMissing
+    name_var_vegtyp    = stringMissing
+    name_var_isltyp    = stringMissing
+    name_var_soilcolor = stringMissing
+    name_var_slope     = stringMissing
+    name_var_azimuth   = stringMissing
+    name_dim_x         = stringMissing
+    name_dim_y         = stringMissing
+    name_att_dx        = stringMissing
+    name_att_dy        = stringMissing
+
     !---------------------------------------------------------------------
     !  read namelist
     !---------------------------------------------------------------------
@@ -230,15 +257,15 @@ contains
     read(30, timing, iostat=ierr)
     if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; write(*,'(A)') 'ERROR: invalid line in namelist: '//trim(line); stop; end if      
     read(30, parameters, iostat=ierr)
-    if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; write(*,'(A)') 'ERROR: invalid line in namelist: '//trim(line); stop; end if      
-    read(30, location, iostat=ierr)
-    if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; write(*,'(A)') 'ERROR: invalid line in namelist: '//trim(line); stop; end if      
+    if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; write(*,'(A)') 'ERROR: invalid line in namelist: '//trim(line); stop; end if         
     read(30, forcing, iostat=ierr)
     if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; write(*,'(A)') 'ERROR: invalid line in namelist: '//trim(line); stop; end if      
     read(30, model_options, iostat=ierr)
     if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; write(*,'(A)') 'ERROR: invalid line in namelist: '//trim(line); stop; end if      
     read(30, structure, iostat=ierr)
     if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; write(*,'(A)') 'ERROR: invalid line in namelist: '//trim(line); stop; end if      
+    read(30, netcdf_input, iostat=ierr)
+    if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; write(*,'(A)') 'ERROR: invalid line in namelist: '//trim(line); stop; end if    
 
     !---------------------------------------------------------------------
     !  Check model option validity, part 2
@@ -272,7 +299,7 @@ contains
     sh2o(1)   = realMissing
 
     ! read remaining group from namelist
-    read(30, initial_values)
+    read(30, initial_values, iostat=ierr)
     if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; write(*,'(A)') 'ERROR: invalid line in namelist: '//trim(line); stop; end if      
     close(30)
     
@@ -294,7 +321,6 @@ contains
     if(startdate        /= stringMissing) then; this%startdate = startdate; else; write(*,'(A)') 'ERROR: required entry startdate not found in namelist'; stop; end if
     if(enddate          /= stringMissing) then; this%enddate = enddate; else; write(*,'(A)') 'ERROR: required entry enddate not found in namelist'; stop; end if
     if(forcing_filename /= stringMissing) then; this%forcing_filename = forcing_filename; else; write(*,'(A)') 'ERROR: required entry forcing_filename not found in namelist'; stop; end if
-    if(netcdfin_filename /= stringMissing) then; this%netcdfin_filename = netcdfin_filename; else; write(*,'(A)') 'ERROR: required entry netcdfin_filename not found in namelist'; stop; end if
     if(output_filename  /= stringMissing) then; this%output_filename = output_filename; else; write(*,'(A)') 'ERROR: required entry output_filename not found in namelist'; stop; end if
     if(parameter_dir    /= stringMissing) then; this%parameter_dir = parameter_dir; else; write(*,'(A)') 'ERROR: required entry parameter_dir not found in namelist'; stop; end if
     if(soil_table       /= stringMissing) then; this%soil_table = soil_table; else; write(*,'(A)') 'ERROR: required entry soil_table  not found in namelist'; stop; end if
@@ -303,8 +329,6 @@ contains
     if(soil_class_name  /= stringMissing) then; this%soil_class_name = soil_class_name; else; write(*,'(A)') 'ERROR: required entry soil_class_name not found in namelist'; stop; end if
     if(veg_class_name   /= stringMissing) then; this%veg_class_name = veg_class_name; else; write(*,'(A)') 'ERROR: required entry veg_class_name not found in namelist'; stop; end if
 
-    if(terrain_slope    /= realMissing) then; this%terrain_slope = terrain_slope; else; write(*,'(A)') 'ERROR: required entry terrain_slope not found in namelist'; stop; end if
-    if(azimuth          /= realMissing) then; this%azimuth = azimuth; else; write(*,'(A)') 'ERROR: required entry azimuth not found in namelist'; stop; end if
     if(zref             /= realMissing) then; this%ZREF = ZREF; else; write(*,'(A)') 'ERROR: required entry ZREF not found in namelist'; stop; end if
     if(rain_snow_thresh /= realMissing) then; this%rain_snow_thresh = rain_snow_thresh; else; write(*,'(A)') 'ERROR: required entry rain_snow_thresh not found in namelist'; stop; end if
 
@@ -313,8 +337,6 @@ contains
     if(nveg       /= integerMissing) then; this%nveg = nveg; else; write(*,'(A)') 'ERROR: required entry nveg not found in namelist'; stop; end if
     if(soil_depth /= integerMissing) then; this%soil_depth = soil_depth; else; write(*,'(A)') 'ERROR: required entry soil_depth not found in namelist'; stop; end if
     if(croptype   /= integerMissing) then; this%croptype = croptype; else; write(*,'(A)') 'ERROR: required entry croptype not found in namelist'; stop; end if
-    if(sfctyp     /= integerMissing) then; this%sfctyp = sfctyp; else; write(*,'(A)') 'ERROR: required entry sfctyp not found in namelist'; stop; end if
-    if(soilcolor  /= integerMissing) then; this%soilcolor = soilcolor; else; write(*,'(A)') 'ERROR: required entry soilcolor not found in namelist'; stop; end if
 
     if(zsoil(1)   /= realMissing) then; this%zsoil = zsoil; else; write(*,'(A)') 'ERROR: required entry zsoil not found in namelist'; stop; end if
     if(dzsnso(1)  /= realMissing) then; this%dzsnso = dzsnso; else; write(*,'(A)') 'ERROR: required entry dzsnso not found in namelist'; stop; end if
@@ -340,6 +362,17 @@ contains
     if(evap_srfc_resistance_option /= integerMissing) then; this%evap_srfc_resistance_option = evap_srfc_resistance_option; else; write(*,'(A)') 'ERROR: required entry evap_srfc_resistance_option not found in namelist'; stop; end if
     if(subsurface_option           /= integerMissing) then; this%subsurface_option = subsurface_option; else; write(*,'(A)') 'ERROR: required entry subsurface_option not found in namelist'; stop; end if
     
+    if(netcdfin_filename  /= stringMissing) then; this%netcdfin_filename = netcdfin_filename; else; write(*,'(A)') 'ERROR: required entry netcdfin_filename not found in namelist'; stop; end if
+    if(name_var_vegtyp    /= stringMissing) then; this%name_var_vegtyp = name_var_vegtyp; else; write(*,'(A)') 'ERROR: required entry name_var_vegtyp not found in namelist'; stop; end if
+    if(name_var_isltyp    /= stringMissing) then; this%name_var_isltyp = name_var_isltyp; else; write(*,'(A)') 'ERROR: required entry name_var_isltyp not found in namelist'; stop; end if
+    if(name_var_soilcolor /= stringMissing) then; this%name_var_soilcolor = name_var_soilcolor; else; write(*,'(A)') 'ERROR: required entry name_var_soilcolor not found in namelist'; stop; end if
+    if(name_var_slope     /= stringMissing) then; this%name_var_slope = name_var_slope; else; write(*,'(A)') 'ERROR: required entry name_var_slope not found in namelist'; stop; end if
+    if(name_var_azimuth   /= stringMissing) then; this%name_var_azimuth = name_var_azimuth; else; write(*,'(A)') 'ERROR: required entry name_var_azimuth not found in namelist'; stop; end if
+    if(name_dim_x         /= stringMissing) then; this%name_dim_x = name_dim_x; else; write(*,'(A)') 'ERROR: required entry name_dim_x not found in namelist'; stop; end if
+    if(name_dim_y         /= stringMissing) then; this%name_dim_y = name_dim_y; else; write(*,'(A)') 'ERROR: required entry name_dim_y not found in namelist'; stop; end if
+    if(name_att_dx        /= stringMissing) then; this%name_att_dx = name_att_dx; else; write(*,'(A)') 'ERROR: required entry name_att_dx not found in namelist'; stop; end if
+    if(name_att_dy        /= stringMissing) then; this%name_att_dy = name_att_dy; else; write(*,'(A)') 'ERROR: required entry name_att_dy not found in namelist'; stop; end if
+
     ! store missing values as well
     this%integerMissing              = integerMissing 
     this%realMissing                 = realMissing
