@@ -1,7 +1,7 @@
 module ForcingGridType
 
-use NamelistRead, only: namelist_type
-use GridInfoType, only: gridinfo_type
+use NamelistRead,   only: namelist_type
+use NetCDFVarsType, only: netcdfvars_type
 implicit none
 save
 private
@@ -55,23 +55,23 @@ end type
 
 contains   
 
-  subroutine Init(this,gridinfo)
+  subroutine Init(this,netcdfvars)
 
-    class(forcinggrid_type) :: this
-    type(gridinfo_type)     :: gridinfo
+    class(forcinggrid_type), intent(inout) :: this
+    type(netcdfvars_type),   intent(in)    :: netcdfvars
 
-    call this%InitAllocate(gridinfo)
+    call this%InitAllocate(netcdfvars)
     call this%InitDefault()
 
   end subroutine Init
   
-  subroutine InitAllocate(this, gridinfo)
+  subroutine InitAllocate(this, netcdfvars)
 
-    class(forcinggrid_type)        :: this
-    type(gridinfo_type),intent(in) :: gridinfo
+    class(forcinggrid_type), intent(inout) :: this
+    type(netcdfvars_type),   intent(in)    :: netcdfvars
 
-    associate(n_x => gridinfo%n_x, &
-              n_y => gridinfo%n_y)
+    associate(n_x => netcdfvars%metadata%n_x, &
+              n_y => netcdfvars%metadata%n_y)
 
     allocate(this%SFCPRS(n_x,n_y))
     allocate(this%SFCTMP(n_x,n_y))

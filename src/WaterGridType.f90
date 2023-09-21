@@ -1,7 +1,7 @@
 module WaterGridType
 
-use NamelistRead, only: namelist_type
-use GridInfoType, only: gridinfo_type
+use NamelistRead,   only: namelist_type
+use NetCDFVarsType, only: netcdfvars_type
 
 implicit none
 save
@@ -91,25 +91,25 @@ end type watergrid_type
 
 contains   
 
-  subroutine Init(this, namelist, gridinfo)
+  subroutine Init(this, namelist, netcdfvars)
 
-    class(watergrid_type)   :: this
-    type(namelist_type)     :: namelist
-    type(gridinfo_type)     :: gridinfo
+    class(watergrid_type), intent(inout) :: this
+    type(namelist_type),   intent(in)    :: namelist
+    type(netcdfvars_type), intent(in)    :: netcdfvars
 
-    call this%InitAllocate(namelist,gridinfo)
+    call this%InitAllocate(namelist,netcdfvars)
     call this%InitDefault()
 
   end subroutine Init
 
-  subroutine InitAllocate(this, namelist, gridinfo)
+  subroutine InitAllocate(this, namelist, netcdfvars)
 
-    class(watergrid_type)          :: this
-    type(namelist_type),intent(in) :: namelist
-    type(gridinfo_type),intent(in) :: gridinfo
+    class(watergrid_type), intent(inout) :: this
+    type(namelist_type),   intent(in)    :: namelist
+    type(netcdfvars_type), intent(in)    :: netcdfvars
 
-    associate(n_x   => gridinfo%n_x,   &
-              n_y   => gridinfo%n_y,   &
+    associate(n_x   => netcdfvars%metadata%n_x,   &
+              n_y   => netcdfvars%metadata%n_y,   &
               nsoil => namelist%nsoil, &
               nsnow => namelist%nsnow)
 
@@ -261,15 +261,15 @@ contains
 
   end subroutine InitDefault
 
-  subroutine InitTransfer(this, namelist, gridinfo)
+  subroutine InitTransfer(this, namelist, netcdfvars)
 
-    class(watergrid_type)           :: this
-    type(namelist_type),intent(in)  :: namelist
-    type(gridinfo_type),intent(in)  :: gridinfo
-    integer                         :: ix, iy
+    class(watergrid_type), intent(inout) :: this
+    type(namelist_type),   intent(in)    :: namelist
+    type(netcdfvars_type), intent(in)    :: netcdfvars
+    integer                              :: ix, iy
 
-    do ix = 1, gridinfo%n_x
-      do iy = 1, gridinfo%n_y
+    do ix = 1, netcdfvars%metadata%n_x
+      do iy = 1, netcdfvars%metadata%n_y
         this%sh2o(ix,iy,:)     = namelist%sh2o(:)
         this%sice(ix,iy,:)     = namelist%sice(:)
         this%smc(ix,iy,:)      = this%sh2o(ix,iy,:) + this%sice(ix,iy,:)  ! volumetric soil water

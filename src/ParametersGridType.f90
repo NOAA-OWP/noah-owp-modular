@@ -1,7 +1,7 @@
 module ParametersGridType
 
-  use NamelistRead, only: namelist_type
-  use GridInfoType, only: gridinfo_type
+  use NamelistRead,   only: namelist_type
+  use NetCDFVarsType, only: netcdfvars_type
   use ParametersRead
   use DomainGridType
 
@@ -156,27 +156,27 @@ module ParametersGridType
 
   contains
 
-  subroutine Init(this, namelist, gridinfo)
+  subroutine Init(this, namelist, netcdfvars)
 
     implicit none
-    class(parametersgrid_type)            :: this
-    type(namelist_type)                   :: namelist
-    type(gridinfo_type)                   :: gridinfo
+    class(parametersgrid_type), intent(inout) :: this
+    type(namelist_type),        intent(in)    :: namelist
+    type(netcdfvars_type),      intent(in)    :: netcdfvars
 
-    call this%InitAllocate(namelist,gridinfo)
+    call this%InitAllocate(namelist,netcdfvars)
     call this%InitDefault()
 
   end subroutine Init
 
-  subroutine InitAllocate(this, namelist, gridinfo)
+  subroutine InitAllocate(this, namelist, netcdfvars)
 
     implicit none
-    class(parametersgrid_type)     :: this
-    type(namelist_type),intent(in) :: namelist
-    type(gridinfo_type),intent(in) :: gridinfo
+    class(parametersgrid_type), intent(inout) :: this
+    type(namelist_type),        intent(in)    :: namelist
+    type(netcdfvars_type),      intent(in)    :: netcdfvars
 
-    associate(n_x   => gridinfo%n_x,  &
-              n_y   => gridinfo%n_y,  &
+    associate(n_x   => netcdfvars%metadata%n_x,  &
+              n_y   => netcdfvars%metadata%n_y,  &
               nsoil => namelist%nsoil)
 
     allocate(this%bexp(n_x,n_y,nsoil))
