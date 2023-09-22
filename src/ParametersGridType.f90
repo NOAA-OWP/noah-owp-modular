@@ -585,10 +585,10 @@ module ParametersGridType
         ENDIF
         
         ! Set IST
-        IF(vegtyp.eq.this%ISWATER) then
-          domaingrid%IST(ix,iy) = 2 ! lake
+        IF(vegtyp == this%ISWATER) then
+          domaingrid%IST = 2 ! lake
         ELSE
-          domaingrid%IST(ix,iy) = 1 ! soil
+          domaingrid%IST = 1 ! soil
         ENDIF
 
         end associate
