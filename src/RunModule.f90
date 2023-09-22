@@ -241,12 +241,6 @@ contains
       domaingrid%IST(:,:) = 1
       where (domaingrid%vegtyp == parametersgrid%ISWATER) domaingrid%IST = 2
 
-      do ix = 1, domaingrid%n_x
-        do iy = 1, domaingrid%n_y
-          print*,'ix=',ix,'     iy=',iy,'     vegtyp=',domaingrid%vegtyp(ix,iy),'     IST=',domaingrid%IST(ix,iy)
-        end do
-      end do
-
       ! time variables
       domaingrid%nowdate   = domaingrid%startdate ! start the model with nowdate = startdate
       forcing_timestep     = domaingrid%dt        ! integer timestep for some subroutine calls
