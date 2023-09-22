@@ -142,6 +142,7 @@ module DomainGridType
       this%vegtyp(:,:)          = netcdfvars%vegtyp%data(:,:)
       this%croptype(:,:)        = namelist%croptype
       this%isltyp(:,:)          = netcdfvars%isltyp%data(:,:)
+      this%IST(:,:)             = namelist%sfctyp
       this%soilcolor(:,:)       = netcdfvars%soilcolor%data(:,:)
       this%start_datetime       = date_to_unix(namelist%startdate)  ! returns seconds-since-1970-01-01
       this%end_datetime         = date_to_unix(namelist%enddate)

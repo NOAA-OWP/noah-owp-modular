@@ -413,7 +413,7 @@ module ParametersGridType
     implicit none
     class(parametersgrid_type)             :: this
     type(namelist_type), intent(in)        :: namelist
-    type(domaingrid_type), intent(inout)   :: domaingrid
+    type(domaingrid_type), intent(in)      :: domaingrid
     ! local variables
     integer                          :: ix, iy, ii
     character(len=50)                :: dataset_identifier
@@ -584,13 +584,6 @@ module ParametersGridType
           this%rain_snow_thresh(ix,iy) = this%TFRZ ! set to TFRZ as a backup
         ENDIF
         
-        ! Set IST
-        IF(vegtyp == this%ISWATER) then
-          domaingrid%IST = 2 ! lake
-        ELSE
-          domaingrid%IST = 1 ! soil
-        ENDIF
-
         end associate
       end do
     end do
