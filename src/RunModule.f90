@@ -89,7 +89,7 @@ contains
     type (noahowpgrid_type), intent (out)   :: model
     character(len=*), intent (in)           :: config_filename    ! config file from command line argument
     integer                                 :: forcing_timestep         ! integer time step (set to dt) for some subroutine calls
-    integer                                 :: ii, ix, iy
+    integer                                 :: ii
         
     associate(namelist       => model%namelist,       &
               netcdfvars     => model%netcdfvars,     &
