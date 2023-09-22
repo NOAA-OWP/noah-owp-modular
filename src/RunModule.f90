@@ -89,7 +89,7 @@ contains
     type (noahowpgrid_type), intent (out)   :: model
     character(len=*), intent (in)           :: config_filename    ! config file from command line argument
     integer                                 :: forcing_timestep         ! integer time step (set to dt) for some subroutine calls
-    integer                                 :: ii
+    integer                                 :: ii, ix, iy
         
     associate(namelist       => model%namelist,       &
               netcdfvars     => model%netcdfvars,     &
@@ -237,6 +237,14 @@ contains
       domaingrid%zsnso(:,:,-namelist%nsnow+1:0) = 0.0
       do ii = 1, namelist%nsoil
         domaingrid%zsnso(:,:,ii) = namelist%zsoil(ii)
+      end do
+      domaingrid%IST(:,:) = 1
+      where (domaingrid%vegtyp == parametersgrid%ISWATER) domaingrid%IST = 2
+
+      do ix = 1, domaingrid%n_x
+        do iy = 1, domaingrid%n_y
+          print*,'ix=',ix,'     iy=',iy,'     vegtyp=',domaingrid%vegtyp(ix,iy),'     IST=',domaingrid%IST(ix,iy)
+        end do
       end do
 
       ! time variables
