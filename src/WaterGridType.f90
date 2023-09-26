@@ -50,6 +50,7 @@ type, public :: watergrid_type
   real,allocatable,dimension(:,:)                             :: SNEQVO      ! snow water eqv. of previous time step [mm]
   real,allocatable,dimension(:,:)                             :: BDSNO       ! bulk density of snowpack (kg/m3)
   real,allocatable,dimension(:,:)                             :: QSNBOT      ! melting water out of snow bottom [mm/s]
+  real,allocatable,dimension(:,:)                             :: ACSNOM      ! Accumulated meltwater from bottom snow layer [mm] (NWM 3.0)
   real,allocatable,dimension(:,:)                             :: PONDING
   real,allocatable,dimension(:,:)                             :: PONDING1
   real,allocatable,dimension(:,:)                             :: PONDING2
@@ -154,6 +155,7 @@ contains
     allocate(this%SNEQVO(n_x,n_y))
     allocate(this%BDSNO(n_x,n_y))
     allocate(this%QSNBOT(n_x,n_y))
+    allocate(this%ACSNOM(n_x,n_y))
     allocate(this%PONDING(n_x,n_y))
     allocate(this%PONDING1(n_x,n_y))
     allocate(this%PONDING2(n_x,n_y))
@@ -231,6 +233,7 @@ contains
     this%SNEQVO(:,:) = huge(1.0)
     this%BDSNO(:,:) = huge(1.0)
     this%QSNBOT(:,:) = huge(1.0)
+    this%ACSNOM(:,:) = huge(1.0)
     this%PONDING(:,:) = huge(1.0)
     this%PONDING1(:,:) = huge(1.0)
     this%PONDING2(:,:) = huge(1.0)

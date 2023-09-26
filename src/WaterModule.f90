@@ -108,6 +108,8 @@ contains
     ! convert units (mm/s -> m/s)
     !PONDING: melting water from snow when there is no layer
     water%QINSUR = (water%PONDING+water%PONDING1+water%PONDING2)/domain%DT * 0.001
+    water%ACSNOM = (water%PONDING+water%PONDING1+water%PONDING2+(water%QSNBOT*domain%DT))
+
     !    QINSUR = PONDING/DT * 0.001
     IF(water%ISNOW == 0) THEN
        water%QINSUR = water%QINSUR+(water%QSNBOT + water%QSDEW + water%QRAIN) * 0.001

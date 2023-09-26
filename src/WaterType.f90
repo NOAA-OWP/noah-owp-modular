@@ -49,6 +49,7 @@ type, public :: water_type
   real                            :: SNEQVO      ! snow water eqv. of previous time step [mm]
   real                            :: BDSNO       ! bulk density of snowpack (kg/m3)
   real                            :: QSNBOT      ! melting water out of snow bottom [mm/s]
+  real                            :: ACSNOM      ! Accumulated meltwater from bottom snow layer [mm] (NWM 3.0)
   real                            :: PONDING
   real                            :: PONDING1
   real                            :: PONDING2
