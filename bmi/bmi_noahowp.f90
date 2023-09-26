@@ -741,7 +741,7 @@ contains
       size = sizeof(energygrid%tgs(1,1))            ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("ACSNOM")
-      size = sizeof(watergrid%PONDING(1,1))            ! 'sizeof' in gcc & ifort
+      size = sizeof(watergrid%ACSNOM(1,1))            ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("SNOWT_AVG")
       size = sizeof(energygrid%SNOWT_AVG(1,1))            ! 'sizeof' in gcc & ifort
