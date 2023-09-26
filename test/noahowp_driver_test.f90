@@ -122,13 +122,13 @@ program noahmp_driver_test
       end if
       status = m%get_var_grid(trim(iname),grid_int)
       status = m%get_grid_rank(grid_int,grid_rank)
+      status = m%get_grid_size(grid_int, grid_size)
+      status = m%get_var_type(trim(iname), var_type)
+      status = m%get_var_units(trim(iname), var_units)
+      status = m%get_var_itemsize(trim(iname), var_itemsize)
+      status = m%get_var_nbytes(trim(iname), var_nbytes)
       if(grid_rank == 2) then
         status = m%get_grid_shape(grid_int, grid_shape)
-        status = m%get_grid_size(grid_int, grid_size)
-        status = m%get_var_type(trim(iname), var_type)
-        status = m%get_var_units(trim(iname), var_units)
-        status = m%get_var_itemsize(trim(iname), var_itemsize)
-        status = m%get_var_nbytes(trim(iname), var_nbytes)
         n_x = grid_shape(2)
         n_y = grid_shape(1)
         print*, "The variable ", trim(iname)
@@ -142,11 +142,6 @@ program noahmp_driver_test
         print*, "    and total n bytes (bytes across grid) of ", var_nbytes
       else if(grid_rank == 3) then
         status = m%get_grid_shape(grid_int, grid_shape3d)
-        status = m%get_grid_size(grid_int, grid_size)
-        status = m%get_var_type(trim(iname), var_type)
-        status = m%get_var_units(trim(iname), var_units)
-        status = m%get_var_itemsize(trim(iname), var_itemsize)
-        status = m%get_var_nbytes(trim(iname), var_nbytes)
         n_z = grid_shape3d(1)
         n_y = grid_shape3d(2)
         n_x = grid_shape3d(3)
