@@ -94,8 +94,12 @@ contains
    END DO
 
    ! NWM3.0 parameter
-   energy%SNOWT_AVG = SUM(energy%STC(-levels%nsnow+1:0)*(water%SNICE(-levels%nsnow+1:0)+water%SNLIQ(-levels%nsnow+1:0))) / &
-                      SUM(water%SNICE(-levels%nsnow+1:0)+water%SNLIQ(-levels%nsnow+1:0))
+   if (sum(water%SNICE(-levels%nsnow+1:0) + water%SNLIQ(-levels%nsnow+1:0)).gt.0.) then
+      energy%SNOWT_AVG = SUM(energy%STC(-levels%nsnow+1:0)*(water%SNICE(-levels%nsnow+1:0)+water%SNLIQ(-levels%nsnow+1:0))) / &
+                         SUM(water%SNICE(-levels%nsnow+1:0)+water%SNLIQ(-levels%nsnow+1:0))
+   else
+      energy%SNOWT_AVG = huge(1.)
+   end if
 
   END SUBROUTINE SnowWater
 
