@@ -99,7 +99,7 @@ module bminoahowp
 
   ! Exchange items
   integer, parameter :: input_item_count = 8
-  integer, parameter :: output_item_count = 7
+  integer, parameter :: output_item_count = 23
   character (len=BMI_MAX_VAR_NAME), target, &
        dimension(input_item_count) :: input_items
   character (len=BMI_MAX_VAR_NAME), target, &
@@ -233,6 +233,7 @@ contains
     ! at some point we can align these two things more and make that more cohesive
     call set_grid_from_model(this%model,grids(1))
     call set_grid_from_model(this%model,grids(2))
+    call set_grid_from_model(this%model,grids(3))
     bmi_status = BMI_SUCCESS
   end function noahowp_initialize
 
@@ -334,11 +335,17 @@ contains
    integer, intent(out) :: grid
    integer :: bmi_status, i
 
+      if(trim(name)=="SNLIQ") then
+         grid = 2
+         bmi_status = BMI_SUCCESS
+         return
+      end if
+
       !checkout output vars
       do  i = 1, size(output_items)
          if(output_items(i) .eq. trim(name) ) then
             grid = output_grid(i)
-    bmi_status = BMI_SUCCESS
+            bmi_status = BMI_SUCCESS
             return
          endif
       end do
@@ -371,7 +378,7 @@ contains
    case(0)
       type = "scalar"
       bmi_status = BMI_SUCCESS
-   case(1)
+   case(1,2)
      type = "uniform_rectilinear"
      bmi_status = BMI_SUCCESS
    case default
@@ -773,7 +780,10 @@ contains
       size = sizeof(energygrid%LH(1,1))            ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case("FIRA")
-      size = sizeof(energygrid%LH(1,1))            ! 'sizeof' in gcc & ifort
+      size = sizeof(energygrid%FIRA(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("FSH")
+      size = sizeof(energygrid%FSH(1,1))            ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case default
       size = -1
@@ -938,11 +948,7 @@ contains
       dest = reshape(energygrid%tgs,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("ACSNOM")
-      dest = reshape(watergrid%PONDING(:,:)                + &
-                     watergrid%PONDING1(:,:)               + &
-                     watergrid%PONDING2(:,:)               + &
-                     (watergrid%QSNBOT(:,:)*domaingrid%DT),  &
-                     [n_x*n_y])
+      dest = reshape(watergrid%ACSNOM,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("SNOWT_AVG")
       dest = reshape(energygrid%SNOWT_AVG,[n_x*n_y])
@@ -964,12 +970,6 @@ contains
       bmi_status = BMI_SUCCESS
    case("ECAN")
       dest = reshape(watergrid%ECAN(:,:)*domaingrid%DT,[n_x*n_y])
-      bmi_status = BMI_SUCCESS
-   case("QRAIN")
-      dest = reshape(watergrid%QRAIN(:,:),[n_x*n_y])
-      bmi_status = BMI_SUCCESS
-   case("SNLIQ")
-      dest = reshape(watergrid%SNLIQ(:,:,:),[n_x*n_y*nsnow])
       bmi_status = BMI_SUCCESS
    case("GH")
       dest = reshape(energygrid%GH(:,:),[n_x*n_y])
