@@ -335,11 +335,8 @@ contains
    integer, intent(out) :: grid
    integer :: bmi_status, i
 
-      if(trim(name)=="SNLIQ") then
-         grid = 2
-         bmi_status = BMI_SUCCESS
-         return
-      end if
+      ! SNLIQ
+      output_grid(14) = 2
 
       !checkout output vars
       do  i = 1, size(output_items)
