@@ -785,6 +785,9 @@ contains
    case("FSH")
       size = sizeof(energygrid%FSH(1,1))            ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
+   case("SNLIQ")
+      size = sizeof(watergrid%SNLIQ(1,1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
    case default
       size = -1
       bmi_status = BMI_FAILURE
