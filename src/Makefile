@@ -13,25 +13,18 @@ OBJS = ErrorCheckModule.o \
        ParametersRead.o  \
        LevelsType.o   \
        LevelsGridType.o   \
-       LevelsTypeTransfer.o   \
        DomainType.o   \
        DomainGridType.o   \
-       DomainTypeTransfer.o   \
        OptionsType.o  \
        OptionsGridType.o  \
-       OptionsTypeTransfer.o  \
        ParametersType.o  \
        ParametersGridType.o  \
-       ParametersTypeTransfer.o  \
        ForcingType.o \
        ForcingGridType.o \
-       ForcingTypeTransfer.o \
        EnergyType.o \
        EnergyGridType.o \
-       EnergyTypeTransfer.o \
        WaterType.o  \
        WaterGridType.o  \
-       WaterTypeTransfer.o  \
        WaterModule.o \
        CanopyWaterModule.o \
        SnowWaterModule.o \
