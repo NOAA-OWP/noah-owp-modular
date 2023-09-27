@@ -2,7 +2,6 @@ module OptionsGridType
 
 use NamelistRead, only: namelist_type
 implicit none
-save
 private
 
 type, public :: optionsgrid_type

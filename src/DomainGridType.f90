@@ -5,7 +5,6 @@ module DomainGridType
   use DateTimeUtilsModule
   
   implicit none
-  save
   private
   
   type, public :: domaingrid_type

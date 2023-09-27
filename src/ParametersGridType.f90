@@ -6,7 +6,6 @@ module ParametersGridType
   use DomainGridType
 
   implicit none
-  save
   private
 
   type, public :: parametersgrid_type

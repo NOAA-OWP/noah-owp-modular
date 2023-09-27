@@ -2,7 +2,6 @@ module LevelsGridType
 
 use NamelistRead, only: namelist_type
 implicit none
-save
 private
 
 type, public :: levelsgrid_type

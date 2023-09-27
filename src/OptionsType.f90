@@ -3,7 +3,6 @@ module OptionsType
 use NamelistRead,    only: namelist_type
 use OptionsGridType, only: optionsgrid_type
 implicit none
-save
 private
 
 type, public :: options_type

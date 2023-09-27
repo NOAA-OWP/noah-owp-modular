@@ -3,7 +3,6 @@ module ForcingType
 use NamelistRead,    only: namelist_type
 use ForcingGridType, only: forcinggrid_type
 implicit none
-save
 private
 
 type, public :: forcing_type
