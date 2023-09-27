@@ -4,25 +4,18 @@ module RunModule
   
   use LevelsType
   use LevelsGridType
-  use LevelsTypeTransfer
   use DomainType
   use DomainGridType
-  use DomainTypeTransfer
   use OptionsType
   use OptionsGridType
-  use OptionsTypeTransfer
   use ParametersType
   use ParametersGridType
-  use ParametersTypeTransfer
   use WaterType
   use WaterGridType
-  use WaterTypeTransfer
   use ForcingType
   use ForcingGridType
-  use ForcingTypeTransfer
   use EnergyType
   use EnergyGridType
-  use EnergyTypeTransfer
   use AsciiReadModule
   use OutputModule
   use UtilitiesModule
@@ -368,29 +361,29 @@ contains
         !---------------------------------------------------------------------
         ! Transfer all other variable values from noahowpgrid_type to noahowp_type
         !---------------------------------------------------------------------
-        call DomainVarInTransfer       (domain,     domaingrid,     ix, iy)
-        call LevelsVarInTransfer       (levels,     levelsgrid,     ix, iy)
-        call EnergyVarInTransfer       (energy,     energygrid,     ix, iy)
-        call ForcingVarInTransfer      (forcing,    forcinggrid,    ix, iy)
-        call OptionsVarInTransfer      (options,    optionsgrid,    ix, iy)
-        call ParametersVarInTransfer   (parameters, parametersgrid, ix, iy)
-        call WaterVarInTransfer        (water,      watergrid,      ix, iy)
+        call domain%TransferIn       (domaingrid,     ix, iy)
+        call levels%TransferIn       (levelsgrid,     ix, iy)
+        call energy%TransferIn       (energygrid,     ix, iy)
+        call forcing%TransferIn      (forcinggrid,    ix, iy)
+        call options%TransferIn      (optionsgrid,    ix, iy)
+        call parameters%TransferIn   (parametersgrid, ix, iy)
+        call water%TransferIn        (watergrid,      ix, iy)
         
         !---------------------------------------------------------------------
         ! Execute the column model
         !---------------------------------------------------------------------
-        call solve_noahowp             (noahowp)
+        call solve_noahowp           (noahowp)
 
         !---------------------------------------------------------------------
         ! Transfer variable values from noahowp_type back to noahowpgrid_type
         !---------------------------------------------------------------------
-        call DomainVarOutTransfer      (domain,     domaingrid,     ix, iy)
-        call LevelsVarOutTransfer      (levels,     levelsgrid,     ix, iy)
-        call EnergyVarOutTransfer      (energy,     energygrid,     ix, iy)
-        call ForcingVarOutTransfer     (forcing,    forcinggrid,    ix, iy)
-        call OptionsVarOutTransfer     (options,    optionsgrid,    ix, iy)
-        call ParametersVarOutTransfer  (parameters, parametersgrid, ix, iy)
-        call WaterVarOutTransfer       (water,      watergrid,      ix, iy)
+        call domain%TransferOut      (domaingrid,     ix, iy)
+        call levels%TransferOut      (levelsgrid,     ix, iy)
+        call energy%TransferOut      (energygrid,     ix, iy)
+        call forcing%TransferOut     (forcinggrid,    ix, iy)
+        call options%TransferOut     (optionsgrid,    ix, iy)
+        call parameters%TransferOut  (parametersgrid, ix, iy)
+        call water%TransferOut       (watergrid,      ix, iy)
 
       end do
     end do
