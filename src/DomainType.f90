@@ -44,6 +44,8 @@ module DomainType
       procedure, private :: InitAllocate 
       procedure, private :: InitDefault     
       procedure, private :: InitTransfer
+      procedure, public  :: TransferIn
+      procedure, public  :: TransferOut
   
   end type domain_type
   
@@ -133,6 +135,49 @@ module DomainType
       this%ZREF = domaingrid%ZREF        
   
     end subroutine InitTransfer
+
+    subroutine TransferIn(this, domaingrid, ix, iy)
+
+      implicit none
+  
+      class(domain_type),    intent(inout) :: this
+      type(domaingrid_type), intent(in)    :: domaingrid
+      integer,               intent(in)    :: ix
+      integer,               intent(in)    :: iy
+  
+      this%ix = ix 
+      this%iy = iy 
+      this%curr_datetime = domaingrid%sim_datetimes(domaingrid%itime)    
+      this%lat = domaingrid%lat(ix,iy)  
+      this%lon = domaingrid%lon(ix,iy)           
+      this%terrain_slope = domaingrid%terrain_slope(ix,iy) 
+      this%azimuth = domaingrid%azimuth(ix,iy)          
+      this%vegtyp = domaingrid%vegtyp(ix,iy)    
+      this%croptype = domaingrid%croptype(ix,iy)        
+      this%isltyp = domaingrid%isltyp(ix,iy)       
+      this%IST = domaingrid%IST(ix,iy)      
+      this%zsoil(:) = domaingrid%zsoil(ix,iy,:)    
+      this%dzsnso(:) = domaingrid%dzsnso(ix,iy,:)   
+      this%zsnso(:) = domaingrid%zsnso(ix,iy,:)
+      this%soilcolor = domaingrid%soilcolor(ix,iy)    
+  
+    end subroutine
+
+    subroutine TransferOut(this, domaingrid, ix, iy)
+
+      implicit none
+  
+      class(domain_type),       intent(in) :: this
+      type(domaingrid_type), intent(inout) :: domaingrid
+      integer, intent(in)                  :: ix
+      integer, intent(in)                  :: iy
+  
+      domaingrid%zsoil(ix,iy,:) = this%zsoil(:) 
+      domaingrid%dzsnso(ix,iy,:) = this%dzsnso(:)  
+      domaingrid%zsnso(ix,iy,:) = this%zsnso(:)  
+      domaingrid%nowdate = this%nowdate 
+  
+    end subroutine
 
   end module DomainType
   

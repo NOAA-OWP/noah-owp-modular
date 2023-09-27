@@ -163,6 +163,8 @@ module EnergyType
       procedure, private :: InitAllocate        
       procedure, private :: InitDefault     
       procedure, private :: InitTransfer
+      procedure, public  :: TransferIn
+      procedure, public  :: TransferOut
   
   end type energy_type
   
@@ -373,4 +375,286 @@ module EnergyType
 
     end subroutine InitTransfer
   
+    subroutine TransferIn(this, energygrid, ix, iy)
+
+      implicit none
+  
+      class(energy_type),    intent(inout) :: this
+      type(energygrid_type), intent(in)    :: energygrid
+      integer,               intent(in)    :: ix
+      integer,               intent(in)    :: iy
+  
+      this%TV = energygrid%TV(ix,iy)
+      this%TG = energygrid%TG(ix,iy)
+      this%FCEV = energygrid%FCEV(ix,iy)
+      this%FCTR = energygrid%FCTR(ix,iy)
+      this%IGS = energygrid%IGS(ix,iy)
+      this%FROZEN_CANOPY = energygrid%FROZEN_CANOPY(ix,iy)
+      this%FROZEN_GROUND = energygrid%FROZEN_GROUND(ix,iy)
+      this%IMELT(:) = energygrid%IMELT(ix,iy,:)
+      this%STC(:) = energygrid%STC(ix,iy,:)
+      this%DF(:) = energygrid%DF(ix,iy,:)
+      this%HCPCT(:) = energygrid%HCPCT(ix,iy,:)
+      this%FACT(:) = energygrid%FACT(ix,iy,:)
+      this%PAHV = energygrid%PAHV(ix,iy)
+      this%PAHG = energygrid%PAHG(ix,iy)
+      this%PAHB = energygrid%PAHB(ix,iy)
+      this%PAH = energygrid%PAH(ix,iy)
+      this%TAUSS = energygrid%TAUSS(ix,iy)
+      this%FAGE = energygrid%FAGE(ix,iy)
+      this%ALB = energygrid%ALB(ix,iy)
+      this%ALBOLD = energygrid%ALBOLD(ix,iy)
+      this%ALBD(:) = energygrid%ALBD(ix,iy,:)
+      this%ALBI(:) = energygrid%ALBI(ix,iy,:)
+      this%ALBGRD(:) = energygrid%ALBGRD(ix,iy,:)
+      this%ALBGRI(:) = energygrid%ALBGRI(ix,iy,:)
+      this%ALBSND(:) = energygrid%ALBSND(ix,iy,:)
+      this%ALBSNI(:) = energygrid%ALBSNI(ix,iy,:)
+      this%FABD(:) = energygrid%FABD(ix,iy,:)
+      this%FABI(:) = energygrid%FABI(ix,iy,:)
+      this%FTDD(:) = energygrid%FTDD(ix,iy,:)
+      this%FTDI(:) = energygrid%FTDI(ix,iy,:)
+      this%FTID(:) = energygrid%FTID(ix,iy,:)
+      this%FTII(:) = energygrid%FTII(ix,iy,:)
+      this%FREVD(:) = energygrid%FREVD(ix,iy,:)
+      this%FREVI(:) = energygrid%FREVI(ix,iy,:)
+      this%FREGD(:) = energygrid%FREGD(ix,iy,:)
+      this%FREGI(:) = energygrid%FREGI(ix,iy,:)
+      this%RHO(:) = energygrid%RHO(ix,iy,:)
+      this%TAU(:) = energygrid%TAU(ix,iy,:)
+      this%COSZ = energygrid%COSZ(ix,iy)
+      this%COSZ_HORIZ = energygrid%COSZ_HORIZ(ix,iy)
+      this%BGAP = energygrid%BGAP(ix,iy)
+      this%WGAP = energygrid%WGAP(ix,iy)
+      this%FSUN = energygrid%FSUN(ix,iy)
+      this%FSHA = energygrid%FSHA(ix,iy)
+      this%LAISUN = energygrid%LAISUN(ix,iy)
+      this%LAISHA = energygrid%LAISHA(ix,iy)
+      this%PARSUN = energygrid%PARSUN(ix,iy)
+      this%PARSHA = energygrid%PARSHA(ix,iy)
+      this%SAV = energygrid%SAV(ix,iy)
+      this%SAG = energygrid%SAG(ix,iy)
+      this%FSA = energygrid%FSA(ix,iy)
+      this%FSR = energygrid%FSR(ix,iy)
+      this%FSRV = energygrid%FSRV(ix,iy)
+      this%FSRG = energygrid%FSRG(ix,iy)
+      this%TAH = energygrid%TAH(ix,iy)
+      this%EAH = energygrid%EAH(ix,iy)
+      this%ZPD = energygrid%ZPD(ix,iy)
+      this%Z0MG = energygrid%Z0MG(ix,iy)
+      this%Z0M = energygrid%Z0M(ix,iy)
+      this%ZLVL = energygrid%ZLVL(ix,iy)
+      this%CMV = energygrid%CMV(ix,iy)
+      this%CMB = energygrid%CMB(ix,iy)
+      this%CM = energygrid%CM(ix,iy)
+      this%CH = energygrid%CH(ix,iy)
+      this%TGB = energygrid%TGB(ix,iy)
+      this%QSFC = energygrid%QSFC(ix,iy)
+      this%EMV = energygrid%EMV(ix,iy)
+      this%EMG = energygrid%EMG(ix,iy)
+      this%GAMMAV = energygrid%GAMMAV(ix,iy)
+      this%GAMMAG = energygrid%GAMMAG(ix,iy)
+      this%EVC = energygrid%EVC(ix,iy)
+      this%IRC = energygrid%IRC(ix,iy)
+      this%IRG = energygrid%IRG(ix,iy)
+      this%SHC = energygrid%SHC(ix,iy)
+      this%SHG = energygrid%SHG(ix,iy)
+      this%SHB = energygrid%SHB(ix,iy)
+      this%EVG = energygrid%EVG(ix,iy)
+      this%EVB = energygrid%EVB(ix,iy)
+      this%TR = energygrid%TR(ix,iy)
+      this%GH = energygrid%GH(ix,iy)
+      this%GHB = energygrid%GHB(ix,iy)
+      this%GHV = energygrid%GHV(ix,iy)
+      this%T2MV = energygrid%T2MV(ix,iy)
+      this%CHLEAF = energygrid%CHLEAF(ix,iy)
+      this%CHUC = energygrid%CHUC(ix,iy)
+      this%CHV2 = energygrid%CHV2(ix,iy)
+      this%CHB2 = energygrid%CHB2(ix,iy)
+      this%Q2V = energygrid%Q2V(ix,iy)
+      this%LATHEAV = energygrid%LATHEAV(ix,iy)
+      this%LATHEAG = energygrid%LATHEAG(ix,iy)
+      this%LATHEA = energygrid%LATHEA(ix,iy)
+      this%RSURF = energygrid%RSURF(ix,iy)
+      this%RHSUR = energygrid%RHSUR(ix,iy)
+      this%TAUXV = energygrid%TAUXV(ix,iy)
+      this%TAUYV = energygrid%TAUYV(ix,iy)
+      this%TAUXB = energygrid%TAUXB(ix,iy)
+      this%TAUYB = energygrid%TAUYB(ix,iy)
+      this%TAUX = energygrid%TAUX(ix,iy)
+      this%TAUY = energygrid%TAUY(ix,iy)
+      this%CAH2 = energygrid%CAH2(ix,iy)
+      this%EHB2 = energygrid%EHB2(ix,iy)
+      this%T2MB = energygrid%T2MB(ix,iy)
+      this%Q2B = energygrid%Q2B(ix,iy)
+      this%TGV = energygrid%TGV(ix,iy)
+      this%CHV = energygrid%CHV(ix,iy)
+      this%RSSUN = energygrid%RSSUN(ix,iy)
+      this%RSSHA = energygrid%RSSHA(ix,iy)
+      this%RB = energygrid%RB(ix,iy)
+      this%FIRA = energygrid%FIRA(ix,iy)
+      this%FSH = energygrid%FSH(ix,iy)
+      this%FGEV = energygrid%FGEV(ix,iy)
+      this%TRAD = energygrid%TRAD(ix,iy)
+      this%IRB = energygrid%IRB(ix,iy)
+      this%SSOIL = energygrid%SSOIL(ix,iy)
+      this%T2M = energygrid%T2M(ix,iy)
+      this%TS = energygrid%TS(ix,iy)
+      this%CHB = energygrid%CHB(ix,iy)
+      this%Q1 = energygrid%Q1(ix,iy)
+      this%Q2E = energygrid%Q2E(ix,iy)
+      this%Z0WRF = energygrid%Z0WRF(ix,iy)
+      this%EMISSI = energygrid%EMISSI(ix,iy)
+      this%PSN = energygrid%PSN(ix,iy)
+      this%PSNSUN = energygrid%PSNSUN(ix,iy)
+      this%PSNSHA = energygrid%PSNSHA(ix,iy)
+      this%APAR = energygrid%APAR(ix,iy)
+      this%QMELT = energygrid%QMELT(ix,iy)
+      this%LH = energygrid%LH(ix,iy)
+      this%TGS = energygrid%TGS(ix,iy)
+      this%ICE = energygrid%ICE(ix,iy) 
+  
+    end subroutine TransferIn
+
+    subroutine TransferOut(this, energygrid, ix, iy)
+
+      implicit none
+  
+      class(energy_type),    intent(in)    :: this
+      type(energygrid_type), intent(inout) :: energygrid
+      integer,               intent(in)    :: ix
+      integer,               intent(in)    :: iy
+  
+      energygrid%TV(ix,iy) = this%TV
+      energygrid%TG(ix,iy) = this%TG
+      energygrid%FCEV(ix,iy) = this%FCEV
+      energygrid%FCTR(ix,iy) = this%FCTR
+      energygrid%IGS(ix,iy) = this%IGS
+      energygrid%FROZEN_CANOPY(ix,iy) = this%FROZEN_CANOPY
+      energygrid%FROZEN_GROUND(ix,iy) = this%FROZEN_GROUND
+      energygrid%IMELT(ix,iy,:) = this%IMELT(:)
+      energygrid%STC(ix,iy,:) = this%STC(:)
+      energygrid%DF(ix,iy,:) = this%DF(:)
+      energygrid%HCPCT(ix,iy,:) = this%HCPCT(:)
+      energygrid%FACT(ix,iy,:) = this%FACT(:)
+      energygrid%PAHV(ix,iy) = this%PAHV
+      energygrid%PAHG(ix,iy) = this%PAHG
+      energygrid%PAHB(ix,iy) = this%PAHB
+      energygrid%PAH(ix,iy) = this%PAH
+      energygrid%TAUSS(ix,iy) = this%TAUSS
+      energygrid%FAGE(ix,iy) = this%FAGE
+      energygrid%ALB(ix,iy) = this%ALB
+      energygrid%ALBOLD(ix,iy) = this%ALBOLD
+      energygrid%ALBD(ix,iy,:) = this%ALBD(:)
+      energygrid%ALBI(ix,iy,:) = this%ALBI(:)
+      energygrid%ALBGRD(ix,iy,:) = this%ALBGRD(:)
+      energygrid%ALBGRI(ix,iy,:) = this%ALBGRI(:)
+      energygrid%ALBSND(ix,iy,:) = this%ALBSND(:)
+      energygrid%ALBSNI(ix,iy,:) = this%ALBSNI(:)
+      energygrid%FABD(ix,iy,:) = this%FABD(:)
+      energygrid%FABI(ix,iy,:) = this%FABI(:)
+      energygrid%FTDD(ix,iy,:) = this%FTDD(:)
+      energygrid%FTDI(ix,iy,:) = this%FTDI(:)
+      energygrid%FTID(ix,iy,:) = this%FTID(:)
+      energygrid%FTII(ix,iy,:) = this%FTII(:)
+      energygrid%FREVD(ix,iy,:) = this%FREVD(:)
+      energygrid%FREVI(ix,iy,:) = this%FREVI(:)
+      energygrid%FREGD(ix,iy,:) = this%FREGD(:)
+      energygrid%FREGI(ix,iy,:) = this%FREGI(:)
+      energygrid%RHO(ix,iy,:) = this%RHO(:)
+      energygrid%TAU(ix,iy,:) = this%TAU(:)
+      energygrid%COSZ(ix,iy) = this%COSZ
+      energygrid%COSZ_HORIZ(ix,iy) = this%COSZ_HORIZ
+      energygrid%BGAP(ix,iy) = this%BGAP
+      energygrid%WGAP(ix,iy) = this%WGAP
+      energygrid%FSUN(ix,iy) = this%FSUN
+      energygrid%FSHA(ix,iy) = this%FSHA
+      energygrid%LAISUN(ix,iy) = this%LAISUN
+      energygrid%LAISHA(ix,iy) = this%LAISHA
+      energygrid%PARSUN(ix,iy) = this%PARSUN
+      energygrid%PARSHA(ix,iy) = this%PARSHA
+      energygrid%SAV(ix,iy) = this%SAV
+      energygrid%SAG(ix,iy) = this%SAG
+      energygrid%FSA(ix,iy) = this%FSA
+      energygrid%FSR(ix,iy) = this%FSR
+      energygrid%FSRV(ix,iy) = this%FSRV
+      energygrid%FSRG(ix,iy) = this%FSRG
+      energygrid%TAH(ix,iy) = this%TAH
+      energygrid%EAH(ix,iy) = this%EAH
+      energygrid%ZPD(ix,iy) = this%ZPD
+      energygrid%Z0MG(ix,iy) = this%Z0MG
+      energygrid%Z0M(ix,iy) = this%Z0M
+      energygrid%ZLVL(ix,iy) = this%ZLVL
+      energygrid%CMV(ix,iy) = this%CMV
+      energygrid%CMB(ix,iy) = this%CMB
+      energygrid%CM(ix,iy) = this%CM
+      energygrid%CH(ix,iy) = this%CH
+      energygrid%TGB(ix,iy) = this%TGB
+      energygrid%QSFC(ix,iy) = this%QSFC
+      energygrid%EMV(ix,iy) = this%EMV
+      energygrid%EMG(ix,iy) = this%EMG
+      energygrid%GAMMAV(ix,iy) = this%GAMMAV
+      energygrid%GAMMAG(ix,iy) = this%GAMMAG
+      energygrid%EVC(ix,iy) = this%EVC
+      energygrid%IRC(ix,iy) = this%IRC
+      energygrid%IRG(ix,iy) = this%IRG
+      energygrid%SHC(ix,iy) = this%SHC
+      energygrid%SHG(ix,iy) = this%SHG
+      energygrid%SHB(ix,iy) = this%SHB
+      energygrid%EVG(ix,iy) = this%EVG
+      energygrid%EVB(ix,iy) = this%EVB
+      energygrid%TR(ix,iy) = this%TR
+      energygrid%GH(ix,iy) = this%GH
+      energygrid%GHB(ix,iy) = this%GHB
+      energygrid%GHV(ix,iy) = this%GHV
+      energygrid%T2MV(ix,iy) = this%T2MV
+      energygrid%CHLEAF(ix,iy) = this%CHLEAF
+      energygrid%CHUC(ix,iy) = this%CHUC
+      energygrid%CHV2(ix,iy) = this%CHV2
+      energygrid%CHB2(ix,iy) = this%CHB2
+      energygrid%Q2V(ix,iy) = this%Q2V
+      energygrid%LATHEAV(ix,iy) = this%LATHEAV
+      energygrid%LATHEAG(ix,iy) = this%LATHEAG
+      energygrid%LATHEA(ix,iy) = this%LATHEA
+      energygrid%RSURF(ix,iy) = this%RSURF
+      energygrid%RHSUR(ix,iy) = this%RHSUR
+      energygrid%TAUXV(ix,iy) = this%TAUXV
+      energygrid%TAUYV(ix,iy) = this%TAUYV
+      energygrid%TAUXB(ix,iy) = this%TAUXB
+      energygrid%TAUYB(ix,iy) = this%TAUYB
+      energygrid%TAUX(ix,iy) = this%TAUX
+      energygrid%TAUY(ix,iy) = this%TAUY
+      energygrid%CAH2(ix,iy) = this%CAH2
+      energygrid%EHB2(ix,iy) = this%EHB2
+      energygrid%T2MB(ix,iy) = this%T2MB
+      energygrid%Q2B(ix,iy) = this%Q2B
+      energygrid%TGV(ix,iy) = this%TGV
+      energygrid%CHV(ix,iy) = this%CHV
+      energygrid%RSSUN(ix,iy) = this%RSSUN
+      energygrid%RSSHA(ix,iy) = this%RSSHA
+      energygrid%RB(ix,iy) = this%RB
+      energygrid%FIRA(ix,iy) = this%FIRA
+      energygrid%FSH(ix,iy) = this%FSH
+      energygrid%FGEV(ix,iy) = this%FGEV
+      energygrid%TRAD(ix,iy) = this%TRAD
+      energygrid%IRB(ix,iy) = this%IRB
+      energygrid%SSOIL(ix,iy) = this%SSOIL
+      energygrid%T2M(ix,iy) = this%T2M
+      energygrid%TS(ix,iy) = this%TS
+      energygrid%CHB(ix,iy) = this%CHB
+      energygrid%Q1(ix,iy) = this%Q1
+      energygrid%Q2E(ix,iy) = this%Q2E
+      energygrid%Z0WRF(ix,iy) = this%Z0WRF
+      energygrid%EMISSI(ix,iy) = this%EMISSI
+      energygrid%PSN(ix,iy) = this%PSN
+      energygrid%PSNSUN(ix,iy) = this%PSNSUN
+      energygrid%PSNSHA(ix,iy) = this%PSNSHA
+      energygrid%APAR(ix,iy) = this%APAR
+      energygrid%QMELT(ix,iy) = this%QMELT
+      energygrid%LH(ix,iy) = this%LH
+      energygrid%TGS(ix,iy) = this%TGS
+      energygrid%ICE(ix,iy) = this%ICE    
+  
+    end subroutine TransferOut
+
   end module EnergyType

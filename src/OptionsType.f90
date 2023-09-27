@@ -111,6 +111,8 @@ type, public :: options_type
     procedure, public  :: Init         
     procedure, private :: InitDefault
     procedure, private :: InitTransfer     
+    procedure, public  :: TransferIn
+    procedure, public  :: TransferOut
 
 end type options_type
 
@@ -175,5 +177,31 @@ contains
     this%opt_sub   = optionsgrid%opt_sub  
 
   end subroutine InitTransfer
+
+  subroutine TransferIn(this, optionsgrid, ix, iy)
+
+    implicit none
+
+    class(options_type),    intent(inout) :: this
+    type(optionsgrid_type), intent(in)    :: optionsgrid
+    integer,                intent(in)    :: ix
+    integer,                intent(in)    :: iy
+  
+    ! Nothing to do
+
+  end subroutine TransferIn
+
+  subroutine TransferOut(this, optionsgrid, ix, iy)
+
+    implicit none
+
+    class(options_type),    intent(in)    :: this
+    type(optionsgrid_type), intent(inout) :: optionsgrid
+    integer,                intent(in)    :: ix
+    integer,                intent(in)    :: iy
+  
+    ! Nothing to do
+
+  end subroutine TransferOut
 
 end module OptionsType
