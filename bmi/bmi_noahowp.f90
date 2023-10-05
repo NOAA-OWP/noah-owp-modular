@@ -9,6 +9,7 @@ module bminoahowp
 #endif
   use bmi_grid
   use RunModule
+  use ConstantsModule
   use, intrinsic :: iso_c_binding, only: c_ptr, c_loc, c_f_pointer
   
   implicit none
@@ -96,8 +97,6 @@ module bminoahowp
 
   character (len=BMI_MAX_COMPONENT_NAME), target :: &
        component_name = "Noah-OWP-Modular Surface Module"
-  real, parameter :: mm2m = 0.001  ! unit conversion mm to m     
-  real, parameter :: m2mm = 1000.  ! unit conversion m to mm
 
   ! Exchange items
   integer, parameter :: input_item_count = 8
@@ -186,7 +185,7 @@ contains
     output_items(1) = 'QINSUR'     ! total liquid water input to surface rate (m/s)
     output_items(2) = 'ETRAN'      ! transpiration rate (mm)
     output_items(3) = 'QSEVA'      ! evaporation rate (m/s)
-    output_items(4) = 'EVAPOTRANS' ! evapotranspiration rate (m/s)
+    output_items(4) = 'EVAPOTRANS' ! evapotranspiration rate (mm)
     output_items(5) = 'TG'         ! surface/ground temperature (K) (becomes snow surface temperature when snow is present)
     output_items(6) = 'SNEQV'      ! snow water equivalent (mm)
     output_items(7) = 'TGS'        ! ground temperature (K) (is equal to TG when no snow and equal to bottom snow element temperature when there is snow)
@@ -1156,7 +1155,8 @@ contains
    real, intent(in) :: src(:)
    integer :: bmi_status
 
-   associate(forcinggrid => this%model%forcinggrid,  &
+   associate(domaingrid  => this%model%domaingrid,   &
+             forcinggrid => this%model%forcinggrid,  &
              watergrid   => this%model%watergrid,    &
              energygrid  => this%model%energygrid,   &
              n_x         => this%model%domaingrid%n_x, &
@@ -1191,13 +1191,13 @@ contains
       watergrid%qinsur = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("ETRAN")
-      watergrid%etran = reshape(src,[n_x,n_y])
+      watergrid%etran = reshape(src/domaingrid%DT,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("QSEVA")
       watergrid%qseva = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("EVAPOTRANS")
-      watergrid%evapotrans = reshape(src,[n_x,n_y])
+      watergrid%evapotrans = reshape(src*m2mm/domaingrid%DT,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("TG")
       energygrid%tg = reshape(src,[n_x,n_y])
