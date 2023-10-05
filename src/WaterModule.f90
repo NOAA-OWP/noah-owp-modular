@@ -12,6 +12,8 @@ module WaterModule
   use SnowWaterModule
 
   implicit none
+  real, parameter :: mm2m = 0.001  ! unit conversion mm to m
+  real, parameter :: m2mm = 1000.  ! unit conversion m to mm
 
 contains
 
@@ -68,7 +70,7 @@ contains
  
 
     ! total soil  water at last timestep, used for soil water budget check
-    tw0 = sum(domain%dzsnso(1:)*water%smc*1000.0) ! [mm]
+    tw0 = sum(domain%dzsnso(1:)*water%smc*m2mm) ! [mm]
     smcold = 0.0
 
   !---------------------------------------------------------------------
@@ -96,7 +98,7 @@ contains
    CALL SnowWater (domain, levels, parameters, energy, water, forcing)
 
    IF(energy%FROZEN_GROUND) THEN
-      water%SICE(1) =  water%SICE(1) + (water%QSDEW-water%QSEVA)*domain%DT/(domain%DZSNSO(1)*1000.)
+      water%SICE(1) =  water%SICE(1) + (water%QSDEW-water%QSEVA)*domain%DT/(domain%DZSNSO(1)*m2mm)
       water%QSDEW = 0.0
       water%QSEVA = 0.0
       IF(water%SICE(1) < 0.) THEN
@@ -107,20 +109,20 @@ contains
 
     ! convert units (mm/s -> m/s)
     !PONDING: melting water from snow when there is no layer
-    water%QINSUR = (water%PONDING+water%PONDING1+water%PONDING2)/domain%DT * 0.001
+    water%QINSUR = (water%PONDING+water%PONDING1+water%PONDING2)/domain%DT * mm2m
     water%ACSNOM = (water%PONDING+water%PONDING1+water%PONDING2+(water%QSNBOT*domain%DT))
 
     !    QINSUR = PONDING/DT * 0.001
     IF(water%ISNOW == 0) THEN
-       water%QINSUR = water%QINSUR+(water%QSNBOT + water%QSDEW + water%QRAIN) * 0.001
+       water%QINSUR = water%QINSUR+(water%QSNBOT + water%QSDEW + water%QRAIN) * mm2m
     ELSE
-       water%QINSUR = water%QINSUR+(water%QSNBOT + water%QSDEW) * 0.001
+       water%QINSUR = water%QINSUR+(water%QSNBOT + water%QSDEW) * mm2m
     ENDIF
-    water%QSEVA  = water%QSEVA * 0.001 
+    water%QSEVA  = water%QSEVA * mm2m
 
     ! For vegetation root
     DO IZ = 1, parameters%NROOT
-       water%ETRANI(IZ) = water%ETRAN * water%BTRANI(IZ) * 0.001
+       water%ETRANI(IZ) = water%ETRAN * water%BTRANI(IZ) * mm2m
     ENDDO
 
 ! #ifdef WRF_HYDRO
@@ -130,8 +132,8 @@ contains
     ! For lake points
     IF (domain%IST == 2) THEN                                        ! lake
        water%RUNSRF = 0.
-       IF(water%WSLAKE >= parameters%WSLMAX) water%RUNSRF = water%QINSUR*1000.             !mm/s
-       water%WSLAKE=water%WSLAKE+(water%QINSUR-water%QSEVA)*1000.*domain%DT -water%RUNSRF*domain%DT   !mm
+       IF(water%WSLAKE >= parameters%WSLMAX) water%RUNSRF = water%QINSUR*m2mm             !mm/s
+       water%WSLAKE=water%WSLAKE+(water%QINSUR-water%QSEVA)*m2mm*domain%DT -water%RUNSRF*domain%DT   !mm
     ELSE                                                      ! soil
       ! For soil points
       !---------------------------------------------------------------------
@@ -146,7 +148,7 @@ contains
     water%smc = water%sh2o + water%sice
     
     ! Compute evapotranspiration
-    water%evapotrans = water%QSEVA + (water%ETRAN * 0.001)
+    water%evapotrans = water%QSEVA + (water%ETRAN * mm2m)
    
   !---------------------------------------------------------------------
   ! accumulate some fields and error checks when opt_sub == 1
@@ -155,12 +157,12 @@ contains
     water%runsub = water%runsub + water%snoflow      ! add glacier outflow to subsurface runoff [mm/s]
     acsrf  = water%runsrf * domain%dt          ! accumulated surface runoff [mm]
     acsub  = water%runsub * domain%dt          ! accumulated drainage [mm]
-    acpcp  = water%qinsur * domain%dt * 1000.0 ! accumulated precipitation [mm]
+    acpcp  = water%qinsur * domain%dt * m2mm   ! accumulated precipitation [mm]
    
     dtheta_max = maxval(abs(water%smc-smcold))
     !    if (dtheta_max .lt. 0.00001) done = .true.
    
-    totalwat = sum(domain%dzsnso(1:levels%nsoil)*water%smc*1000.0)         ! total soil water [mm]
+    totalwat = sum(domain%dzsnso(1:levels%nsoil)*water%smc*m2mm)         ! total soil water [mm]
     errwat = acpcp - acsrf - acsub - (totalwat - tw0)  ! accum error [mm]
   END IF
 
