@@ -10,10 +10,9 @@ module WaterModule
   use SoilWaterModule
   use CanopyWaterModule
   use SnowWaterModule
+  use ConstantsModule
 
   implicit none
-  real, parameter :: mm2m = 0.001  ! unit conversion mm to m
-  real, parameter :: m2mm = 1000.  ! unit conversion m to mm
 
 contains
 
