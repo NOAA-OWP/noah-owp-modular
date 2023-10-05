@@ -131,30 +131,32 @@ program noahmp_driver_test
         status = m%get_grid_shape(grid_int, grid_shape)
         n_x = grid_shape(2)
         n_y = grid_shape(1)
+        print*, " "
         print*, "The variable ", trim(iname)
-        print*, "    has a grid id of ",grid_int
-        print*, "    has a grid row count (n_y) of ",n_y
-        print*, "    has a grid column count (n_x) of ",n_x
-        print*, "    has a total cell count (n_x * n_y) of ",grid_size
-        print*, "    has a type of ", var_type
-        print*, "    units of ", var_units
-        print*, "    a size (bytes per grid cell or variable instance) of ", var_itemsize
-        print*, "    and total n bytes (bytes across grid) of ", var_nbytes
+        print*, "has a grid id of ",grid_int
+        print*, "has a grid row count (n_y) of ",n_y
+        print*, "has a grid column count (n_x) of ",n_x
+        print*, "has a total cell count (n_x * n_y) of ",grid_size
+        print*, "has a type of ", var_type
+        print*, "units of ", var_units
+        print*, "a size (bytes per grid cell or variable instance) of ", var_itemsize
+        print*, "and total n bytes (bytes across grid) of ", var_nbytes
       else if(grid_rank == 3) then
         status = m%get_grid_shape(grid_int, grid_shape3d)
         n_z = grid_shape3d(1)
         n_y = grid_shape3d(2)
         n_x = grid_shape3d(3)
+        print*, " "
         print*, "The variable ", trim(iname)
-        print*, "    has a grid id of ",grid_int
-        print*, "    has a grid row count (n_y) of ",n_y
-        print*, "    has a grid column count (n_x) of ",n_x
-        print*, "    has a grid z count (n_z) of ",n_z
-        print*, "    has a total cell count (n_x * n_y * n_z) of ",grid_size
-        print*, "    has a type of ", var_type
-        print*, "    units of ", var_units
-        print*, "    a size (bytes per grid cell or variable instance) of ", var_itemsize
-        print*, "    and total n bytes (bytes across grid) of ", var_nbytes
+        print*, "has a grid id of ",grid_int
+        print*, "has a grid row count (n_y) of ",n_y
+        print*, "has a grid column count (n_x) of ",n_x
+        print*, "has a grid z count (n_z) of ",n_z
+        print*, "has a total cell count (n_x * n_y * n_z) of ",grid_size
+        print*, "has a type of ", var_type
+        print*, "units of ", var_units
+        print*, "a size (bytes per grid cell or variable instance) of ", var_itemsize
+        print*, "and total n bytes (bytes across grid) of ", var_nbytes
       end if
 
     end do
@@ -216,7 +218,7 @@ program noahmp_driver_test
   !---------------------------------------------------------------------
 
     print*,''
-    print*,"TEST get/set_value FUNCTIONALITY WITH BMI  (2D VARIABLES ONLY)********************"
+    print*,"TEST get/set_value FUNCTIONALITY WITH BMI  ***************************************"
     do i = 1, count
       if(i <= n_inputs) then
         iname = trim(names_inputs(i))
@@ -229,15 +231,16 @@ program noahmp_driver_test
       status = m%get_grid_rank(grid_int, grid_rank)
       status = m%get_var_type(trim(iname), var_type)
       status = m%get_grid_size(grid_int, grid_size)
+      print*, ""
       print*,trim(trim(iname))
-      print*,'    rank = ',grid_rank
+      print*,'rank = ',grid_rank
       if (grid_rank == 2) then
 
         status = m%get_grid_shape(grid_int, grid_shape)
         n_x = grid_shape(2)
         n_y = grid_shape(1)
-        print*,'    column count (n_x) = ',n_x
-        print*,'    row count (n_y) = ',n_y
+        print*,'column count (n_x) = ',n_x
+        print*,'row count (n_y) = ',n_y
 
         ! Address real and integer variables differently. Do real variables now
         if(var_type=='real') then
@@ -254,14 +257,17 @@ program noahmp_driver_test
           call cpu_time(time_1)
           status = m%get_value(trim(iname), var_value_get_real)
           call cpu_time(time_2)
-          print*, "    get_value function cpu time (s) =",time_2-time_1
-          print*, "    from get_value (flattened) ="
-          print*, var_value_get_real
-          print*, "    from get_value (in XY) ="
+          print*, "get_value function cpu time (s) =",time_2-time_1
+          print*, "from get_value (flattened) ="
+          do j = 1, grid_size
+            write(*,'(F15.5,1x)',advance='no') var_value_get_real(j) 
+          end do
+          write(*,*) ''
+          print*, "from get_value (in XY) ="
           grid_temp_real = reshape(var_value_get_real,[n_x,n_y])
           do iy = 1, n_y
             do ix = 1, n_x
-              write(*,'(F10.1,1x)',advance='no') grid_temp_real(ix,iy) 
+              write(*,'(F15.5,1x)',advance='no') grid_temp_real(ix,iy) 
             end do
             write(*,*) ''
           end do
@@ -270,13 +276,16 @@ program noahmp_driver_test
           do j = 1, grid_size
             var_value_set_real(j) = j
           end do
-          print*, "    our replacement value (flattened) = "
-          print*, var_value_set_real
-          print*, "    our replacement value (in XY) ="
+          print*, "our replacement value (flattened) = "
+          do j = 1, grid_size
+            write(*,'(F5.1,1x)',advance='no') var_value_set_real(j) 
+          end do
+          write(*,*) ''
+          print*, "our replacement value (in XY) ="
           grid_temp_real = reshape(var_value_set_real,[n_x,n_y])
           do iy = 1, n_y
             do ix = 1, n_x
-              write(*,'(F10.1,1x)',advance='no') grid_temp_real(ix,iy) 
+              write(*,'(F5.1,1x)',advance='no') grid_temp_real(ix,iy) 
             end do
             write(*,*) ''
           end do
@@ -284,17 +293,20 @@ program noahmp_driver_test
           status = m%set_value(trim(iname), var_value_set_real)
           call cpu_time(time_2)
           if(status == BMI_FAILURE) then
-            print*,"    FAILED to set variable ",trim(iname)," (variable may not have set_value listing)"
+            print*,"**FAILED to set variable ",trim(iname)," (variable may not have set_value listing)**"
           else
-            print*, "    set_value function cpu time (s) =",time_2-time_1
+            print*, "set_value function cpu time (s) =",time_2-time_1
             status = m%get_value(trim(iname), var_value_get_real)
-            print*, "    and the new value (flattened) = "
-            print*, var_value_get_real
-            print*, "    and the new value (in XY) = "
+            print*, "and the new value (flattened) = "
+            do j = 1, grid_size
+              write(*,'(F5.1,1x)',advance='no') var_value_get_real(j) 
+            end do
+            write(*,*) ''
+            print*, "and the new value (in XY) = "
             grid_temp_real = reshape(var_value_get_real,[n_x,n_y])
             do iy = 1, n_y
               do ix = 1, n_x
-                write(*,'(F10.1,1x)',advance='no') grid_temp_real(ix,iy) 
+                write(*,'(F5.1,1x)',advance='no') grid_temp_real(ix,iy) 
               end do
               write(*,*) ''
             end do
@@ -315,10 +327,13 @@ program noahmp_driver_test
           call cpu_time(time_1)
           status = m%get_value(trim(iname), var_value_get_int)
           call cpu_time(time_2)
-          print*, "    get_value function cpu time (s) =",time_2-time_1
-          print*, "    from get_value (flattened) ="
-          print*, var_value_get_int
-          print*, "    from get_value (in XY) ="
+          print*, "get_value function cpu time (s) =",time_2-time_1
+          print*, "from get_value (flattened) ="
+          do j = 1, grid_size
+            write(*,'(i10,1x)',advance='no') var_value_get_int(j) 
+          end do
+          write(*,*) ''
+          print*, "from get_value (in XY) ="
           grid_temp_int = reshape(var_value_get_int,[n_x,n_y])
           do iy = 1, n_y
             do ix = 1, n_x
@@ -331,9 +346,12 @@ program noahmp_driver_test
           do j = 1, grid_size
             var_value_set_int(j) = j
           end do
-          print*, "    our replacement value (flattened) ="
-          print*, var_value_set_int
-          print*, "    our replacement value (in XY) ="
+          print*, "our replacement value (flattened) ="
+          do j = 1, grid_size
+            write(*,'(i10,1x)',advance='no') var_value_set_int(j) 
+          end do
+          write(*,*) ''
+          print*, "our replacement value (in XY) ="
           grid_temp_int = reshape(var_value_set_int,[n_x,n_y])
           do iy = 1, n_y
             do ix = 1, n_x
@@ -345,14 +363,17 @@ program noahmp_driver_test
           status = m%set_value(trim(iname), var_value_set_int)
           call cpu_time(time_2)
           if(status == BMI_FAILURE) then
-            print*,"    FAILED to set variable ",trim(iname)," (variable may not have set_value listing)"
+            print*,"**FAILED to set variable ",trim(iname)," (variable may not have set_value listing)**"
           else
-            print*, "    set_value function cpu time (s) =",time_2-time_1
+            print*, "set_value function cpu time (s) =",time_2-time_1
             ! Print updated values
             status = m%get_value(trim(iname), var_value_get_int)
-            print*, "    and the new value (flattened) ="
-            print*, var_value_get_int
-            print*, "    and the new value (in XY) ="
+            print*, "and the new value (flattened) ="
+            do j = 1, grid_size
+              write(*,'(i10,1x)',advance='no') var_value_get_int(j) 
+            end do
+            write(*,*) ''
+            print*, "and the new value (in XY) ="
             grid_temp_int = reshape(var_value_get_int,[n_x,n_y])
             do iy = 1, n_y
               do ix = 1, n_x
@@ -370,14 +391,14 @@ program noahmp_driver_test
 
       else if (grid_rank == 3) then
 
-        print*,'    grid_int = ',grid_int
+        print*,'grid_int = ',grid_int
         status = m%get_grid_shape(grid_int, grid_shape3d)
         n_z = grid_shape3d(1)
         n_y = grid_shape3d(2)
         n_x = grid_shape3d(3)
-        print*,'    column count (n_x) = ',n_x
-        print*,'    row count (n_y) = ',n_y
-        print*,'    z count = ',n_z
+        print*,'column count (n_x) = ',n_x
+        print*,'row count (n_y) = ',n_y
+        print*,'z count = ',n_z
 
         if(var_type=='real') then
 
@@ -393,19 +414,19 @@ program noahmp_driver_test
           call cpu_time(time_1)
           status = m%get_value(trim(trim(iname)), var_value_get_real)
           call cpu_time(time_2)
-          print*, "    get_value function cpu time (s) =",time_2-time_1
+          print*, "get_value function cpu time (s) =",time_2-time_1
           grid3d_temp_real = reshape(var_value_get_real,[n_x,n_y,n_z])
           do iz = 1, n_z
             print*,'z =',iz
             do iy = 1, n_y
               do ix = 1, n_x
-                write(*,'(F10.1,1x)',advance='no') grid3d_temp_real(ix,iy,iz) 
+                write(*,'(F15.5,1x)',advance='no') grid3d_temp_real(ix,iy,iz) 
               end do
               write(*,*) ''
             end do
           end do
           !Leave here for clarity in output
-          print*,"    FAILED to set variable ",trim(iname)," (variable may not have set_value listing)"
+          print*,"**FAILED to set variable ",trim(iname)," (variable may not have set_value listing)**"
         
         end if
 
