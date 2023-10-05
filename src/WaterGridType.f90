@@ -51,9 +51,9 @@ type, public :: watergrid_type
   real,allocatable,dimension(:,:)                             :: BDSNO       ! bulk density of snowpack (kg/m3)
   real,allocatable,dimension(:,:)                             :: QSNBOT      ! melting water out of snow bottom [mm/s]
   real,allocatable,dimension(:,:)                             :: ACSNOM      ! Accumulated meltwater from bottom snow layer [mm] (NWM 3.0)
-  real,allocatable,dimension(:,:)                             :: PONDING
-  real,allocatable,dimension(:,:)                             :: PONDING1
-  real,allocatable,dimension(:,:)                             :: PONDING2
+  real,allocatable,dimension(:,:)                             :: PONDING     ! surface ponding [mm] from snowmelt when thin snow has no layer
+  real,allocatable,dimension(:,:)                             :: PONDING1    ! surface ponding [mm] from thin snow liquid during layer combination
+  real,allocatable,dimension(:,:)                             :: PONDING2    ! surface ponding [mm] from thin snow liquid during transition from multilayer to no layer
   real,allocatable,dimension(:,:)                             :: QVAP        ! ground surface evaporation/sublimation rate mm/s
   real,allocatable,dimension(:,:)                             :: QDEW        ! ground surface dew rate [mm/s]
   real,allocatable,dimension(:,:)                             :: QSDEW       ! soil surface dew rate [mm/s]
