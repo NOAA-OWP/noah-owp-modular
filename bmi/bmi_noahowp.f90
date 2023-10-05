@@ -96,6 +96,8 @@ module bminoahowp
 
   character (len=BMI_MAX_COMPONENT_NAME), target :: &
        component_name = "Noah-OWP-Modular Surface Module"
+  real, parameter :: mm2m = 0.001  ! unit conversion mm to m     
+  real, parameter :: m2mm = 1000.  ! unit conversion m to mm
 
   ! Exchange items
   integer, parameter :: input_item_count = 8
@@ -668,7 +670,7 @@ contains
       units = "mm"
       bmi_status = BMI_SUCCESS
    case("FSNO","ISNOW")
-      units = "1"
+      units = "unitless"
       bmi_status = BMI_SUCCESS
    case("SNOWH")
       units = "m"
@@ -933,10 +935,10 @@ contains
       dest = reshape(watergrid%etran*domaingrid%DT,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("QSEVA")
-      dest = reshape(watergrid%qseva*1000.,[n_x*n_y])
+      dest = reshape(watergrid%qseva*m2mm,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("EVAPOTRANS")
-      dest = reshape(watergrid%evapotrans*domaingrid%DT*0.001,[n_x*n_y])
+      dest = reshape(watergrid%evapotrans*domaingrid%DT*mm2m,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("TG")
       dest = reshape(energygrid%tg,[n_x*n_y])
