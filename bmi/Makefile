@@ -32,4 +32,5 @@ bmi_grid: bmi_grid.o
 
 bmi_noahowp.o: bmi.o \
 			   bmi_grid.o \
-              ../src/RunModule.o
+              ../src/RunModule.o \
+							../src/ConstantsModule.o \

@@ -55,6 +55,7 @@ OBJS = ErrorCheckModule.o \
        EnergyModule.o \
        UtilitiesModule.o \
        DateTimeUtilsModule.o \
+       ConstantsModule.o \
        RunModule.o
 
 all:	$(OBJS)
@@ -88,7 +89,7 @@ ForcingGridType.o: NamelistRead.o GridInfoType.o
 EnergyType.o: NamelistRead.o
 WaterType.o: NamelistRead.o
 WaterModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
-               ForcingType.o WaterType.o SoilWaterModule.o CanopyWaterModule.o SnowWaterModule.o
+               ForcingType.o WaterType.o SoilWaterModule.o CanopyWaterModule.o SnowWaterModule.o ConstantsModule.o
 CanopyWaterModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
                      ForcingType.o WaterType.o
 SnowLayerChange.o: LevelsType.o DomainType.o ParametersType.o EnergyType.o WaterType.o

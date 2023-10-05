@@ -55,6 +55,7 @@ OBJS = \
         ../src/UtilitiesModule.o \
         ../src/DateTimeUtilsModule.o \
         ../src/RunModule.o \
+        ../src/ConstantsModule.o \
         ../driver/OutputModule.o \
         ../driver/NoahModularDriver.o \
         ../driver/AsciiReadModule.o \
