@@ -186,11 +186,7 @@ Added to noahowp_var_itemsize
 
 # QRAIN
 
-Added to output_items
-Added to noahowp_var_type
-Added to noahowp_get_float
-Added to noahowp_var_units as "mm/s"
-Added to noahowp_var_itemsize
+Nothing to do
 
 # FSNO
 
