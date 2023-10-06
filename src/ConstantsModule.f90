@@ -151,9 +151,6 @@ MODULE ConstantsModule
    !  occurrence of the Northern Spring Equinox
    REAL , PARAMETER :: EQUINOX_FRACTION= 0.0
 
-   real, parameter :: mm2m = 0.001  ! unit conversion mm to m     
-   real, parameter :: m2mm = 1000.  ! unit conversion m to mm
-
  CONTAINS
    SUBROUTINE init_module_model_constants
    END SUBROUTINE init_module_model_constants
