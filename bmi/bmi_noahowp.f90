@@ -9,7 +9,6 @@ module bminoahowp
 #endif
   use bmi_grid
   use RunModule
-  use ConstantsModule
   use, intrinsic :: iso_c_binding, only: c_ptr, c_loc, c_f_pointer
   
   implicit none
@@ -184,7 +183,7 @@ contains
 
     output_items(1) = 'QINSUR'     ! total liquid water input to surface rate (m/s)
     output_items(2) = 'ETRAN'      ! transpiration rate (mm)
-    output_items(3) = 'QSEVA'      ! evaporation rate (m/s)
+    output_items(3) = 'QSEVA'      ! evaporation rate (mm/s)
     output_items(4) = 'EVAPOTRANS' ! evapotranspiration rate (mm)
     output_items(5) = 'TG'         ! surface/ground temperature (K) (becomes snow surface temperature when snow is present)
     output_items(6) = 'SNEQV'      ! snow water equivalent (mm)
@@ -893,6 +892,8 @@ contains
    integer :: bmi_status
    integer :: ix, iy
    real, allocatable, dimension(:,:) :: temp
+   real    :: mm2m = 0.001       ! unit conversion mm to m     
+   real    :: m2mm = 1000.       ! unit conversion m to mm
 
    associate(domaingrid  => this%model%domaingrid,      &
              forcinggrid => this%model%forcinggrid,     &
@@ -1154,6 +1155,8 @@ contains
    character (len=*), intent(in) :: name
    real, intent(in) :: src(:)
    integer :: bmi_status
+   real    :: mm2m = 0.001       ! unit conversion mm to m     
+   real    :: m2mm = 1000.       ! unit conversion m to mm
 
    associate(domaingrid  => this%model%domaingrid,   &
              forcinggrid => this%model%forcinggrid,  &
@@ -1194,7 +1197,7 @@ contains
       watergrid%etran = reshape(src/domaingrid%DT,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("QSEVA")
-      watergrid%qseva = reshape(src,[n_x,n_y])
+      watergrid%qseva = reshape(src*mm2m,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("EVAPOTRANS")
       watergrid%evapotrans = reshape(src*m2mm/domaingrid%DT,[n_x,n_y])

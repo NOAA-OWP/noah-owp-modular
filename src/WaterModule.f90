@@ -10,7 +10,6 @@ module WaterModule
   use SoilWaterModule
   use CanopyWaterModule
   use SnowWaterModule
-  use ConstantsModule
 
   implicit none
 
@@ -42,6 +41,8 @@ contains
   logical :: done               ! logical check
   integer :: IZ 
   real, dimension(1:levels%nsoil) :: smcold        !previous timestep smc
+  real    :: mm2m = 0.001       ! unit conversion mm to m     
+  real    :: m2mm = 1000.       ! unit conversion m to mm
 !---------------------------------------------------------------------
 
     ! Below 4 computations moved from main level of noahmp_sflx in old model to WaterModule here
