@@ -54,7 +54,6 @@ OBJS =  ../src/ErrorCheckModule.o \
         ../src/UtilitiesModule.o \
         ../src/DateTimeUtilsModule.o \
         ../src/RunModule.o \
-        ../src/ConstantsModule.o \
         ../driver/OutputModule.o \
         ./noahowp_driver_test.o \
         ../driver/AsciiReadModule.o \
