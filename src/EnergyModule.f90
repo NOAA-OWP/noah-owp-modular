@@ -262,6 +262,7 @@ contains
       energy%FSH   = parameters%FVEG * energy%SHG       + (1.0 - parameters%FVEG) * energy%SHB       + energy%SHC
       energy%FGEV  = parameters%FVEG * energy%EVG       + (1.0 - parameters%FVEG) * energy%EVB
       energy%SSOIL = parameters%FVEG * energy%GHV       + (1.0 - parameters%FVEG) * energy%GHB
+      energy%GH    = parameters%FVEG * energy%GHV       + (1.0 - parameters%FVEG) * energy%GHB ! FVEG = 1. Hence, this is a weighted average
       energy%FCEV  = energy%EVC
       energy%FCTR  = energy%TR
       energy%PAH   = parameters%FVEG * energy%PAHG      + (1.0 - parameters%FVEG) * energy%PAHB   + energy%PAHV
@@ -280,6 +281,7 @@ contains
       energy%FSH   = energy%SHB
       energy%FGEV  = energy%EVB
       energy%SSOIL = energy%GHB
+      energy%GH    = energy%GHB
       energy%TG    = energy%TGB      ! could use more associated variables to unclutter the code
       energy%T2M   = energy%T2MB
       energy%FCEV  = 0.

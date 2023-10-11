@@ -64,6 +64,7 @@ program noahmp_driver_test
     integer                                           :: ix,iy,iz,n_x,n_y,n_z,iflat    ! 
     real, pointer                                     :: var_value_get_ptr(:) ! value of a variable for get_value_ptr
     real, allocatable, dimension(:,:)                 :: grid_temp_real   ! local grid to hold getter results for real type
+    real, allocatable, dimension(:,:,:)               :: grid3d_temp_real
     integer, allocatable, dimension(:,:)              :: grid_temp_int    ! local grid to hold getter results for int type
     integer, dimension(3)                             :: grid_indices      ! grid indices (change dims as needed)
     real                                              :: time_1, time_2
@@ -120,23 +121,44 @@ program noahmp_driver_test
         iname = trim(names_outputs(j - n_inputs))
       end if
       status = m%get_var_grid(trim(iname),grid_int)
-      status = m%get_grid_shape(grid_int, grid_shape)
+      status = m%get_grid_rank(grid_int,grid_rank)
       status = m%get_grid_size(grid_int, grid_size)
       status = m%get_var_type(trim(iname), var_type)
       status = m%get_var_units(trim(iname), var_units)
       status = m%get_var_itemsize(trim(iname), var_itemsize)
       status = m%get_var_nbytes(trim(iname), var_nbytes)
-      n_x = grid_shape(2)
-      n_y = grid_shape(1)
-      print*, "The variable ", trim(iname)
-      print*, "    has a grid id of ",grid_int
-      print*, "    has a grid row count (n_y) of ",n_y
-      print*, "    has a grid column count (n_x) of ",n_x
-      print*, "    has a total cell count (n_x * n_y) of ",grid_size
-      print*, "    has a type of ", var_type
-      print*, "    units of ", var_units
-      print*, "    a size (bytes per grid cell or variable instance) of ", var_itemsize
-      print*, "    and total n bytes (bytes across grid) of ", var_nbytes
+      if(grid_rank == 2) then
+        status = m%get_grid_shape(grid_int, grid_shape)
+        n_x = grid_shape(2)
+        n_y = grid_shape(1)
+        print*, " "
+        print*, "The variable ", trim(iname)
+        print*, "has a grid id of ",grid_int
+        print*, "has a grid row count (n_y) of ",n_y
+        print*, "has a grid column count (n_x) of ",n_x
+        print*, "has a total cell count (n_x * n_y) of ",grid_size
+        print*, "has a type of ", var_type
+        print*, "units of ", var_units
+        print*, "a size (bytes per grid cell or variable instance) of ", var_itemsize
+        print*, "and total n bytes (bytes across grid) of ", var_nbytes
+      else if(grid_rank == 3) then
+        status = m%get_grid_shape(grid_int, grid_shape3d)
+        n_z = grid_shape3d(1)
+        n_y = grid_shape3d(2)
+        n_x = grid_shape3d(3)
+        print*, " "
+        print*, "The variable ", trim(iname)
+        print*, "has a grid id of ",grid_int
+        print*, "has a grid row count (n_y) of ",n_y
+        print*, "has a grid column count (n_x) of ",n_x
+        print*, "has a grid z count (n_z) of ",n_z
+        print*, "has a total cell count (n_x * n_y * n_z) of ",grid_size
+        print*, "has a type of ", var_type
+        print*, "units of ", var_units
+        print*, "a size (bytes per grid cell or variable instance) of ", var_itemsize
+        print*, "and total n bytes (bytes across grid) of ", var_nbytes
+      end if
+
     end do
 
   !---------------------------------------------------------------------
@@ -196,7 +218,7 @@ program noahmp_driver_test
   !---------------------------------------------------------------------
 
     print*,''
-    print*,"TEST get/set_value FUNCTIONALITY WITH BMI  (2D VARIABLES ONLY)********************"
+    print*,"TEST get/set_value FUNCTIONALITY WITH BMI  ***************************************"
     do i = 1, count
       if(i <= n_inputs) then
         iname = trim(names_inputs(i))
@@ -205,159 +227,211 @@ program noahmp_driver_test
       end if
 
       ! Get variable name and shape/size
-      status = m%get_var_type(trim(iname), var_type)
       status = m%get_var_grid(trim(iname),grid_int)
+      status = m%get_grid_rank(grid_int, grid_rank)
+      status = m%get_var_type(trim(iname), var_type)
       status = m%get_grid_size(grid_int, grid_size)
-      status = m%get_grid_shape(grid_int, grid_shape)
-      n_x = grid_shape(2)
-      n_y = grid_shape(1)
+      print*, ""
       print*,trim(trim(iname))
-      print*,'    column count (n_x) = ',n_x
-      print*,'    row count (n_y) = ',n_y
+      print*,'rank = ',grid_rank
+      if (grid_rank == 2) then
 
-      ! Address real and integer variables differently. Do real variables now
-      if(var_type=='real') then
+        status = m%get_grid_shape(grid_int, grid_shape)
+        n_x = grid_shape(2)
+        n_y = grid_shape(1)
+        print*,'column count (n_x) = ',n_x
+        print*,'row count (n_y) = ',n_y
 
-        ! Allocate record keeping arrays
-        if(.NOT.allocated(var_value_get_real)) allocate(var_value_get_real(grid_size))
-        if(.NOT.allocated(var_value_set_real)) allocate(var_value_set_real(grid_size))
-        if(.NOT.allocated(grid_temp_real)) allocate(grid_temp_real(n_x,n_y))
-        if(size(var_value_get_real).ne.grid_size) then
-          deallocate(var_value_get_real)
+        ! Address real and integer variables differently. Do real variables now
+        if(var_type=='real') then
+
+          ! Allocate arrays
+          if(allocated(var_value_get_real)) deallocate(var_value_get_real)
+          if(allocated(var_value_set_real)) deallocate(var_value_set_real)
+          if(allocated(grid_temp_real)) deallocate(grid_temp_real)
           allocate(var_value_get_real(grid_size))
-        end if
-        if(size(var_value_set_real).ne.grid_size) then
-          deallocate(var_value_set_real)
           allocate(var_value_set_real(grid_size))
-        end if
-        if((size(grid_temp_real,1).ne.n_x).or.(size(grid_temp_real,2).ne.n_y)) then
-          deallocate(grid_temp_real)
           allocate(grid_temp_real(n_x,n_y))
-        end if
 
-        ! Print existing value(s)
-        call cpu_time(time_1)
-        status = m%get_value(trim(iname), var_value_get_real)
-        call cpu_time(time_2)
-        print*, "    get_value function cpu time (s) =",time_2-time_1
-        print*, "    from get_value (flattened) ="
-        print*, var_value_get_real
-        print*, "    from get_value (in XY) ="
-        grid_temp_real = reshape(var_value_get_real,[n_x,n_y])
-        do iy = 1, n_y
-          do ix = 1, n_x
-            write(*,'(F10.1,1x)',advance='no') grid_temp_real(ix,iy) 
+          ! Print existing value(s)
+          call cpu_time(time_1)
+          status = m%get_value(trim(iname), var_value_get_real)
+          call cpu_time(time_2)
+          print*, "get_value function cpu time (s) =",time_2-time_1
+          print*, "from get_value (flattened) ="
+          do j = 1, grid_size
+            !write(*,'(F15.5,1x)',advance='no') var_value_get_real(j) 
+            write(*,'(G0.5,1x)',advance='no') var_value_get_real(j) 
           end do
           write(*,*) ''
-        end do
+          print*, "from get_value (in XY) ="
+          grid_temp_real = reshape(var_value_get_real,[n_x,n_y])
+          do iy = 1, n_y
+            do ix = 1, n_x
+              write(*,'(G0.5,1x)',advance='no') grid_temp_real(ix,iy) 
+            end do
+            write(*,*) ''
+          end do
 
-        ! Print replacement value(s) and set
-        do j = 1, grid_size
-          var_value_set_real(j) = j
-        end do
-        print*, "    our replacement value (flattened) = "
-        print*, var_value_set_real
-        print*, "    our replacement value (in XY) ="
-        grid_temp_real = reshape(var_value_set_real,[n_x,n_y])
-        do iy = 1, n_y
-          do ix = 1, n_x
-            write(*,'(F10.1,1x)',advance='no') grid_temp_real(ix,iy) 
+          ! Print replacement value(s) and set
+          do j = 1, grid_size
+            var_value_set_real(j) = j
+          end do
+          print*, "our replacement value (flattened) = "
+          do j = 1, grid_size
+            write(*,'(G0.5,1x)',advance='no') var_value_set_real(j) 
           end do
           write(*,*) ''
-        end do
-        call cpu_time(time_1)
-        status = m%set_value(trim(iname), var_value_set_real)
-        call cpu_time(time_2)
-        print*, "    set_value function cpu time (s) =",time_2-time_1
-
-        ! Print updated values
-        status = m%get_value(trim(iname), var_value_get_real)
-        print*, "    and the new value (flattened) = "
-        print*, var_value_get_real
-        print*, "    and the new value (in XY) = "
-        grid_temp_real = reshape(var_value_get_real,[n_x,n_y])
-        do iy = 1, n_y
-          do ix = 1, n_x
-            write(*,'(F10.1,1x)',advance='no') grid_temp_real(ix,iy) 
+          print*, "our replacement value (in XY) ="
+          grid_temp_real = reshape(var_value_set_real,[n_x,n_y])
+          do iy = 1, n_y
+            do ix = 1, n_x
+              write(*,'(G0.5,1x)',advance='no') grid_temp_real(ix,iy) 
+            end do
+            write(*,*) ''
           end do
-          write(*,*) ''
-        end do
+          call cpu_time(time_1)
+          status = m%set_value(trim(iname), var_value_set_real)
+          call cpu_time(time_2)
+          if(status == BMI_FAILURE) then
+            print*,"**FAILED to set variable ",trim(iname)," (variable may not have set_value listing)**"
+          else
+            print*, "set_value function cpu time (s) =",time_2-time_1
+            status = m%get_value(trim(iname), var_value_get_real)
+            print*, "and the new value (flattened) = "
+            do j = 1, grid_size
+              write(*,'(G0.5,1x)',advance='no') var_value_get_real(j) 
+            end do
+            write(*,*) ''
+            print*, "and the new value (in XY) = "
+            grid_temp_real = reshape(var_value_get_real,[n_x,n_y])
+            do iy = 1, n_y
+              do ix = 1, n_x
+                write(*,'(G0.5,1x)',advance='no') grid_temp_real(ix,iy) 
+              end do
+              write(*,*) ''
+            end do
+          end if
 
-      ! now do integer type variables
-      else if(var_type=='integer') then
+        ! now do integer type variables
+        else if(var_type=='integer') then
 
-        ! Allocate record keeping arrays
-        if(.NOT.allocated(var_value_get_int)) allocate(var_value_get_int(grid_size))
-        if(.NOT.allocated(var_value_set_int)) allocate(var_value_set_int(grid_size))
-        if(.NOT.allocated(grid_temp_int)) allocate(grid_temp_int(n_x,n_y))
-        if(size(var_value_get_int).ne.grid_size) then
-          deallocate(var_value_get_int)
+          ! Allocate arrays
+          if(allocated(var_value_get_int)) deallocate(var_value_get_int)
+          if(allocated(var_value_set_int)) deallocate(var_value_set_int)
+          if(allocated(grid_temp_int)) deallocate(grid_temp_int)
           allocate(var_value_get_int(grid_size))
-        end if
-        if(size(var_value_set_int).ne.grid_size) then
-          deallocate(var_value_set_int)
           allocate(var_value_set_int(grid_size))
-        end if
-        if((size(grid_temp_int,1).ne.n_x).or.(size(grid_temp_int,2).ne.n_y)) then
-          deallocate(grid_temp_int)
           allocate(grid_temp_int(n_x,n_y))
+
+          ! Print existing value(s)
+          call cpu_time(time_1)
+          status = m%get_value(trim(iname), var_value_get_int)
+          call cpu_time(time_2)
+          print*, "get_value function cpu time (s) =",time_2-time_1
+          print*, "from get_value (flattened) ="
+          do j = 1, grid_size
+            write(*,'(G0,1x)',advance='no') var_value_get_int(j) 
+          end do
+          write(*,*) ''
+          print*, "from get_value (in XY) ="
+          grid_temp_int = reshape(var_value_get_int,[n_x,n_y])
+          do iy = 1, n_y
+            do ix = 1, n_x
+              write(*,'(G0,1x)',advance='no') grid_temp_int(ix,iy) 
+            end do
+            write(*,*) ''
+          end do
+
+          ! Print replacement value(s) and set
+          do j = 1, grid_size
+            var_value_set_int(j) = j
+          end do
+          print*, "our replacement value (flattened) ="
+          do j = 1, grid_size
+            write(*,'(G0,1x)',advance='no') var_value_set_int(j) 
+          end do
+          write(*,*) ''
+          print*, "our replacement value (in XY) ="
+          grid_temp_int = reshape(var_value_set_int,[n_x,n_y])
+          do iy = 1, n_y
+            do ix = 1, n_x
+              write(*,'(G0,1x)',advance='no') grid_temp_int(ix,iy) 
+            end do
+            write(*,*) ''
+          end do
+          call cpu_time(time_1)
+          status = m%set_value(trim(iname), var_value_set_int)
+          call cpu_time(time_2)
+          if(status == BMI_FAILURE) then
+            print*,"**FAILED to set variable ",trim(iname)," (variable may not have set_value listing)**"
+          else
+            print*, "set_value function cpu time (s) =",time_2-time_1
+            ! Print updated values
+            status = m%get_value(trim(iname), var_value_get_int)
+            print*, "and the new value (flattened) ="
+            do j = 1, grid_size
+              write(*,'(G0,1x)',advance='no') var_value_get_int(j) 
+            end do
+            write(*,*) ''
+            print*, "and the new value (in XY) ="
+            grid_temp_int = reshape(var_value_get_int,[n_x,n_y])
+            do iy = 1, n_y
+              do ix = 1, n_x
+                write(*,'(G0,1x)',advance='no') grid_temp_int(ix,iy) 
+              end do
+              write(*,*) ''
+            end do
+          end if
+        else
+
+          !! If not real or integer type
+          print*,'    unrecoganized data type --- TEST FAILED!'
+
         end if
 
-        ! Print existing value(s)
-        call cpu_time(time_1)
-        status = m%get_value(trim(iname), var_value_get_int)
-        call cpu_time(time_2)
-        print*, "    get_value function cpu time (s) =",time_2-time_1
-        print*, "    from get_value (flattened) ="
-        print*, var_value_get_int
-        print*, "    from get_value (in XY) ="
-        grid_temp_int = reshape(var_value_get_int,[n_x,n_y])
-        do iy = 1, n_y
-          do ix = 1, n_x
-            write(*,'(i10,1x)',advance='no') grid_temp_int(ix,iy) 
-          end do
-          write(*,*) ''
-        end do
+      else if (grid_rank == 3) then
 
-        ! Print replacement value(s) and set
-        do j = 1, grid_size
-          var_value_set_int(j) = j
-        end do
-        print*, "    our replacement value (flattened) ="
-        print*, var_value_set_int
-        print*, "    our replacement value (in XY) ="
-        grid_temp_int = reshape(var_value_set_int,[n_x,n_y])
-        do iy = 1, n_y
-          do ix = 1, n_x
-            write(*,'(i10,1x)',advance='no') grid_temp_int(ix,iy) 
-          end do
-          write(*,*) ''
-        end do
-        call cpu_time(time_1)
-        status = m%set_value(trim(iname), var_value_set_int)
-        call cpu_time(time_2)
-        print*, "    set_value function cpu time (s) =",time_2-time_1
+        print*,'grid_int = ',grid_int
+        status = m%get_grid_shape(grid_int, grid_shape3d)
+        n_z = grid_shape3d(1)
+        n_y = grid_shape3d(2)
+        n_x = grid_shape3d(3)
+        print*,'column count (n_x) = ',n_x
+        print*,'row count (n_y) = ',n_y
+        print*,'z count = ',n_z
 
-        ! Print updated values
-        status = m%get_value(trim(iname), var_value_get_int)
-        print*, "    and the new value (flattened) ="
-        print*, var_value_get_int
-        print*, "    and the new value (in XY) ="
-        grid_temp_int = reshape(var_value_get_int,[n_x,n_y])
-        do iy = 1, n_y
-          do ix = 1, n_x
-            write(*,'(i10,1x)',advance='no') grid_temp_int(ix,iy) 
-          end do
-          write(*,*) ''
-        end do
-      
-      else
+        if(var_type=='real') then
 
-        !! If not real or integer type
-        print*,'    unrecoganized data type --- TEST FAILED!'
+          ! Allocate arrays
+          if(allocated(var_value_get_real)) deallocate(var_value_get_real)
+          if(allocated(var_value_set_real)) deallocate(var_value_set_real)
+          if(allocated(grid3d_temp_real)) deallocate(grid3d_temp_real)
+          allocate(var_value_get_real(grid_size))
+          allocate(var_value_set_real(grid_size))
+          allocate(grid3d_temp_real(n_x,n_y,n_z))
+
+          ! Print existing value(s)
+          call cpu_time(time_1)
+          status = m%get_value(trim(trim(iname)), var_value_get_real)
+          call cpu_time(time_2)
+          print*, "get_value function cpu time (s) =",time_2-time_1
+          grid3d_temp_real = reshape(var_value_get_real,[n_x,n_y,n_z])
+          do iz = 1, n_z
+            print*,'z =',iz
+            do iy = 1, n_y
+              do ix = 1, n_x
+                write(*,'(G0.5,1x)',advance='no') grid3d_temp_real(ix,iy,iz) 
+              end do
+              write(*,*) ''
+            end do
+          end do
+          !Leave here for clarity in output
+          print*,"**FAILED to set variable ",trim(iname)," (variable may not have set_value listing)**"
+        
+        end if
 
       end if
-
     end do
 
   !---------------------------------------------------------------------
@@ -423,8 +497,8 @@ program noahmp_driver_test
     end do
 
     nullify( var_value_get_ptr )
-    deallocate(var_value_get_real)
-    deallocate(var_value_set_real)
+    if (allocated(var_value_get_real)) deallocate(var_value_get_real)
+    if (allocated(var_value_set_real)) deallocate(var_value_set_real)
 
   !---------------------------------------------------------------------
   ! Test the grid info functionality with BMI

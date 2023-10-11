@@ -99,7 +99,7 @@ module bminoahowp
 
   ! Exchange items
   integer, parameter :: input_item_count = 8
-  integer, parameter :: output_item_count = 7
+  integer, parameter :: output_item_count = 23
   character (len=BMI_MAX_VAR_NAME), target, &
        dimension(input_item_count) :: input_items
   character (len=BMI_MAX_VAR_NAME), target, &
@@ -121,7 +121,7 @@ module bminoahowp
    ! by convention grids(1) is the "scalar" grid
    ! for noah-owp-modular, grids(2) is the 2D grid
    ! other grids/specs can be added as needed
-   type(GridType) :: grids(2)
+   type(GridType) :: grids(3)
 
 contains
 
@@ -182,12 +182,28 @@ contains
     integer :: bmi_status
 
     output_items(1) = 'QINSUR'     ! total liquid water input to surface rate (m/s)
-    output_items(2) = 'ETRAN'      ! transpiration rate (mm/s)
-    output_items(3) = 'QSEVA'      ! evaporation rate (m/s)
-    output_items(4) = 'EVAPOTRANS' ! evapotranspiration rate (m/s)
+    output_items(2) = 'ETRAN'      ! transpiration rate (mm)
+    output_items(3) = 'QSEVA'      ! evaporation rate (mm/s)
+    output_items(4) = 'EVAPOTRANS' ! evapotranspiration rate (mm)
     output_items(5) = 'TG'         ! surface/ground temperature (K) (becomes snow surface temperature when snow is present)
     output_items(6) = 'SNEQV'      ! snow water equivalent (mm)
     output_items(7) = 'TGS'        ! ground temperature (K) (is equal to TG when no snow and equal to bottom snow element temperature when there is snow)
+    output_items(8) = 'ACSNOM'     ! Accumulated meltwater from bottom snow layer (mm) (NWM 3.0 output variable)
+    output_items(9) = 'SNOWT_AVG'  ! Average snow temperature (K) (by layer mass) (NWM 3.0 output variable)
+    output_items(10) = 'ISNOW'     ! Number of snow layers (unitless) (NWM 3.0 output variable)
+    output_items(11) = 'QRAIN'     ! Rainfall rate on the ground (mm/s) (NWM 3.0 output variable)
+    output_items(12) = 'FSNO'      ! Snow-cover fraction on the ground (unitless fraction) (NWM 3.0 output variable)
+    output_items(13) = 'SNOWH'     ! Snow depth (m) (NWM 3.0 output variable)
+    output_items(14) = 'SNLIQ'     ! Snow layer liquid water (mm) (NWM 3.0 output variable)
+    output_items(15) = 'QSNOW'     ! Snowfall rate on the ground (mm/s) (NWM 3.0 output variable)
+    output_items(16) = 'ECAN'      ! evaporation of intercepted water (mm) (NWM 3.0 output variable)
+    output_items(17) = 'GH'        ! Heat flux into the soil (W/m-2) (NWM 3.0 output variable)
+    output_items(18) = 'TRAD'      ! Surface radiative temperature (K) (NWM 3.0 output variable)
+    output_items(19) = 'FSA'       ! Total absorbed SW radiation (W/m-2) (NWM 3.0 output variable)
+    output_items(20) = 'CMC'       ! Total canopy water (liquid + ice) (mm) (NWM 3.0 output variable)
+    output_items(21) = 'LH'        ! Total latent heat to the atmosphere (W/m-2) (NWM 3.0 output variable)
+    output_items(22) = 'FIRA'      ! Total net LW radiation to atmosphere (W/m-2) (NWM 3.0 output variable)
+    output_items(23) = 'FSH'       ! Total sensible heat to the atmosphere (W/m-2) (NWM 3.0 output variable)
 
     names => output_items
     bmi_status = BMI_SUCCESS
@@ -208,6 +224,7 @@ contains
     ! params are grid_id, rank, type, units
     call grids(1)%init(0, 0, scalar, none) !the scalar grid
     call grids(2)%init(1, 2, uniform_rectilinear, none)
+    call grids(3)%init(2, 3, uniform_rectilinear, none)
     ! for now, use the domain info in the model read from its various files
     ! TODO in the future, can use a config flag to indicate whether or not this is approriate
     ! or whether we want dynamic grid allocation
@@ -216,6 +233,7 @@ contains
     ! at some point we can align these two things more and make that more cohesive
     call set_grid_from_model(this%model,grids(1))
     call set_grid_from_model(this%model,grids(2))
+    call set_grid_from_model(this%model,grids(3))
     bmi_status = BMI_SUCCESS
   end function noahowp_initialize
 
@@ -317,11 +335,14 @@ contains
    integer, intent(out) :: grid
    integer :: bmi_status, i
 
+      ! SNLIQ
+      output_grid(14) = 2
+
       !checkout output vars
       do  i = 1, size(output_items)
          if(output_items(i) .eq. trim(name) ) then
             grid = output_grid(i)
-    bmi_status = BMI_SUCCESS
+            bmi_status = BMI_SUCCESS
             return
          endif
       end do
@@ -354,7 +375,7 @@ contains
    case(0)
       type = "scalar"
       bmi_status = BMI_SUCCESS
-   case(1)
+   case(1,2)
      type = "uniform_rectilinear"
      bmi_status = BMI_SUCCESS
    case default
@@ -600,8 +621,12 @@ contains
 
    select case(name)
    case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! forcing vars
-        'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS')      ! output vars
-      type = "real"
+        'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS', 'ACSNOM', 'SNOWT_AVG', &      ! output vars
+        'QRAIN', 'FSNO', 'SNOWH', 'SNLIQ', 'QSNOW', 'ECAN', 'GH', 'TRAD', 'FSA', 'CMC', 'LH', 'FIRA', 'FSH')
+        type = "real"
+      bmi_status = BMI_SUCCESS
+   case('ISNOW')
+      type = "integer"
       bmi_status = BMI_SUCCESS
    case default
       type = "-"
@@ -621,10 +646,10 @@ contains
    case("SFCPRS")
       units = "Pa"
       bmi_status = BMI_SUCCESS
-   case("SFCTMP", "TG", "TGS")
+   case("SFCTMP", "TG", "TGS","SNOWT_AVG","TRAD")
       units = "K"
       bmi_status = BMI_SUCCESS
-   case("SOLDN", "LWDN")
+   case("SOLDN", "LWDN", "GH", "FSA", "LH", "FIRA", "FSH")
       units = "W/m2"
       bmi_status = BMI_SUCCESS
    case("UU", "VV")
@@ -633,14 +658,20 @@ contains
    case("Q2")
       units = "kg/kg"
       bmi_status = BMI_SUCCESS
-   case("QINSUR", "QSEVA", "EVAPOTRANS")
+   case("QINSUR")
       units = "m/s"
       bmi_status = BMI_SUCCESS
-   case("PRCPNONC", "ETRAN")
+   case("PRCPNONC", "QRAIN", "QSEVA", "QSNOW")
       units = "mm/s"
       bmi_status = BMI_SUCCESS
-   case("SNEQV")
+   case("SNEQV", "ACSNOW", "EVAPOTRANS", "SNLIQ", "ECAN", "ETRAN", "CMC")
       units = "mm"
+      bmi_status = BMI_SUCCESS
+   case("FSNO","ISNOW")
+      units = "unitless"
+      bmi_status = BMI_SUCCESS
+   case("SNOWH")
+      units = "m"
       bmi_status = BMI_SUCCESS
    case default
       units = "-"
@@ -705,6 +736,54 @@ contains
       bmi_status = BMI_SUCCESS
    case("TGS")
       size = sizeof(energygrid%tgs(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("ACSNOM")
+      size = sizeof(watergrid%ACSNOM(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("SNOWT_AVG")
+      size = sizeof(energygrid%SNOWT_AVG(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("ISNOW")
+      size = sizeof(watergrid%ISNOW(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("QRAIN")
+      size = sizeof(watergrid%QRAIN(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("FSNO")
+      size = sizeof(watergrid%FSNO(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("SNOWH")
+      size = sizeof(watergrid%SNOWH(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("QSNOW")
+      size = sizeof(watergrid%QSNOW(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("ECAN")
+      size = sizeof(watergrid%ECAN(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("GH")
+      size = sizeof(energygrid%GH(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("TRAD")
+      size = sizeof(energygrid%TRAD(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("FSA")
+      size = sizeof(energygrid%FSA(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("CMC")
+      size = sizeof(watergrid%CMC(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("LH")
+      size = sizeof(energygrid%LH(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("FIRA")
+      size = sizeof(energygrid%FIRA(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("FSH")
+      size = sizeof(energygrid%FSH(1,1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("SNLIQ")
+      size = sizeof(watergrid%SNLIQ(1,1,1))            ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case default
       size = -1
@@ -784,6 +863,10 @@ contains
    integer, intent(inout) :: dest(:)
    integer :: bmi_status
 
+   associate(watergrid   => this%model%watergrid,       &
+             n_x         => this%model%domaingrid%n_x,  &
+             n_y         => this%model%domaingrid%n_y)
+
    select case(name)
 !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR INTEGER VARS =================
 !     case("model__identification_number")
@@ -792,7 +875,13 @@ contains
    case default
       dest(:) = -1
       bmi_status = BMI_FAILURE
+   case("ISNOW")
+      dest = reshape(watergrid%ISNOW,[n_x*n_y])
+      bmi_status = BMI_SUCCESS
    end select
+
+   end associate
+
  end function noahowp_get_int
 
   ! Get a copy of a real variable's values, flattened.
@@ -800,13 +889,19 @@ contains
    class (bmi_noahowp), intent(in) :: this
    character (len=*), intent(in) :: name
    real, intent(inout) :: dest(:)
-   integer :: bmi_status, ix, iy, iz, iflat, n_x, n_y, n_z
+   integer :: bmi_status
+   integer :: ix, iy
+   real, allocatable, dimension(:,:) :: temp
+   real    :: mm2m = 0.001       ! unit conversion mm to m     
+   real    :: m2mm = 1000.       ! unit conversion m to mm
 
-   associate(forcinggrid => this%model%forcinggrid, &
-             watergrid   => this%model%watergrid,   &
-             energygrid  => this%model%energygrid,  &
-             n_x         => this%model%domaingrid%n_x, &
-             n_y         => this%model%domaingrid%n_y)
+   associate(domaingrid  => this%model%domaingrid,      &
+             forcinggrid => this%model%forcinggrid,     &
+             watergrid   => this%model%watergrid,       &
+             energygrid  => this%model%energygrid,      &
+             n_x         => this%model%domaingrid%n_x,  &
+             n_y         => this%model%domaingrid%n_y,  &
+             nsnow       => this%model%levelsgrid%nsnow)
 
    select case(name)
    case("SFCPRS")
@@ -837,13 +932,13 @@ contains
       dest = reshape(watergrid%qinsur,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("ETRAN")
-      dest = reshape(watergrid%etran,[n_x*n_y])
+      dest = reshape(watergrid%etran*domaingrid%DT,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("QSEVA")
-      dest = reshape(watergrid%qseva,[n_x*n_y])
+      dest = reshape(watergrid%qseva*m2mm,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("EVAPOTRANS")
-      dest = reshape(watergrid%evapotrans,[n_x*n_y])
+      dest = reshape(watergrid%evapotrans*domaingrid%DT*mm2m,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("TG")
       dest = reshape(energygrid%tg,[n_x*n_y])
@@ -853,6 +948,51 @@ contains
       bmi_status = BMI_SUCCESS
    case("TGS")
       dest = reshape(energygrid%tgs,[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("ACSNOM")
+      dest = reshape(watergrid%ACSNOM,[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("SNOWT_AVG")
+      dest = reshape(energygrid%SNOWT_AVG,[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("QRAIN")
+      dest = reshape(watergrid%QRAIN,[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("FSNO")
+      dest = reshape(watergrid%FSNO,[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("SNOWH")
+      dest = reshape(watergrid%SNOWH,[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("SNLIQ")
+      dest = reshape(watergrid%SNLIQ,[n_x*n_y*nsnow])
+      bmi_status = BMI_SUCCESS
+   case("QSNOW")
+      dest = reshape(watergrid%QSNOW,[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("ECAN")
+      dest = reshape(watergrid%ECAN(:,:)*domaingrid%DT,[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("GH")
+      dest = reshape(energygrid%GH(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("TRAD")
+      dest = reshape(energygrid%TRAD(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("FSA")
+      dest = reshape(energygrid%FSA(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("CMC")
+      dest = reshape(watergrid%CMC(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("LH")
+      dest = reshape(energygrid%LH(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("FIRA")
+      dest = reshape(energygrid%FIRA(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("FSH")
+      dest = reshape(energygrid%FSH(:,:),[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case default
       dest(:) = -1.0
@@ -1015,8 +1155,11 @@ contains
    character (len=*), intent(in) :: name
    real, intent(in) :: src(:)
    integer :: bmi_status
+   real    :: mm2m = 0.001       ! unit conversion mm to m     
+   real    :: m2mm = 1000.       ! unit conversion m to mm
 
-   associate(forcinggrid => this%model%forcinggrid,  &
+   associate(domaingrid  => this%model%domaingrid,   &
+             forcinggrid => this%model%forcinggrid,  &
              watergrid   => this%model%watergrid,    &
              energygrid  => this%model%energygrid,   &
              n_x         => this%model%domaingrid%n_x, &
@@ -1051,13 +1194,13 @@ contains
       watergrid%qinsur = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("ETRAN")
-      watergrid%etran = reshape(src,[n_x,n_y])
+      watergrid%etran = reshape(src/domaingrid%DT,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("QSEVA")
-      watergrid%qseva = reshape(src,[n_x,n_y])
+      watergrid%qseva = reshape(src*mm2m,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("EVAPOTRANS")
-      watergrid%evapotrans = reshape(src,[n_x,n_y])
+      watergrid%evapotrans = reshape(src*m2mm/domaingrid%DT,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("TG")
       energygrid%tg = reshape(src,[n_x,n_y])

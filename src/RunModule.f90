@@ -74,7 +74,8 @@ contains
     type(GridType), intent(inout) :: grid
     ! note these are in y, x order
     !TODO align model%domaingrid with GridType and reduce this redundancy
-    grid%shape = (/model%domaingrid%n_y, model%domaingrid%n_x/)
+    if(grid%rank==2) grid%shape = (/model%domaingrid%n_y, model%domaingrid%n_x/)
+    if(grid%rank==3) grid%shape = (/model%levelsgrid%nsnow,model%domaingrid%n_y, model%domaingrid%n_x/)
     grid%spacing = (/model%domaingrid%dy, model%domaingrid%dx/)
     grid%origin = (/model%domaingrid%lat(1,1), model%domaingrid%lon(1,1)/) 
     ! in a projected system, it is possible that grid spacing has units, for now just use none

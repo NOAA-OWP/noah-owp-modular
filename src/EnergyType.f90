@@ -9,18 +9,19 @@ module EnergyType
   
   type, public :: energy_type
   
-    real    :: TV                                ! vegetation temperature (k)
-    real    :: TG                                ! ground temperature (k)
-    real    :: FCEV                              ! canopy evaporation energy flux (w/m2)
-    real    :: FCTR                              ! canopy transpiration energy flux (w/m2)
-    real    :: IGS                               ! growing season index (0=off, 1=on)
-    logical :: FROZEN_CANOPY                     ! binary frozen canopy status (true when TV <= parameters%TFRZ)
-    logical :: FROZEN_GROUND                     ! binary frozen ground status (true when TG <= parameters%TFRZ)
-    integer, allocatable, dimension(:) :: IMELT  ! snow layer melting state index [0-no melt;1-melt]
-    real,    allocatable, dimension(:) :: STC    ! snow/soil layer temperature [k]
-    real,    allocatable, dimension(:) :: DF     ! snow and soil layer thermal conductivity [w/m/k]
-    real,    allocatable, dimension(:) :: HCPCT  ! snow and soil layer heat capacity [j/m3/k]
-    real,    allocatable, dimension(:) :: FACT   ! temporary variable used in phase change [s/j/m2/k]
+    real    :: TV                                    ! vegetation temperature (k)
+    real    :: TG                                    ! ground temperature (k)
+    real    :: FCEV                                  ! canopy evaporation energy flux (w/m2)
+    real    :: FCTR                                  ! canopy transpiration energy flux (w/m2)
+    real    :: IGS                                   ! growing season index (0=off, 1=on)
+    logical :: FROZEN_CANOPY                         ! binary frozen canopy status (true when TV <= parameters%TFRZ)
+    logical :: FROZEN_GROUND                         ! binary frozen ground status (true when TG <= parameters%TFRZ)
+    integer, allocatable, dimension(:) :: IMELT      ! snow layer melting state index [0-no melt;1-melt]
+    real,    allocatable, dimension(:) :: STC        ! snow/soil layer temperature [k]
+    real                               :: SNOWT_AVG  ! average snow temperature [k] (by layer mass) (a NWM 3.0 output variable)
+    real,    allocatable, dimension(:) :: DF         ! snow and soil layer thermal conductivity [w/m/k]
+    real,    allocatable, dimension(:) :: HCPCT      ! snow and soil layer heat capacity [j/m3/k]
+    real,    allocatable, dimension(:) :: FACT       ! temporary variable used in phase change [s/j/m2/k]
     
     ! Heat advected by precipitation
     real    :: PAHV                              ! precipitation advected heat - vegetation net (W/m2)

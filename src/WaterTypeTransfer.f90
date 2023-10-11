@@ -57,6 +57,7 @@ module WaterTypeTransfer
     water%SNEQVO = watergrid%SNEQVO(ix,iy)
     water%BDSNO = watergrid%BDSNO(ix,iy)
     water%QSNBOT = watergrid%QSNBOT(ix,iy)
+    water%ACSNOM = watergrid%ACSNOM(ix,iy)
     water%PONDING = watergrid%PONDING(ix,iy)
     water%PONDING1 = watergrid%PONDING1(ix,iy)
     water%PONDING2 = watergrid%PONDING2(ix,iy)
@@ -137,6 +138,7 @@ module WaterTypeTransfer
     watergrid%SNEQVO(ix,iy) = water%SNEQVO
     watergrid%BDSNO(ix,iy) = water%BDSNO
     watergrid%QSNBOT(ix,iy) = water%QSNBOT
+    watergrid%ACSNOM(ix,iy) = water%ACSNOM
     watergrid%PONDING(ix,iy) = water%PONDING
     watergrid%PONDING1(ix,iy) = water%PONDING1
     watergrid%PONDING2(ix,iy) = water%PONDING2
