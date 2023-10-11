@@ -4,7 +4,6 @@ module EnergyGridType
   use NetCDFVarsType, only: netcdfvars_type
   
   implicit none
-  save
   private
   
   type, public :: energygrid_type

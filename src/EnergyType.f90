@@ -4,7 +4,6 @@ module EnergyType
   use EnergyGridType, only: energygrid_type
 
   implicit none
-  save
   private
   
   type, public :: energy_type

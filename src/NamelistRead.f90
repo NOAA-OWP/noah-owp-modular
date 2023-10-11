@@ -4,7 +4,6 @@ use ErrorCheckModule, only: sys_abort
 use ErrorCheckModule, only: is_within_bound
 
 implicit none
-save
 private
 
 type, public :: namelist_type

@@ -3,7 +3,6 @@ module DomainType
   use NamelistRead,   only: namelist_type
   use DomainGridType, only: domaingrid_type
   implicit none
-  save
   private
   
   type, public :: domain_type

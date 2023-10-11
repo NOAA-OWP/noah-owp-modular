@@ -4,7 +4,6 @@ module ParametersType
   use ParametersGridType, only: parametersgrid_type
   
   implicit none
-  save
   private
   
   type, public :: parameters_type

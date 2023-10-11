@@ -4,7 +4,6 @@ use NamelistRead,  only: namelist_type
 use WaterGridType, only: watergrid_type
 
 implicit none
-save
 private
 
 type, public :: water_type

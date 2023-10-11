@@ -4,7 +4,6 @@ use NamelistRead,   only: namelist_type
 use NetCDFVarsType, only: netcdfvars_type
 
 implicit none
-save
 private
 
 type, public :: watergrid_type
