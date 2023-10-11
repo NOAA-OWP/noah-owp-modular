@@ -260,14 +260,15 @@ program noahmp_driver_test
           print*, "get_value function cpu time (s) =",time_2-time_1
           print*, "from get_value (flattened) ="
           do j = 1, grid_size
-            write(*,'(F15.5,1x)',advance='no') var_value_get_real(j) 
+            !write(*,'(F15.5,1x)',advance='no') var_value_get_real(j) 
+            write(*,'(G0.5,1x)',advance='no') var_value_get_real(j) 
           end do
           write(*,*) ''
           print*, "from get_value (in XY) ="
           grid_temp_real = reshape(var_value_get_real,[n_x,n_y])
           do iy = 1, n_y
             do ix = 1, n_x
-              write(*,'(F15.5,1x)',advance='no') grid_temp_real(ix,iy) 
+              write(*,'(G0.5,1x)',advance='no') grid_temp_real(ix,iy) 
             end do
             write(*,*) ''
           end do
@@ -278,14 +279,14 @@ program noahmp_driver_test
           end do
           print*, "our replacement value (flattened) = "
           do j = 1, grid_size
-            write(*,'(F15.5,1x)',advance='no') var_value_set_real(j) 
+            write(*,'(G0.5,1x)',advance='no') var_value_set_real(j) 
           end do
           write(*,*) ''
           print*, "our replacement value (in XY) ="
           grid_temp_real = reshape(var_value_set_real,[n_x,n_y])
           do iy = 1, n_y
             do ix = 1, n_x
-              write(*,'(F15.5,1x)',advance='no') grid_temp_real(ix,iy) 
+              write(*,'(G0.5,1x)',advance='no') grid_temp_real(ix,iy) 
             end do
             write(*,*) ''
           end do
@@ -299,14 +300,14 @@ program noahmp_driver_test
             status = m%get_value(trim(iname), var_value_get_real)
             print*, "and the new value (flattened) = "
             do j = 1, grid_size
-              write(*,'(F15.5,1x)',advance='no') var_value_get_real(j) 
+              write(*,'(G0.5,1x)',advance='no') var_value_get_real(j) 
             end do
             write(*,*) ''
             print*, "and the new value (in XY) = "
             grid_temp_real = reshape(var_value_get_real,[n_x,n_y])
             do iy = 1, n_y
               do ix = 1, n_x
-                write(*,'(F15.5,1x)',advance='no') grid_temp_real(ix,iy) 
+                write(*,'(G0.5,1x)',advance='no') grid_temp_real(ix,iy) 
               end do
               write(*,*) ''
             end do
@@ -330,14 +331,14 @@ program noahmp_driver_test
           print*, "get_value function cpu time (s) =",time_2-time_1
           print*, "from get_value (flattened) ="
           do j = 1, grid_size
-            write(*,'(i15,1x)',advance='no') var_value_get_int(j) 
+            write(*,'(G0,1x)',advance='no') var_value_get_int(j) 
           end do
           write(*,*) ''
           print*, "from get_value (in XY) ="
           grid_temp_int = reshape(var_value_get_int,[n_x,n_y])
           do iy = 1, n_y
             do ix = 1, n_x
-              write(*,'(i15,1x)',advance='no') grid_temp_int(ix,iy) 
+              write(*,'(G0,1x)',advance='no') grid_temp_int(ix,iy) 
             end do
             write(*,*) ''
           end do
@@ -348,14 +349,14 @@ program noahmp_driver_test
           end do
           print*, "our replacement value (flattened) ="
           do j = 1, grid_size
-            write(*,'(i15,1x)',advance='no') var_value_set_int(j) 
+            write(*,'(G0,1x)',advance='no') var_value_set_int(j) 
           end do
           write(*,*) ''
           print*, "our replacement value (in XY) ="
           grid_temp_int = reshape(var_value_set_int,[n_x,n_y])
           do iy = 1, n_y
             do ix = 1, n_x
-              write(*,'(i15,1x)',advance='no') grid_temp_int(ix,iy) 
+              write(*,'(G0,1x)',advance='no') grid_temp_int(ix,iy) 
             end do
             write(*,*) ''
           end do
@@ -370,14 +371,14 @@ program noahmp_driver_test
             status = m%get_value(trim(iname), var_value_get_int)
             print*, "and the new value (flattened) ="
             do j = 1, grid_size
-              write(*,'(i15,1x)',advance='no') var_value_get_int(j) 
+              write(*,'(G0,1x)',advance='no') var_value_get_int(j) 
             end do
             write(*,*) ''
             print*, "and the new value (in XY) ="
             grid_temp_int = reshape(var_value_get_int,[n_x,n_y])
             do iy = 1, n_y
               do ix = 1, n_x
-                write(*,'(i15,1x)',advance='no') grid_temp_int(ix,iy) 
+                write(*,'(G0,1x)',advance='no') grid_temp_int(ix,iy) 
               end do
               write(*,*) ''
             end do
@@ -420,7 +421,7 @@ program noahmp_driver_test
             print*,'z =',iz
             do iy = 1, n_y
               do ix = 1, n_x
-                write(*,'(F15.5,1x)',advance='no') grid3d_temp_real(ix,iy,iz) 
+                write(*,'(G0.5,1x)',advance='no') grid3d_temp_real(ix,iy,iz) 
               end do
               write(*,*) ''
             end do
