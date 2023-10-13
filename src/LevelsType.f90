@@ -15,7 +15,9 @@ type, public :: levels_type
 
     procedure, public  :: Init         
     procedure, private :: InitDefault 
-    procedure, private :: InitTransfer        
+    procedure, private :: InitTransfer
+    procedure, public  :: TransferIn
+    procedure, public  :: TransferOut
 
 end type levels_type
 
@@ -52,5 +54,32 @@ contains
     this%nveg   = levelsgrid%nveg   
 
   end subroutine InitTransfer
+
+  subroutine TransferIn(this, levelsgrid, ix, iy)
+
+    implicit none
+
+    class(levels_type),    intent(inout) :: this
+    type(levelsgrid_type), intent(in)    :: levelsgrid
+    integer,               intent(in)    :: ix
+    integer,               intent(in)    :: iy
+
+    ! Nothing to do
+
+  end subroutine TransferIn
+
+  subroutine TransferOut(this, levelsgrid, ix, iy)
+
+    implicit none
+
+    class(levels_type),    intent(in)    :: this
+    type(levelsgrid_type), intent(inout) :: levelsgrid
+    integer,               intent(in)    :: ix
+    integer,               intent(in)    :: iy
+
+    ! Nothing to do      
+
+  end subroutine TransferOut
+
 
 end module LevelsType
