@@ -148,6 +148,8 @@ module ParametersType
       procedure, private :: InitAllocate
       procedure, private :: InitDefault
       procedure, private :: InitTransfer
+      procedure, public  :: TransferIn
+      procedure, public  :: TransferOut
   
   end type parameters_type
   
@@ -264,6 +266,122 @@ module ParametersType
       this%GRAV = parametersgrid%GRAV
 
     end subroutine InitTransfer
+
+    subroutine TransferIn(this, parametersgrid, ix, iy)
+
+      implicit none
+  
+      class(parameters_type),     intent(inout) :: this
+      type(parametersgrid_type),  intent(in)    :: parametersgrid
+      integer,                    intent(in)    :: ix
+      integer,                    intent(in)    :: iy
+  
+      this%bexp(:) = parametersgrid%bexp(ix,iy,:)
+      this%smcmax(:) = parametersgrid%smcmax(ix,iy,:)
+      this%smcwlt(:) = parametersgrid%smcwlt(ix,iy,:)
+      this%smcref(:) = parametersgrid%smcref(ix,iy,:)
+      this%dksat(:) = parametersgrid%dksat(ix,iy,:)
+      this%dwsat(:) = parametersgrid%dwsat(ix,iy,:)
+      this%psisat(:) = parametersgrid%psisat(ix,iy,:)
+      this%bvic = parametersgrid%bvic(ix,iy)
+      this%AXAJ = parametersgrid%AXAJ(ix,iy)
+      this%BXAJ = parametersgrid%BXAJ(ix,iy)
+      this%XXAJ = parametersgrid%XXAJ(ix,iy)
+      this%BBVIC = parametersgrid%BBVIC(ix,iy)
+      this%G = parametersgrid%G(ix,iy)
+      this%QUARTZ = parametersgrid%QUARTZ(ix,iy)
+      this%kdt = parametersgrid%kdt(ix,iy)
+      this%refkdt = parametersgrid%refkdt(ix,iy)
+      this%refdk = parametersgrid%refdk(ix,iy)
+      this%csoil = parametersgrid%csoil(ix,iy)
+      this%Z0 = parametersgrid%Z0(ix,iy)
+      this%CZIL = parametersgrid%CZIL(ix,iy)
+      this%ZBOT = parametersgrid%ZBOT(ix,iy)
+      this%frzx = parametersgrid%frzx(ix,iy)
+      this%slope = parametersgrid%slope(ix,iy)
+      this%timean = parametersgrid%timean(ix,iy)
+      this%fsatmx = parametersgrid%fsatmx(ix,iy)
+      this%ZWT_INIT = parametersgrid%ZWT_INIT(ix,iy)
+      this%urban_flag = parametersgrid%urban_flag(ix,iy)
+      this%LAIM(:) = parametersgrid%LAIM(ix,iy,:)
+      this%SAIM(:) = parametersgrid%SAIM(ix,iy,:)
+      this%LAI = parametersgrid%LAI(ix,iy)
+      this%SAI = parametersgrid%SAI(ix,iy)
+      this%CH2OP = parametersgrid%CH2OP(ix,iy)
+      this%NROOT = parametersgrid%NROOT(ix,iy)
+      this%HVT = parametersgrid%HVT(ix,iy)
+      this%HVB = parametersgrid%HVB(ix,iy)
+      this%TMIN = parametersgrid%TMIN(ix,iy)
+      this%SHDFAC = parametersgrid%SHDFAC(ix,iy)
+      this%SHDMAX = parametersgrid%SHDMAX(ix,iy)
+      this%Z0MVT = parametersgrid%Z0MVT(ix,iy)
+      this%RC = parametersgrid%RC(ix,iy)
+      this%XL = parametersgrid%XL(ix,iy)
+      this%BP = parametersgrid%BP(ix,iy)
+      this%FOLNMX = parametersgrid%FOLNMX(ix,iy)
+      this%QE25 = parametersgrid%QE25(ix,iy)
+      this%VCMX25 = parametersgrid%VCMX25(ix,iy)
+      this%MP = parametersgrid%MP(ix,iy)
+      this%RGL = parametersgrid%RGL(ix,iy)
+      this%RSMIN = parametersgrid%RSMIN(ix,iy)
+      this%HS = parametersgrid%HS(ix,iy)
+      this%AKC = parametersgrid%AKC(ix,iy)
+      this%AKO = parametersgrid%AKO(ix,iy)
+      this%AVCMX = parametersgrid%AVCMX(ix,iy)
+      this%RSMAX = parametersgrid%RSMAX(ix,iy)
+      this%CWP = parametersgrid%CWP(ix,iy)
+      this%C3PSN = parametersgrid%C3PSN(ix,iy)
+      this%DLEAF = parametersgrid%DLEAF(ix,iy)
+      this%KC25 = parametersgrid%KC25(ix,iy)
+      this%KO25 = parametersgrid%KO25(ix,iy)
+      this%ELAI = parametersgrid%ELAI(ix,iy)
+      this%ESAI = parametersgrid%ESAI(ix,iy)
+      this%VAI = parametersgrid%VAI(ix,iy)
+      this%VEG = parametersgrid%VEG(ix,iy)
+      this%FVEG = parametersgrid%FVEG(ix,iy)
+      this%RHOL(:) = parametersgrid%RHOL(ix,iy,:)
+      this%RHOS(:) = parametersgrid%RHOS(ix,iy,:)
+      this%TAUL(:) = parametersgrid%TAUL(ix,iy,:)
+      this%TAUS(:) = parametersgrid%TAUS(ix,iy,:)
+      this%SSI = parametersgrid%SSI(ix,iy)
+      this%MFSNO = parametersgrid%MFSNO(ix,iy)
+      this%Z0SNO = parametersgrid%Z0SNO(ix,iy)
+      this%RSURF_SNOW = parametersgrid%RSURF_SNOW(ix,iy)
+      this%RSURF_EXP = parametersgrid%RSURF_EXP(ix,iy)
+      this%ALBSAT(:) = parametersgrid%ALBSAT(ix,iy,:)
+      this%ALBDRY(:) = parametersgrid%ALBDRY(ix,iy,:)
+      this%ALBICE(:) = parametersgrid%ALBICE(:)
+      this%ALBLAK(:) = parametersgrid%ALBLAK(:)
+      this%OMEGAS(:) = parametersgrid%OMEGAS(:)
+      this%EG(:) = parametersgrid%EG(ix,iy,:)
+      this%WSLMAX = parametersgrid%WSLMAX(ix,iy)
+      this%max_liq_mass_fraction = parametersgrid%max_liq_mass_fraction(ix,iy)
+      this%SNOW_RET_FAC = parametersgrid%SNOW_RET_FAC(ix,iy)
+      this%TOPT = parametersgrid%TOPT(ix,iy)
+      this%PSIWLT = parametersgrid%PSIWLT(ix,iy)
+      this%TBOT = parametersgrid%TBOT(ix,iy)
+      this%rain_snow_thresh = parametersgrid%rain_snow_thresh(ix,iy)
+  
+    end subroutine TransferIn
+  
+    subroutine TransferOut(this, parametersgrid, ix, iy)
+  
+      implicit none
+  
+      class(parameters_type),     intent(in)    :: this
+      type(parametersgrid_type),  intent(inout) :: parametersgrid
+      integer,                    intent(in)    :: ix
+      integer,                    intent(in)    :: iy
+  
+      parametersgrid%LAI(ix,iy) = this%LAI
+      parametersgrid%SAI(ix,iy) = this%SAI
+      parametersgrid%ELAI(ix,iy) = this%ELAI
+      parametersgrid%ESAI(ix,iy) = this%ESAI
+      parametersgrid%VAI(ix,iy) = this%VAI
+      parametersgrid%VEG(ix,iy) = this%VEG
+      parametersgrid%FVEG(ix,iy) = this%FVEG
+  
+    end subroutine TransferOut
 
   end module ParametersType
   

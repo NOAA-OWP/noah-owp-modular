@@ -11,25 +11,18 @@ OBJS =  ../src/ErrorCheckModule.o \
         ../src/ParametersRead.o \
         ../src/LevelsType.o \
         ../src/LevelsGridType.o \
-        ../src/LevelsTypeTransfer.o \
         ../src/DomainType.o \
         ../src/DomainGridType.o \
-        ../src/DomainTypeTransfer.o \
         ../src/OptionsType.o \
         ../src/OptionsGridType.o \
-        ../src/OptionsTypeTransfer.o \
         ../src/ParametersType.o \
         ../src/ParametersGridType.o \
-        ../src/ParametersTypeTransfer.o \
         ../src/ForcingType.o \
         ../src/ForcingGridType.o \
-        ../src/ForcingTypeTransfer.o \
         ../src/EnergyType.o \
         ../src/EnergyGridType.o \
-        ../src/EnergyTypeTransfer.o \
         ../src/WaterType.o \
         ../src/WaterGridType.o \
-        ../src/WaterTypeTransfer.o \
         ../src/WaterModule.o \
         ../src/CanopyWaterModule.o \
         ../src/SnowWaterModule.o \

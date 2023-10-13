@@ -85,7 +85,9 @@ type, public :: water_type
     procedure, public  :: Init         
     procedure, private :: InitAllocate 
     procedure, private :: InitDefault
-    procedure, private :: InitTransfer     
+    procedure, private :: InitTransfer
+    procedure, public  :: TransferIn
+    procedure, public  :: TransferOut     
 
 end type water_type
 
@@ -215,5 +217,164 @@ contains
 
   end subroutine InitTransfer
 
+  subroutine TransferIn(this, watergrid, ix, iy)
+
+    implicit none
+
+    class(water_type),    intent(inout) :: this
+    type(watergrid_type), intent(in)    :: watergrid
+    integer,              intent(in)    :: ix
+    integer,              intent(in)    :: iy
+
+    this%qinsur = watergrid%qinsur(ix,iy)
+    this%qseva = watergrid%qseva(ix,iy)
+    this%EVAPOTRANS = watergrid%EVAPOTRANS(ix,iy)
+    this%runsrf = watergrid%runsrf(ix,iy)
+    this%runsub = watergrid%runsub(ix,iy)
+    this%qdrain = watergrid%qdrain(ix,iy)
+    this%zwt = watergrid%zwt(ix,iy)
+    this%smcwtd = watergrid%smcwtd(ix,iy)
+    this%deeprech = watergrid%deeprech(ix,iy)
+    this%fcrmax = watergrid%fcrmax(ix,iy)
+    this%snoflow = watergrid%snoflow(ix,iy)
+    this%pddum = watergrid%pddum(ix,iy)
+    this%FACC = watergrid%FACC(ix,iy)
+    this%sicemax = watergrid%sicemax(ix,iy)
+    this%FB_snow = watergrid%FB_snow(ix,iy)
+    this%rain = watergrid%rain(ix,iy)
+    this%snow = watergrid%snow(ix,iy)
+    this%bdfall = watergrid%bdfall(ix,iy)
+    this%FP = watergrid%FP(ix,iy)
+    this%canliq = watergrid%canliq(ix,iy)
+    this%canice = watergrid%canice(ix,iy)
+    this%FWET = watergrid%FWET(ix,iy)
+    this%CMC = watergrid%CMC(ix,iy)
+    this%QINTR = watergrid%QINTR(ix,iy)
+    this%QDRIPR = watergrid%QDRIPR(ix,iy)
+    this%QTHROR = watergrid%QTHROR(ix,iy)
+    this%QINTS = watergrid%QINTS(ix,iy)
+    this%QDRIPS = watergrid%QDRIPS(ix,iy)
+    this%QTHROS = watergrid%QTHROS(ix,iy)
+    this%QRAIN = watergrid%QRAIN(ix,iy)
+    this%QSNOW = watergrid%QSNOW(ix,iy)
+    this%SNOWHIN = watergrid%SNOWHIN(ix,iy)
+    this%ECAN = watergrid%ECAN(ix,iy)
+    this%ETRAN = watergrid%ETRAN(ix,iy)
+    this%QSNFRO = watergrid%QSNFRO(ix,iy)
+    this%QSNSUB = watergrid%QSNSUB(ix,iy)
+    this%SNOWH = watergrid%SNOWH(ix,iy)
+    this%SNEQV = watergrid%SNEQV(ix,iy)
+    this%SNEQVO = watergrid%SNEQVO(ix,iy)
+    this%BDSNO = watergrid%BDSNO(ix,iy)
+    this%QSNBOT = watergrid%QSNBOT(ix,iy)
+    this%PONDING = watergrid%PONDING(ix,iy)
+    this%PONDING1 = watergrid%PONDING1(ix,iy)
+    this%PONDING2 = watergrid%PONDING2(ix,iy)
+    this%QVAP = watergrid%QVAP(ix,iy)
+    this%QDEW = watergrid%QDEW(ix,iy)
+    this%QSDEW = watergrid%QSDEW(ix,iy)
+    this%WSLAKE = watergrid%WSLAKE(ix,iy)
+    this%runsrf_dt = watergrid%runsrf_dt(ix,iy)
+    this%ASAT = watergrid%ASAT(ix,iy)
+    this%ISNOW = watergrid%ISNOW(ix,iy)
+    this%smc(:) = watergrid%smc(ix,iy,:)
+    this%smc_init(:) = watergrid%smc_init(ix,iy,:)
+    this%sice(:) = watergrid%sice(ix,iy,:)
+    this%sh2o(:) = watergrid%sh2o(ix,iy,:)
+    this%etrani(:) = watergrid%etrani(ix,iy,:)
+    this%BTRANI(:) = watergrid%BTRANI(ix,iy,:)
+    this%wcnd(:) = watergrid%wcnd(ix,iy,:)
+    this%fcr(:) = watergrid%fcr(ix,iy,:)
+    this%FICEOLD(:) = watergrid%FICEOLD(ix,iy,:)
+    this%SNICE(:) = watergrid%SNICE(ix,iy,:)
+    this%SNLIQ(:) = watergrid%SNLIQ(ix,iy,:)
+    this%SNICEV(:) = watergrid%SNICEV(ix,iy,:)
+    this%SNLIQV(:) = watergrid%SNLIQV(ix,iy,:)
+    this%FICE(:) = watergrid%FICE(ix,iy,:)
+    this%EPORE(:) = watergrid%EPORE(ix,iy,:)
+    this%FSNO = watergrid%FSNO(ix,iy)
+    this%BTRAN = watergrid%BTRAN(ix,iy)
+
+  end subroutine TransferIn
+
+  subroutine TransferOut(this, watergrid, ix, iy)
+
+    implicit none
+
+    class(water_type),    intent(in)    :: this
+    type(watergrid_type), intent(inout) :: watergrid
+    integer,              intent(in)    :: ix
+    integer,              intent(in)    :: iy
+
+    watergrid%qinsur(ix,iy) = this%qinsur
+    watergrid%qseva(ix,iy) = this%qseva
+    watergrid%EVAPOTRANS(ix,iy) = this%EVAPOTRANS
+    watergrid%runsrf(ix,iy) = this%runsrf
+    watergrid%runsub(ix,iy) = this%runsub
+    watergrid%qdrain(ix,iy) = this%qdrain
+    watergrid%zwt(ix,iy) = this%zwt
+    watergrid%smcwtd(ix,iy) = this%smcwtd
+    watergrid%deeprech(ix,iy) = this%deeprech
+    watergrid%fcrmax(ix,iy) = this%fcrmax
+    watergrid%snoflow(ix,iy) = this%snoflow
+    watergrid%pddum(ix,iy) = this%pddum
+    watergrid%FACC(ix,iy) = this%FACC
+    watergrid%sicemax(ix,iy) = this%sicemax
+    watergrid%FB_snow(ix,iy) = this%FB_snow
+    watergrid%rain(ix,iy) = this%rain
+    watergrid%snow(ix,iy) = this%snow
+    watergrid%bdfall(ix,iy) = this%bdfall
+    watergrid%FP(ix,iy) = this%FP
+    watergrid%canliq(ix,iy) = this%canliq
+    watergrid%canice(ix,iy) = this%canice
+    watergrid%FWET(ix,iy) = this%FWET
+    watergrid%CMC(ix,iy) = this%CMC
+    watergrid%QINTR(ix,iy) = this%QINTR
+    watergrid%QDRIPR(ix,iy) = this%QDRIPR
+    watergrid%QTHROR(ix,iy) = this%QTHROR
+    watergrid%QINTS(ix,iy) = this%QINTS
+    watergrid%QDRIPS(ix,iy) = this%QDRIPS
+    watergrid%QTHROS(ix,iy) = this%QTHROS
+    watergrid%QRAIN(ix,iy) = this%QRAIN
+    watergrid%QSNOW(ix,iy) = this%QSNOW
+    watergrid%SNOWHIN(ix,iy) = this%SNOWHIN
+    watergrid%ECAN(ix,iy) = this%ECAN
+    watergrid%ETRAN(ix,iy) = this%ETRAN
+    watergrid%QSNFRO(ix,iy) = this%QSNFRO
+    watergrid%QSNSUB(ix,iy) = this%QSNSUB
+    watergrid%SNOWH(ix,iy) = this%SNOWH
+    watergrid%SNEQV(ix,iy) = this%SNEQV
+    watergrid%SNEQVO(ix,iy) = this%SNEQVO
+    watergrid%BDSNO(ix,iy) = this%BDSNO
+    watergrid%QSNBOT(ix,iy) = this%QSNBOT
+    watergrid%PONDING(ix,iy) = this%PONDING
+    watergrid%PONDING1(ix,iy) = this%PONDING1
+    watergrid%PONDING2(ix,iy) = this%PONDING2
+    watergrid%QVAP(ix,iy) = this%QVAP
+    watergrid%QDEW(ix,iy) = this%QDEW
+    watergrid%QSDEW(ix,iy) = this%QSDEW
+    watergrid%WSLAKE(ix,iy) = this%WSLAKE
+    watergrid%runsrf_dt(ix,iy) = this%runsrf_dt
+    watergrid%ASAT(ix,iy) = this%ASAT
+    watergrid%ISNOW(ix,iy) = this%ISNOW
+    watergrid%smc(ix,iy,:) = this%smc(:)
+    watergrid%smc_init(ix,iy,:) = this%smc_init(:)
+    watergrid%sice(ix,iy,:) = this%sice(:)
+    watergrid%sh2o(ix,iy,:) = this%sh2o(:)
+    watergrid%etrani(ix,iy,:) = this%etrani(:)
+    watergrid%BTRANI(ix,iy,:) = this%BTRANI(:)
+    watergrid%wcnd(ix,iy,:) = this%wcnd(:)
+    watergrid%fcr(ix,iy,:) = this%fcr(:)
+    watergrid%FICEOLD(ix,iy,:) = this%FICEOLD(:)
+    watergrid%SNICE(ix,iy,:) = this%SNICE(:)
+    watergrid%SNLIQ(ix,iy,:) = this%SNLIQ(:)
+    watergrid%SNICEV(ix,iy,:) = this%SNICEV(:)
+    watergrid%SNLIQV(ix,iy,:) = this%SNLIQV(:)
+    watergrid%FICE(ix,iy,:) = this%FICE(:)
+    watergrid%EPORE(ix,iy,:) = this%EPORE(:)
+    watergrid%FSNO(ix,iy) = this%FSNO
+    watergrid%BTRAN(ix,iy) = this%BTRAN
+
+  end subroutine TransferOut
 
 end module WaterType
