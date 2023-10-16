@@ -238,8 +238,8 @@ contains
       do ii = 1, namelist%nsoil
         domaingrid%zsnso(:,:,ii) = namelist%zsoil(ii)
       end do
-      domaingrid%IST(:,:) = 1
-      where (domaingrid%vegtyp == parametersgrid%ISWATER) domaingrid%IST = 2
+      domaingrid%IST(:,:) = 1                                                ! 1 = soil
+      where (domaingrid%vegtyp == parametersgrid%ISWATER) domaingrid%IST = 2 ! 2 = lake
 
       ! time variables
       domaingrid%nowdate   = domaingrid%startdate ! start the model with nowdate = startdate
