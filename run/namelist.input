@@ -47,17 +47,8 @@
  croptype         = 0               ! crop type (0 = no crops; this option is currently inactive)
 /
 
-&netcdf_input
- netcdfin_filename  = "../data/netcdf_input.nc"  ! directory/name of NetCDF file holding gridded model inputs
- name_var_vegtyp    = "vegtyp"                   ! name of NetCDF variable for vegtyp (land use)
- name_var_isltyp    = "isltyp"                   ! name of NetCDF variable for isltyp (soils)
- name_var_soilcolor = "soilcolor"                ! name of NetCDF variable for soilcolor
- name_var_slope     = "slope"                    ! name of NetCDF variable for slope
- name_var_azimuth   = "azimuth"                  ! name of NetCDF variable for azimuth
- name_dim_x         = "Longitude"                ! name of NetCDF 'x' dimension (longitude dimension)
- name_dim_y         = "Latitude"                 ! name of NetCDF 'y' dimension (latitude dimension)
- name_att_dx        = "dx"                       ! name of NetCDF 'x' dimension resolution (spacing)
- name_att_dy        = "dy"                       ! name of NetCDF 'y' dimension resolution (spacing)
+&attributes
+ attributes_filename = "../data/netcdf_input.nc"  ! directory and name of NetCDF file holding gridded model attributes
 /
 
 &initial_values
