@@ -1,7 +1,7 @@
 module EnergyGridType
 
   use NamelistRead,   only: namelist_type
-  use NetCDFVarsType, only: netcdfvars_type
+  use AttributesType, only: attributes_type
   
   implicit none
   save
@@ -164,25 +164,25 @@ module EnergyGridType
   
   contains   
   
-    subroutine Init(this, namelist, netcdfvars)
+    subroutine Init(this, namelist, attributes)
   
       class(energygrid_type)                :: this
       type(namelist_type)                   :: namelist
-      type(netcdfvars_type)                   :: netcdfvars
+      type(attributes_type)                 :: attributes
   
-      call this%InitAllocate(namelist,netcdfvars)
+      call this%InitAllocate(namelist,attributes)
       call this%InitDefault()
   
     end subroutine Init
   
-    subroutine InitAllocate(this, namelist, netcdfvars)
+    subroutine InitAllocate(this, namelist, attributes)
   
       class(energygrid_type), intent(inout) :: this
       type(namelist_type),    intent(in)    :: namelist
-      type(netcdfvars_type),  intent(in)    :: netcdfvars
+      type(attributes_type),  intent(in)    :: attributes
   
-      associate(n_x   => netcdfvars%metadata%n_x,   &
-                n_y   => netcdfvars%metadata%n_y,   &
+      associate(n_x   => attributes%metadata%n_x,   &
+                n_y   => attributes%metadata%n_y,   &
                 nsoil => namelist%nsoil,            &
                 nsnow => namelist%nsnow)
 

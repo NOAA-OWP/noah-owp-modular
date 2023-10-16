@@ -1,7 +1,7 @@
 module DomainGridType
   
   use NamelistRead,   only: namelist_type
-  use NetCDFVarsType, only: netcdfvars_type
+  use AttributesType, only: attributes_type
   use DateTimeUtilsModule
   
   implicit none
@@ -50,25 +50,25 @@ module DomainGridType
   
   contains   
   
-    subroutine Init(this, namelist, netcdfvars)
+    subroutine Init(this, namelist, attributes)
   
       class(domaingrid_type) :: this
       type(namelist_type)    :: namelist
-      type(netcdfvars_type)  :: netcdfvars
+      type(attributes_type)  :: attributes
   
-      call this%InitAllocate(namelist,netcdfvars)
+      call this%InitAllocate(namelist,attributes)
       call this%InitDefault()
   
     end subroutine Init
   
-    subroutine InitAllocate(this, namelist, netcdfvars)
+    subroutine InitAllocate(this, namelist, attributes)
   
       class(domaingrid_type), intent(inout) :: this
       type(namelist_type),    intent(in)    :: namelist
-      type(netcdfvars_type),  intent(in)    :: netcdfvars
+      type(attributes_type),  intent(in)    :: attributes
   
-      associate(n_x   => netcdfvars%metadata%n_x,   &
-                n_y   => netcdfvars%metadata%n_y,   &
+      associate(n_x   => attributes%metadata%n_x,   &
+                n_y   => attributes%metadata%n_y,   &
                 nsoil => namelist%nsoil, &
                 nsnow => namelist%nsnow)
 
@@ -120,29 +120,29 @@ module DomainGridType
 
     end subroutine InitDefault
   
-    subroutine InitTransfer(this,namelist,netcdfvars)
+    subroutine InitTransfer(this,namelist,attributes)
   
       class(domaingrid_type), intent(inout) :: this
       type(namelist_type),    intent(in)    :: namelist
-      type(netcdfvars_type),  intent(in)    :: netcdfvars
+      type(attributes_type),  intent(in)    :: attributes
       integer                               :: ii
 
       this%dt                   = namelist%dt
-      this%dx                   = netcdfvars%metadata%dx
-      this%dy                   = netcdfvars%metadata%dy
-      this%n_x                  = netcdfvars%metadata%n_x
-      this%n_y                  = netcdfvars%metadata%n_y
+      this%dx                   = attributes%metadata%dx
+      this%dy                   = attributes%metadata%dy
+      this%n_x                  = attributes%metadata%n_x
+      this%n_y                  = attributes%metadata%n_y
       this%startdate            = namelist%startdate
       this%enddate              = namelist%enddate
-      this%lat(:,:)             = spread(source=netcdfvars%lat(:),dim=1,ncopies=netcdfvars%metadata%n_x)
-      this%lon(:,:)             = spread(source=netcdfvars%lon(:),dim=2,ncopies=netcdfvars%metadata%n_y)
-      this%terrain_slope(:,:)   = netcdfvars%slope%data(:,:)
-      this%azimuth(:,:)         = netcdfvars%azimuth%data(:,:)
+      this%lat(:,:)             = spread(source=attributes%lat(:),dim=1,ncopies=attributes%metadata%n_x)
+      this%lon(:,:)             = spread(source=attributes%lon(:),dim=2,ncopies=attributes%metadata%n_y)
+      this%terrain_slope(:,:)   = attributes%slope%data(:,:)
+      this%azimuth(:,:)         = attributes%azimuth%data(:,:)
       this%ZREF                 = namelist%ZREF
-      this%vegtyp(:,:)          = netcdfvars%vegtyp%data(:,:)
+      this%vegtyp(:,:)          = attributes%vegtyp%data(:,:)
       this%croptype(:,:)        = namelist%croptype
-      this%isltyp(:,:)          = netcdfvars%isltyp%data(:,:)
-      this%soilcolor(:,:)       = netcdfvars%soilcolor%data(:,:)
+      this%isltyp(:,:)          = attributes%isltyp%data(:,:)
+      this%soilcolor(:,:)       = attributes%soilcolor%data(:,:)
       this%start_datetime       = date_to_unix(namelist%startdate)  ! returns seconds-since-1970-01-01
       this%end_datetime         = date_to_unix(namelist%enddate)
       do ii = 1, namelist%nsoil

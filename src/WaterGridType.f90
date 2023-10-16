@@ -1,7 +1,7 @@
 module WaterGridType
 
 use NamelistRead,   only: namelist_type
-use NetCDFVarsType, only: netcdfvars_type
+use AttributesType, only: attributes_type
 
 implicit none
 save
@@ -91,25 +91,25 @@ end type watergrid_type
 
 contains   
 
-  subroutine Init(this, namelist, netcdfvars)
+  subroutine Init(this, namelist, attributes)
 
     class(watergrid_type), intent(inout) :: this
     type(namelist_type),   intent(in)    :: namelist
-    type(netcdfvars_type), intent(in)    :: netcdfvars
+    type(attributes_type), intent(in)    :: attributes
 
-    call this%InitAllocate(namelist,netcdfvars)
+    call this%InitAllocate(namelist,attributes)
     call this%InitDefault()
 
   end subroutine Init
 
-  subroutine InitAllocate(this, namelist, netcdfvars)
+  subroutine InitAllocate(this, namelist, attributes)
 
     class(watergrid_type), intent(inout) :: this
     type(namelist_type),   intent(in)    :: namelist
-    type(netcdfvars_type), intent(in)    :: netcdfvars
+    type(attributes_type), intent(in)    :: attributes
 
-    associate(n_x   => netcdfvars%metadata%n_x,   &
-              n_y   => netcdfvars%metadata%n_y,   &
+    associate(n_x   => attributes%metadata%n_x,   &
+              n_y   => attributes%metadata%n_y,   &
               nsoil => namelist%nsoil, &
               nsnow => namelist%nsnow)
 
@@ -261,15 +261,15 @@ contains
 
   end subroutine InitDefault
 
-  subroutine InitTransfer(this, namelist, netcdfvars)
+  subroutine InitTransfer(this, namelist, attributes)
 
     class(watergrid_type), intent(inout) :: this
     type(namelist_type),   intent(in)    :: namelist
-    type(netcdfvars_type), intent(in)    :: netcdfvars
+    type(attributes_type), intent(in)    :: attributes
     integer                              :: ix, iy
 
-    do ix = 1, netcdfvars%metadata%n_x
-      do iy = 1, netcdfvars%metadata%n_y
+    do ix = 1, attributes%metadata%n_x
+      do iy = 1, attributes%metadata%n_y
         this%sh2o(ix,iy,:)     = namelist%sh2o(:)
         this%sice(ix,iy,:)     = namelist%sice(:)
         this%smc(ix,iy,:)      = this%sh2o(ix,iy,:) + this%sice(ix,iy,:)  ! volumetric soil water

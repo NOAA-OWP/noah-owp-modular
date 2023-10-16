@@ -1,7 +1,7 @@
 module ParametersGridType
 
   use NamelistRead,   only: namelist_type
-  use NetCDFVarsType, only: netcdfvars_type
+  use AttributesType, only: attributes_type
   use ParametersRead
   use DomainGridType
 
@@ -156,27 +156,27 @@ module ParametersGridType
 
   contains
 
-  subroutine Init(this, namelist, netcdfvars)
+  subroutine Init(this, namelist, attributes)
 
     implicit none
     class(parametersgrid_type), intent(inout) :: this
     type(namelist_type),        intent(in)    :: namelist
-    type(netcdfvars_type),      intent(in)    :: netcdfvars
+    type(attributes_type),      intent(in)    :: attributes
 
-    call this%InitAllocate(namelist,netcdfvars)
+    call this%InitAllocate(namelist,attributes)
     call this%InitDefault()
 
   end subroutine Init
 
-  subroutine InitAllocate(this, namelist, netcdfvars)
+  subroutine InitAllocate(this, namelist, attributes)
 
     implicit none
     class(parametersgrid_type), intent(inout) :: this
     type(namelist_type),        intent(in)    :: namelist
-    type(netcdfvars_type),      intent(in)    :: netcdfvars
+    type(attributes_type),      intent(in)    :: attributes
 
-    associate(n_x   => netcdfvars%metadata%n_x,  &
-              n_y   => netcdfvars%metadata%n_y,  &
+    associate(n_x   => attributes%metadata%n_x,  &
+              n_y   => attributes%metadata%n_y,  &
               nsoil => namelist%nsoil)
 
     allocate(this%bexp(n_x,n_y,nsoil))
@@ -413,7 +413,7 @@ module ParametersGridType
     implicit none
     class(parametersgrid_type)             :: this
     type(namelist_type), intent(in)        :: namelist
-    type(domaingrid_type), intent(inout)   :: domaingrid
+    type(domaingrid_type), intent(in)      :: domaingrid
     ! local variables
     integer                          :: ix, iy, ii
     character(len=50)                :: dataset_identifier
@@ -582,13 +582,6 @@ module ParametersGridType
           this%rain_snow_thresh(ix,iy) = this%TFRZ + namelist%rain_snow_thresh
         ELSE 
           this%rain_snow_thresh(ix,iy) = this%TFRZ ! set to TFRZ as a backup
-        ENDIF
-        
-        ! Set IST
-        IF(vegtyp.eq.this%ISWATER) then
-          domaingrid%IST(ix,iy) = 2 ! lake
-        ELSE
-          domaingrid%IST(ix,iy) = 1 ! soil
         ENDIF
 
         end associate

@@ -1,7 +1,8 @@
 module ForcingGridType
 
 use NamelistRead,   only: namelist_type
-use NetCDFVarsType, only: netcdfvars_type
+use AttributesType, only: attributes_type
+
 implicit none
 save
 private
@@ -55,23 +56,23 @@ end type
 
 contains   
 
-  subroutine Init(this,netcdfvars)
+  subroutine Init(this,attributes)
 
     class(forcinggrid_type), intent(inout) :: this
-    type(netcdfvars_type),   intent(in)    :: netcdfvars
+    type(attributes_type),   intent(in)    :: attributes
 
-    call this%InitAllocate(netcdfvars)
+    call this%InitAllocate(attributes)
     call this%InitDefault()
 
   end subroutine Init
   
-  subroutine InitAllocate(this, netcdfvars)
+  subroutine InitAllocate(this, attributes)
 
     class(forcinggrid_type), intent(inout) :: this
-    type(netcdfvars_type),   intent(in)    :: netcdfvars
+    type(attributes_type),   intent(in)    :: attributes
 
-    associate(n_x => netcdfvars%metadata%n_x, &
-              n_y => netcdfvars%metadata%n_y)
+    associate(n_x => attributes%metadata%n_x, &
+              n_y => attributes%metadata%n_y)
 
     allocate(this%SFCPRS(n_x,n_y))
     allocate(this%SFCTMP(n_x,n_y))
