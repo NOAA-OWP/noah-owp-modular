@@ -411,6 +411,8 @@ module AttributesType
       if(allocated(attributes_2d%data)) deallocate(attributes_2d%data)
       allocate(attributes_2d%data(n_x,n_y))
       attributes_2d%data(:,:) = realMissing
+    class default 
+      write(*,*) 'ERROR : problem reading ''',trim(varname),''' from ''',trim(filename),''' -- attempted to allocate unrecognized data type'; stop
     end select
   
     !----------------------------------------------------------------------------
@@ -425,6 +427,8 @@ module AttributesType
       status = nf90_get_var(ncid = ncid,varid = varid, values = attributes_2d%data)
       if (status /= nf90_noerr) then; write(*,*) 'Unable to read variable ''',trim(varname),''' from ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
       if(attributes_2d%data(1,1) == realMissing) then; write(*,*) 'ERROR : problem reading ''',trim(varname),''' from ''',trim(filename),''''; stop; end if
+    class default 
+      write(*,*) 'ERROR : problem reading ''',trim(varname),''' from ''',trim(filename),''' -- attempted to read unrecognized data type'; stop
     end select
   
     end associate
