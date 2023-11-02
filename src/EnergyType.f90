@@ -20,7 +20,8 @@ type, public :: energy_type
   real,    allocatable, dimension(:) :: DF     ! snow and soil layer thermal conductivity [w/m/k]
   real,    allocatable, dimension(:) :: HCPCT  ! snow and soil layer heat capacity [j/m3/k]
   real,    allocatable, dimension(:) :: FACT   ! temporary variable used in phase change [s/j/m2/k]
-  
+  real                               :: SNOWT_AVG  ! average snow temperature [k] (by layer mass) (a NWM 3.0 output variable)
+
   ! Heat advected by precipitation
   real    :: PAHV                              ! precipitation advected heat - vegetation net (W/m2)
   real    :: PAHG                              ! precipitation advected heat - under canopy net (W/m2)
@@ -328,7 +329,7 @@ contains
     this%TGS       = huge(1.0)    
     
     this%ICE       = huge(1)    
-    
+    this%SNOWT_AVG = huge(1.0)
     
     
   end subroutine InitDefault
