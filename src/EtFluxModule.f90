@@ -705,7 +705,7 @@ contains
         energy%Q2B   = QSFC
       ELSE
         energy%T2MB  = TGB - energy%SHB/(RHOAIR*CPAIR) * 1./energy%EHB2
-        energy%Q2B   = QSFC - energy%EVB/(energy%LATHEA*RHOAIR)*(1./CQ2B + energy%RSURF)
+        energy%Q2B   = QSFC - energy%EVB/(energy%LATHEAG*RHOAIR)*(1./CQ2B + energy%RSURF)
       ENDIF
       IF (parameters%urban_flag) energy%Q2B = QSFC
     END IF
