@@ -630,7 +630,7 @@ contains
     case("PRCPNONC", "QRAIN", "QSEVA", "QSNOW")
        units = "mm/s"
        bmi_status = BMI_SUCCESS
-    case("SNEQV", "ACSNOW", "EVAPOTRANS", "SNLIQ", "ECAN", "ETRAN", "CMC")
+    case("SNEQV", "ACSNOM", "EVAPOTRANS", "SNLIQ", "ECAN", "ETRAN", "CMC")
        units = "mm"
        bmi_status = BMI_SUCCESS
     case("FSNO","ISNOW")
@@ -823,6 +823,8 @@ contains
     character (len=*), intent(in) :: name
     real, intent(inout) :: dest(:)
     integer :: bmi_status
+    real    :: mm2m = 0.001       ! unit conversion mm to m     
+    real    :: m2mm = 1000.       ! unit conversion m to mm
 
     associate(forcing => this%model%forcing, &
               water   => this%model%water,   &
@@ -858,13 +860,13 @@ contains
        dest = [water%qinsur]
        bmi_status = BMI_SUCCESS
     case("ETRAN")
-       dest = [water%etran]
+       dest = [water%etran*domain%DT]
        bmi_status = BMI_SUCCESS
     case("QSEVA")
-       dest = [water%qseva]
+       dest = [water%qseva*m2mm]
        bmi_status = BMI_SUCCESS
     case("EVAPOTRANS")
-       dest = [water%evapotrans]
+       dest = [water%evapotrans*domain%DT*mm2m]
        bmi_status = BMI_SUCCESS
     case("TG")
        dest = [energy%tg]
@@ -1079,6 +1081,8 @@ contains
     character (len=*), intent(in) :: name
     real, intent(in) :: src(:)
     integer :: bmi_status
+    real    :: mm2m = 0.001       ! unit conversion mm to m     
+    real    :: m2mm = 1000.       ! unit conversion m to mm
 
     select case(name)
     case("SFCPRS")
@@ -1109,13 +1113,13 @@ contains
        this%model%water%qinsur = src(1)
        bmi_status = BMI_SUCCESS
     case("ETRAN")
-       this%model%water%etran = src(1)
+       this%model%water%etran = src(1) / this%model%domain%DT
        bmi_status = BMI_SUCCESS
     case("QSEVA")
-       this%model%water%qseva = src(1)
+       this%model%water%qseva = src(1) * mm2m 
        bmi_status = BMI_SUCCESS
     case("EVAPOTRANS")
-       this%model%water%evapotrans = src(1)
+       this%model%water%evapotrans = src(1) * m2mm / this%model%domain%DT
        bmi_status = BMI_SUCCESS
     case("TG")
        this%model%energy%tg = src(1)
