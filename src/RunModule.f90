@@ -25,7 +25,7 @@ module RunModule
   use WaterModule
   use DateTimeUtilsModule
   use NamelistRead
-  use NetCDFVarsType
+  use AttributesType
   use bmi_grid
 
   implicit none
@@ -45,7 +45,7 @@ module RunModule
   type :: noahowpgrid_type
 
     type(namelist_type)       :: namelist
-    type(netcdfvars_type)     :: netcdfvars
+    type(attributes_type)     :: attributes
     type(levelsgrid_type)     :: levelsgrid
     type(domaingrid_type)     :: domaingrid
     type(optionsgrid_type)    :: optionsgrid
@@ -83,10 +83,10 @@ contains
     type (noahowpgrid_type), intent (out)   :: model
     character(len=*), intent (in)           :: config_filename    ! config file from command line argument
     integer                                 :: forcing_timestep         ! integer time step (set to dt) for some subroutine calls
-    integer                                 :: ii
+    integer                                 :: ii, ix, iy
         
     associate(namelist       => model%namelist,       &
-              netcdfvars     => model%netcdfvars,     &
+              attributes     => model%attributes,     &
               levelsgrid     => model%levelsgrid,     &
               domaingrid     => model%domaingrid,     &
               optionsgrid    => model%optionsgrid,    &
@@ -99,28 +99,28 @@ contains
       !  initialize
       !---------------------------------------------------------------------
       call namelist%ReadNamelist(config_filename)
-      call netcdfvars%Init(namelist)
+      call attributes%Init(namelist)
       
       call levelsgrid%Init(namelist)
       call levelsgrid%InitTransfer(namelist)
 
-      call domaingrid%Init(namelist,netcdfvars)
-      call domaingrid%InitTransfer(namelist,netcdfvars)
+      call domaingrid%Init(namelist,attributes)
+      call domaingrid%InitTransfer(namelist,attributes)
 
       call optionsgrid%Init(namelist)
       call optionsgrid%InitTransfer(namelist)
 
-      call parametersgrid%Init(namelist,netcdfvars)
+      call parametersgrid%Init(namelist,attributes)
       call parametersgrid%paramRead(namelist,domaingrid)
 
-      call forcinggrid%Init(netcdfvars)
+      call forcinggrid%Init(attributes)
       call forcinggrid%InitTransfer(namelist)
 
-      call energygrid%Init(namelist,netcdfvars)
+      call energygrid%Init(namelist,attributes)
       call energygrid%InitTransfer(namelist)
 
-      call watergrid%Init(namelist,netcdfvars)
-      call watergrid%InitTransfer(namelist,netcdfvars)
+      call watergrid%Init(namelist,attributes)
+      call watergrid%InitTransfer(namelist,attributes)
 
       ! Initializations
       ! for soil water
@@ -232,6 +232,8 @@ contains
       do ii = 1, namelist%nsoil
         domaingrid%zsnso(:,:,ii) = namelist%zsoil(ii)
       end do
+      domaingrid%IST(:,:) = 1                                                ! 1 = soil
+      where (domaingrid%vegtyp == parametersgrid%ISWATER) domaingrid%IST = 2 ! 2 = lake
 
       ! time variables
       domaingrid%nowdate   = domaingrid%startdate ! start the model with nowdate = startdate

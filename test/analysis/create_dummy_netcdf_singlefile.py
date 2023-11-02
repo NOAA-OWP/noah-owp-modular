@@ -24,17 +24,17 @@ def create_dummy():
   dum = nc.Dataset(filename, 'w', format='NETCDF4')
 
   # Define dimensions
-  dim_lat = dum.createDimension('Latitude', n_y)
-  dim_lon = dum.createDimension('Longitude', n_x)
+  dim_lat = dum.createDimension('latitude', n_y)
+  dim_lon = dum.createDimension('longitude', n_x)
 
   # Create variables
-  var_lon = dum.createVariable('Longitude', 'f4', 'Longitude')
-  var_lat = dum.createVariable('Latitude', 'f4', 'Latitude')  
-  var_slope = dum.createVariable('slope', 'f4', ('Latitude','Longitude'))
-  var_azimuth = dum.createVariable('azimuth', 'f4', ('Latitude','Longitude'))
-  var_isltyp = dum.createVariable('isltyp', 'i4', ('Latitude','Longitude'))
-  var_vegtyp = dum.createVariable('vegtyp', 'i4', ('Latitude','Longitude'))
-  var_soilcolor = dum.createVariable('soilcolor', 'i4', ('Latitude','Longitude'))
+  var_lon = dum.createVariable('longitude', 'f4', 'longitude')
+  var_lat = dum.createVariable('latitude', 'f4', 'latitude')  
+  var_slope = dum.createVariable('slope', 'f4', ('latitude','longitude'))
+  var_azimuth = dum.createVariable('azimuth', 'f4', ('latitude','longitude'))
+  var_isltyp = dum.createVariable('isltyp', 'i4', ('latitude','longitude'))
+  var_vegtyp = dum.createVariable('vegtyp', 'i4', ('latitude','longitude'))
+  var_soilcolor = dum.createVariable('soilcolor', 'i4', ('latitude','longitude'))
 
   # Create attributes
   var_lon.dx = dx
