@@ -58,6 +58,7 @@ type, public :: water_type
   real                            :: WSLAKE      ! water storage in lake (can be -) (mm)
   real                            :: runsrf_dt   ! temporal time step for surface runoff calculations
   real                            :: ASAT        ! accumulated saturation in VIC runoff scheme
+  real                            :: ACSNOM      ! Accumulated meltwater from bottom snow layer [mm] (NWM 3.0)
   
   integer                         :: ISNOW       ! actual no. of snow layers 
   real, allocatable, dimension(:) :: smc         ! total soil water content [m3/m3]
@@ -180,6 +181,7 @@ contains
     this%ASAT     = huge(1.0)
     this%ISNOW    = huge(1)
     this%FSNO     = huge(1.0)
+    this%ACSNOM   = huge(1.0)
 
   end subroutine InitDefault
 
