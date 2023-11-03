@@ -262,9 +262,6 @@ contains
     this%FSNO(:,:) = huge(1.0)
     this%BTRAN(:,:) = huge(1.0)
 
-    !!Set EVAPOTRANS values outside mask to 0 rather than huge(1) to avoid arithmetic errors in /bmi/bmi_noahowp matrix operations
-    where (attributes%mask%data == 0) this%EVAPOTRANS = 0.
-
   end subroutine InitDefault
 
   subroutine InitTransfer(this, namelist, attributes)
