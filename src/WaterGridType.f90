@@ -98,7 +98,7 @@ contains
     type(attributes_type), intent(in)    :: attributes
 
     call this%InitAllocate(namelist,attributes)
-    call this%InitDefault()
+    call this%InitDefault(attributes)
 
   end subroutine Init
 
@@ -187,9 +187,10 @@ contains
 
   end subroutine InitAllocate
 
-  subroutine InitDefault(this)
+  subroutine InitDefault(this,attributes)
 
-    class(watergrid_type) :: this
+    class(watergrid_type), intent(inout) :: this
+    type(attributes_type), intent(in)    :: attributes
 
     this%qinsur(:,:) = huge(1.0)
     this%qseva(:,:) = huge(1.0)
@@ -260,6 +261,9 @@ contains
     this%EPORE(:,:,:) = huge(1.0)
     this%FSNO(:,:) = huge(1.0)
     this%BTRAN(:,:) = huge(1.0)
+
+    !!Set EVAPOTRANS values outside mask to 0 rather than huge(1) to avoid arithmetic errors in /bmi/bmi_noahowp matrix operations
+    where (attributes%mask%data == 0) this%EVAPOTRANS = 0.
 
   end subroutine InitDefault
 
