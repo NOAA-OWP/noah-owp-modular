@@ -278,7 +278,6 @@ module AttributesType
     if(.NOT.(ANY(dimids_2d == dimid_x))) then; write(*,*) 'The variable ''',trim(name_var_mask),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_x),'''';  stop ":  ERROR EXIT"; end if
     if(.NOT.(ANY(dimids_2d == dimid_y))) then; write(*,*) 'The variable ''',trim(name_var_mask),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_y),'''';  stop ":  ERROR EXIT"; end if
 
-
     end associate
 
   end subroutine
