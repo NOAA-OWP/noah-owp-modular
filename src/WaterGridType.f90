@@ -98,7 +98,7 @@ contains
     type(attributes_type), intent(in)    :: attributes
 
     call this%InitAllocate(namelist,attributes)
-    call this%InitDefault(attributes)
+    call this%InitDefault()
 
   end subroutine Init
 
@@ -187,10 +187,9 @@ contains
 
   end subroutine InitAllocate
 
-  subroutine InitDefault(this,attributes)
+  subroutine InitDefault(this)
 
-    class(watergrid_type), intent(inout) :: this
-    type(attributes_type), intent(in)    :: attributes
+    class(watergrid_type) :: this
 
     this%qinsur(:,:) = huge(1.0)
     this%qseva(:,:) = huge(1.0)
