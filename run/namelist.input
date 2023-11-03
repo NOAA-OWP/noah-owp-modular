@@ -1,7 +1,7 @@
 &timing                                             ! and input/output paths
   dt                 = 3600.0                       ! timestep [seconds]
   startdate          = "201101010600"               ! UTC time start of simulation (YYYYMMDDhhmm)
-  enddate            = "201101010600"               ! UTC time end of simulation (YYYYMMDDhhmm)
+  enddate            = "201101100600"               ! UTC time end of simulation (YYYYMMDDhhmm)
   forcing_filename   = "../data/TiffinForcings.dat" ! file containing forcing data
   output_filename    = "../data/output.nc"
 /
