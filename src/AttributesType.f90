@@ -32,9 +32,8 @@ module AttributesType
     character(len=max_var_name_length)  :: name_var_isltyp   
     character(len=max_var_name_length)  :: name_var_soilcolor 
     character(len=max_var_name_length)  :: name_var_slope    
-    character(len=max_var_name_length)  :: name_var_azimuth   
-    character(len=max_var_name_length)  :: name_att_dx      
-    character(len=max_var_name_length)  :: name_att_dy     
+    character(len=max_var_name_length)  :: name_var_azimuth
+    character(len=max_var_name_length)  :: name_var_mask      
     character(len=max_var_name_length)  :: name_dim_x       
     character(len=max_var_name_length)  :: name_dim_y      
     character(len=max_var_name_length)  :: name_var_x       
@@ -44,6 +43,7 @@ module AttributesType
     integer                             :: varid_soilcolor
     integer                             :: varid_slope
     integer                             :: varid_azimuth
+    integer                             :: varid_mask
     integer                             :: varid_x
     integer                             :: varid_y
     integer                             :: n_x                             
@@ -64,7 +64,8 @@ module AttributesType
     type(attributes_2dint_type)         :: isltyp     
     type(attributes_2dint_type)         :: soilcolor   
     type(attributes_2dreal_type)        :: slope      
-    type(attributes_2dreal_type)        :: azimuth    
+    type(attributes_2dreal_type)        :: azimuth
+    type(attributes_2dint_type)         :: mask     
     real,allocatable,dimension(:)       :: lat         
     real,allocatable,dimension(:)       :: lon         
     character(len=max_file_name_length) :: filename    
@@ -133,8 +134,6 @@ module AttributesType
     integer,dimension(2)                 :: dimids_2d
 
     associate(ncid               => this%ncid,                        &
-              name_att_dx        => this%metadata%name_att_dx,        & 
-              name_att_dy        => this%metadata%name_att_dy,        & 
               name_dim_x         => this%metadata%name_dim_x,         & 
               name_dim_y         => this%metadata%name_dim_y,         &
               name_var_x         => this%metadata%name_var_x,         & 
@@ -144,6 +143,7 @@ module AttributesType
               name_var_soilcolor => this%metadata%name_var_soilcolor, &   
               name_var_slope     => this%metadata%name_var_slope,     &
               name_var_azimuth   => this%metadata%name_var_azimuth,   &
+              name_var_mask      => this%metadata%name_var_mask,      &
               varid_x            => this%metadata%varid_x,            & 
               varid_y            => this%metadata%varid_y,            & 
               varid_vegtyp       => this%metadata%varid_vegtyp,       & 
@@ -151,6 +151,7 @@ module AttributesType
               varid_soilcolor    => this%metadata%varid_soilcolor,    &   
               varid_slope        => this%metadata%varid_slope,        &
               varid_azimuth      => this%metadata%varid_azimuth,      &
+              varid_mask         => this%metadata%varid_mask,         &
               dimid_x            => this%metadata%dimid_x,            &
               dimid_y            => this%metadata%dimid_y,            &
               filename           => this%filename,                    &
@@ -166,6 +167,7 @@ module AttributesType
     varid_soilcolor = integerMissing 
     varid_slope     = integerMissing
     varid_azimuth   = integerMissing
+    varid_mask      = integerMissing
     dimid_x         = integerMissing
     dimid_y         = integerMissing
 
@@ -194,14 +196,8 @@ module AttributesType
     if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(name_var_slope),'''';  stop ":  ERROR EXIT"; end if
     status = nf90_inq_varid(ncid = ncid, name = trim(name_var_azimuth), varid = varid_azimuth)
     if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(name_var_azimuth),'''';  stop ":  ERROR EXIT"; end if
-    
-    !----------------------------------------------------------------------------
-    ! Check for required attributes
-    !----------------------------------------------------------------------------
-    status = nf90_inquire_attribute(ncid = ncid, varid = varid_x, name = name_att_dx)
-    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the attribute ''',trim(name_att_dx),''' associated with the variable ''',trim(name_dim_x),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_inquire_attribute(ncid = ncid, varid = varid_y, name = name_att_dy)
-    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the attribute ''',trim(name_att_dy),''' associated with the variable ''',trim(name_dim_y),'''';  stop ":  ERROR EXIT"; end if
+    status = nf90_inq_varid(ncid = ncid, name = trim(name_var_mask), varid = varid_mask)
+    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(name_var_mask),'''';  stop ":  ERROR EXIT"; end if
 
     !----------------------------------------------------------------------------
     ! Check that required variables have required number of dimensions
@@ -234,6 +230,11 @@ module AttributesType
     status = nf90_inquire_variable(ncid = ncid, varid = varid_azimuth, ndims = ndims)
     if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get the number of dimensions for variable ''',trim(name_var_azimuth),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
     if (ndims  .ne. 2)          then; write(*,*) 'The variable ''',trim(name_var_azimuth),''' in the file ''',trim(filename),''' must have 2 dimensions but has ',ndims;  stop ":  ERROR EXIT"; end if
+    ndims = -1
+    status = nf90_inquire_variable(ncid = ncid, varid = varid_mask, ndims = ndims)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get the number of dimensions for variable ''',trim(name_var_mask),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if (ndims  .ne. 2)          then; write(*,*) 'The variable ''',trim(name_var_mask),''' in the file ''',trim(filename),''' must have 2 dimensions but has ',ndims;  stop ":  ERROR EXIT"; end if
+
 
     !----------------------------------------------------------------------------
     ! Check that required variables have required dimensions
@@ -271,6 +272,12 @@ module AttributesType
     if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get dimension ID numbers for the variable ''',trim(name_var_azimuth),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
     if(.NOT.(ANY(dimids_2d == dimid_x))) then; write(*,*) 'The variable ''',trim(name_var_azimuth),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_x),'''';  stop ":  ERROR EXIT"; end if
     if(.NOT.(ANY(dimids_2d == dimid_y))) then; write(*,*) 'The variable ''',trim(name_var_azimuth),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_y),'''';  stop ":  ERROR EXIT"; end if
+    dimids_2d = -1
+    status = nf90_inquire_variable(ncid = ncid, varid = varid_mask, dimids = dimids_2d)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get dimension ID numbers for the variable ''',trim(name_var_mask),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if(.NOT.(ANY(dimids_2d == dimid_x))) then; write(*,*) 'The variable ''',trim(name_var_mask),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_x),'''';  stop ":  ERROR EXIT"; end if
+    if(.NOT.(ANY(dimids_2d == dimid_y))) then; write(*,*) 'The variable ''',trim(name_var_mask),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_y),'''';  stop ":  ERROR EXIT"; end if
+
 
     end associate
 
@@ -282,8 +289,6 @@ module AttributesType
     integer                              :: status
 
     associate(ncid           => this%ncid,                     &
-              name_att_dx    => this%metadata%name_att_dx,     & 
-              name_att_dy    => this%metadata%name_att_dy,     & 
               name_dim_x     => this%metadata%name_dim_x,      & 
               name_dim_y     => this%metadata%name_dim_y,      & 
               name_var_x     => this%metadata%name_var_x,      &
@@ -319,16 +324,6 @@ module AttributesType
     if (n_y .eq. integerMissing) then; write(*,*) 'Problem reading length of dimension ''',trim(name_dim_y),''' in ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
 
     !----------------------------------------------------------------------------
-    ! Read dx and dy
-    !----------------------------------------------------------------------------
-    status = nf90_get_att(ncid = ncid, varid = varid_x, name = name_att_dx, values = dx)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to read attribute ''',trim(name_att_dx),''' with variable ''',trim(name_dim_x),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    if (dx .eq. realMissing) then; write(*,*) 'Problem reading length of dimension ''',trim(name_dim_x),''' in ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
-    status = nf90_get_att(ncid = ncid, varid = varid_y, name = name_att_dy, values = dy)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to read attribute ''',trim(name_att_dy),''' with variable ''',trim(name_dim_y),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    if (dy .eq. realMissing) then; write(*,*) 'Problem reading length of dimension ''',trim(name_dim_y),''' in ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
-
-    !----------------------------------------------------------------------------
     ! Allocate local arrays and set to missing values
     !----------------------------------------------------------------------------
     allocate(this%lon(n_x))
@@ -345,6 +340,24 @@ module AttributesType
     status = nf90_get_var(ncid = ncid, varid = varid_y, values = this%lat)
     if (status .ne. nf90_noerr) then; write(*,*) 'Unable to read variable ''',trim(name_var_y),''' from ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
     if(this%lat(1) .eq. realMissing) then; write(*,*) 'Problem reading variable ''',trim(name_var_y),''' from ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
+
+    !----------------------------------------------------------------------------
+    ! Get dx and dy (i.e., the grid spacing from lat and lon arrays)
+    ! Assume uniform rectilinear grid
+    !----------------------------------------------------------------------------
+    if(abs(this%lon(1)) >= abs(this%lon(2))) then
+      dx = abs(this%lon(1))-abs(this%lon(2)) ! western hemisphere
+    else if (abs(this%lon(1)) < abs(this%lon(2))) then
+      dx = abs(this%lon(2))-abs(this%lon(1)) ! eastern hemisphere
+    end if
+    if(dx < 0.) then; write(*,*) 'Unable to infer dx from variable ''',trim(name_var_x),''' in ''',trim(filename),''' (dx should be postive but has value:',dx; stop ":  ERROR EXIT"; end if
+
+    if(abs(this%lat(1)) >= abs(this%lat(2))) then
+      dy = abs(this%lat(1))-abs(this%lat(2)) ! northern hemisphere
+    else if (abs(this%lat(1)) < abs(this%lat(2))) then
+      dy = abs(this%lat(2))-abs(this%lat(1)) ! southern hemisphere
+    end if
+    if(dy < 0.) then; write(*,*) 'Unable to infer dy from variable ''',trim(name_var_y),''' in ''',trim(filename),''' (dy should be postive but has value:',dy; stop ":  ERROR EXIT"; end if
 
     end associate
 
@@ -363,6 +376,7 @@ module AttributesType
     this%soilcolor%name  = this%metadata%name_var_soilcolor
     this%slope%name      = this%metadata%name_var_slope 
     this%azimuth%name    = this%metadata%name_var_azimuth    
+    this%mask%name       = this%metadata%name_var_mask 
 
     !----------------------------------------------------------------------------
     ! Set variable id numbers
@@ -371,7 +385,8 @@ module AttributesType
     this%isltyp%varid    = this%metadata%varid_isltyp
     this%soilcolor%varid = this%metadata%varid_soilcolor
     this%slope%varid     = this%metadata%varid_slope   
-    this%azimuth%varid   = this%metadata%varid_azimuth      
+    this%azimuth%varid   = this%metadata%varid_azimuth 
+    this%mask%varid      = this%metadata%varid_mask      
 
     !----------------------------------------------------------------------------
     ! Read variables
@@ -381,6 +396,7 @@ module AttributesType
     call this%ReadVar2D(this%soilcolor)
     call this%ReadVar2D(this%slope)
     call this%ReadVar2D(this%azimuth)
+    call this%ReadVar2D(this%mask)
 
   end subroutine
 
@@ -482,8 +498,7 @@ module AttributesType
     this%metadata%name_var_soilcolor = namelist%name_var_soilcolor
     this%metadata%name_var_slope     = namelist%name_var_slope
     this%metadata%name_var_azimuth   = namelist%name_var_azimuth
-    this%metadata%name_att_dx        = namelist%name_att_dx
-    this%metadata%name_att_dy        = namelist%name_att_dy       
+    this%metadata%name_var_mask      = namelist%name_var_mask       
     this%metadata%name_dim_x         = namelist%name_dim_x
     this%metadata%name_dim_y         = namelist%name_dim_y
     this%metadata%name_var_x         = namelist%name_var_x

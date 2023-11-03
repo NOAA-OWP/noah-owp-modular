@@ -1,8 +1,8 @@
 &timing                                             ! and input/output paths
-  dt                 = 1800.0                       ! timestep [seconds]
-  startdate          = "199801010630"               ! UTC time start of simulation (YYYYMMDDhhmm)
-  enddate            = "199901010630"               ! UTC time end of simulation (YYYYMMDDhhmm)
-  forcing_filename   = "../data/bondville.dat"      ! file containing forcing data
+  dt                 = 3600.0                       ! timestep [seconds]
+  startdate          = "201101010600"               ! UTC time start of simulation (YYYYMMDDhhmm)
+  enddate            = "201101010600"               ! UTC time end of simulation (YYYYMMDDhhmm)
+  forcing_filename   = "../data/TiffinForcings.dat" ! file containing forcing data
   output_filename    = "../data/output.nc"
 /
 
@@ -48,7 +48,7 @@
 /
 
 &attributes
- attributes_filename = "../data/netcdf_input.nc"  ! directory and name of NetCDF file holding gridded model attributes
+ attributes_filename = "../data/TiffinGriddedAttributes.nc"  ! directory and name of NetCDF file holding gridded model attributes
 /
 
 &initial_values
