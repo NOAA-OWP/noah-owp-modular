@@ -933,23 +933,23 @@ contains
    case("ETRAN")
       if(allocated(conv)) deallocate(conv)
       allocate(conv(n_x,n_y))
-      conv = watergrid%etran
-      where(domaingrid%mask == 0) conv = 0.
-      dest = reshape(conv*domaingrid%DT,[n_x*n_y])
+      conv = 0.
+      where(domaingrid%mask == 1) conv = watergrid%etran*domaingrid%DT
+      dest = reshape(conv,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("QSEVA")
       if(allocated(conv)) deallocate(conv)
       allocate(conv(n_x,n_y))
-      conv = watergrid%qseva
-      where(domaingrid%mask == 0) conv = 0.
-      dest = reshape(conv*m2mm,[n_x*n_y])
+      conv = 0.
+      where(domaingrid%mask == 1) conv = watergrid%qseva*m2mm
+      dest = reshape(conv,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("EVAPOTRANS")
       if(allocated(conv)) deallocate(conv)
       allocate(conv(n_x,n_y))
-      conv = watergrid%evapotrans
-      where(domaingrid%mask == 0) conv = 0.
-      dest = reshape(conv*domaingrid%DT*mm2m,[n_x*n_y])
+      conv = 0.
+      where(domaingrid%mask == 1) conv = watergrid%evapotrans*domaingrid%DT*mm2m
+      dest = reshape(conv,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("TG")
       dest = reshape(energygrid%tg,[n_x*n_y])
@@ -984,9 +984,9 @@ contains
    case("ECAN")
       if(allocated(conv)) deallocate(conv)
       allocate(conv(n_x,n_y))
-      conv = watergrid%ECAN
-      where(domaingrid%mask == 0) conv = 0.
-      dest = reshape(conv*domaingrid%DT,[n_x*n_y])
+      conv = 0.
+      where(domaingrid%mask == 1) conv = watergrid%ECAN*domaingrid%DT
+      dest = reshape(conv,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("GH")
       dest = reshape(energygrid%GH(:,:),[n_x*n_y])
@@ -1213,22 +1213,22 @@ contains
       if(allocated(conv)) deallocate(conv)
       allocate(conv(n_x,n_y))
       conv = reshape(src,[n_x,n_y])
-      where(domaingrid%mask == 0) conv = 0.
-      watergrid%etran = conv/domaingrid%DT
+      where(domaingrid%mask == 1) conv = conv/domaingrid%DT
+      watergrid%etran = conv
       bmi_status = BMI_SUCCESS
    case("QSEVA")
       if(allocated(conv)) deallocate(conv)
       allocate(conv(n_x,n_y))
       conv = reshape(src,[n_x,n_y])
-      where(domaingrid%mask == 0) conv = 0.
-      watergrid%qseva = conv*mm2m
+      where(domaingrid%mask == 1) conv = conv*mm2m
+      watergrid%qseva = conv
       bmi_status = BMI_SUCCESS
    case("EVAPOTRANS")
       if(allocated(conv)) deallocate(conv)
       allocate(conv(n_x,n_y))
       conv = reshape(src,[n_x,n_y])
-      where(domaingrid%mask == 0) conv = 0.
-      watergrid%evapotrans = conv*m2mm/domaingrid%DT
+      where(domaingrid%mask == 1) conv = conv*m2mm/domaingrid%DT
+      watergrid%evapotrans = conv
       bmi_status = BMI_SUCCESS
    case("TG")
       energygrid%tg = reshape(src,[n_x,n_y])
