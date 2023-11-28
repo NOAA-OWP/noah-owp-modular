@@ -30,9 +30,11 @@ contains
 ! ------------------------ local variables ---------------------------
   INTEGER :: IZ,i
   REAL    :: BDSNOW  !bulk density of snow (kg/m3)
+  REAL    :: realMissing
 ! ----------------------------------------------------------------------
 
 ! initialization
+   realMissing    = -999999.0
    water%SNOFLOW  = 0.0
    water%PONDING1 = 0.0
    water%PONDING2 = 0.0
@@ -92,6 +94,14 @@ contains
    DO IZ = water%ISNOW+1 ,levels%nsoil
        domain%DZSNSO(IZ) = -domain%DZSNSO(IZ)
    END DO
+
+   ! NWM3.0 parameter
+   if (sum(water%SNICE(-levels%nsnow+1:0) + water%SNLIQ(-levels%nsnow+1:0)).gt.0.) then
+      energy%SNOWT_AVG = SUM(energy%STC(-levels%nsnow+1:0)*(water%SNICE(-levels%nsnow+1:0)+water%SNLIQ(-levels%nsnow+1:0))) / &
+                         SUM(water%SNICE(-levels%nsnow+1:0)+water%SNLIQ(-levels%nsnow+1:0))
+   else
+      energy%SNOWT_AVG = realMissing
+   end if
 
   END SUBROUTINE SnowWater
 

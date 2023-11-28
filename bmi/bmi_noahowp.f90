@@ -98,7 +98,7 @@ module bminoahowp
 
   ! Exchange items
   integer, parameter :: input_item_count = 8
-  integer, parameter :: output_item_count = 7
+  integer, parameter :: output_item_count = 23
   character (len=BMI_MAX_VAR_NAME), target, &
        dimension(input_item_count) :: input_items
   character (len=BMI_MAX_VAR_NAME), target, &
@@ -163,12 +163,28 @@ contains
     integer :: bmi_status
 
     output_items(1) = 'QINSUR'     ! total liquid water input to surface rate (m/s)
-    output_items(2) = 'ETRAN'      ! transpiration rate (mm/s)
-    output_items(3) = 'QSEVA'      ! evaporation rate (m/s)
-    output_items(4) = 'EVAPOTRANS' ! evapotranspiration rate (m/s)
+    output_items(2) = 'ETRAN'      ! transpiration rate (mm)
+    output_items(3) = 'QSEVA'      ! evaporation rate (mm/s)
+    output_items(4) = 'EVAPOTRANS' ! evapotranspiration rate (mm)
     output_items(5) = 'TG'         ! surface/ground temperature (K) (becomes snow surface temperature when snow is present)
     output_items(6) = 'SNEQV'      ! snow water equivalent (mm)
     output_items(7) = 'TGS'        ! ground temperature (K) (is equal to TG when no snow and equal to bottom snow element temperature when there is snow)
+    output_items(8) = 'ACSNOM'     ! Accumulated meltwater from bottom snow layer (mm) (NWM 3.0 output variable)
+    output_items(9) = 'SNOWT_AVG'  ! Average snow temperature (K) (by layer mass) (NWM 3.0 output variable)
+    output_items(10) = 'ISNOW'     ! Number of snow layers (unitless) (NWM 3.0 output variable)
+    output_items(11) = 'QRAIN'     ! Rainfall rate on the ground (mm/s) (NWM 3.0 output variable)
+    output_items(12) = 'FSNO'      ! Snow-cover fraction on the ground (unitless fraction) (NWM 3.0 output variable)
+    output_items(13) = 'SNOWH'     ! Snow depth (m) (NWM 3.0 output variable)
+    output_items(14) = 'SNLIQ'     ! Snow layer liquid water (mm) (NWM 3.0 output variable)
+    output_items(15) = 'QSNOW'     ! Snowfall rate on the ground (mm/s) (NWM 3.0 output variable)
+    output_items(16) = 'ECAN'      ! evaporation of intercepted water (mm) (NWM 3.0 output variable)
+    output_items(17) = 'GH'        ! Heat flux into the soil (W/m-2) (NWM 3.0 output variable)
+    output_items(18) = 'TRAD'      ! Surface radiative temperature (K) (NWM 3.0 output variable)
+    output_items(19) = 'FSA'       ! Total absorbed SW radiation (W/m-2) (NWM 3.0 output variable)
+    output_items(20) = 'CMC'       ! Total canopy water (liquid + ice) (mm) (NWM 3.0 output variable)
+    output_items(21) = 'LH'        ! Total latent heat to the atmosphere (W/m-2) (NWM 3.0 output variable)
+    output_items(22) = 'FIRA'      ! Total net LW radiation to atmosphere (W/m-2) (NWM 3.0 output variable)
+    output_items(23) = 'FSH'       ! Total sensible heat to the atmosphere (W/m-2) (NWM 3.0 output variable)
 
     names => output_items
     bmi_status = BMI_SUCCESS
@@ -287,9 +303,14 @@ contains
 
     select case(name)
     case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! input vars
-         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS')             ! output vars
-       grid = 0
-       bmi_status = BMI_SUCCESS
+         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS',    & ! output vars
+         'ACSNOM','SNOWT_AVG','ISNOW','QRAIN','FSNO','SNOWH','QSNOW',       &
+         'ECAN','GH','TRAD','FSA','CMC','LH','FIRA','FSH')
+         grid = 0
+         bmi_status = BMI_SUCCESS
+    case('SNLIQ')
+         grid = 1
+         bmi_status = BMI_SUCCESS
     case default
        grid = -1
        bmi_status = BMI_FAILURE
@@ -306,6 +327,9 @@ contains
     select case(grid)
     case(0)
        type = "scalar"
+       bmi_status = BMI_SUCCESS
+    case(1)
+       type = "vector"
        bmi_status = BMI_SUCCESS
 !================================ IMPLEMENT WHEN noahowp DONE IN GRID ======================
 !     case(1)
@@ -327,6 +351,9 @@ contains
     select case(grid)
     case(0)
        rank = 0
+       bmi_status = BMI_SUCCESS
+    case(1)
+       rank = 1
        bmi_status = BMI_SUCCESS
 !================================ IMPLEMENT WHEN noahowp DONE IN GRID ======================
 !     case(1)
@@ -367,6 +394,9 @@ contains
     select case(grid)
     case(0)
        size = 1
+       bmi_status = BMI_SUCCESS
+    case(1)
+       size = this%model%levels%nsnow
        bmi_status = BMI_SUCCESS
 !================================ IMPLEMENT WHEN noahowp DONE IN GRID ======================
 !     case(1)
@@ -557,9 +587,13 @@ contains
     integer :: bmi_status
 
     select case(name)
-    case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! input vars
-         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS')             ! output vars
+    case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! forcing vars
+       'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS', 'ACSNOM', 'SNOWT_AVG', &      ! output vars
+       'QRAIN', 'FSNO', 'SNOWH', 'SNLIQ', 'QSNOW', 'ECAN', 'GH', 'TRAD', 'FSA', 'CMC', 'LH', 'FIRA', 'FSH')
        type = "real"
+       bmi_status = BMI_SUCCESS
+    case('ISNOW')
+       type = "integer"
        bmi_status = BMI_SUCCESS
     case default
        type = "-"
@@ -578,10 +612,10 @@ contains
     case("SFCPRS")
        units = "Pa"
        bmi_status = BMI_SUCCESS
-    case("SFCTMP", "TG", "TGS")
+    case("SFCTMP", "TG", "TGS","SNOWT_AVG","TRAD")
        units = "K"
        bmi_status = BMI_SUCCESS
-    case("SOLDN", "LWDN")
+    case("SOLDN", "LWDN", "GH", "FSA", "LH", "FIRA", "FSH")
        units = "W/m2"
        bmi_status = BMI_SUCCESS
     case("UU", "VV")
@@ -590,19 +624,26 @@ contains
     case("Q2")
        units = "kg/kg"
        bmi_status = BMI_SUCCESS
-    case("QINSUR", "QSEVA", "EVAPOTRANS")
+    case("QINSUR")
        units = "m/s"
        bmi_status = BMI_SUCCESS
-    case("PRCPNONC", "ETRAN")
+    case("PRCPNONC", "QRAIN", "QSEVA", "QSNOW")
        units = "mm/s"
        bmi_status = BMI_SUCCESS
-    case("SNEQV")
+    case("SNEQV", "ACSNOM", "EVAPOTRANS", "SNLIQ", "ECAN", "ETRAN", "CMC")
        units = "mm"
+       bmi_status = BMI_SUCCESS
+    case("FSNO","ISNOW")
+       units = "unitless"
+       bmi_status = BMI_SUCCESS
+    case("SNOWH")
+       units = "m"
        bmi_status = BMI_SUCCESS
     case default
        units = "-"
        bmi_status = BMI_FAILURE
     end select
+
   end function noahowp_var_units
 
   ! Memory use per array element.
@@ -612,56 +653,109 @@ contains
     integer, intent(out) :: size
     integer :: bmi_status
 
+    associate(forcing => this%model%forcing, &
+              water   => this%model%water,   &
+              energy  => this%model%energy)
+
     select case(name)
     case("SFCPRS")
-       size = sizeof(this%model%forcing%sfcprs)  ! 'sizeof' in gcc & ifort
+       size = sizeof(forcing%sfcprs)  ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("SFCTMP")
-       size = sizeof(this%model%forcing%sfctmp)             ! 'sizeof' in gcc & ifort
+       size = sizeof(forcing%sfctmp)             ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("SOLDN")
-       size = sizeof(this%model%forcing%soldn)                ! 'sizeof' in gcc & ifort
+       size = sizeof(forcing%soldn)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("LWDN")
-       size = sizeof(this%model%forcing%lwdn)                ! 'sizeof' in gcc & ifort
+       size = sizeof(forcing%lwdn)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("UU")
-       size = sizeof(this%model%forcing%uu)                ! 'sizeof' in gcc & ifort
+       size = sizeof(forcing%uu)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("VV")
-       size = sizeof(this%model%forcing%vv)                ! 'sizeof' in gcc & ifort
+       size = sizeof(forcing%vv)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("Q2")
-       size = sizeof(this%model%forcing%q2)                ! 'sizeof' in gcc & ifort
+       size = sizeof(forcing%q2)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("PRCPNONC")
-       size = sizeof(this%model%forcing%prcpnonc)                ! 'sizeof' in gcc & ifort
+       size = sizeof(forcing%prcpnonc)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("QINSUR")
-       size = sizeof(this%model%water%qinsur)                ! 'sizeof' in gcc & ifort
+       size = sizeof(water%qinsur)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("ETRAN")
-       size = sizeof(this%model%water%etran)                ! 'sizeof' in gcc & ifort
+       size = sizeof(water%etran)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("QSEVA")
-       size = sizeof(this%model%water%qseva)                ! 'sizeof' in gcc & ifort
+       size = sizeof(water%qseva)                ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("EVAPOTRANS")
-       size = sizeof(this%model%water%evapotrans)            ! 'sizeof' in gcc & ifort
+       size = sizeof(water%evapotrans)            ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("TG")
-       size = sizeof(this%model%energy%tg)            ! 'sizeof' in gcc & ifort
+       size = sizeof(energy%tg)            ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("SNEQV")
-       size = sizeof(this%model%water%sneqv)            ! 'sizeof' in gcc & ifort
+       size = sizeof(water%sneqv)            ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case("TGS")
-       size = sizeof(this%model%energy%tgs)            ! 'sizeof' in gcc & ifort
+       size = sizeof(energy%tgs)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("ACSNOM")
+       size = sizeof(water%ACSNOM)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("SNOWT_AVG")
+       size = sizeof(energy%SNOWT_AVG)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("ISNOW")
+       size = sizeof(water%ISNOW)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("QRAIN")
+       size = sizeof(water%QRAIN)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("FSNO")
+       size = sizeof(water%FSNO)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("SNOWH")
+       size = sizeof(water%SNOWH)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("QSNOW")
+       size = sizeof(water%QSNOW)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("ECAN")
+       size = sizeof(water%ECAN)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("GH")
+       size = sizeof(energy%GH)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("TRAD")
+       size = sizeof(energy%TRAD)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("FSA")
+       size = sizeof(energy%FSA)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("CMC")
+       size = sizeof(water%CMC)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("LH")
+       size = sizeof(energy%LH)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("FIRA")
+       size = sizeof(energy%FIRA)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("FSH")
+       size = sizeof(energy%FSH)            ! 'sizeof' in gcc & ifort
+       bmi_status = BMI_SUCCESS
+    case("SNLIQ")
+       size = sizeof(water%SNLIQ(1))            ! 'sizeof' in gcc & ifort
        bmi_status = BMI_SUCCESS
     case default
        size = -1
        bmi_status = BMI_FAILURE
     end select
+    end associate
   end function noahowp_var_itemsize
 
   ! The size of the given variable.
@@ -676,7 +770,10 @@ contains
     s2 = this%get_grid_size(grid, grid_size)
     s3 = this%get_var_itemsize(name, item_size)
 
-    if ((s1 == BMI_SUCCESS).and.(s2 == BMI_SUCCESS).and.(s3 == BMI_SUCCESS)) then
+    if (grid .eq. 0) then
+       nbytes = item_size
+       bmi_status = BMI_SUCCESS
+    else if ((s1 == BMI_SUCCESS).and.(s2 == BMI_SUCCESS).and.(s3 == BMI_SUCCESS)) then
        nbytes = item_size * grid_size
        bmi_status = BMI_SUCCESS
     else
@@ -711,6 +808,9 @@ contains
 !     case("model__identification_number")
 !        dest = [this%model%id]
 !        bmi_status = BMI_SUCCESS
+    case("ISNOW")
+       dest(:) = this%model%water%ISNOW
+       bmi_status = BMI_SUCCESS
     case default
        dest(:) = -1
        bmi_status = BMI_FAILURE
@@ -723,57 +823,110 @@ contains
     character (len=*), intent(in) :: name
     real, intent(inout) :: dest(:)
     integer :: bmi_status
+    real    :: mm2m = 0.001       ! unit conversion mm to m     
+    real    :: m2mm = 1000.       ! unit conversion m to mm
+
+    associate(forcing => this%model%forcing, &
+              water   => this%model%water,   &
+              energy  => this%model%energy,  &
+              domain  => this%model%domain)
 
     select case(name)
     case("SFCPRS")
-       dest = [this%model%forcing%sfcprs]
+       dest = [forcing%sfcprs]
        bmi_status = BMI_SUCCESS
     case("SFCTMP")
-       dest = [this%model%forcing%sfctmp]
+       dest = [forcing%sfctmp]
        bmi_status = BMI_SUCCESS
     case("SOLDN")
-       dest = [this%model%forcing%soldn]
+       dest = [forcing%soldn]
        bmi_status = BMI_SUCCESS
     case("LWDN")
-       dest = [this%model%forcing%lwdn]
+       dest = [forcing%lwdn]
        bmi_status = BMI_SUCCESS
     case("UU")
-       dest = [this%model%forcing%uu]
+       dest = [forcing%uu]
        bmi_status = BMI_SUCCESS
     case("VV")
-       dest = [this%model%forcing%vv]
+       dest = [forcing%vv]
        bmi_status = BMI_SUCCESS
     case("Q2")
-       dest = [this%model%forcing%q2]
+       dest = [forcing%q2]
        bmi_status = BMI_SUCCESS
     case("PRCPNONC")
-       dest = [this%model%forcing%prcpnonc]
+       dest = [forcing%prcpnonc]
        bmi_status = BMI_SUCCESS
     case("QINSUR")
-       dest = [this%model%water%qinsur]
+       dest = [water%qinsur]
        bmi_status = BMI_SUCCESS
     case("ETRAN")
-       dest = [this%model%water%etran]
+       dest = [water%etran*domain%DT]
        bmi_status = BMI_SUCCESS
     case("QSEVA")
-       dest = [this%model%water%qseva]
+       dest = [water%qseva*m2mm]
        bmi_status = BMI_SUCCESS
     case("EVAPOTRANS")
-       dest = [this%model%water%evapotrans]
+       dest = [water%evapotrans*domain%DT*mm2m]
        bmi_status = BMI_SUCCESS
     case("TG")
-       dest = [this%model%energy%tg]
+       dest = [energy%tg]
        bmi_status = BMI_SUCCESS
     case("SNEQV")
-       dest = [this%model%water%sneqv]
+       dest = [water%sneqv]
        bmi_status = BMI_SUCCESS
     case("TGS")
-       dest = [this%model%energy%tgs]
+       dest = [energy%tgs]
+       bmi_status = BMI_SUCCESS
+    case("ACSNOM")
+       dest = [water%ACSNOM]
+       bmi_status = BMI_SUCCESS
+    case("SNOWT_AVG")
+       dest = [energy%SNOWT_AVG]
+       bmi_status = BMI_SUCCESS
+    case("QRAIN")
+       dest = [water%QRAIN]
+       bmi_status = BMI_SUCCESS
+    case("FSNO")
+       dest = [water%FSNO]
+       bmi_status = BMI_SUCCESS
+    case("SNOWH")
+       dest = [water%SNOWH]
+       bmi_status = BMI_SUCCESS
+    case("SNLIQ")
+       dest = water%SNLIQ
+       bmi_status = BMI_SUCCESS
+    case("QSNOW")
+       dest = [water%QSNOW]
+       bmi_status = BMI_SUCCESS
+    case("ECAN")
+       dest = [water%ECAN*domain%DT]
+       bmi_status = BMI_SUCCESS
+    case("GH")
+       dest = [energy%GH]
+       bmi_status = BMI_SUCCESS
+    case("TRAD")
+       dest = [energy%TRAD]
+       bmi_status = BMI_SUCCESS
+    case("FSA")
+       dest = [energy%FSA]
+       bmi_status = BMI_SUCCESS
+    case("CMC")
+       dest = [water%CMC]
+       bmi_status = BMI_SUCCESS
+    case("LH")
+       dest = [energy%LH]
+       bmi_status = BMI_SUCCESS
+    case("FIRA")
+       dest = [energy%FIRA]
+       bmi_status = BMI_SUCCESS
+    case("FSH")
+       dest = [energy%FSH]
        bmi_status = BMI_SUCCESS
     case default
        dest(:) = -1.0
        bmi_status = BMI_FAILURE
     end select
+    end associate
     ! NOTE, if vars are gridded, then use:
     ! dest = reshape(this%model%temperature, [this%model%n_x*this%model%n_y]) 
   end function noahowp_get_float
@@ -928,6 +1081,8 @@ contains
     character (len=*), intent(in) :: name
     real, intent(in) :: src(:)
     integer :: bmi_status
+    real    :: mm2m = 0.001       ! unit conversion mm to m     
+    real    :: m2mm = 1000.       ! unit conversion m to mm
 
     select case(name)
     case("SFCPRS")
@@ -958,13 +1113,13 @@ contains
        this%model%water%qinsur = src(1)
        bmi_status = BMI_SUCCESS
     case("ETRAN")
-       this%model%water%etran = src(1)
+       this%model%water%etran = src(1) / this%model%domain%DT
        bmi_status = BMI_SUCCESS
     case("QSEVA")
-       this%model%water%qseva = src(1)
+       this%model%water%qseva = src(1) * mm2m 
        bmi_status = BMI_SUCCESS
     case("EVAPOTRANS")
-       this%model%water%evapotrans = src(1)
+       this%model%water%evapotrans = src(1) * m2mm / this%model%domain%DT
        bmi_status = BMI_SUCCESS
     case("TG")
        this%model%energy%tg = src(1)

@@ -31,6 +31,7 @@ program noahmp_driver_test
     integer                                           :: count            ! var counts
     character (len = BMI_MAX_VAR_NAME), pointer       :: names_inputs(:)  ! var names
     character (len = BMI_MAX_VAR_NAME), pointer       :: names_outputs(:) ! var names
+    character (len = BMI_MAX_VAR_NAME)                :: name             ! var name
     integer                                           :: n_inputs         ! n input vars
     integer                                           :: n_outputs        ! n output vars
     integer                                           :: iBMI             ! loop counter
@@ -44,8 +45,10 @@ program noahmp_driver_test
     double precision                                  :: end_time         ! time of last model time step
     double precision                                  :: current_time     ! current model time
     character (len = 1)                               :: ts_units         ! timestep units
-    real, allocatable, target                         :: var_value_get(:) ! value of a variable
-    real, allocatable                                 :: var_value_set(:) ! value of a variable
+    real, allocatable, target                         :: var_value_get_real(:) ! value of a variable
+    real, allocatable                                 :: var_value_set_real(:) ! value of a variable
+    integer, allocatable, target                      :: var_value_get_int(:) ! value of a variable
+    integer, allocatable                              :: var_value_set_int(:) ! value of a variable
     integer                                           :: grid_int         ! grid value
     character (len = 20)                              :: grid_type        ! name of grid type
     integer                                           :: grid_rank        ! rank of grid
@@ -58,9 +61,10 @@ program noahmp_driver_test
     double precision, dimension(1)                    :: grid_y           ! Y coordinate of grid nodes (change dims if multiple nodes)
     double precision, dimension(1)                    :: grid_z           ! Y coordinate of grid nodes (change dims if multiple nodes)
     
-    real, pointer                                 :: var_value_get_ptr(:) ! value of a variable for get_value_ptr
+    real, pointer                                     :: var_value_get_real_ptr(:) ! value of a variable for get_value_ptr
+    integer, pointer                                  :: var_value_get_int_ptr(:) ! value of a variable for get_value_ptr
 
-    integer, dimension(3)                             :: grid_indices       ! grid indices (change dims as needed)
+    integer, allocatable, dimension(:)                :: grid_indices       ! grid indices (change dims as needed)
   !---------------------------------------------------------------------
   !  Initialize
   !---------------------------------------------------------------------
@@ -99,26 +103,23 @@ program noahmp_driver_test
     
     ! Get other variable info
     do j = 1, count
+      name = ''
       if(j <= n_inputs) then
-        status = m%get_var_type(trim(names_inputs(j)), var_type)
-        status = m%get_var_units(trim(names_inputs(j)), var_units)
-        status = m%get_var_itemsize(trim(names_inputs(j)), var_itemsize)
-        status = m%get_var_nbytes(trim(names_inputs(j)), var_nbytes)
-        print*, "The variable ", trim(names_inputs(j))
+        name = names_inputs(j)
       else
-        status = m%get_var_type(trim(names_outputs(j - n_inputs)), var_type)
-        status = m%get_var_units(trim(names_outputs(j - n_inputs)), var_units)
-        status = m%get_var_itemsize(trim(names_outputs(j - n_inputs)), var_itemsize)
-        status = m%get_var_nbytes(trim(names_outputs(j - n_inputs)), var_nbytes)
-        print*, "The variable ", trim(names_outputs(j - n_inputs))
+        name = names_outputs(j - n_inputs)
       end if
+      status = m%get_var_type(trim(name), var_type)
+      status = m%get_var_units(trim(name), var_units)
+      status = m%get_var_itemsize(trim(name), var_itemsize)
+      status = m%get_var_nbytes(trim(name), var_nbytes)
+      print*, "The variable ", trim(name)
       print*, "    has a type of ", var_type
       print*, "    units of ", var_units
       print*, "    a size of ", var_itemsize
       print*, "    and total n bytes of ", var_nbytes
     end do
 
-    
   !---------------------------------------------------------------------
   ! Get time information
   !---------------------------------------------------------------------
@@ -166,52 +167,79 @@ program noahmp_driver_test
   !---------------------------------------------------------------------
   ! Test the get/set_value functionality with BMI
   !---------------------------------------------------------------------
-    allocate(var_value_get(1))
-    allocate(var_value_set(1))
-    var_value_set = 999.9999
-    
-    ! Loop through the input vars
-    do iBMI = 1, n_inputs
-      status = m%get_value(trim(names_inputs(iBMI)), var_value_get)
-      print*, trim(names_inputs(iBMI)), " from get_value = ", var_value_get
-      print*, "    our replacement value = ", var_value_set
-      status = m%set_value(trim(names_inputs(iBMI)), var_value_set)
-      status = m%get_value(trim(names_inputs(iBMI)), var_value_get)
-      print*, "    and the new value of ", trim(names_inputs(iBMI)), " = ", var_value_get
-    end do
-    
-    ! Loop through the output vars
-    do iBMI = 1, n_outputs
-      status = m%get_value(trim(names_outputs(iBMI)), var_value_get)
-      print*, trim(names_outputs(iBMI)), " from get_value = ", var_value_get
-      print*, "    our replacement value = ", var_value_set
-      status = m%set_value(trim(names_outputs(iBMI)), var_value_set)
-      status = m%get_value(trim(names_outputs(iBMI)), var_value_get)
-      print*, "    and the new value of ", trim(names_outputs(iBMI)), " = ", var_value_get
+    ! Loop through the input and output vars
+    do iBMI = 1, count
+      name = ''
+      if(iBMI <= n_inputs) then
+        name = names_inputs(iBMI)
+      else
+        name = names_outputs(iBMI - n_inputs)
+      end if
+      status = m%get_var_type(trim(name),var_type)
+      status = m%get_var_grid(trim(name),grid_int)
+      status = m%get_grid_size(grid_int,grid_size)
+      if(var_type.eq.'integer') then
+        if(allocated(var_value_get_int)) deallocate(var_value_get_int)
+        if(allocated(var_value_set_int)) deallocate(var_value_set_int)
+        allocate(var_value_get_int(grid_size))
+        allocate(var_value_set_int(grid_size))
+        var_value_set_int = 999
+        status = m%get_value(trim(name), var_value_get_int)
+        print*, trim(name), " from get_value = ", var_value_get_int
+        print*, "    our replacement value = ", var_value_set_int
+        status = m%set_value(trim(name), var_value_set_int)
+        status = m%get_value(trim(name), var_value_get_int)
+        print*, "    and the new value of ", trim(name), " = ", var_value_get_int
+      else if (var_type.eq.'real') then
+        if(allocated(var_value_get_real)) deallocate(var_value_get_real)
+        if(allocated(var_value_set_real)) deallocate(var_value_set_real)
+        allocate(var_value_get_real(grid_size))
+        allocate(var_value_set_real(grid_size))
+        var_value_set_real = 999
+        status = m%get_value(trim(name), var_value_get_real)
+        print*, trim(name), " from get_value = ", var_value_get_real
+        print*, "    our replacement value = ", var_value_set_real
+        status = m%set_value(trim(name), var_value_set_real)
+        status = m%get_value(trim(name), var_value_get_real)
+        print*, "    and the new value of ", trim(name), " = ", var_value_get_real
+      end if
     end do
     
   !---------------------------------------------------------------------
   ! Test the get_value_ptr functionality with BMI
   !---------------------------------------------------------------------
-    var_value_get_ptr => var_value_get
     ! test the get value pointer  functions
-    ! Loop through the input vars
-    do iBMI = 1, n_inputs
-      status = m%get_value_ptr(trim(names_inputs(iBMI)), var_value_get_ptr)
-      if ( status .eq. BMI_FAILURE ) then
-        print*, trim(names_inputs(iBMI)), " from get_value_ptr returned BMI_FAILURE --- test passed" 
+    ! Loop through the input and output vars
+    do iBMI = 1, count
+      name = ''
+      if(iBMI <= n_inputs) then
+        name = names_inputs(iBMI)
       else
-        print*, trim(names_inputs(iBMI)), " from get_value_ptr returned ", status, " TEST FAILED!" 
+        name = names_outputs(iBMI - n_inputs)
       end if
-    end do
-
-    ! Loop through the output vars
-    do iBMI = 1, n_outputs
-      status = m%get_value_ptr(trim(names_outputs(iBMI)), var_value_get_ptr)
-      if ( status .eq. BMI_FAILURE ) then
-        print*, trim(names_outputs(iBMI)), " from get_value_ptr returned BMI_FAILURE --- test passed" 
-      else
-        print*, trim(names_outputs(iBMI)), " from get_value_ptr returned ", status, " TEST FAILED!" 
+      status = m%get_var_type(trim(name),var_type)
+      status = m%get_var_grid(trim(name),grid_int)
+      status = m%get_grid_size(grid_int,grid_size)
+      if(var_type.eq.'integer') then
+        if(allocated(var_value_get_int)) deallocate(var_value_get_int)
+        allocate(var_value_get_int(grid_size))
+        var_value_get_int_ptr => var_value_get_int
+        status = m%get_value_ptr(trim(name), var_value_get_int_ptr)
+        if ( status .eq. BMI_FAILURE ) then
+          print*, trim(name), " from get_value_ptr returned BMI_FAILURE --- test passed" 
+        else
+          print*, trim(name), " from get_value_ptr returned ", status, " TEST FAILED!" 
+        end if
+      else if (var_type.eq.'real') then
+        if(allocated(var_value_get_real)) deallocate(var_value_get_real)
+        allocate(var_value_get_real(grid_size))
+        var_value_get_real_ptr => var_value_get_real
+        status = m%get_value_ptr(trim(name), var_value_get_real_ptr)
+        if ( status .eq. BMI_FAILURE ) then
+          print*, trim(name), " from get_value_ptr returned BMI_FAILURE --- test passed" 
+        else
+          print*, trim(name), " from get_value_ptr returned ", status, " TEST FAILED!" 
+        end if
       end if
     end do
 
@@ -219,40 +247,55 @@ program noahmp_driver_test
   ! Test the get_value_at_indices functionality with BMI
   !---------------------------------------------------------------------
     ! Loop through the input vars
-    do iBMI = 1, n_inputs
-      status = m%get_value_at_indices(trim(names_inputs(iBMI)), var_value_get, grid_indices)
-      if ( status .eq. BMI_FAILURE ) then
-        print*, trim(names_inputs(iBMI)), " from get_value_at_indices returned BMI_FAILURE --- test passed" 
+    do iBMI = 1, count
+      name = ''
+      if(iBMI <= n_inputs) then
+        name = names_inputs(iBMI)
       else
-        print*, trim(names_inputs(iBMI)), " from get_value_at_indices returned ", status, " TEST FAILED!" 
+        name = names_outputs(iBMI - n_inputs)
       end if
-      status = m%set_value_at_indices(trim(names_inputs(iBMI)), grid_indices, var_value_set)
-      if ( status .eq. BMI_FAILURE ) then
-        print*, trim(names_inputs(iBMI)), " from set_value_at_indices returned BMI_FAILURE --- test passed" 
-      else
-        print*, trim(names_inputs(iBMI)), " from set_value_at_indices returned ", status, " TEST FAILED!" 
-      end if
-    end do
-    
-    ! Loop through the output vars
-    do iBMI = 1, n_outputs
-      status = m%get_value_at_indices(trim(names_outputs(iBMI)), var_value_get, grid_indices)
-      if ( status .eq. BMI_FAILURE ) then
-        print*, trim(names_outputs(iBMI)), " from get_value_at_indices returned BMI_FAILURE --- test passed" 
-      else
-        print*, trim(names_outputs(iBMI)), " from get_value_at_indices returned ", status, " TEST FAILED!" 
-      end if
-      status = m%set_value_at_indices(trim(names_outputs(iBMI)), grid_indices, var_value_set)
-      if ( status .eq. BMI_FAILURE ) then
-        print*, trim(names_outputs(iBMI)), " from set_value_at_indices returned BMI_FAILURE --- test passed" 
-      else
-        print*, trim(names_outputs(iBMI)), " from set_value_at_indices returned ", status, " TEST FAILED!" 
+      status = m%get_var_type(trim(name),var_type)
+      status = m%get_var_grid(trim(name),grid_int)
+      status = m%get_grid_size(grid_int,grid_size)
+      status = m%get_grid_rank(grid_int, grid_rank)
+      if(allocated(grid_indices)) deallocate(grid_indices)
+      allocate(grid_indices(grid_rank))
+      grid_indices = 1
+      if(var_type.eq.'integer') then
+        status = m%get_value_at_indices(trim(name), var_value_get_int, grid_indices)
+        if ( status .eq. BMI_FAILURE ) then
+          print*, trim(name), " from get_value_at_indices returned BMI_FAILURE --- test passed" 
+        else
+          print*, trim(name), " from get_value_at_indices returned ", status, " TEST FAILED!" 
+        end if
+        status = m%set_value_at_indices(trim(name), grid_indices, var_value_set_int)
+        if ( status .eq. BMI_FAILURE ) then
+          print*, trim(name), " from set_value_at_indices returned BMI_FAILURE --- test passed" 
+        else
+          print*, trim(name), " from set_value_at_indices returned ", status, " TEST FAILED!" 
+        end if
+      else if (var_type.eq.'real') then 
+        status = m%get_value_at_indices(trim(name), var_value_get_real, grid_indices)
+        if ( status .eq. BMI_FAILURE ) then
+          print*, trim(name), " from get_value_at_indices returned BMI_FAILURE --- test passed" 
+        else
+          print*, trim(name), " from get_value_at_indices returned ", status, " TEST FAILED!" 
+        end if
+        status = m%set_value_at_indices(trim(name), grid_indices, var_value_set_real)
+        if ( status .eq. BMI_FAILURE ) then
+          print*, trim(name), " from set_value_at_indices returned BMI_FAILURE --- test passed" 
+        else
+          print*, trim(name), " from set_value_at_indices returned ", status, " TEST FAILED!" 
+        end if
       end if
     end do
 
-    nullify( var_value_get_ptr )
-    deallocate(var_value_get)
-    deallocate(var_value_set)
+    nullify( var_value_get_real_ptr )
+    nullify( var_value_get_int_ptr )
+    deallocate(var_value_get_real)
+    deallocate(var_value_set_real)
+    deallocate(var_value_get_int)
+    deallocate(var_value_set_int)
 
   !---------------------------------------------------------------------
   ! Test the grid info functionality with BMI
