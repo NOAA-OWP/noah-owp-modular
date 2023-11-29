@@ -137,6 +137,7 @@ contains
 
     class(water_type), intent(inout) :: this
 
+    this%ACSNOM      = huge(1.0)
     this%qinsur      = huge(1.0)
     this%qseva       = huge(1.0)
     this%EVAPOTRANS  = huge(1.0)
@@ -226,6 +227,7 @@ contains
     integer,              intent(in)    :: ix
     integer,              intent(in)    :: iy
 
+    this%ACSNOM = watergrid%ACSNOM(ix,iy)
     this%qinsur = watergrid%qinsur(ix,iy)
     this%qseva = watergrid%qseva(ix,iy)
     this%EVAPOTRANS = watergrid%EVAPOTRANS(ix,iy)
@@ -306,6 +308,7 @@ contains
     integer,              intent(in)    :: ix
     integer,              intent(in)    :: iy
 
+    watergrid%ACSNOM(ix,iy) = this%ACSNOM
     watergrid%qinsur(ix,iy) = this%qinsur
     watergrid%qseva(ix,iy) = this%qseva
     watergrid%EVAPOTRANS(ix,iy) = this%EVAPOTRANS
