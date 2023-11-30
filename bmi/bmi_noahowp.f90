@@ -1158,12 +1158,13 @@ contains
    real    :: mm2m = 0.001       ! unit conversion mm to m     
    real    :: m2mm = 1000.       ! unit conversion m to mm
 
-   associate(domaingrid  => this%model%domaingrid,   &
-             forcinggrid => this%model%forcinggrid,  &
-             watergrid   => this%model%watergrid,    &
-             energygrid  => this%model%energygrid,   &
-             n_x         => this%model%domaingrid%n_x, &
-             n_y         => this%model%domaingrid%n_y)
+   associate(domaingrid     => this%model%domaingrid,     &
+             forcinggrid    => this%model%forcinggrid,    &
+             watergrid      => this%model%watergrid,      &
+             energygrid     => this%model%energygrid,     &
+             parametersgrid => this%model%parametersgrid, &
+             n_x            => this%model%domaingrid%n_x, &
+             n_y            => this%model%domaingrid%n_y)
 
    select case(name)
    case("SFCPRS")
@@ -1210,6 +1211,9 @@ contains
       bmi_status = BMI_SUCCESS
    case("TGS")
       energygrid%tgs = reshape(src,[n_x,n_y])
+      bmi_status = BMI_SUCCESS
+   case("CWP")
+      parametersgrid%CWP = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case default
       bmi_status = BMI_FAILURE
