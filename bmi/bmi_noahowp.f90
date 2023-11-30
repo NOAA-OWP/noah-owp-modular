@@ -890,18 +890,17 @@ contains
    character (len=*), intent(in) :: name
    real, intent(inout) :: dest(:)
    integer :: bmi_status
-   integer :: ix, iy
-   real, allocatable, dimension(:,:) :: temp
    real    :: mm2m = 0.001       ! unit conversion mm to m     
    real    :: m2mm = 1000.       ! unit conversion m to mm
 
-   associate(domaingrid  => this%model%domaingrid,      &
-             forcinggrid => this%model%forcinggrid,     &
-             watergrid   => this%model%watergrid,       &
-             energygrid  => this%model%energygrid,      &
-             n_x         => this%model%domaingrid%n_x,  &
-             n_y         => this%model%domaingrid%n_y,  &
-             nsnow       => this%model%levelsgrid%nsnow)
+   associate(domaingrid     => this%model%domaingrid,      &
+             forcinggrid    => this%model%forcinggrid,     &
+             watergrid      => this%model%watergrid,       &
+             energygrid     => this%model%energygrid,      &
+             parametersgrid => this%model%parametersgrid, &
+             n_x            => this%model%domaingrid%n_x,  &
+             n_y            => this%model%domaingrid%n_y,  &
+             nsnow          => this%model%levelsgrid%nsnow)
 
    select case(name)
    case("SFCPRS")
@@ -993,6 +992,15 @@ contains
       bmi_status = BMI_SUCCESS
    case("FSH")
       dest = reshape(energygrid%FSH(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("CWP")
+      dest = reshape(parametersgrid%CWP(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("VCMX25")
+      dest = reshape(parametersgrid%VCMX25(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("MP")
+      dest = reshape(parametersgrid%MP(:,:),[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case default
       dest(:) = -1.0
