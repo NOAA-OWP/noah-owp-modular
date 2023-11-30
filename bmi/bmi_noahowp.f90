@@ -1218,6 +1218,9 @@ contains
    case("VCMX25")
       parametersgrid%VCMX25 = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
+   case("MP")
+      parametersgrid%MP = reshape(src,[n_x,n_y])
+      bmi_status = BMI_SUCCESS
    case default
       bmi_status = BMI_FAILURE
    end select
