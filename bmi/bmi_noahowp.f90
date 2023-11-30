@@ -1002,6 +1002,9 @@ contains
    case("MP")
       dest = reshape(parametersgrid%MP(:,:),[n_x*n_y])
       bmi_status = BMI_SUCCESS
+   case("MFSNO")
+      dest = reshape(parametersgrid%MFSNO(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
    case default
       dest(:) = -1.0
       bmi_status = BMI_FAILURE
@@ -1228,6 +1231,9 @@ contains
       bmi_status = BMI_SUCCESS
    case("MP")
       parametersgrid%MP = reshape(src,[n_x,n_y])
+      bmi_status = BMI_SUCCESS
+   case("MFSNO")
+      parametersgrid%MFSNO = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case default
       bmi_status = BMI_FAILURE
