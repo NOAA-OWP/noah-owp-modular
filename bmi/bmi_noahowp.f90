@@ -1215,6 +1215,9 @@ contains
    case("CWP")
       parametersgrid%CWP = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
+   case("VCMX25")
+      parametersgrid%VCMX25 = reshape(src,[n_x,n_y])
+      bmi_status = BMI_SUCCESS
    case default
       bmi_status = BMI_FAILURE
    end select
