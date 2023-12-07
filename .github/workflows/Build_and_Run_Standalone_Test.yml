@@ -1,0 +1,87 @@
+# Test changes that have been pushed to the master branch
+
+name: Testing and Validation
+
+# Controls when the action will run.
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+#env:
+  # Obtained from https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+  # TODO: add something later that can check the runners for hyperthreading
+  #LINUX_NUM_PROC_CORES: 2
+  #MACOS_NUM_PROC_CORES: 3
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # Run general unit tests in linux environment
+  test_unit:
+    # The type of runner that the job will run on
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    - name: Checkout the commit
+      uses: actions/checkout@v2
+
+    - name: Install NetCDF
+      run: |
+        if [ ${{ runner.os }} == 'Linux' ]
+        then
+          sudo apt-get update
+          sudo apt-get install -y --fix-missing libnetcdf-dev libnetcdff-dev libnetcdf-c++4-1 libnetcdf-c++4-dev
+          echo "NETCDF=/usr" >> $GITHUB_ENV
+        elif [ ${{ runner.os }} == 'macOS' ]
+        then
+          brew install netcdf netcdf-cxx netcdf-fortran
+          echo "LIBRARY_PATH=/usr/local/lib/:$LIBRARY_PATH" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=/usr/local/lib/:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+          echo "LDFLAGS=-L/usr/local/lib" >> $GITHUB_ENV
+          echo "LIB=$LD_LIBRARY_PATH" >> $GITHUB_ENV
+          echo "INCLUDE=/usr/local/include" >> $GITHUB_ENV
+          echo "NETCDF=/usr/local" >> $GITHUB_ENV
+        fi
+    
+    # Build and run noah executable
+    - name: Build and Run Standalone noah-owp-modular
+      #uses: ./.github/actions/noah-build
+      run: |
+        if [ ${{ runner.os }} == 'Linux' ]
+        then
+          ./configure 5
+          make
+          cd run
+          ./noah_owp_modular.exe namelist.input
+        elif [ ${{ runner.os }} == 'macOS' ]
+        then
+          ./configure 4
+          make
+          cd run
+          ./noah_owp_modular.exe namelist.input
+        fi
+        
+    # Build and run noah BMI test
+    - name: Build and Run BMI Unit Test
+      #uses: ./.github/actions/noah-build
+      run: |
+        if [ ${{ runner.os }} == 'Linux' ]
+        then
+          ./configure 5
+          make testBMI
+          cd test
+          ./noahowp_test.exe ../run/namelist.input
+        elif [ ${{ runner.os }} == 'macOS' ]
+        then
+          ./configure 4
+          make testBMI
+          cd test
+          ./noahowp_test.exe ../run/namelist.input
+        fi
