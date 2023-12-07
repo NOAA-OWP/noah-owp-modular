@@ -1,13 +1,13 @@
-# Test changes that have been pushed to the master branch
+# Test changes that have been pushed to the main branch
 
 name: Testing and Validation
 
 # Controls when the action will run.
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
   workflow_dispatch:
 
 #env:
@@ -30,7 +30,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     - name: Checkout the commit
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Install NetCDF
       run: |
@@ -52,7 +52,8 @@ jobs:
     
     # Build and run noah executable
     - name: Build and Run Standalone noah-owp-modular
-      #uses: ./.github/actions/noah-build
+      # noah-owp-modular's configure system has 5 options serving the need for different computer
+      # servers and OS environment. The numbers 5 and 4 are appropriate for our comuting enviroments.
       run: |
         if [ ${{ runner.os }} == 'Linux' ]
         then
@@ -60,27 +61,19 @@ jobs:
           make
           cd run
           ./noah_owp_modular.exe namelist.input
-        elif [ ${{ runner.os }} == 'macOS' ]
-        then
-          ./configure 4
-          make
-          cd run
-          ./noah_owp_modular.exe namelist.input
-        fi
-        
-    # Build and run noah BMI test
-    - name: Build and Run BMI Unit Test
-      #uses: ./.github/actions/noah-build
-      run: |
-        if [ ${{ runner.os }} == 'Linux' ]
-        then
-          ./configure 5
+          cd ..
           make testBMI
           cd test
           ./noahowp_test.exe ../run/namelist.input
-        elif [ ${{ runner.os }} == 'macOS' ]
+        fi
+
+        if [ ${{ runner.os }} == 'macOS' ]
         then
           ./configure 4
+          make
+          cd run
+          ./noah_owp_modular.exe namelist.input
+          cd ..
           make testBMI
           cd test
           ./noahowp_test.exe ../run/namelist.input

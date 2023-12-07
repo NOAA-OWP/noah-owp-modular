@@ -5,9 +5,9 @@ name: Ngen Integration Tests
 # Controls when the action will run.
 on:
   push:
-    branches: [ master, dev, notreal ]
+    branches: [ main, dev, notreal ]
   pull_request:
-    branches: [ master, dev, notreal ]
+    branches: [ main, dev, notreal ]
   workflow_dispatch:
 
 env:
@@ -32,7 +32,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout actions in another repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: noaa-owp/ngen
 
