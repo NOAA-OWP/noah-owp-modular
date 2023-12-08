@@ -56,20 +56,10 @@ jobs:
         if [ ${{ runner.os }} == 'Linux' ]
         then
           ./configure 5
-          make
-          cd run
-          ./noah_owp_modular.exe namelist.input
-          cd ..
-          make testBMI
-          cd test
-          ./noahowp_test.exe ../run/namelist.input
-        fi
-
-    - name: Build and Run Standalone noah-owp-modular in macOS
-      run: |
-        if [ ${{ runner.os }} == 'macOS' ]
+        elif [ ${{ runner.os }} == 'macOS' ]
         then
           ./configure 4
+        fi
           make
           cd run
           ./noah_owp_modular.exe namelist.input
@@ -77,4 +67,3 @@ jobs:
           make testBMI
           cd test
           ./noahowp_test.exe ../run/namelist.input
-        fi
