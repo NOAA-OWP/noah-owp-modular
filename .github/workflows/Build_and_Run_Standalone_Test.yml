@@ -58,7 +58,7 @@ jobs:
           ./configure 5
         elif [ ${{ runner.os }} == 'macOS' ]
         then
-          ./configure 4
+          ./configure 3
         fi
 
     - name: Build and Run Standalone
