@@ -30,6 +30,16 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      # Checkout and build the noah-owp-modular
+      - name: Checkout the commit
+        uses: actions/checkout@v4
+
+      - name: Save noah-owp-modular to a Temp Directory
+        run: |
+          # Move files to appropriate temporary directory
+          mkdir ${{runner.temp}}/noah-owp-modular
+          mv ./* ${{runner.temp}}/noah-owp-modular
+
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout actions in another repo
         uses: actions/checkout@v4
@@ -75,43 +85,23 @@ jobs:
           bmi_fortran: 'ON'
         timeout-minutes: 15
 
-      - name: Cleanup Ngen Build
-        run: |
-          # Save ngen build artifacts to temp directory
-          mv ${{ steps.ngen_id1.outputs.build-dir }} ${{runner.temp}}/ngen-build/
-          mv .github ${{runner.temp}}/.github
-          mv extern ${{runner.temp}}/extern
-          mv data ${{runner.temp}}/data
-
-      # Checkout and build the noah-owp-modular
-      - name: Checkout the commit
-        uses: actions/checkout@v4
-
       - name: Prepare to Build noah-owp-modular Library for Ngen
         run: |
           # Move files to appropriate directory to build noah-owp-modular library
-          mv ${{runner.temp}}/extern extern
-          mv ./* extern/noah-owp-modular/noah-owp-modular
-          mv ${{runner.temp}}/.github .github
-          #cp -r ${{runner.temp}}/extern/evapotranspiration extern
+          rm -rf extern/noah-owp-modular/noah-owp-modular/*
+          mv ${{runner.temp}}/noah-owp-modular/* extern/noah-owp-modular/noah-owp-modular
 
-      - name: Build Surfacebmi
+      - name: Build Noah-owp-modular Surfacebmi
         id: submod_build_1
         uses: ./.github/actions/ngen-submod-build
         with:
           mod-dir: " extern/noah-owp-modular/"
           targets: "surfacebmi"
 
-      - name: Move files to appropriate directory to run ngen
+      - name: Run Ngen Test
         run: |
-          #Not sure if all the steps are necessary, check later
-          mv ${{runner.temp}}/ngen-build ./ngen-build
-          mv ${{runner.temp}}/extern/sloth extern
-          mv ${{runner.temp}}/extern/iso_c_fortran_bmi extern
-          cp -r ${{runner.temp}}/extern/evapotranspiration extern
-          mv ${{runner.temp}}/data data
-
-          # Run ngen with noah-owp-modular with CFE
+          # Run ngen with topmodel with CFE
+          mv ${{ steps.ngen_id1.outputs.build-dir }} ./ngen-build/
           inputfile='data/example_bmi_multi_realization_config.json'
           ./ngen-build/ngen ./data/catchment_data.geojson "cat-27" ./data/nexus_data.geojson "nex-26" $inputfile
 
