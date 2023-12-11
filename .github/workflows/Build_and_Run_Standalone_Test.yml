@@ -51,7 +51,7 @@ jobs:
     # Build and run noah executable
     # noah-owp-modular's configure system has 5 options serving the need for different computer
     # servers and OS environment. The numbers 5 and 4 are appropriate for our computing enviroments.
-    - name: Build and Run Standalone noah-owp-modular in Linux
+    - name: Configure
       run: |
         if [ ${{ runner.os }} == 'Linux' ]
         then
@@ -60,10 +60,15 @@ jobs:
         then
           ./configure 4
         fi
-          make
-          cd run
-          ./noah_owp_modular.exe namelist.input
-          cd ..
-          make testBMI
-          cd test
-          ./noahowp_test.exe ../run/namelist.input
+
+    - name: Build and Run Standalone
+      run: |
+        make
+        cd run
+        ./noah_owp_modular.exe namelist.input
+
+    - name: Build and Run BMI test
+      run: |
+        make testBMI
+        cd test
+        ./noahowp_test.exe ../run/namelist.input
