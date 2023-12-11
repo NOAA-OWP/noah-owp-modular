@@ -63,12 +63,14 @@ jobs:
 
     - name: Build and Run Standalone
       run: |
+        make clean
         make
         cd run
         ./noah_owp_modular.exe namelist.input
 
     - name: Build and Run BMI test
       run: |
+        make clean
         make testBMI
         cd test
         ./noahowp_test.exe ../run/namelist.input
