@@ -58,10 +58,7 @@ jobs:
           ./configure 5
         elif [ ${{ runner.os }} == 'macOS' ]
         then
-          #/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          #brew uninstall gcc gfortran
-          #brew install gcc@11
-          brew install --cask gfortran
+          sudo ln -s $(which gfortran-13) /usr/local/bin/gfortran
           ./configure 5
         fi
 
