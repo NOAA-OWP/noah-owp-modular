@@ -58,7 +58,11 @@ jobs:
           ./configure 5
         elif [ ${{ runner.os }} == 'macOS' ]
         then
-          ./configure 3
+          #/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          #brew uninstall gcc gfortran
+          #brew install gcc@11
+          brew install --cask gfortran
+          ./configure 5
         fi
 
     - name: Build and Run Standalone
