@@ -30,11 +30,10 @@ contains
 ! ------------------------ local variables ---------------------------
   INTEGER :: IZ,i
   REAL    :: BDSNOW  !bulk density of snow (kg/m3)
-  REAL    :: realMissing
+  REAL    :: realMissing = -999999.0
 ! ----------------------------------------------------------------------
 
 ! initialization
-   realMissing = -999999.0
    water%SNOFLOW  = 0.0
    water%PONDING1 = 0.0
    water%PONDING2 = 0.0
