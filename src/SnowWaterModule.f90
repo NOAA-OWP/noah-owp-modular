@@ -30,6 +30,7 @@ contains
 ! ------------------------ local variables ---------------------------
   INTEGER :: IZ,i
   REAL    :: BDSNOW  !bulk density of snow (kg/m3)
+  REAL    :: realMissing = -999999.0
 ! ----------------------------------------------------------------------
 
 ! initialization
@@ -98,7 +99,7 @@ contains
       energy%SNOWT_AVG = SUM(energy%STC(-levels%nsnow+1:0)*(water%SNICE(-levels%nsnow+1:0)+water%SNLIQ(-levels%nsnow+1:0))) / &
                          SUM(water%SNICE(-levels%nsnow+1:0)+water%SNLIQ(-levels%nsnow+1:0))
    else
-      energy%SNOWT_AVG = huge(1.)
+      energy%SNOWT_AVG = realMissing
    end if
 
   END SUBROUTINE SnowWater
