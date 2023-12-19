@@ -50,7 +50,8 @@ jobs:
     
     # Build and run noah executable
     # noah-owp-modular's configure system has 5 options serving the need for different computer
-    # servers and OS environment. The numbers 5 and 4 are appropriate for our computing enviroments.
+    # servers and OS environment. The numbers 5 is for Linux type computing enviroments.
+    # Using the Linux option for macOS as macOS could not find gfortran in /usr/local/bin/.
     - name: Configure
       run: |
         if [ ${{ runner.os }} == 'Linux' ]
