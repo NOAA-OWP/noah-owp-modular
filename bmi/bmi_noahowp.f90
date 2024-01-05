@@ -97,33 +97,26 @@ module bminoahowp
   character (len=BMI_MAX_COMPONENT_NAME), target :: &
        component_name = "Noah-OWP-Modular Surface Module"
 
-  ! Input items
-  integer, parameter                                                     :: input_item_count = 8
-  character (len=BMI_MAX_VAR_NAME), target, dimension(input_item_count)  :: input_items
-  character (len=BMI_MAX_LOCATION_NAME)                                  :: input_location(input_item_count) = 'node'
-  integer                                                                :: input_grid(input_item_count) = 1
-  ! grid id assignment (i.e., in input_grid, output_grid, and param_grid), indexed by item number
-  ! could use different grids per variable by explicit assignment of grid id, e.g. [0, 0, 0, 1, 2, 2]
-  ! can also be explicitly mapped per variable, indexed by input/output_item
-  ! input_location(4) = [character(BMI_MAX_LOCATION_NAME):: 'node', 'node', 'node', 'node']
+  ! input items
+  integer, parameter                                                     :: input_item_count = 8     ! number of model input variables
+  character (len=BMI_MAX_VAR_NAME), target, dimension(input_item_count)  :: input_items              ! name of each model input variable indexed by input variable number (i.e., 1 through input_item_count)
+  character (len=BMI_MAX_LOCATION_NAME), dimension(input_item_count)     :: input_location = 'node'  ! location of each input variable (e.g., 'node' or 'edge') indexed by input variable number (default value is 'node')
+  integer, dimension(input_item_count)                                   :: input_grid = 1           ! GridType%id (0 = scalar, 1 = 2D, 2 = 3D) associated with each input variable indexed by input variable number (default value is 1)
 
-  ! Ouput items
-  integer, parameter                                                     :: output_item_count = 23
-  character (len=BMI_MAX_VAR_NAME), target, dimension(output_item_count) :: output_items 
-  character (len=BMI_MAX_LOCATION_NAME)                                  :: output_location(output_item_count) = 'node'
-  integer                                                                :: output_grid(output_item_count) = 1
+  ! ouput items
+  integer, parameter                                                     :: output_item_count = 23   ! number of model output variables
+  character (len=BMI_MAX_VAR_NAME), target, dimension(output_item_count) :: output_items             ! name of each model output variable indexed by output variable number (i.e., 1 through output_item_count)
+  character (len=BMI_MAX_LOCATION_NAME), dimension(output_item_count)    :: output_location = 'node' ! location of each output variable (e.g., 'node' or 'edge') indexed by output variable number (default value is 'node')
+  integer, dimension(output_item_count)                                  :: output_grid = 1          ! GridType%id (0 = scalar, 1 = 2D, 2 = 3D) associated each output variable indexed by output variable number (default value is 1)
 
-  ! Calibratable parameter items
-  integer, parameter                                                     :: param_item_count = 6
-  character(len=BMI_MAX_VAR_NAME), dimension(param_item_count)           :: param_items = [character(len=BMI_MAX_VAR_NAME) :: "CWP","VCMX25","MP","MFSNO","RSURF_SNOW","HVT"]
-  character (len=BMI_MAX_LOCATION_NAME)                                  :: param_location(param_item_count) = 'node'
-  integer                                                                :: param_grid(param_item_count) = 1
+  ! calibratable parameter items
+  integer, parameter                                                     :: param_item_count = 6     ! number of calibratable parameters
+  character(len=BMI_MAX_VAR_NAME), dimension(param_item_count)           :: param_items = [character(len=BMI_MAX_VAR_NAME) :: "CWP","VCMX25","MP","MFSNO","RSURF_SNOW","HVT"] ! name of each calibratable parameter indexed by calibratable parameter number (i.e., 1 through param_item_count)
+  character (len=BMI_MAX_LOCATION_NAME), dimension(param_item_count)     :: param_location = 'node'  ! location of each calibratable parameter (e.g., 'node' or 'edge') indexed by calibratable parameter number (default value is 'node')
+  integer, dimension(param_item_count)                                   :: param_grid = 1           ! GridType%id (0 = scalar, 1 = 2D, 2 = 3D) associated each calibratable parameter indexed by calibratable parameter number (default value is 1)
 
   ! grid metadata structure
-  ! grids(1) = "scalar" grid
-  ! grids(2) = 2D grid
-  ! grids(3) = 3D grid
-  type(GridType) :: grids(3)
+  type(GridType) :: grids(3) ! grids(1)%id = 0, grids(2)%id = 1, grids(3)%id = 2
 
 contains
 
