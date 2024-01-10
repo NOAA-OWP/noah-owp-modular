@@ -2,6 +2,92 @@
 ! This program tests the BMI functionality in Fortran
 ! The generic code can be used in any BMI-implemented Fortran model
 !
+module TestProgramSubroutines
+  ! subroutines to print variable values for unit tests
+
+  implicit none
+  public :: printvar
+
+  interface printvar
+    procedure print1dreal
+    procedure print1dint
+    procedure print2dreal
+    procedure print2dint
+    procedure print3dreal
+    procedure print3dint
+  end interface
+
+  contains
+  subroutine print1dint(vals)
+    integer,dimension(:),intent(in) :: vals 
+    integer                         :: i
+    do i = 1, size(vals,1)
+      write(*,'(G0.5,1x)',advance='no') vals(i) 
+    end do
+    write(*,*) ''
+  end subroutine
+
+  subroutine print1dreal(vals)
+    real,dimension(:),intent(in) :: vals 
+    integer                      :: i
+    do i = 1, size(vals,1)
+      write(*,'(G0.5,1x)',advance='no') vals(i) 
+    end do
+    write(*,*) ''
+  end subroutine
+
+  subroutine print2dint(vals)
+    integer,dimension(:,:),intent(in) :: vals 
+    integer                           :: iy,ix
+    do iy = 1, size(vals,2)
+      do ix = 1, size(vals,1)
+        write(*,'(G0,1x)',advance='no') vals(ix,iy) 
+      end do
+      write(*,*) ''
+    end do
+  end subroutine
+
+  subroutine print2dreal(vals)
+    real,dimension(:,:),intent(in) :: vals 
+    integer                        :: iy,ix
+    do iy = 1, size(vals,2)
+      do ix = 1, size(vals,1)
+        write(*,'(G0.5,1x)',advance='no') vals(ix,iy) 
+      end do
+      write(*,*) ''
+    end do
+  end subroutine
+
+  subroutine print3dint(vals)
+    integer,dimension(:,:,:),intent(in) :: vals 
+    integer                             :: iz,iy,ix
+    do iz = 1, size(vals,3)
+      write(*,'(a,I2)') 'z =',iz
+      do iy = 1, size(vals,2)
+        do ix = 1, size(vals,1)
+          write(*,'(G0.5,1x)',advance='no') vals
+        end do
+        write(*,*) ''
+      end do
+    end do
+  end subroutine
+
+  subroutine print3dreal(vals)
+    real,dimension(:,:,:),intent(in) :: vals 
+    integer                          :: iz,iy,ix
+    integer                          :: nz,ny,nx
+    do iz = 1, size(vals,3)
+      write(*,'(a,I2)') 'z =',iz
+      do iy = 1, size(vals,2)
+        do ix = 1, size(vals,1)
+          write(*,'(G0.5,1x)',advance='no') vals(ix,iy,iz) 
+        end do
+        write(*,*) ''
+      end do
+    end do
+  end subroutine
+
+end module
 
 program noahmp_driver_test
 
@@ -12,6 +98,7 @@ program noahmp_driver_test
   !---------------------------------------------------------------------
   use bminoahowp
   use bmif_2_0
+  use TestProgramSubroutines
 
   implicit none
 
@@ -34,6 +121,7 @@ program noahmp_driver_test
     character (len = BMI_MAX_VAR_NAME)                :: iname
     integer                                           :: n_inputs         ! n input vars
     integer                                           :: n_outputs        ! n output vars
+    integer                                           :: n_params         ! n calibratable parameters
     integer                                           :: iBMI             ! loop counter
     character (len = 20)                              :: var_type         ! name of variable type
     character (len = 10)                              :: var_units        ! variable units
@@ -68,57 +156,69 @@ program noahmp_driver_test
     integer, allocatable, dimension(:,:)              :: grid_temp_int    ! local grid to hold getter results for int type
     integer, dimension(3)                             :: grid_indices      ! grid indices (change dims as needed)
     real                                              :: time_1, time_2
-
+    integer, parameter                                :: param_item_count = 9     ! number of calibratable parameters
+    character(len=BMI_MAX_VAR_NAME), dimension(param_item_count) :: param_items = [character(len=BMI_MAX_VAR_NAME) :: "CWP","VCMX25","MP","MFSNO","RSURF_SNOW","HVT", & ! name of each calibratable parameter indexed by calibratable parameter number (i.e., 1 through param_item_count)
+    "BEXP","SMCMAX","FRZX"]
   !---------------------------------------------------------------------
   !  Initialize
   !---------------------------------------------------------------------
-    print*,"INITIALIZE THE MODEL ***********************************************************"
-    print*, "Initializing..."
+    write(*,'(a)') "INITIALIZE THE MODEL ***********************************************************"
+    write(*,'(a)') ''
+    write(*,'(a)') "Initializing..."
     call get_command_argument(1, arg)
-    call cpu_time(time_1)
     status = m%initialize(arg)
-    call cpu_time(time_2)
-    print*,'Model initialization cpu_time (s) = ',time_2-time_1
 
   !---------------------------------------------------------------------
   ! Get model information
   ! component_name and input/output_var
   !---------------------------------------------------------------------
-    print*,''
-    print*,"MODEL NAME AND INPUT/OUTPUT VARAIBLES *****************************************"
+    write(*,'(a)') ''
+    write(*,'(a)') "MODEL NAME AND INPUT/OUTPUT VARAIBLES *****************************************"
+    write(*,'(a)') ''
 
     status = m%get_component_name(component_name)
-    print*, "Component name = ", trim(component_name)
+    write(*,'(a,a)') "Component name = ", trim(component_name)
 
     status = m%get_input_item_count(count)
-    print*, "Total input vars = ", count
+    write(*,'(a,I5)') "Total input vars = ", count
     n_inputs = count
 
     status = m%get_output_item_count(count)
-    print*, "Total output vars = ", count
+    write(*,'(a,I5)') "Total output vars = ", count
     n_outputs = count
+
+    write(*,'(a,I5)') "Total calibratable parameters = ", param_item_count
+    n_params = param_item_count
 
     status = m%get_input_var_names(names_inputs)
     do iBMI = 1, n_inputs
-      print*, "Input var = ", trim(names_inputs(iBMI))
+      write(*,'(a,a)') "Input var = ", trim(names_inputs(iBMI))
     end do
 
     status = m%get_output_var_names(names_outputs)
     do iBMI = 1, n_outputs
-      print*, "Output var = ", trim(names_outputs(iBMI))
+      write(*,'(a,a)') "Output var = ", trim(names_outputs(iBMI))
     end do
     
-    ! Sum input and outputs to get total vars
-    count = n_inputs + n_outputs
+    do iBMI = 1, n_params
+      write(*,'(a,a)') "Calibratable param = ", trim(param_items(iBMI))
+    end do
+
+    ! Sum input and output variables and calibratable parameters 
+    count = n_inputs + n_outputs + n_params
 
     ! Get other variable info
-    print*,''
-    print*,"VARIALBE INFORMTION*************************************************************"
+    write(*,'(a)')   ''
+    write(*,'(a,a)') "VARIALBE INFORMTION*************************************************************"
+    write(*,'(a)')   ''
+
     do j = 1, count
       if(j <= n_inputs) then
         iname = trim(names_inputs(j))
-      else
+      else if(j <= n_inputs + n_outputs) then
         iname = trim(names_outputs(j - n_inputs))
+      else
+        iname = trim(param_items(j - n_inputs - n_outputs))
       end if
       status = m%get_var_grid(trim(iname),grid_int)
       status = m%get_grid_rank(grid_int,grid_rank)
@@ -131,32 +231,32 @@ program noahmp_driver_test
         status = m%get_grid_shape(grid_int, grid_shape)
         n_x = grid_shape(2)
         n_y = grid_shape(1)
-        print*, " "
-        print*, "The variable ", trim(iname)
-        print*, "has a grid id of ",grid_int
-        print*, "has a grid row count (n_y) of ",n_y
-        print*, "has a grid column count (n_x) of ",n_x
-        print*, "has a total cell count (n_x * n_y) of ",grid_size
-        print*, "has a type of ", var_type
-        print*, "units of ", var_units
-        print*, "a size (bytes per grid cell or variable instance) of ", var_itemsize
-        print*, "and total n bytes (bytes across grid) of ", var_nbytes
+        write(*,'(a,a)')  "The variable ", trim(iname)
+        write(*,'(a,I5)') "has a grid id of ",grid_int
+        write(*,'(a,I5)') "has a grid row count (n_y) of ",n_y
+        write(*,'(a,I5)') "has a grid column count (n_x) of ",n_x
+        write(*,'(a,I5)') "has a total cell count (n_x * n_y) of ",grid_size
+        write(*,'(a,a)')  "has a type of ", var_type
+        write(*,'(a,a)')  "units of ", var_units
+        write(*,'(a,I5)') "a size (bytes per grid cell or variable instance) of ", var_itemsize
+        write(*,'(a,I5)') "and total n bytes (bytes across grid) of ", var_nbytes
+        write(*,'(a)')    ''
       else if(grid_rank == 3) then
         status = m%get_grid_shape(grid_int, grid_shape3d)
         n_z = grid_shape3d(1)
         n_y = grid_shape3d(2)
         n_x = grid_shape3d(3)
-        print*, " "
-        print*, "The variable ", trim(iname)
-        print*, "has a grid id of ",grid_int
-        print*, "has a grid row count (n_y) of ",n_y
-        print*, "has a grid column count (n_x) of ",n_x
-        print*, "has a grid z count (n_z) of ",n_z
-        print*, "has a total cell count (n_x * n_y * n_z) of ",grid_size
-        print*, "has a type of ", var_type
-        print*, "units of ", var_units
-        print*, "a size (bytes per grid cell or variable instance) of ", var_itemsize
-        print*, "and total n bytes (bytes across grid) of ", var_nbytes
+        write(*,'(a,a)')  "The variable ", trim(iname)
+        write(*,'(a,I5)') "has a grid id of ",grid_int
+        write(*,'(a,I5)') "has a grid row count (n_y) of ",n_y
+        write(*,'(a,I5)') "has a grid column count (n_x) of ",n_x
+        write(*,'(a,I5)') "has a grid z count (n_z) of ",n_z
+        write(*,'(a,I5)') "has a total cell count (n_x * n_y * n_z) of ",grid_size
+        write(*,'(a,a)')  "has a type of ", var_type
+        write(*,'(a,a)')  "units of ", var_units
+        write(*,'(a,I5)') "a size (bytes per grid cell or variable instance) of ", var_itemsize
+        write(*,'(a,I5)') "and total n bytes (bytes across grid) of ", var_nbytes
+        write(*,'(a)')    ''
       end if
 
     end do
@@ -165,22 +265,22 @@ program noahmp_driver_test
   ! Get time information
   !---------------------------------------------------------------------
   
-    print*,''
-    print*,"GET TIME INFORMATION ***********************************************************"
+    write(*,'(a)') ''
+    write(*,'(a)') "GET TIME INFORMATION ***********************************************************"
 
     status = m%get_start_time(bmi_time)
-    print*, "The start time is ", bmi_time
+    write(*,'(a,F20.5)') "The start time is ", bmi_time
 
     status = m%get_current_time(bmi_time)
-    print*, "The current time is ", bmi_time
+    write(*,'(a,F20.5)') "The current time is ", bmi_time
 
     status = m%get_end_time(bmi_time)
-    print*, "The end time is ", bmi_time
+    write(*,'(a,F20.5)') "The end time is ", bmi_time
 
     status = m%get_time_step(timestep)
     status = m%get_time_units(ts_units)
-    print*, "The time step is ", timestep
-    print*, "with a unit of ", ts_units
+    write(*,'(a,F20.5)') "The time step is ", timestep
+    write(*,'(a,a)') "with a unit of ", ts_units
 
     !---------------------------------------------------------------------
     ! Run some time steps with the update_until function
@@ -195,11 +295,11 @@ program noahmp_driver_test
     status = m%get_current_time(current_time)
     status = m%get_end_time(end_time)
 
-    print*,''
-    print*,"RUN THE MODEL ******************************************************************"
+    write(*,'(a)') ''
+    write(*,'(a)') "RUN THE MODEL ******************************************************************"
 
     ! loop through while current time <= end time
-    print*, "Running..."
+    write(*,'(a)') "Running..."
     do while (current_time < end_time)
       status = m%update()                       ! run the model one time step
       status = m%get_current_time(current_time) ! update current_time
@@ -208,22 +308,24 @@ program noahmp_driver_test
     !---------------------------------------------------------------------
     ! Finalize with BMI
     !---------------------------------------------------------------------
-    print*, "Finalizing..."
+    write(*,'(a)') "Finalizing..."
     status = m%finalize()
-    print*, "Model is finalized!"
-    print*,''
+    write(*,'(a)') "Model is finalized!"
+    write(*,'(a)') ''
 
   !---------------------------------------------------------------------
   ! Test the get/set_value functionality with BMI
   !---------------------------------------------------------------------
 
-    print*,''
-    print*,"TEST get/set_value FUNCTIONALITY WITH BMI  ***************************************"
+    write(*,'(a)') ''
+    write(*,'(a)') "TEST get/set_value FUNCTIONALITY WITH BMI  ***************************************"
     do i = 1, count
       if(i <= n_inputs) then
         iname = trim(names_inputs(i))
-      else
+      else if(i <= n_inputs + n_outputs) then
         iname = trim(names_outputs(i - n_inputs))
+      else
+        iname = trim(param_items(i - n_inputs - n_outputs))
       end if
 
       ! Get variable name and shape/size
@@ -231,90 +333,22 @@ program noahmp_driver_test
       status = m%get_grid_rank(grid_int, grid_rank)
       status = m%get_var_type(trim(iname), var_type)
       status = m%get_grid_size(grid_int, grid_size)
-      print*, ""
-      print*,trim(trim(iname))
-      print*,'rank = ',grid_rank
+      write(*,'(a)') ''
+      write(*,'(a)') trim(trim(iname))
+      write(*,'(a,I1)') 'rank = ',grid_rank
+
+      ! if variable is 2D
       if (grid_rank == 2) then
 
+        ! get dims
         status = m%get_grid_shape(grid_int, grid_shape)
         n_x = grid_shape(2)
         n_y = grid_shape(1)
-        print*,'column count (n_x) = ',n_x
-        print*,'row count (n_y) = ',n_y
+        write(*,'(a,I5)') 'column count (n_x) = ',n_x
+        write(*,'(a,I5)') 'row count (n_y) = ',n_y
 
-        ! Address real and integer variables differently. Do real variables now
-        if(var_type=='real') then
-
-          ! Allocate arrays
-          if(allocated(var_value_get_real)) deallocate(var_value_get_real)
-          if(allocated(var_value_set_real)) deallocate(var_value_set_real)
-          if(allocated(grid_temp_real)) deallocate(grid_temp_real)
-          allocate(var_value_get_real(grid_size))
-          allocate(var_value_set_real(grid_size))
-          allocate(grid_temp_real(n_x,n_y))
-
-          ! Print existing value(s)
-          call cpu_time(time_1)
-          status = m%get_value(trim(iname), var_value_get_real)
-          call cpu_time(time_2)
-          print*, "get_value function cpu time (s) =",time_2-time_1
-          print*, "from get_value (flattened) ="
-          do j = 1, grid_size
-            !write(*,'(F15.5,1x)',advance='no') var_value_get_real(j) 
-            write(*,'(G0.5,1x)',advance='no') var_value_get_real(j) 
-          end do
-          write(*,*) ''
-          print*, "from get_value (in XY) ="
-          grid_temp_real = reshape(var_value_get_real,[n_x,n_y])
-          do iy = 1, n_y
-            do ix = 1, n_x
-              write(*,'(G0.5,1x)',advance='no') grid_temp_real(ix,iy) 
-            end do
-            write(*,*) ''
-          end do
-
-          ! Print replacement value(s) and set
-          do j = 1, grid_size
-            var_value_set_real(j) = j
-          end do
-          print*, "our replacement value (flattened) = "
-          do j = 1, grid_size
-            write(*,'(G0.5,1x)',advance='no') var_value_set_real(j) 
-          end do
-          write(*,*) ''
-          print*, "our replacement value (in XY) ="
-          grid_temp_real = reshape(var_value_set_real,[n_x,n_y])
-          do iy = 1, n_y
-            do ix = 1, n_x
-              write(*,'(G0.5,1x)',advance='no') grid_temp_real(ix,iy) 
-            end do
-            write(*,*) ''
-          end do
-          call cpu_time(time_1)
-          status = m%set_value(trim(iname), var_value_set_real)
-          call cpu_time(time_2)
-          if(status == BMI_FAILURE) then
-            print*,"**FAILED to set variable ",trim(iname)," (variable may not have set_value listing)**"
-          else
-            print*, "set_value function cpu time (s) =",time_2-time_1
-            status = m%get_value(trim(iname), var_value_get_real)
-            print*, "and the new value (flattened) = "
-            do j = 1, grid_size
-              write(*,'(G0.5,1x)',advance='no') var_value_get_real(j) 
-            end do
-            write(*,*) ''
-            print*, "and the new value (in XY) = "
-            grid_temp_real = reshape(var_value_get_real,[n_x,n_y])
-            do iy = 1, n_y
-              do ix = 1, n_x
-                write(*,'(G0.5,1x)',advance='no') grid_temp_real(ix,iy) 
-              end do
-              write(*,*) ''
-            end do
-          end if
-
-        ! now do integer type variables
-        else if(var_type=='integer') then
+        ! address int and real type differently
+        if(var_type=='integer') then
 
           ! Allocate arrays
           if(allocated(var_value_get_int)) deallocate(var_value_get_int)
@@ -324,82 +358,93 @@ program noahmp_driver_test
           allocate(var_value_set_int(grid_size))
           allocate(grid_temp_int(n_x,n_y))
 
-          ! Print existing value(s)
-          call cpu_time(time_1)
+          ! Print existing values
           status = m%get_value(trim(iname), var_value_get_int)
-          call cpu_time(time_2)
-          print*, "get_value function cpu time (s) =",time_2-time_1
-          print*, "from get_value (flattened) ="
-          do j = 1, grid_size
-            write(*,'(G0,1x)',advance='no') var_value_get_int(j) 
-          end do
-          write(*,*) ''
-          print*, "from get_value (in XY) ="
+          write(*,'(a)') "from get_value (flattened) ="
+          call printvar(var_value_get_int)
           grid_temp_int = reshape(var_value_get_int,[n_x,n_y])
-          do iy = 1, n_y
-            do ix = 1, n_x
-              write(*,'(G0,1x)',advance='no') grid_temp_int(ix,iy) 
-            end do
-            write(*,*) ''
-          end do
+          write(*,'(a)') "from get_value (in XY) ="
+          call printvar(grid_temp_int)
 
-          ! Print replacement value(s) and set
-          do j = 1, grid_size
-            var_value_set_int(j) = j
-          end do
-          print*, "our replacement value (flattened) ="
-          do j = 1, grid_size
-            write(*,'(G0,1x)',advance='no') var_value_set_int(j) 
-          end do
-          write(*,*) ''
-          print*, "our replacement value (in XY) ="
+          ! Create and print replacement values
+          var_value_set_int = (/ (j, j = 1, grid_size) /)
+          write(*,'(a)') "our replacement value (flattened) ="
+          call printvar(var_value_set_int)
           grid_temp_int = reshape(var_value_set_int,[n_x,n_y])
-          do iy = 1, n_y
-            do ix = 1, n_x
-              write(*,'(G0,1x)',advance='no') grid_temp_int(ix,iy) 
-            end do
-            write(*,*) ''
-          end do
-          call cpu_time(time_1)
+          write(*,'(a)') "our replacement value (in XY) ="
+          call printvar(grid_temp_int)
+
+          ! Set replacement values and print updated values
           status = m%set_value(trim(iname), var_value_set_int)
-          call cpu_time(time_2)
-          if(status == BMI_FAILURE) then
-            print*,"**FAILED to set variable ",trim(iname)," (variable may not have set_value listing)**"
-          else
-            print*, "set_value function cpu time (s) =",time_2-time_1
-            ! Print updated values
+          if(status == BMI_SUCCESS) then
             status = m%get_value(trim(iname), var_value_get_int)
-            print*, "and the new value (flattened) ="
-            do j = 1, grid_size
-              write(*,'(G0,1x)',advance='no') var_value_get_int(j) 
-            end do
-            write(*,*) ''
-            print*, "and the new value (in XY) ="
+            write(*,'(a)') "and the new value (flattened) ="
+            call printvar(var_value_get_int)
             grid_temp_int = reshape(var_value_get_int,[n_x,n_y])
-            do iy = 1, n_y
-              do ix = 1, n_x
-                write(*,'(G0,1x)',advance='no') grid_temp_int(ix,iy) 
-              end do
-              write(*,*) ''
-            end do
+            write(*,'(a)') "and the new value (in XY) ="
+            call printvar(grid_temp_int)
+          else
+            write(*,'(a,a,a)') "**FAILED to set variable ",trim(iname)," (variable may not have set_value listing)**"
           end if
+
+        ! real type
+        else if(var_type=='real') then
+
+          ! Allocate arrays
+          if(allocated(var_value_get_real)) deallocate(var_value_get_real)
+          if(allocated(var_value_set_real)) deallocate(var_value_set_real)
+          if(allocated(grid_temp_real)) deallocate(grid_temp_real)
+          allocate(var_value_get_real(grid_size))
+          allocate(var_value_set_real(grid_size))
+          allocate(grid_temp_real(n_x,n_y))
+
+          ! Print existing values
+          status = m%get_value(trim(iname), var_value_get_real)
+          write(*,'(a)') "from get_value (flattened) ="
+          call printvar(var_value_get_real)
+          grid_temp_real = reshape(var_value_get_real,[n_x,n_y])
+          write(*,'(a)') "from get_value (in XY) ="
+          call printvar(grid_temp_real)
+
+          ! Create and print replacement values
+          var_value_set_real = (/ (j, j = 1, grid_size) /)
+          write(*,'(a)') "our replacement value (flattened) = "
+          call printvar(var_value_set_real)
+          grid_temp_real = reshape(var_value_set_real,[n_x,n_y])
+          write(*,'(a)') "our replacement value (in XY) ="
+          call printvar(grid_temp_real)
+
+          ! Set replacement values and print updated values
+          status = m%set_value(trim(iname), var_value_set_real)
+          if(status == BMI_SUCCESS) then
+            status = m%get_value(trim(iname), var_value_get_real)
+            write(*,'(a)') "and the new value (flattened) = "
+            call printvar(var_value_get_real)
+            grid_temp_real = reshape(var_value_get_real,[n_x,n_y])
+            write(*,'(a)') "and the new value (in XY) = "
+            call printvar(grid_temp_real)
+          else
+            write(*,'(a,a,a)') "**FAILED to set variable ",trim(iname)," (variable may not have set_value listing)**"
+          end if
+
         else
 
           !! If not real or integer type
-          print*,'    unrecoganized data type --- TEST FAILED!'
+          write(*,'(a,a,a)') "**ERROR - unrecognized data type for variable ",trim(iname),"**"
 
         end if
 
+      ! if varialbe is 3D
       else if (grid_rank == 3) then
 
-        print*,'grid_int = ',grid_int
+        write(*,'(a,I5)') 'grid_int = ',grid_int
         status = m%get_grid_shape(grid_int, grid_shape3d)
         n_z = grid_shape3d(1)
         n_y = grid_shape3d(2)
         n_x = grid_shape3d(3)
-        print*,'column count (n_x) = ',n_x
-        print*,'row count (n_y) = ',n_y
-        print*,'z count = ',n_z
+        write(*,'(a,I5)') 'column count (n_x) = ',n_x
+        write(*,'(a,I5)') 'row count (n_y) = ',n_y
+        write(*,'(a,I5)') 'z count = ',n_z
 
         if(var_type=='real') then
 
@@ -411,28 +456,40 @@ program noahmp_driver_test
           allocate(var_value_set_real(grid_size))
           allocate(grid3d_temp_real(n_x,n_y,n_z))
 
-          ! Print existing value(s)
-          call cpu_time(time_1)
+          ! Print existing values
           status = m%get_value(trim(trim(iname)), var_value_get_real)
-          call cpu_time(time_2)
-          print*, "get_value function cpu time (s) =",time_2-time_1
           grid3d_temp_real = reshape(var_value_get_real,[n_x,n_y,n_z])
-          do iz = 1, n_z
-            print*,'z =',iz
-            do iy = 1, n_y
-              do ix = 1, n_x
-                write(*,'(G0.5,1x)',advance='no') grid3d_temp_real(ix,iy,iz) 
-              end do
-              write(*,*) ''
-            end do
-          end do
-          !Leave here for clarity in output
-          print*,"**FAILED to set variable ",trim(iname)," (variable may not have set_value listing)**"
-        
+          write(*,'(a)') "from get_value (in XYZ) ="
+          call printvar(grid3d_temp_real)
+
+          ! Create and print replacement values
+          var_value_set_real = (/ (j, j = 1, grid_size) /)
+          grid3d_temp_real = reshape(var_value_set_real,[n_x,n_y,n_z])
+          write(*,'(a)') "our replacement value (in XYZ) ="
+          call printvar(grid3d_temp_real)
+
+          ! Set replacement values and print updated values
+          status = m%set_value(trim(iname), var_value_set_real)
+          if(status == BMI_SUCCESS) then
+            status = m%get_value(trim(iname), var_value_get_real)
+            grid3d_temp_real = reshape(var_value_get_real,[n_x,n_y,n_z])
+            write(*,'(a)') "and the new value (in XYZ) = "
+            call printvar(grid3d_temp_real)
+          else
+            write(*,'(a,a,a)') "**FAILED to set variable ",trim(iname)," (variable may not have set_value listing)**"
+          end if
+
+        else
+
+          ! If not real type
+          ! Note: functionality not implemented for integer types because there are no 3D int vars
+          write(*,'(a,a,a)') "**ERROR - unrecognized data type for variable ",trim(iname),"**"
+
         end if
 
       end if
     end do
+
 
   !---------------------------------------------------------------------
   ! Test the get_value_ptr functionality with BMI
