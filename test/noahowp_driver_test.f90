@@ -68,7 +68,8 @@ program noahmp_driver_test
     real, allocatable, dimension(:,:,:)               :: grid3d_temp_real
     integer, allocatable, dimension(:,:)              :: grid_temp_int    ! local grid to hold getter results for int type
     integer, dimension(3)                             :: grid_indices      ! grid indices (change dims as needed)
-    character (len = BMI_MAX_VAR_NAME), dimension(9)  :: names_params = [character(len=BMI_MAX_VAR_NAME) :: "CWP","VCMX25","MP","MFSNO","RSURF_SNOW","HVT","BEXP","SMCMAX","FRZX"]
+    character (len = BMI_MAX_VAR_NAME), dimension(16) :: names_params = [character(len=BMI_MAX_VAR_NAME) :: "CWP","VCMX25","MP","MFSNO","RSURF_SNOW","HVT","BEXP","SMCMAX","FRZX", &
+                                                                                                            "DKSAT","KDT","RSURF_EXP","REFKDT","AXAJ","BXAJ","SLOPE"]
 
     !---------------------------------------------------------------------
     !  Initialize the model
@@ -183,8 +184,7 @@ program noahmp_driver_test
   
     write(*,'(a)') ''
     write(*,'(a)') "GET TIME INFORMATION ***********************************************************"
-
-    ! print time info
+    write(*,'(a)') ''
     status = m%get_start_time(bmi_time)
     write(*,'(a,F20.5)') "The start time is ", bmi_time
     status = m%get_current_time(bmi_time)
@@ -202,6 +202,7 @@ program noahmp_driver_test
 
     write(*,'(a)') ''
     write(*,'(a)') "RUN THE MODEL ******************************************************************"
+    write(*,'(a)') ''
 
     !---------------------------------------------------------------------
     ! Run some time steps with the update_until function
@@ -259,8 +260,14 @@ program noahmp_driver_test
       write(*,'(a,a)') 'getting ',trim(iname)
       call rungettest(m,iname)
       if(trim(iname) .eq. 'SMCMAX') then
-        write(*,'(a,a)') 'getting FRZX (FRZX recalculated when setting SMCMAX)'
+        write(*,'(a,a)') 'getting FRZX (FRZX is recalculated when setting SMCMAX)'
         call rungettest(m,'FRZX')
+      else if(trim(iname) .eq. 'DKSAT') then
+        write(*,'(a,a)') 'getting KDT (KDT is recalculated when setting DKSAT)'
+        call rungettest(m,'KDT')
+      else if(trim(iname) .eq. 'REFKDT') then
+        write(*,'(a,a)') 'getting KDT (KDT is recalculated when setting REFKDT)'
+        call rungettest(m,'KDT')
       end if
 
       !---------------------------------------------------------------------
@@ -277,6 +284,12 @@ program noahmp_driver_test
       if(trim(iname) .eq. 'SMCMAX') then
         write(*,'(a,a)') 'getting FRZX (FRZX recalculated when setting SMCMAX)'
         call rungettest(m,'FRZX')
+      else if(trim(iname) .eq. 'DKSAT') then
+        write(*,'(a,a)') 'getting KDT (KDT is recalculated when setting DKSAT)'
+        call rungettest(m,'KDT')
+      else if(trim(iname) .eq. 'REFKDT') then
+        write(*,'(a,a)') 'getting KDT (KDT is recalculated when setting REFKDT)'
+        call rungettest(m,'KDT')
       end if
 
     end do
@@ -529,13 +542,12 @@ end program
       end if
   
     else if (grid_rank == 3) then
-  
-      ! get dims
+
       status = m%get_grid_shape(grid_int, grid_shape3d)
       n_z = grid_shape3d(1)
       n_y = grid_shape3d(2)
       n_x = grid_shape3d(3)
-  
+
       if(var_type=='real') then
   
         ! Allocate arrays

@@ -110,9 +110,10 @@ module bminoahowp
   integer, dimension(output_item_count)                                  :: output_grid = 1          ! GridType%id (0 = scalar, 1 = 2D, 2 = 3D) associated each output variable indexed by output variable number (default value is 1)
 
   ! calibratable parameter items
-  integer, parameter                                                     :: param_item_count = 9     ! number of calibratable parameters
+  integer, parameter                                                     :: param_item_count = 17     ! number of calibratable parameters
   character(len=BMI_MAX_VAR_NAME), dimension(param_item_count)           :: param_items = [character(len=BMI_MAX_VAR_NAME) :: "CWP","VCMX25","MP","MFSNO","RSURF_SNOW","HVT", & ! name of each calibratable parameter indexed by calibratable parameter number (i.e., 1 through param_item_count)
-                                                                                                                              "BEXP","SMCMAX","FRZX"]
+                                                                                                                              "BEXP","SMCMAX","FRZX","DKSAT","KDT","RSURF_EXP","REFKDT", &
+                                                                                                                              "AXAJ","BXAJ","XXAJ","SLOPE"]
   character (len=BMI_MAX_LOCATION_NAME), dimension(param_item_count)     :: param_location = 'node'  ! location of each calibratable parameter (e.g., 'node' or 'edge') indexed by calibratable parameter number (default value is 'node')
   integer, dimension(param_item_count)                                   :: param_grid = 1           ! GridType%id (0 = scalar, 1 = 2D, 2 = 3D) associated each calibratable parameter indexed by calibratable parameter number (default value is 1)
   
@@ -340,6 +341,7 @@ contains
       output_grid(14) = 2 !SNLIQ
       param_grid(7)   = 3 !BEXP      
       param_grid(8)   = 3 !SMCMAX
+      param_grid(10)  = 3 !DKSAT
 
       !checkout output vars
       do  i = 1, size(output_items)
@@ -633,7 +635,8 @@ contains
    case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! forcing vars
         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS', 'ACSNOM', 'SNOWT_AVG', &      ! output vars
         'QRAIN', 'FSNO', 'SNOWH', 'SNLIQ', 'QSNOW', 'ECAN', 'GH', 'TRAD', 'FSA', 'CMC', 'LH',  &
-        'FIRA', 'FSH','CWP','VCMX25','MP','MFSNO','RSURF_SNOW','HVT','BEXP','SMCMAX','FRZX')
+        'FIRA', 'FSH','CWP','VCMX25','MP','MFSNO','RSURF_SNOW','HVT','BEXP','SMCMAX','FRZX',   &
+        'DKSAT', 'KDT', 'RSURF_EXP','REFKDT','AXAJ','BXAJ','XXAJ','SLOPE')
         type = "real"
       bmi_status = BMI_SUCCESS
    case('ISNOW')
@@ -669,7 +672,7 @@ contains
    case("Q2")
       units = "kg/kg"
       bmi_status = BMI_SUCCESS
-   case("QINSUR")
+   case("QINSUR","DKSAT")
       units = "m/s"
       bmi_status = BMI_SUCCESS
    case("PRCPNONC", "QRAIN", "QSEVA", "QSNOW")
@@ -678,7 +681,7 @@ contains
    case("SNEQV", "ACSNOW", "EVAPOTRANS", "SNLIQ", "ECAN", "ETRAN", "CMC")
       units = "mm"
       bmi_status = BMI_SUCCESS
-   case("FSNO","ISNOW","MP","MFSNO","BEXP")
+   case("FSNO","ISNOW","MP","MFSNO","BEXP","KDT","RSURF_EXP","REFKDT","AXAJ","BXAJ","XXAJ","SLOPE")
       units = "unitless"
       bmi_status = BMI_SUCCESS
    case("SNOWH","HVT")
@@ -832,6 +835,27 @@ contains
       bmi_status = BMI_SUCCESS
    case("SMCMAX")
       size = sizeof(parametersgrid%smcmax(1,1,1))        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("DKSAT")
+      size = sizeof(parametersgrid%dksat(1,1,1))        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("RSURF_EXP")
+      size = sizeof(parametersgrid%RSURF_EXP(1,1))        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("REFKDT")
+      size = sizeof(parametersgrid%refkdt(1,1))        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("AXAJ")
+      size = sizeof(parametersgrid%AXAJ(1,1))        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("BXAJ")
+      size = sizeof(parametersgrid%BXAJ(1,1))        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("XXAJ")
+      size = sizeof(parametersgrid%XXAJ(1,1))        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("SLOPE")
+      size = sizeof(parametersgrid%slope(1,1))        ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case default
       size = -1
@@ -1076,6 +1100,30 @@ contains
    case("FRZX")
       dest = reshape(parametersgrid%frzx(:,:),[n_x*n_y])
       bmi_status = BMI_SUCCESS
+   case("DKSAT")
+      dest = reshape(parametersgrid%dksat(:,:,:),[n_x*n_y*nsoil])
+      bmi_status = BMI_SUCCESS
+   case("KDT")
+      dest = reshape(parametersgrid%kdt(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("RSURF_EXP")
+      dest = reshape(parametersgrid%RSURF_EXP(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("REFKDT")
+      dest = reshape(parametersgrid%refkdt(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("AXAJ")
+      dest = reshape(parametersgrid%AXAJ(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("BXAJ")
+      dest = reshape(parametersgrid%BXAJ(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("XXAJ")
+      dest = reshape(parametersgrid%XXAJ(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("SLOPE")
+      dest = reshape(parametersgrid%slope(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
    case default
       dest(:) = -1.0
       bmi_status = BMI_FAILURE
@@ -1251,13 +1299,8 @@ contains
 
    select case(name)
    case("SFCPRS")
-      print*,'noahowp_set_float'
-      print*,name
-      print*,src
-
       forcinggrid%sfcprs = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
-      print*,'good'
    case("SFCTMP")
       forcinggrid%sfctmp = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
@@ -1324,6 +1367,29 @@ contains
    case("SMCMAX")
       parametersgrid%smcmax(:,:,:) = reshape(src,[n_x,n_y,nsoil])
       parametersgrid%frzx(:,:)     = 0.15 * (parametersgrid%smcmax(:,:,1) / parametersgrid%smcref(:,:,1)) * (0.412 / 0.468)
+      bmi_status = BMI_SUCCESS
+   case("DKSAT")
+      parametersgrid%dksat(:,:,:) = reshape(src,[n_x,n_y,nsoil])
+      parametersgrid%kdt(:,:)     = parametersgrid%refkdt(:,:) * parametersgrid%dksat(:,:,1) / parametersgrid%refdk(:,:)
+      bmi_status = BMI_SUCCESS
+   case("RSURF_EXP")
+      parametersgrid%RSURF_EXP(:,:) = reshape(src,[n_x,n_y])
+      bmi_status = BMI_SUCCESS
+   case("REFKDT")
+      parametersgrid%refkdt(:,:) = reshape(src,[n_x,n_y])
+      parametersgrid%kdt(:,:)     = parametersgrid%refkdt(:,:) * parametersgrid%dksat(:,:,1) / parametersgrid%refdk(:,:)
+      bmi_status = BMI_SUCCESS
+   case("AXAJ")
+      parametersgrid%AXAJ(:,:) = reshape(src,[n_x,n_y])
+      bmi_status = BMI_SUCCESS
+   case("BXAJ")
+      parametersgrid%BXAJ(:,:) = reshape(src,[n_x,n_y])
+      bmi_status = BMI_SUCCESS
+   case("XXAJ")
+      parametersgrid%XXAJ(:,:) = reshape(src,[n_x,n_y])
+      bmi_status = BMI_SUCCESS
+   case("SLOPE")
+      parametersgrid%slope(:,:) = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case default
       bmi_status = BMI_FAILURE
