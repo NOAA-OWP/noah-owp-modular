@@ -110,13 +110,18 @@ module bminoahowp
   integer, dimension(output_item_count)                                  :: output_grid = 1          ! GridType%id (0 = scalar, 1 = 2D, 2 = 3D) associated each output variable indexed by output variable number (default value is 1)
 
   ! calibratable parameter items
-  integer, parameter                                                     :: param_item_count = 6     ! number of calibratable parameters
-  character(len=BMI_MAX_VAR_NAME), dimension(param_item_count)           :: param_items = [character(len=BMI_MAX_VAR_NAME) :: "CWP","VCMX25","MP","MFSNO","RSURF_SNOW","HVT"] ! name of each calibratable parameter indexed by calibratable parameter number (i.e., 1 through param_item_count)
+  integer, parameter                                                     :: param_item_count = 9     ! number of calibratable parameters
+  character(len=BMI_MAX_VAR_NAME), dimension(param_item_count)           :: param_items = [character(len=BMI_MAX_VAR_NAME) :: "CWP","VCMX25","MP","MFSNO","RSURF_SNOW","HVT", & ! name of each calibratable parameter indexed by calibratable parameter number (i.e., 1 through param_item_count)
+                                                                                                                              "BEXP","SMCMAX","FRZX"]
   character (len=BMI_MAX_LOCATION_NAME), dimension(param_item_count)     :: param_location = 'node'  ! location of each calibratable parameter (e.g., 'node' or 'edge') indexed by calibratable parameter number (default value is 'node')
   integer, dimension(param_item_count)                                   :: param_grid = 1           ! GridType%id (0 = scalar, 1 = 2D, 2 = 3D) associated each calibratable parameter indexed by calibratable parameter number (default value is 1)
+  
 
   ! grid metadata structure
-  type(GridType) :: grids(3) ! grids(1)%id = 0, grids(2)%id = 1, grids(3)%id = 2
+  type(GridType) :: grids(4) ! grids(1) = scalar
+                             ! grids(2) = 2D [n_y,n_x]
+                             ! grids(3) = 3D [nsnow,n_y,n_x]
+                             ! grids(4) = 3D [nsoil,n_y,n_x]
 
 contains
 
@@ -219,6 +224,7 @@ contains
     call grids(1)%init(0, 0, scalar, none) !the scalar grid
     call grids(2)%init(1, 2, uniform_rectilinear, none)
     call grids(3)%init(2, 3, uniform_rectilinear, none)
+    call grids(4)%init(3, 3, uniform_rectilinear, none)
     ! for now, use the domain info in the model read from its various files
     ! TODO in the future, can use a config flag to indicate whether or not this is approriate
     ! or whether we want dynamic grid allocation
@@ -228,6 +234,7 @@ contains
     call set_grid_from_model(this%model,grids(1))
     call set_grid_from_model(this%model,grids(2))
     call set_grid_from_model(this%model,grids(3))
+    call set_grid_from_model(this%model,grids(4))
     bmi_status = BMI_SUCCESS
   end function noahowp_initialize
 
@@ -329,8 +336,10 @@ contains
    integer, intent(out) :: grid
    integer :: bmi_status, i
 
-      ! SNLIQ
-      output_grid(14) = 2
+      ! grid ids for 3D variables
+      output_grid(14) = 2 !SNLIQ
+      param_grid(7)   = 3 !BEXP      
+      param_grid(8)   = 3 !SMCMAX
 
       !checkout output vars
       do  i = 1, size(output_items)
@@ -376,7 +385,7 @@ contains
    case(0)
       type = "scalar"
       bmi_status = BMI_SUCCESS
-   case(1,2)
+   case(1,2,3)
      type = "uniform_rectilinear"
      bmi_status = BMI_SUCCESS
    case default
@@ -624,7 +633,7 @@ contains
    case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! forcing vars
         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS', 'ACSNOM', 'SNOWT_AVG', &      ! output vars
         'QRAIN', 'FSNO', 'SNOWH', 'SNLIQ', 'QSNOW', 'ECAN', 'GH', 'TRAD', 'FSA', 'CMC', 'LH',  &
-        'FIRA', 'FSH','CWP','VCMX25','MP','MFSNO','RSURF_SNOW','HVT')
+        'FIRA', 'FSH','CWP','VCMX25','MP','MFSNO','RSURF_SNOW','HVT','BEXP','SMCMAX','FRZX')
         type = "real"
       bmi_status = BMI_SUCCESS
    case('ISNOW')
@@ -669,7 +678,7 @@ contains
    case("SNEQV", "ACSNOW", "EVAPOTRANS", "SNLIQ", "ECAN", "ETRAN", "CMC")
       units = "mm"
       bmi_status = BMI_SUCCESS
-   case("FSNO","ISNOW","MP","MFSNO")
+   case("FSNO","ISNOW","MP","MFSNO","BEXP")
       units = "unitless"
       bmi_status = BMI_SUCCESS
    case("SNOWH","HVT")
@@ -683,6 +692,9 @@ contains
       bmi_status = BMI_SUCCESS
    case("RSURF_SNOW")
       units = 's/m'
+      bmi_status = BMI_SUCCESS
+   case("SMCMAX")
+      units = 'volumetric'
       bmi_status = BMI_SUCCESS
    case default
       units = "-"
@@ -815,6 +827,12 @@ contains
    case("HVT")
       size = sizeof(parametersgrid%HVT(1,1))        ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
+   case("BEXP")
+      size = sizeof(parametersgrid%bexp(1,1,1))        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("SMCMAX")
+      size = sizeof(parametersgrid%smcmax(1,1,1))        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
    case default
       size = -1
       bmi_status = BMI_FAILURE
@@ -887,8 +905,6 @@ contains
       endif
     end do
 
-    !check any other vars???
-
     !no matches
     location = "-"
     bmi_status = BMI_FAILURE
@@ -932,14 +948,15 @@ contains
    real    :: mm2m = 0.001       ! unit conversion mm to m     
    real    :: m2mm = 1000.       ! unit conversion m to mm
 
-   associate(domaingrid     => this%model%domaingrid,      &
-             forcinggrid    => this%model%forcinggrid,     &
-             watergrid      => this%model%watergrid,       &
-             energygrid     => this%model%energygrid,      &
-             parametersgrid => this%model%parametersgrid, &
-             n_x            => this%model%domaingrid%n_x,  &
-             n_y            => this%model%domaingrid%n_y,  &
-             nsnow          => this%model%levelsgrid%nsnow)
+   associate(domaingrid     => this%model%domaingrid,       &
+             forcinggrid    => this%model%forcinggrid,      &
+             watergrid      => this%model%watergrid,        &
+             energygrid     => this%model%energygrid,       &
+             parametersgrid => this%model%parametersgrid,   &
+             n_x            => this%model%domaingrid%n_x,   &
+             n_y            => this%model%domaingrid%n_y,   &
+             nsnow          => this%model%levelsgrid%nsnow, &
+             nsoil          => this%model%levelsgrid%nsoil)
 
    select case(name)
    case("SFCPRS")
@@ -1049,6 +1066,15 @@ contains
       bmi_status = BMI_SUCCESS
    case("HVT")
       dest = reshape(parametersgrid%HVT(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
+   case("BEXP")
+      dest = reshape(parametersgrid%bexp(:,:,:),[n_x*n_y*nsoil])
+      bmi_status = BMI_SUCCESS
+   case("SMCMAX")
+      dest = reshape(parametersgrid%smcmax(:,:,:),[n_x*n_y*nsoil])
+      bmi_status = BMI_SUCCESS
+   case("FRZX")
+      dest = reshape(parametersgrid%frzx(:,:),[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case default
       dest(:) = -1.0
@@ -1214,18 +1240,24 @@ contains
    real    :: mm2m = 0.001       ! unit conversion mm to m     
    real    :: m2mm = 1000.       ! unit conversion m to mm
 
-   associate(domaingrid     => this%model%domaingrid,     &
-             forcinggrid    => this%model%forcinggrid,    &
-             watergrid      => this%model%watergrid,      &
-             energygrid     => this%model%energygrid,     &
-             parametersgrid => this%model%parametersgrid, &
-             n_x            => this%model%domaingrid%n_x, &
-             n_y            => this%model%domaingrid%n_y)
+   associate(domaingrid     => this%model%domaingrid,       &
+             forcinggrid    => this%model%forcinggrid,      &
+             watergrid      => this%model%watergrid,        &
+             energygrid     => this%model%energygrid,       &
+             parametersgrid => this%model%parametersgrid,   &
+             n_x            => this%model%domaingrid%n_x,   &
+             n_y            => this%model%domaingrid%n_y,   &
+             nsoil          => this%model%levelsgrid%nsoil)
 
    select case(name)
    case("SFCPRS")
+      print*,'noahowp_set_float'
+      print*,name
+      print*,src
+
       forcinggrid%sfcprs = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
+      print*,'good'
    case("SFCTMP")
       forcinggrid%sfctmp = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
@@ -1285,6 +1317,13 @@ contains
       bmi_status = BMI_SUCCESS
    case("HVT")
       parametersgrid%HVT = reshape(src,[n_x,n_y])
+      bmi_status = BMI_SUCCESS
+   case("BEXP")
+      parametersgrid%bexp = reshape(src,[n_x,n_y,nsoil])
+      bmi_status = BMI_SUCCESS
+   case("SMCMAX")
+      parametersgrid%smcmax(:,:,:) = reshape(src,[n_x,n_y,nsoil])
+      parametersgrid%frzx(:,:)     = 0.15 * (parametersgrid%smcmax(:,:,1) / parametersgrid%smcref(:,:,1)) * (0.412 / 0.468)
       bmi_status = BMI_SUCCESS
    case default
       bmi_status = BMI_FAILURE
