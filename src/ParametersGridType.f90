@@ -24,9 +24,9 @@ module ParametersGridType
     real,allocatable,dimension(:,:)                   :: BBVIC                     ! DVIC heterogeniety parameter for infiltration
     real,allocatable,dimension(:,:)                   :: G                         ! Mean Capillary Drive (m) for infiltration models
     real,allocatable,dimension(:,:)                   :: QUARTZ                    ! fraction of soil comprised of quartz [-] (equal to pctsand/100)
-    real,allocatable,dimension(:,:)                   :: kdt                       !
-    real,allocatable,dimension(:,:)                   :: refkdt                    !
-    real,allocatable,dimension(:,:)                   :: refdk                     !
+    real,allocatable,dimension(:,:)                   :: kdt                       ! coefficient for computing maximum soil infiltration rate
+    real,allocatable,dimension(:,:)                   :: refkdt                    ! Reference Soil Infiltration Parameter (used in runoff formulation)
+    real,allocatable,dimension(:,:)                   :: refdk                     ! Reference Soil Conductivity parameter (used in runoff formulation)
     real,allocatable,dimension(:,:)                   :: csoil                     ! volumetric soil heat capacity [j/m3/K]
     real,allocatable,dimension(:,:)                   :: Z0                        ! bare soil roughness length (m)
     real,allocatable,dimension(:,:)                   :: CZIL                      ! Parameter used in the calculation of the roughness length for heat, originally in GENPARM.TBL
@@ -143,6 +143,7 @@ module ParametersGridType
     real                                              :: VKC                       ! von Karman constant
     integer                                           :: NBAND                     ! Number of shortwave bands (2, visible and NIR)
     real                                              :: MPE                       ! MPE is nominally small to prevent dividing by zero error
+    real,allocatable,dimension(:,:)                   :: SCAMAX                    ! maximum fractional snow-covered area
 
   contains
 
@@ -260,6 +261,7 @@ module ParametersGridType
     allocate(this%PSIWLT(n_x,n_y))
     allocate(this%TBOT(n_x,n_y))
     allocate(this%rain_snow_thresh(n_x,n_y))
+    allocate(this%SCAMAX(n_x,n_y))
 
     end associate
 
@@ -404,6 +406,7 @@ module ParametersGridType
     this%VKC = huge(1.0)
     this%NBAND = huge(1)
     this%MPE = huge(1.0)
+    this%SCAMAX = huge(1.0)
 
   end subroutine InitDefault
 
@@ -499,6 +502,7 @@ module ParametersGridType
     this%O2                        = 0.209       ! o2 partial pressure, from O2_TABLE var (set in MPTABLE.TBL)
     this%PSIWLT(:,:)               = -150.0      ! originally a fixed parameter set in ENERGY()
     this%TBOT(:,:)                 = 263.0       ! (K) can be updated depending on option OPT_TBOT
+    this%SCAMAX(:,:)               = 1.
     
     do ix = 1, domaingrid%n_x
       do iy = 1, domaingrid%n_y
