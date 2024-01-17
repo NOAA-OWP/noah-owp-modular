@@ -68,8 +68,8 @@ program noahmp_driver_test
     real, allocatable, dimension(:,:,:)               :: grid3d_temp_real
     integer, allocatable, dimension(:,:)              :: grid_temp_int    ! local grid to hold getter results for int type
     integer, dimension(3)                             :: grid_indices      ! grid indices (change dims as needed)
-    character (len = BMI_MAX_VAR_NAME), dimension(16) :: names_params = [character(len=BMI_MAX_VAR_NAME) :: "CWP","VCMX25","MP","MFSNO","RSURF_SNOW","HVT","BEXP","SMCMAX","FRZX", &
-                                                                                                            "DKSAT","KDT","RSURF_EXP","REFKDT","AXAJ","BXAJ","SLOPE"]
+    character (len = BMI_MAX_VAR_NAME), dimension(17) :: names_params = [character(len=BMI_MAX_VAR_NAME) :: "CWP","VCMX25","MP","MFSNO","RSURF_SNOW","HVT","BEXP","SMCMAX","FRZX", &
+                                                                                                            "DKSAT","KDT","RSURF_EXP","REFKDT","AXAJ","BXAJ","SLOPE","SCAMAX"]
 
     !---------------------------------------------------------------------
     !  Initialize the model

@@ -110,10 +110,10 @@ module bminoahowp
   integer, dimension(output_item_count)                                  :: output_grid = 1          ! GridType%id (0 = scalar, 1 = 2D, 2 = 3D) associated each output variable indexed by output variable number (default value is 1)
 
   ! calibratable parameter items
-  integer, parameter                                                     :: param_item_count = 17     ! number of calibratable parameters
+  integer, parameter                                                     :: param_item_count = 18     ! number of calibratable parameters
   character(len=BMI_MAX_VAR_NAME), dimension(param_item_count)           :: param_items = [character(len=BMI_MAX_VAR_NAME) :: "CWP","VCMX25","MP","MFSNO","RSURF_SNOW","HVT", & ! name of each calibratable parameter indexed by calibratable parameter number (i.e., 1 through param_item_count)
                                                                                                                               "BEXP","SMCMAX","FRZX","DKSAT","KDT","RSURF_EXP","REFKDT", &
-                                                                                                                              "AXAJ","BXAJ","XXAJ","SLOPE"]
+                                                                                                                              "AXAJ","BXAJ","XXAJ","SLOPE","SCAMAX"]
   character (len=BMI_MAX_LOCATION_NAME), dimension(param_item_count)     :: param_location = 'node'  ! location of each calibratable parameter (e.g., 'node' or 'edge') indexed by calibratable parameter number (default value is 'node')
   integer, dimension(param_item_count)                                   :: param_grid = 1           ! GridType%id (0 = scalar, 1 = 2D, 2 = 3D) associated each calibratable parameter indexed by calibratable parameter number (default value is 1)
   
@@ -636,7 +636,7 @@ contains
         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS', 'ACSNOM', 'SNOWT_AVG', &      ! output vars
         'QRAIN', 'FSNO', 'SNOWH', 'SNLIQ', 'QSNOW', 'ECAN', 'GH', 'TRAD', 'FSA', 'CMC', 'LH',  &
         'FIRA', 'FSH','CWP','VCMX25','MP','MFSNO','RSURF_SNOW','HVT','BEXP','SMCMAX','FRZX',   &
-        'DKSAT', 'KDT', 'RSURF_EXP','REFKDT','AXAJ','BXAJ','XXAJ','SLOPE')
+        'DKSAT', 'KDT', 'RSURF_EXP','REFKDT','AXAJ','BXAJ','XXAJ','SLOPE','SCAMAX')
         type = "real"
       bmi_status = BMI_SUCCESS
    case('ISNOW')
@@ -681,7 +681,7 @@ contains
    case("SNEQV", "ACSNOW", "EVAPOTRANS", "SNLIQ", "ECAN", "ETRAN", "CMC")
       units = "mm"
       bmi_status = BMI_SUCCESS
-   case("FSNO","ISNOW","MP","MFSNO","BEXP","KDT","RSURF_EXP","REFKDT","AXAJ","BXAJ","XXAJ","SLOPE")
+   case("FSNO","ISNOW","MP","MFSNO","BEXP","KDT","RSURF_EXP","REFKDT","AXAJ","BXAJ","XXAJ","SLOPE","FRZX","SCAMAX")
       units = "unitless"
       bmi_status = BMI_SUCCESS
    case("SNOWH","HVT")
@@ -856,6 +856,15 @@ contains
       bmi_status = BMI_SUCCESS
    case("SLOPE")
       size = sizeof(parametersgrid%slope(1,1))        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("FRZX")
+      size = sizeof(parametersgrid%frzx(1,1))        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("KDT")
+      size = sizeof(parametersgrid%kdt(1,1))        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+   case("SCAMAX")
+      size = sizeof(parametersgrid%SCAMAX(1,1))        ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
    case default
       size = -1
@@ -1124,6 +1133,9 @@ contains
    case("SLOPE")
       dest = reshape(parametersgrid%slope(:,:),[n_x*n_y])
       bmi_status = BMI_SUCCESS
+   case("SCAMAX")
+      dest = reshape(parametersgrid%SCAMAX(:,:),[n_x*n_y])
+      bmi_status = BMI_SUCCESS
    case default
       dest(:) = -1.0
       bmi_status = BMI_FAILURE
@@ -1390,6 +1402,9 @@ contains
       bmi_status = BMI_SUCCESS
    case("SLOPE")
       parametersgrid%slope(:,:) = reshape(src,[n_x,n_y])
+      bmi_status = BMI_SUCCESS
+   case("SCAMAX")
+      parametersgrid%SCAMAX(:,:) = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case default
       bmi_status = BMI_FAILURE
