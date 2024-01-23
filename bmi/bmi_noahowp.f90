@@ -678,7 +678,7 @@ contains
    case("PRCPNONC", "QRAIN", "QSEVA", "QSNOW")
       units = "mm/s"
       bmi_status = BMI_SUCCESS
-   case("SNEQV", "ACSNOW", "EVAPOTRANS", "SNLIQ", "ECAN", "ETRAN", "CMC")
+   case("SNEQV", "ACSNOM", "EVAPOTRANS", "SNLIQ", "ECAN", "ETRAN", "CMC")
       units = "mm"
       bmi_status = BMI_SUCCESS
    case("FSNO","ISNOW","MP","MFSNO","BEXP","KDT","RSURF_EXP","REFKDT","AXAJ","BXAJ","XXAJ","SLOPE","FRZX","SCAMAX")
