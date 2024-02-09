@@ -2,7 +2,6 @@ module ForcingGridType
 
 use NamelistRead,   only: namelist_type
 use AttributesType, only: attributes_type
-use DomainGridType, only: domaingrid_type
 
 implicit none
 private
@@ -50,7 +49,7 @@ character(len=256)                                :: forcings_dir         ! name
 character(len=256)                                :: forcings_file_prefix ! name of the forcings directory
 character(len=256)                                :: forcings_file_name   ! name of the forcings directory
 character(len=7)                                  :: forcing_file_type    ! Start date of the model run ( HOURLY, DAILY, MONTHLY, or YEARLY )
-integer                                           :: iread,ncid,status,iread_max,iread_step
+integer                                           :: iread,ncid,status,iread_step,n_x,n_y
 real,allocatable,dimension(:,:,:)                 :: read_windspeed
 real,allocatable,dimension(:,:,:)                 :: read_winddir
 real,allocatable,dimension(:,:,:)                 :: read_temperature
@@ -72,8 +71,6 @@ real*8                                            :: file_min_time,file_max_time
     procedure, public  :: InitTransfer     
     procedure, public  :: ReadForcings     
     procedure, public  :: SetForcings    
-    procedure, private :: GetForcingsFileName
-    procedure, private :: FindTimeStepIndex
 
 end type
 
@@ -165,34 +162,37 @@ contains
 
   end subroutine InitDefault
 
-  subroutine InitTransfer(this, namelist)
+  subroutine InitTransfer(this, namelist, attributes)
 
     class(forcinggrid_type) :: this
     type(namelist_type)     :: namelist
+    type(attributes_type)   :: attributes
 
     this%forcings_dir         = namelist%forcings_dir
     this%forcings_file_prefix = namelist%forcings_file_prefix
     this%forcings_file_type   = namelist%forcings_file_type
+    this%n_x                  = attributes%metadata%n_x
+    this%n_y                  = attributes%metadata%n_y
 
   end subroutine InitTransfer
 
-  subroutine ReadForcings(this,domaingrid)
+  subroutine ReadForcings(this,datetime_unix,datetime_str)
 
     class(forcinggrid_type), intent(inout) :: this
-    type(domaingrid_type),   intent(in)    :: domaingrid
-    character(len=12)                      :: date           ! date ( YYYYMMDDHHmm )
-    character(len=14)                      :: date_long      ! date ( YYYYMMDDHHmmss )
+    real*8,intent(in)                      :: datetime_unit       ! unix datetime (s since 1970-01-01 00:00:00) ?UTC? 
+    character(len=12),intent(in)           :: datetime_str        ! character date ( YYYYMMDDHHmm )
+    character(len=14)                      :: datetime_long_str   ! character date ( YYYYMMDDHHmmss )
     character(len=2048)                    :: filename 
     character(len=4)                       :: year_str
     character(len=2)                       :: month_str,day_str,minute_str,second_str
     integer                                :: year_int,month_int,day_int,minute_int,second_int
     integer                                :: time_dim_len,ndays
+    real*8,allocatable,dimension(:)        :: time_dif
 
     !---------------------------------------------------------------------
     ! Determine expected file name
     !---------------------------------------------------------------------
-    date = domaingrid%nowdate
-    year_str = date(1:4); month_str = date(5:6); day_str = date(7:8); hour_str = date(9:10)
+    year_str = datetime_str(1:4); month_str = datetime_str(5:6); day_str = datetime_str(7:8); hour_str = datetime_str(9:10)
     select case(this%forcing_file_type)
     case('YEARLY')
       filename = this%forcings_dir//this%forcings_file_prefix//'.'//year_str//'.nc'
@@ -435,41 +435,52 @@ contains
     !---------------------------------------------------------------------
     ! Check x and y dimension lengths against x and y dimension lengths of the domain
     !---------------------------------------------------------------------
-    n_x = size(domaingrid%n_x,1); n_y = size(domaingrid%n_y,2)
+    n_x = size(this%n_x,1); n_y = size(this%n_y,2)
     if((dim_len_x.ne.n_x).or.(dim_len_y.ne.n_y)) then; write(*,*) 'ERROR the x and y dimensions in the forcing file ',trim(this%forcings_file_name),' do not match the domain x and y dimensions';stop ":  ERROR EXIT"; end if
 
     !---------------------------------------------------------------------
     ! Set iread (i.e., the index value of nowdate in read_time)
     !---------------------------------------------------------------------
-    call this%FindTimeStepIndex(datetime,iread,filename)
+    allocate(time_dif(size(this%read_time,1))) 
+    time_dif = abs(this%read_time-datetime_unix)
+    if(any(time_dif.le.epsilon(datetime_unix))) then
+      this%iread = minloc(time_dif,1)
+    else
+      write(*,*) 'ERROR Cound not find ''',trim(datetime_str),''' in forcing file ''',trim(filename),''' -- unix time =',datetime_unix
+    end if
 
     !---------------------------------------------------------------------
     ! Set iread_step (i.e., the index value of the next simulation time step in read_time minus iread)
     !---------------------------------------------------------------------
-    iread_step = 1                  ! default value
-    iread_next = iread + iread_step ! default value
-    if((domaingrid%itime+1).le.domaingrid%ntime) then 
-      next_datetime = domaingrid%sim_datetimes(domaingrid%itime + 1)
-      if(next_dateime.le.this%max_file_datetime) then
-        call this%FindTimeStepIndex(datetime,iread_next,filename)
-        iread_step = iread_next - iread
-        if(iread_step.lt.1) then; write(*,*) 'ERROR Unable to determine reading time step for ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    iread_step = 1                     ! default value
+    iread_next = iread + iread_step    ! default value
+    next_datetime = datetime + this%dt 
+    if(next_dateime.le.this%max_file_datetime) then
+      allocate(time_dif(size(this%read_time,1))) 
+      time_dif = abs(this%read_time-datetime)
+      if(any(time_dif.le.epsilon(datetime))) then
+        index = minloc(time_dif,1)
+      else
+        write(*,*) 'ERROR Searched forcing file ''',trim(filename),''' but could not find datetime (unix time) :',datetime
       end if
+      iread_step = iread_next - iread
+      if(iread_step.lt.1) then; write(*,*) 'ERROR Unable to determine reading time step for ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
     end if
 
   end subroutine ReadForcings
 
-  subroutine SetForcings(this,domaingrid)
+  subroutine SetForcings(this,datetime_unix,datetime_str)
 
     class(forcinggrid_type), intent(inout) :: this
-    character(len=12),intent(in)           :: date           ! date ( YYYYMMDDHHmm ) 
+    real*8,intent(in)                      :: datetime_unit       ! unix datetime (s since 1970-01-01 00:00:00) ?UTC? 
+    character(len=12),intent(in)           :: datetime_str        ! character date ( YYYYMMDDHHmm )
 
     ! check if curr_datetime is within the unix time bounds of read arrays
-    if(domaingrid%curr_datetime > this%max_file_datetime) call this%ReadForcings(domaingrid)
+    if(datetime_unix > this%max_file_datetime) call this%ReadForcings(datetime_unix,datetime_str)
 
     ! sanity check
-    if(abs(this%read_time(iread)-domaingrid%curr_datetime).gt.epsilon(domaingrid%curr_datetime)) then
-      write(*,*) 'ERROR Unable to find datetime ''',trim(domaingrid%nowdate),''' in forcing file ''',filename,''' - unix time = ',domaingrid%curr_datetime
+    if(abs(this%read_time(iread)-datetime_unix).gt.epsilon(datetime_unix)) then
+      write(*,*) 'ERROR Unable to find datetime ''',trim(datetime_str),''' in forcing file ''',filename,''' - unix time = ',datetime_unix
     end if
 
     this%UU(:,:)     = this%read_UU(:,:,iread)
@@ -486,22 +497,5 @@ contains
     iread = iread + iread_step
 
   end subroutine SetForcings
-
-  subroutine FindTimeStepIndex(datetime,index,filename)
-
-    real*8,intent(in)              :: datetime ! unix datetime (s since 1970-01-01 00:00:00) ?UTC? 
-    integer,intent(out)            :: index    ! index value for argument datetime in read_time
-    character(len=2048),intent(in) :: filename ! for error msg
-    real,allocatable,dimension(:)  :: time_dif ! difference between read_time values and argument datetime
-
-    allocate(time_dif(size(this%read_time,1))) 
-    time_dif = abs(this%read_time-datetime)
-    if(any(time_dif.le.epsilon(datetime))) then
-      index = minloc(time_dif,1)
-    else
-      write(*,*) 'ERROR Searched forcing file ''',trim(filename),''' but could not find datetime (unix time) :',datetime
-    end if
-
-  end subroutine
 
 end module ForcingGridType

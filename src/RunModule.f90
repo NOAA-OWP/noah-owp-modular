@@ -113,8 +113,8 @@ contains
       call parametersgrid%Init(namelist,attributes)
       call parametersgrid%paramRead(namelist,domaingrid)
 
-      call forcinggrid%Init(attributes)
-      call forcinggrid%InitTransfer(namelist)
+      call forcinggrid%Init(namelist,attributes)
+      call forcinggrid%InitTransfer(namelist,attributes)
 
       call energygrid%Init(namelist,attributes)
       call energygrid%InitTransfer(namelist)
@@ -252,12 +252,12 @@ contains
       !print *, "---------"
       
       !---------------------------------------------------------------------
-      ! Open and read the first forcing file
+      ! Open/read the first forcing file
       ! Compiler directive NGEN_FORCING_ACTIVE to be defined if 
       ! Nextgen forcing is being used (https://github.com/NOAA-OWP/ngen)
       !---------------------------------------------------------------------
 #ifndef NGEN_FORCING_ACTIVE
-      forcinggrid%ReadForcings(sim_datetimes(1))
+      call forcinggrid%ReadForcings(this%start_datetime,this%startdate)
 #endif
       
       !---------------------------------------------------------------------
@@ -325,24 +325,7 @@ contains
               watergrid      => noahowpgrid%watergrid)
 
 #ifndef NGEN_FORCING_ACTIVE
-
-    !Read forcings for nowdate
-    !call read_forcing_text(iunit, domaingrid%nowdate, int(domaingrid%dt), &
-    !      read_UU, read_VV, read_SFCTMP, read_Q2, read_SFCPRS, read_SOLDN, read_LWDN, read_PRCP, ierr)
-
-    !Give read-in forcings to all grid cells
-    !forcinggrid%UU(:,:)     = read_UU
-    !forcinggrid%VV(:,:)     = read_VV
-    !forcinggrid%SFCTMP(:,:) = read_SFCTMP
-    !forcinggrid%Q2(:,:)     = read_Q2
-    !forcinggrid%SFCPRS(:,:) = read_SFCPRS
-    !forcinggrid%SOLDN(:,:)  = read_SOLDN
-    !forcinggrid%LWDN(:,:)   = read_LWDN
-    !forcinggrid%PRCP(:,:)   = read_PRCP
-    !forcinggrid%UU(:,:)     = read_UU
-
-    call forcinggrid%GetForcings(domaingrid)
-
+    call forcinggrid%SetForcings(this%curr_datetime,this%nowdate)
 #endif
 
     !---------------------------------------------------------------------
