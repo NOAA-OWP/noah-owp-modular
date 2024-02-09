@@ -11,7 +11,6 @@ type, public :: namelist_type
   real               :: dt                 ! model timestep (s)
   character(len=12)  :: startdate          ! UTC start datetime of the model run ( YYYYMMDDHHmm )
   character(len=12)  :: enddate            ! UTC end datetime of the model run ( YYYYMMDDHHmm )
-  character(len=256) :: forcing_filename     ! directory/name of the input/forcing file
   character(len=256) :: output_filename    ! directory/name of the output file
   character(len=256) :: parameter_dir      ! name of the directory where parameter TBLs reside
   character(len=256) :: noahowp_table       ! name of noahowp parameter table
@@ -64,10 +63,31 @@ type, public :: namelist_type
   character(len=256)  :: name_var_soilcolor   ! name of NetCDF variable for soilcolor
   character(len=256)  :: name_var_slope       ! name of NetCDF variable for slope
   character(len=256)  :: name_var_azimuth     ! name of NetCDF variable for azimuth
+
+  !-------------------------------!
+  !   gridded forcings            !
+  !-------------------------------!
+  character(len=256)  :: forcings_dir           ! directory/name of the input/forcing files
+  character(len=256)  :: forcings_file_prefix   ! 
+  character(len=256)  :: forcing_file_type
+  character(len=256)  :: name_forcings_pcprate  
+  character(len=256)  :: name_forcings_sfctmp  
+  character(len=256)  :: name_forcings_sfcprs  
+  character(len=256)  :: name_forcings_wspd  
+  character(len=256)  :: name_forcings_wdir  
+  character(len=256)  :: name_forcings_swrad  
+  character(len=256)  :: name_forcings_lwrad 
+  character(len=256)  :: name_forcings_rhf  
+
+  !-------------------------------!
+  !   gridded dimensions, etc     !
+  !-------------------------------!
   character(len=256)  :: name_dim_x           ! name of NetCDF 'x' dimension (longitude dimension)
   character(len=256)  :: name_dim_y           ! name of NetCDF 'y' dimension (latitude dimension)
+  character(len=256)  :: name_dim_time        ! name of NetCDF 'time' dimension (latitude dimension)
   character(len=256)  :: name_var_x           ! name of NetCDF 'x' variable (longitude dimension)
   character(len=256)  :: name_var_y           ! name of NetCDF 'y' varaible (latitude dimension)
+  character(len=256)  :: name_var_time        ! name of NetCDF 'time' varaible (latitude dimension)
   character(len=256)  :: name_att_dx          ! name of NetCDF 'x' dimension resolution (spacing)
   character(len=256)  :: name_att_dy          ! name of NetCDF 'y' dimension resolution (spacing)
 
@@ -349,18 +369,32 @@ contains
     this%realMissing                 = realMissing
     this%stringMissing               = stringMissing 
 
+    ! hardcode names for gridded dimensions, etc
+    this%name_dim_x                 = "longitude"
+    this%name_dim_y                 = "latitude" 
+    this%name_dim_time              = "time"
+    this%name_var_x                 = this%name_dim_x
+    this%name_var_y                 = this%name_dim_y
+    this%name_var_time              = this%name_dim_time
+    this%name_att_dx                = "dx"     
+    this%name_att_dy                = "dy"
+
     ! hardcode names for gridded attributes
     this%name_var_vegtyp            = "vegtyp"     
     this%name_var_isltyp            = "isltyp"  
     this%name_var_soilcolor         = "soilcolor" 
     this%name_var_slope             = "slope"   
     this%name_var_azimuth           = "azimuth"   
-    this%name_dim_x                 = "longitude"
-    this%name_dim_y                 = "latitude" 
-    this%name_var_x                 = this%name_dim_x
-    this%name_var_y                 = this%name_dim_y
-    this%name_att_dx                = "dx"     
-    this%name_att_dy                = "dy"
+
+    ! hardcode names for gridded forcings
+    this%name_forcings_pcprate           = 'pcprate'
+    this%name_forcings_sfctmp            = 'sfctmp'
+    this%name_forcings_sfcprs            = 'sfcprs'
+    this%name_forcings_wspd              = 'wspd'
+    this%name_forcings_wdir              = 'wdir'
+    this%name_forcings_swrad             = 'swrad'
+    this%name_forcings_lwrad             = 'lwrad'
+    this%name_forcings_rhf               = 'rhf'
 
   end subroutine ReadNamelist
 

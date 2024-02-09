@@ -252,13 +252,12 @@ contains
       !print *, "---------"
       
       !---------------------------------------------------------------------
-      ! Open the forcing file
-      ! Code adapted from the ASCII_IO from NOAH-MP V1.1
+      ! Open and read the first forcing file
       ! Compiler directive NGEN_FORCING_ACTIVE to be defined if 
       ! Nextgen forcing is being used (https://github.com/NOAA-OWP/ngen)
       !---------------------------------------------------------------------
 #ifndef NGEN_FORCING_ACTIVE
-      call open_forcing_file(namelist%forcing_filename)
+      forcinggrid%ReadForcings(sim_datetimes(1))
 #endif
       
       !---------------------------------------------------------------------
@@ -328,19 +327,21 @@ contains
 #ifndef NGEN_FORCING_ACTIVE
 
     !Read forcings for nowdate
-    call read_forcing_text(iunit, domaingrid%nowdate, int(domaingrid%dt), &
-          read_UU, read_VV, read_SFCTMP, read_Q2, read_SFCPRS, read_SOLDN, read_LWDN, read_PRCP, ierr)
+    !call read_forcing_text(iunit, domaingrid%nowdate, int(domaingrid%dt), &
+    !      read_UU, read_VV, read_SFCTMP, read_Q2, read_SFCPRS, read_SOLDN, read_LWDN, read_PRCP, ierr)
 
     !Give read-in forcings to all grid cells
-    forcinggrid%UU(:,:)     = read_UU
-    forcinggrid%VV(:,:)     = read_VV
-    forcinggrid%SFCTMP(:,:) = read_SFCTMP
-    forcinggrid%Q2(:,:)     = read_Q2
-    forcinggrid%SFCPRS(:,:) = read_SFCPRS
-    forcinggrid%SOLDN(:,:)  = read_SOLDN
-    forcinggrid%LWDN(:,:)   = read_LWDN
-    forcinggrid%PRCP(:,:)   = read_PRCP
-    forcinggrid%UU(:,:)     = read_UU
+    !forcinggrid%UU(:,:)     = read_UU
+    !forcinggrid%VV(:,:)     = read_VV
+    !forcinggrid%SFCTMP(:,:) = read_SFCTMP
+    !forcinggrid%Q2(:,:)     = read_Q2
+    !forcinggrid%SFCPRS(:,:) = read_SFCPRS
+    !forcinggrid%SOLDN(:,:)  = read_SOLDN
+    !forcinggrid%LWDN(:,:)   = read_LWDN
+    !forcinggrid%PRCP(:,:)   = read_PRCP
+    !forcinggrid%UU(:,:)     = read_UU
+
+    call forcinggrid%GetForcings(domaingrid)
 
 #endif
 
