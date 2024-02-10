@@ -46,9 +46,9 @@ real, allocatable, dimension(:,:,:)               :: SOLAI  !incoming diffuse so
 
 ! standalone forcings
 character(len=256)                                :: forcings_dir         ! name of the forcings directory
-character(len=256)                                :: forcings_file_prefix ! name of the forcings directory
-character(len=256)                                :: forcings_file_name   ! name of the forcings directory
-character(len=7)                                  :: forcing_file_type    ! Start date of the model run ( HOURLY, DAILY, MONTHLY, or YEARLY )
+character(len=256)                                :: forcings_file_prefix ! prefix for forcings files
+character(len=256)                                :: forcings_file_name   ! name of the currently read-in forcings file
+character(len=7)                                  :: forcing_file_type    ! type of forcing file ( HOURLY, DAILY, MONTHLY, or YEARLY )
 integer                                           :: iread,ncid,status,iread_step,n_x,n_y
 real,allocatable,dimension(:,:,:)                 :: read_windspeed
 real,allocatable,dimension(:,:,:)                 :: read_winddir
@@ -179,13 +179,13 @@ contains
   subroutine ReadForcings(this,datetime_unix,datetime_str)
 
     class(forcinggrid_type), intent(inout) :: this
-    real*8,intent(in)                      :: datetime_unit       ! unix datetime (s since 1970-01-01 00:00:00) ?UTC? 
-    character(len=12),intent(in)           :: datetime_str        ! character date ( YYYYMMDDHHmm )
-    character(len=14)                      :: datetime_long_str   ! character date ( YYYYMMDDHHmmss )
-    character(len=2048)                    :: filename 
-    character(len=4)                       :: year_str
-    character(len=2)                       :: month_str,day_str,minute_str,second_str
-    integer                                :: year_int,month_int,day_int,minute_int,second_int
+    real*8,intent(in)                      :: datetime_unit                                     ! unix datetime (s since 1970-01-01 00:00:00) ?UTC? 
+    character(len=12),intent(in)           :: datetime_str                                      ! character date ( YYYYMMDDHHmm )
+    character(len=14)                      :: datetime_long_str                                 ! character date ( YYYYMMDDHHmmss )
+    character(len=2048)                    :: filename                                          ! forcing file name
+    character(len=4)                       :: year_str                                          ! date string
+    character(len=2)                       :: month_str,day_str,minute_str,second_str           ! more date strings
+    integer                                :: year_int,month_int,day_int,minute_int,second_int  ! date ints
     integer                                :: time_dim_len,ndays
     real*8,allocatable,dimension(:)        :: time_dif
 
@@ -476,11 +476,18 @@ contains
     character(len=12),intent(in)           :: datetime_str        ! character date ( YYYYMMDDHHmm )
 
     ! check if curr_datetime is within the unix time bounds of read arrays
-    if(datetime_unix > this%max_file_datetime) call this%ReadForcings(datetime_unix,datetime_str)
+    if(datetime_unix > this%max_file_datetime) then
+      call this%ReadForcings(datetime_unix,datetime_str)
+    end if
+
+    ! check if iread is within read arrays
+    if(iread.gt.size(this%read_time,1)) then
+      write(*,*) 'ERROR Unable to find datetime ''',trim(datetime_str),''' in forcing file ''',trim(this%forcings_file_name),''' - unix time = ',datetime_unix
+    end if
 
     ! sanity check
     if(abs(this%read_time(iread)-datetime_unix).gt.epsilon(datetime_unix)) then
-      write(*,*) 'ERROR Unable to find datetime ''',trim(datetime_str),''' in forcing file ''',filename,''' - unix time = ',datetime_unix
+      write(*,*) 'ERROR Unable to find datetime ''',trim(datetime_str),''' in forcing file ''',trim(this%forcings_file_name),''' - unix time = ',datetime_unix
     end if
 
     this%UU(:,:)     = this%read_UU(:,:,iread)
