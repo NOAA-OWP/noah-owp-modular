@@ -182,12 +182,12 @@ contains
     real*8,intent(in)                      :: datetime_unit                                     ! unix datetime (s since 1970-01-01 00:00:00) ?UTC? 
     character(len=12),intent(in)           :: datetime_str                                      ! character date ( YYYYMMDDHHmm )
     character(len=14)                      :: datetime_long_str                                 ! character date ( YYYYMMDDHHmmss )
-    character(len=2048)                    :: filename                                          ! forcing file name
     character(len=4)                       :: year_str                                          ! date string
     character(len=2)                       :: month_str,day_str,minute_str,second_str           ! more date strings
     integer                                :: year_int,month_int,day_int,minute_int,second_int  ! date ints
     integer                                :: time_dim_len,ndays
     real*8,allocatable,dimension(:)        :: time_dif
+    real*8                                 :: next_datetime_unix
 
     !---------------------------------------------------------------------
     ! Determine expected file name
@@ -195,13 +195,13 @@ contains
     year_str = datetime_str(1:4); month_str = datetime_str(5:6); day_str = datetime_str(7:8); hour_str = datetime_str(9:10)
     select case(this%forcing_file_type)
     case('YEARLY')
-      filename = this%forcings_dir//this%forcings_file_prefix//'.'//year_str//'.nc'
+      this%forcing_filename = this%forcings_dir//this%forcings_file_prefix//'.'//year_str//'.nc'
     case('MONTHLY')
-      filename = this%forcings_dir//this%forcings_file_prefix//'.'//year_str//month_str//'.nc'
+      this%forcing_filename = this%forcings_dir//this%forcings_file_prefix//'.'//year_str//month_str//'.nc'
     case('DAILY')
-      filename = this%forcings_dir//this%forcings_file_prefix//'.'//year_str//month_str//day_str//'.nc'
+      this%forcing_filename = this%forcings_dir//this%forcings_file_prefix//'.'//year_str//month_str//day_str//'.nc'
     case('HOURLY')
-      filename = this%forcings_dir//this%forcings_file_prefix//'.'//yea_str//month_str//day_str//hour_str//'.nc'
+      this%forcing_filename = this%forcings_dir//this%forcings_file_prefix//'.'//yea_str//month_str//day_str//hour_str//'.nc'
     case default
       write(*,*) 'ERROR Unrecognized forcing file type ''',trim(this%forcing_file_type),''' -- but must be HOURLY, DAILY, MONTHLY, or YEARLY'; stop ":  ERROR EXIT"
     end select
@@ -221,7 +221,7 @@ contains
       call unix_to_date (file_min_time+1, year_int, month_int, day_int, hour_int, minute_int, second_int)
       ndays = days_in_month(month_int,year_int,days_int)
       write(day_str,'(i2)') ndays; if(ndays < 10) day(1:1) = '0'
-      date_long(1:4) = year_str; date_long(5:6) = month_str; date_long(7:8) = day_str; date_long(9:10) = '23'; date_long(11:12) = '59', date_long(13:14) = '01' 
+      date_long(1:4) = year_str; date_long(5:6) = month_str; date_long(7:8) = day_str; date_long(9:10) = '23'; date_long(11:12) = '59', date_long(13:14) = '59' 
       this%file_max_time = date_to_unix (date_long)
     case('DAILY')
       date_long(1:4) = year_str; date_long(5:6) = month_str; date_long(7:8) = day_str; date_long(9:10) = '00'; date_long(11:12) = '01'; date_long(13:14) = '01'
@@ -240,14 +240,14 @@ contains
     !---------------------------------------------------------------------
     ! Check that file exists
     !---------------------------------------------------------------------
-    inquire(file = trim(filename), exist = lexist)
-    if (.not. lexist) then; write(*,*) 'ERROR Could not find forcings file ''',trim(filename),''' for datetime ''',trim(date),'''';stop ":  ERROR EXIT";endif
+    inquire(file = trim(this%forcing_filename), exist = lexist)
+    if (.not. lexist) then; write(*,*) 'ERROR Could not find forcings file ''',trim(this%forcing_filename),''' for datetime ''',trim(datetime_str),'''';stop ":  ERROR EXIT";endif
 
     !---------------------------------------------------------------------
     ! Open file
     !---------------------------------------------------------------------
-    status = nf90_open(path = trim(filename), mode = nf90_nowrite, ncid = ncid)
-    if (status /= nf90_noerr) then; write(*,*) 'ERROR Could not open ''',trim(filename),''' for datetime ''',trim(date),''''; stop ":  ERROR EXIT"; endif
+    status = nf90_open(path = trim(this%forcing_filename), mode = nf90_nowrite, ncid = ncid)
+    if (status /= nf90_noerr) then; write(*,*) 'ERROR Could not open ''',trim(this%forcing_filename),''' for datetime ''',trim(datetime_str),''''; stop ":  ERROR EXIT"; endif
 
     !---------------------------------------------------------------------
     ! Read dimension lengths
@@ -430,7 +430,7 @@ contains
     ! Close file
     !---------------------------------------------------------------------
     status = nf90_close(ncid = ncid)
-    if (status /= nf90_noerr) then; write(*,*) 'ERROR Unable to close ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if (status /= nf90_noerr) then; write(*,*) 'ERROR Unable to close ''',trim(this%forcing_filename),''''; stop ":  ERROR EXIT"; end if
 
     !---------------------------------------------------------------------
     ! Check x and y dimension lengths against x and y dimension lengths of the domain
@@ -441,12 +441,14 @@ contains
     !---------------------------------------------------------------------
     ! Set iread (i.e., the index value of nowdate in read_time)
     !---------------------------------------------------------------------
-    allocate(time_dif(size(this%read_time,1))) 
+    if(allocated(time_dif)) then
+      if(size(time_dif,1).ne.dim_len_time) then; deallocate(time_dim); allocate(time_dif(dim_len_time)); end if
+    end if
     time_dif = abs(this%read_time-datetime_unix)
     if(any(time_dif.le.epsilon(datetime_unix))) then
       this%iread = minloc(time_dif,1)
     else
-      write(*,*) 'ERROR Cound not find ''',trim(datetime_str),''' in forcing file ''',trim(filename),''' -- unix time =',datetime_unix
+      write(*,*) 'ERROR Cound not find ''',trim(datetime_str),''' in forcing file ''',trim(this%forcing_filename),''' -- unix time =',datetime_unix
     end if
 
     !---------------------------------------------------------------------
@@ -454,17 +456,16 @@ contains
     !---------------------------------------------------------------------
     iread_step = 1                     ! default value
     iread_next = iread + iread_step    ! default value
-    next_datetime = datetime + this%dt 
-    if(next_dateime.le.this%max_file_datetime) then
-      allocate(time_dif(size(this%read_time,1))) 
+    next_datetime_unix = datetime_unix + this%dt 
+    if(next_datetime_unix.le.this%max_file_datetime) then
       time_dif = abs(this%read_time-datetime)
-      if(any(time_dif.le.epsilon(datetime))) then
-        index = minloc(time_dif,1)
+      if(any(time_dif.le.epsilon(next_datetime_unix))) then
+        iread_next = minloc(time_dif,1)
       else
-        write(*,*) 'ERROR Searched forcing file ''',trim(filename),''' but could not find datetime (unix time) :',datetime
+        write(*,*) 'ERROR Cound not find second time step in forcing file ''',trim(this%forcing_filename),''' -- unix time =',datetime_unix
       end if
       iread_step = iread_next - iread
-      if(iread_step.lt.1) then; write(*,*) 'ERROR Unable to determine reading time step for ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+      if(iread_step.lt.1) then; write(*,*) 'ERROR Unable to determine reading time step for ''',trim(this%forcing_filename),''''; stop ":  ERROR EXIT"; end if
     end if
 
   end subroutine ReadForcings
@@ -490,7 +491,7 @@ contains
       write(*,*) 'ERROR Unable to find datetime ''',trim(datetime_str),''' in forcing file ''',trim(this%forcings_file_name),''' - unix time = ',datetime_unix
     end if
 
-    this%UU(:,:)     = this%read_UU(:,:,iread)
+    this%UU(:,:)     = this%read_UU(:,:,iread)  ! should iread be first in dimension order to improve performance/copy time lengths?
     this%VV(:,:)     = this%read_VV(:,:,iread)
     this%SFCTMP(:,:) = this%read_SFCTMP(:,:,iread)
     this%Q2(:,:)     = this%read_Q2(:,:,iread)
