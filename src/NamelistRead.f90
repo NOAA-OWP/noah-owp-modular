@@ -120,7 +120,6 @@ contains
     real               :: dt
     character(len=12)  :: startdate
     character(len=12)  :: enddate
-    character(len=256) :: forcing_filename
     character(len=256) :: output_filename
     character(len=256) :: parameter_dir
     character(len=256) :: soil_table
@@ -169,15 +168,22 @@ contains
     !--------------------!
     character(len=256)  :: attributes_filename  ! directory/name of NetCDF file holding gridded model attributes
 
+    !--------------------!
+    !   forcings         !
+    !--------------------!
+    character(len=256)  :: forcings_dir           ! directory/name of the input/forcing files
+    character(len=256)  :: forcings_file_prefix   ! 
+    character(len=256)  :: forcing_file_type
+
     ! ----- END OF VARIABLE DECLARATIONS -------
     
     !--------------------------- !
     !   define namelist groups   !
     !--------------------------- !
-    namelist / timing            / dt,startdate,enddate,forcing_filename,output_filename
+    namelist / timing            / dt,startdate,enddate,output_filename
     namelist / parameters        / parameter_dir, soil_table, general_table, noahowp_table,&
                                    soil_class_name, veg_class_name
-    namelist / forcing           / ZREF,rain_snow_thresh
+    namelist / forcing           / forcings_dir,forcing_file_type,forcings_file_prefix,ZREF,rain_snow_thresh
     namelist / model_options     / precip_phase_option,runoff_option,drainage_option,frozen_soil_option,&
                                    dynamic_vic_option,dynamic_veg_option,snow_albedo_option,&
                                    radiative_transfer_option,sfc_drag_coeff_option,canopy_stom_resist_option,&
@@ -204,7 +210,6 @@ contains
     dt               = realMissing
     startdate        = stringMissing
     enddate          = stringMissing
-    forcing_filename = stringMissing
     output_filename  = stringMissing
     parameter_dir    = stringMissing
     soil_table       = stringMissing
@@ -239,6 +244,9 @@ contains
     subsurface_option           = integerMissing
 
     attributes_filename  = stringMissing
+    forcings_dir         = stringMissing
+    forcings_file_prefix = stringMissing
+    forcing_file_type    = stringMissing
 
     !---------------------------------------------------------------------
     !  read namelist
