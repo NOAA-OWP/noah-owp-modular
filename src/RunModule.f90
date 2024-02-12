@@ -113,7 +113,7 @@ contains
       call parametersgrid%Init(namelist,attributes)
       call parametersgrid%paramRead(namelist,domaingrid)
 
-      call forcinggrid%Init(namelist,attributes)
+      call forcinggrid%Init(attributes)
       call forcinggrid%InitTransfer(namelist,attributes)
 
       call energygrid%Init(namelist,attributes)
@@ -257,7 +257,7 @@ contains
       ! Nextgen forcing is being used (https://github.com/NOAA-OWP/ngen)
       !---------------------------------------------------------------------
 #ifndef NGEN_FORCING_ACTIVE
-      call forcinggrid%ReadForcings(this%start_datetime,this%startdate)
+      call forcinggrid%ReadForcings(domaingrid%start_datetime,domaingrid%startdate)
 #endif
       
       !---------------------------------------------------------------------
@@ -325,7 +325,7 @@ contains
               watergrid      => noahowpgrid%watergrid)
 
 #ifndef NGEN_FORCING_ACTIVE
-    call forcinggrid%SetForcings(this%curr_datetime,this%nowdate)
+    call forcinggrid%SetForcings(domaingrid%curr_datetime,domaingrid%nowdate)
 #endif
 
     !---------------------------------------------------------------------

@@ -69,15 +69,15 @@ type, public :: namelist_type
   !-------------------------------!
   character(len=256)  :: forcings_dir           ! directory/name of the input/forcing files
   character(len=256)  :: forcings_file_prefix   ! 
-  character(len=256)  :: forcing_file_type
+  character(len=256)  :: forcings_file_type
   character(len=256)  :: name_forcings_pcprate  
   character(len=256)  :: name_forcings_sfctmp  
   character(len=256)  :: name_forcings_sfcprs  
-  character(len=256)  :: name_forcings_wspd  
-  character(len=256)  :: name_forcings_wdir  
+  character(len=256)  :: name_forcings_UU  
+  character(len=256)  :: name_forcings_VV  
   character(len=256)  :: name_forcings_swrad  
   character(len=256)  :: name_forcings_lwrad 
-  character(len=256)  :: name_forcings_rhf  
+  character(len=256)  :: name_forcings_Q2  
 
   !-------------------------------!
   !   gridded dimensions, etc     !
@@ -173,7 +173,7 @@ contains
     !--------------------!
     character(len=256)  :: forcings_dir           ! directory/name of the input/forcing files
     character(len=256)  :: forcings_file_prefix   ! 
-    character(len=256)  :: forcing_file_type
+    character(len=256)  :: forcings_file_type
 
     ! ----- END OF VARIABLE DECLARATIONS -------
     
@@ -183,7 +183,7 @@ contains
     namelist / timing            / dt,startdate,enddate,output_filename
     namelist / parameters        / parameter_dir, soil_table, general_table, noahowp_table,&
                                    soil_class_name, veg_class_name
-    namelist / forcing           / forcings_dir,forcing_file_type,forcings_file_prefix,ZREF,rain_snow_thresh
+    namelist / forcing           / forcings_dir,forcings_file_type,forcings_file_prefix,ZREF,rain_snow_thresh
     namelist / model_options     / precip_phase_option,runoff_option,drainage_option,frozen_soil_option,&
                                    dynamic_vic_option,dynamic_veg_option,snow_albedo_option,&
                                    radiative_transfer_option,sfc_drag_coeff_option,canopy_stom_resist_option,&
@@ -246,7 +246,7 @@ contains
     attributes_filename  = stringMissing
     forcings_dir         = stringMissing
     forcings_file_prefix = stringMissing
-    forcing_file_type    = stringMissing
+    forcings_file_type   = stringMissing
 
     !---------------------------------------------------------------------
     !  read namelist
@@ -328,7 +328,6 @@ contains
     if(dt               /= realMissing) then; this%dt = dt; else; write(*,'(A)') 'ERROR: required entry dt not found in namelist'; stop; end if 
     if(startdate        /= stringMissing) then; this%startdate = startdate; else; write(*,'(A)') 'ERROR: required entry startdate not found in namelist'; stop; end if
     if(enddate          /= stringMissing) then; this%enddate = enddate; else; write(*,'(A)') 'ERROR: required entry enddate not found in namelist'; stop; end if
-    if(forcing_filename /= stringMissing) then; this%forcing_filename = forcing_filename; else; write(*,'(A)') 'ERROR: required entry forcing_filename not found in namelist'; stop; end if
     if(output_filename  /= stringMissing) then; this%output_filename = output_filename; else; write(*,'(A)') 'ERROR: required entry output_filename not found in namelist'; stop; end if
     if(parameter_dir    /= stringMissing) then; this%parameter_dir = parameter_dir; else; write(*,'(A)') 'ERROR: required entry parameter_dir not found in namelist'; stop; end if
     if(soil_table       /= stringMissing) then; this%soil_table = soil_table; else; write(*,'(A)') 'ERROR: required entry soil_table  not found in namelist'; stop; end if
@@ -371,6 +370,9 @@ contains
     if(subsurface_option           /= integerMissing) then; this%subsurface_option = subsurface_option; else; write(*,'(A)') 'ERROR: required entry subsurface_option not found in namelist'; stop; end if
     
     if(attributes_filename         /= stringMissing) then; this%attributes_filename = attributes_filename; else; write(*,'(A)') 'ERROR: required entry attributes_filename not found in namelist'; stop; end if
+    if(forcings_dir                /= stringMissing) then; this%forcings_dir = forcings_dir; else; write(*,'(A)') 'ERROR: required entry forcings_dir not found in namelist'; stop; end if
+    if(forcings_file_prefix        /= stringMissing) then; this%forcings_file_prefix = forcings_file_prefix; else; write(*,'(A)') 'ERROR: required entry forcings_file_prefix not found in namelist'; stop; end if
+    if(forcings_file_type          /= stringMissing) then; this%forcings_file_type = forcings_file_type; else; write(*,'(A)') 'ERROR: required entry forcing_file_type not found in namelist'; stop; end if
 
     ! store missing values as well
     this%integerMissing              = integerMissing 
@@ -398,11 +400,11 @@ contains
     this%name_forcings_pcprate           = 'pcprate'
     this%name_forcings_sfctmp            = 'sfctmp'
     this%name_forcings_sfcprs            = 'sfcprs'
-    this%name_forcings_wspd              = 'wspd'
-    this%name_forcings_wdir              = 'wdir'
+    this%name_forcings_UU                = 'UU'
+    this%name_forcings_VV                = 'VV'
     this%name_forcings_swrad             = 'swrad'
     this%name_forcings_lwrad             = 'lwrad'
-    this%name_forcings_rhf               = 'rhf'
+    this%name_forcings_Q2                = 'Q2'
 
   end subroutine ReadNamelist
 
