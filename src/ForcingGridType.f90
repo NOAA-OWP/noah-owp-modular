@@ -49,19 +49,23 @@ character(len=256)                                :: forcings_dir         ! name
 character(len=256)                                :: forcings_file_prefix ! prefix for forcings files
 character(len=256)                                :: forcings_file_name   ! name of the currently read-in forcings file
 character(len=7)                                  :: forcing_file_type    ! type of forcing file ( HOURLY, DAILY, MONTHLY, or YEARLY )
-integer                                           :: iread,ncid,status,iread_step,n_x,n_y
-real,allocatable,dimension(:,:,:)                 :: read_windspeed
-real,allocatable,dimension(:,:,:)                 :: read_winddir
-real,allocatable,dimension(:,:,:)                 :: read_temperature
-real,allocatable,dimension(:,:,:)                 :: read_pressure
-real,allocatable,dimension(:,:,:)                 :: read_humidity
+integer                                           :: iread
+integer                                           :: iread_step
+integer                                           :: ncid
+integer                                           :: status
+integer                                           :: n_x
+integer                                           :: n_y
+real,allocatable,dimension(:,:,:)                 :: read_UU
+real,allocatable,dimension(:,:,:)                 :: read_VV
+real,allocatable,dimension(:,:,:)                 :: read_sfctmp
+real,allocatable,dimension(:,:,:)                 :: read_sfcprs
+real,allocatable,dimension(:,:,:)                 :: read_rhf
 real,allocatable,dimension(:,:,:)                 :: read_swrad
 real,allocatable,dimension(:,:,:)                 :: read_lwrad
-real,allocatable,dimension(:,:,:)                 :: read_rain
+real,allocatable,dimension(:,:,:)                 :: read_pcprate
 real,allocatable,dimension(:)                     :: read_time
-real                                              :: sim_dt
-real*8                                            :: file_min_time,file_max_time
-
+real*8                                            :: file_min_time
+real*8                                            :: file_max_time
 
   contains
 
@@ -273,52 +277,52 @@ contains
     !---------------------------------------------------------------------
     ! Allocate read arrays
     !---------------------------------------------------------------------
-    ! windspeed
-    if(allocated(this%read_windspeed)) then
-      if((size(this%read_windspeed,1).ne.dim_len_x).or.(size(this%read_windspeed,2).ne.dim_len_y).or.(size(this%read_windspeed,3).ne.dim_len_time)) then
-        deallocate(this%read_windspeed)
-        allocate(this%read_windspeed(dim_len_x,dim_len_y,dim_len_time))
+    ! UU (wind speed in eastward direction)
+    if(allocated(this%read_UU)) then
+      if((size(this%read_UU,1).ne.dim_len_x).or.(size(this%read_UU,2).ne.dim_len_y).or.(size(this%read_UU,3).ne.dim_len_time)) then
+        deallocate(this%read_UU)
+        allocate(this%read_UU(dim_len_x,dim_len_y,dim_len_time))
       else
-        this%read_windspeed = 0
+        this%read_UU = 0
       end if 
     else
-      allocate(this%read_windspeed(dim_len_x,dim_len_y,dim_len_time))
+      allocate(this%read_UU(dim_len_x,dim_len_y,dim_len_time))
     end if
 
-    ! winddir
-    if(allocated(this%read_winddir)) then
-      if((size(this%read_winddir,1).ne.dim_len_x).or.(size(this%read_winddir,2).ne.dim_len_y).or.(size(this%read_winddir,3).ne.dim_len_time)) then
-        deallocate(this%read_winddir)
-        allocate(this%read_winddir(dim_len_x,dim_len_y,dim_len_time))
+    ! VV (wind speed in northward direction)
+    if(allocated(this%read_VV)) then
+      if((size(this%read_VV,1).ne.dim_len_x).or.(size(this%read_VV,2).ne.dim_len_y).or.(size(this%read_VV,3).ne.dim_len_time)) then
+        deallocate(this%read_VV)
+        allocate(this%read_VV(dim_len_x,dim_len_y,dim_len_time))
       else
-        this%read_winddir = 0
+        this%read_VV = 0
       end if 
     else
-      allocate(this%read_winddir(dim_len_x,dim_len_y,dim_len_time))
+      allocate(this%read_VV(dim_len_x,dim_len_y,dim_len_time))
     end if
 
-    ! temperature
-    if(allocated(this%read_temperature)) then
-      if((size(this%read_temperature,1).ne.dim_len_x).or.(size(this%read_temperature,2).ne.dim_len_y).or.(size(this%read_temperature,3).ne.dim_len_time)) then
-        deallocate(this%read_temperature)
-        allocate(this%read_temperature(dim_len_x,dim_len_y,dim_len_time))
+    ! sfctmp (surface temperature)
+    if(allocated(this%read_sfctmp)) then
+      if((size(this%read_sfctmp,1).ne.dim_len_x).or.(size(this%read_sfctmp,2).ne.dim_len_y).or.(size(this%read_sfctmp,3).ne.dim_len_time)) then
+        deallocate(this%read_sfctmp)
+        allocate(this%read_sfctmp(dim_len_x,dim_len_y,dim_len_time))
       else
-        this%read_temperature = 0
+        this%read_sfctmp = 0
       end if 
     else
-      allocate(this%read_temperature(dim_len_x,dim_len_y,dim_len_time))
+      allocate(this%read_sfctmp(dim_len_x,dim_len_y,dim_len_time))
     end if
 
-    ! pressure
-    if(allocated(this%read_pressure)) then
-      if((size(this%read_pressure,1).ne.dim_len_x).or.(size(this%read_pressure,2).ne.dim_len_y).or.(size(this%read_pressure,3).ne.dim_len_time)) then
-        deallocate(this%read_pressure)
-        allocate(this%read_pressure(dim_len_x,dim_len_y,dim_len_time))
+    ! sfcprs (surface pressure)
+    if(allocated(this%read_sfcprs)) then
+      if((size(this%read_sfcprs,1).ne.dim_len_x).or.(size(this%read_sfcprs,2).ne.dim_len_y).or.(size(this%read_sfcprs,3).ne.dim_len_time)) then
+        deallocate(this%read_sfcprs)
+        allocate(this%read_sfcprs(dim_len_x,dim_len_y,dim_len_time))
       else
-        this%read_pressure = 0
+        this%read_sfcprs = 0
       end if 
     else
-      allocate(this%read_pressure(dim_len_x,dim_len_y,dim_len_time))
+      allocate(this%read_sfcprs(dim_len_x,dim_len_y,dim_len_time))
     end if
 
     ! swrad
@@ -345,16 +349,28 @@ contains
       allocate(this%read_lwrad(dim_len_x,dim_len_y,dim_len_time))
     end if
 
-    ! rain
-    if(allocated(this%read_rain)) then
-      if((size(this%read_rain,1).ne.dim_len_x).or.(size(this%read_rain,2).ne.dim_len_y).or.(size(this%read_rain,3).ne.dim_len_time)) then
-        deallocate(this%read_rain)
-        allocate(this%read_rain(dim_len_x,dim_len_y,dim_len_time))
+    ! pcprate (precipitation rate)
+    if(allocated(this%read_pcprate)) then
+      if((size(this%read_pcprate,1).ne.dim_len_x).or.(size(this%read_pcprate,2).ne.dim_len_y).or.(size(this%read_pcprate,3).ne.dim_len_time)) then
+        deallocate(this%read_pcprate)
+        allocate(this%read_pcprate(dim_len_x,dim_len_y,dim_len_time))
       else
-        this%read_rain = 0
+        this%read_pcprate = 0
       end if 
     else
-      allocate(this%read_rain(dim_len_x,dim_len_y,dim_len_time))
+      allocate(this%read_pcprate(dim_len_x,dim_len_y,dim_len_time))
+    end if
+
+    ! rhf (relative humidity)
+    if(allocated(this%read_rhf)) then
+      if((size(this%read_rhf,1).ne.dim_len_x).or.(size(this%read_rhf,2).ne.dim_len_y).or.(size(this%read_rhf,3).ne.dim_len_time)) then
+        deallocate(this%read_rhf)
+        allocate(this%read_rhf(dim_len_x,dim_len_y,dim_len_time))
+      else
+        this%read_rhf = 0
+      end if 
+    else
+      allocate(this%read_rhf(dim_len_x,dim_len_y,dim_len_time))
     end if
 
     ! time
@@ -372,58 +388,58 @@ contains
     !---------------------------------------------------------------------
     ! Read into read arrays
     !---------------------------------------------------------------------
-    ! windspeed
-    status = nf90_inq_varid(ncid,this%name_var_windspeed,varid_windspeed)
-    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to find ''',trim(this%name_var_windspeed),''' variable in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_get_var(ncid,varid_windspeed)
-    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to read ''',trim(this%name_var_windspeed),''' variable from forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
+    ! UU
+    status = nf90_inq_varid(ncid=ncid,name=this%name_var_UU,varid=varid_UU)
+    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to find ''',trim(this%name_var_UU),''' variable in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
+    status = nf90_get_var(ncid=ncid,varid=varid_UU,values=this%read_UU)
+    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to read ''',trim(this%name_var_UU),''' variable from forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
 
-    ! winddir
-    status = nf90_inq_varid(ncid,this%name_var_winddir,varid_winddir)
-    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to find ''',trim(this%name_var_winddir),''' variable in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_get_var(ncid,varid_winddir)
-    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to read ''',trim(this%name_var_winddir),''' variable from forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
+    ! VV
+    status = nf90_inq_varid(ncid=ncid,name=this%name_var_VV,varid=varid_VV)
+    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to find ''',trim(this%name_var_VV),''' variable in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
+    status = nf90_get_var(ncid=ncid,varid=varid_VV,values=this%read_VV)
+    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to read ''',trim(this%name_var_VV),''' variable from forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
 
-    ! temperature
-    status = nf90_inq_varid(ncid,this%name_var_temperature,varid_temperature)
-    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to find ''',trim(this%name_var_temperature),''' variable in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_get_var(ncid,varid_temperature)
-    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to read ''',trim(this%name_var_temperature),''' variable from forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
+    ! sfctmp
+    status = nf90_inq_varid(ncid=ncid,name=this%name_var_sfctmp,varid=varid_sfctmp)
+    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to find ''',trim(this%name_var_sfctmp),''' variable in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
+    status = nf90_get_var(ncid=ncid,varid=varid_sfctmp,values=this%read_sfctmp)
+    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to read ''',trim(this%name_var_sfctmp),''' variable from forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
 
-    ! pressure
-    status = nf90_inq_varid(ncid,this%name_var_pressure,varid_pressure)
-    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to find ''',trim(this%name_var_pressure),''' variable in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_get_var(ncid,varid_pressure)
-    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to read ''',trim(this%name_var_pressure),''' variable from forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
+    ! sfcprs
+    status = nf90_inq_varid(ncid=ncid,name=this%name_var_sfcprs,varid=varid_sfcprs)
+    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to find ''',trim(this%name_var_sfcprs),''' variable in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
+    status = nf90_get_var(ncid=ncid,varid=varid_sfcprs,values=this%read_sfcprs)
+    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to read ''',trim(this%name_var_sfcprs),''' variable from forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
 
-    ! humidity
-    status = nf90_inq_varid(ncid,this%name_var_humidity,varid_humidity)
-    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to find ''',trim(this%name_var_humidity),''' variable in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_get_var(ncid,varid_humidity)
-    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to read ''',trim(this%name_var_humidity),''' variable from forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
+    ! rfh
+    status = nf90_inq_varid(ncid=ncid,name=this%name_var_rfh,varid=varid_rfh)
+    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to find ''',trim(this%name_var_rfh),''' variable in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
+    status = nf90_get_var(ncid=ncid,varid=varid_rfh,values=this%read_rhf)
+    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to read ''',trim(this%name_var_rfh),''' variable from forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
 
     ! swrad
-    status = nf90_inq_varid(ncid,this%name_var_swrad,varid_swrad)
+    status = nf90_inq_varid(ncid=ncid,name=this%name_var_swrad,varid=varid_swrad)
     if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to find ''',trim(this%name_var_swrad),''' variable in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_get_var(ncid,varid_swrad)
+    status = nf90_get_var(ncid=ncid,varid=varid_swrad,values=this%read_swrad)
     if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to read ''',trim(this%name_var_swrad),''' variable from forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
 
     ! lwrad
-    status = nf90_inq_varid(ncid,this%name_var_lwrad,varid_lwrad)
+    status = nf90_inq_varid(ncid=ncid,name=this%name_var_lwrad,varid=varid_lwrad)
     if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to find ''',trim(this%name_var_lwrad),''' variable in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_get_var(ncid,varid_lwrad)
+    status = nf90_get_var(ncid=ncid,varid=varid_lwrad,values=this%read_lwrad)
     if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to read ''',trim(this%name_var_lwrad),''' variable from forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
     
-    ! rain
-    status = nf90_inq_varid(ncid,this%name_var_rain,varid_rain)
-    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to find ''',trim(this%name_var_rain),''' variable in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_get_var(ncid,varid_rain)
-    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to read ''',trim(this%name_var_rain),''' variable from forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
+    ! pcprate
+    status = nf90_inq_varid(ncid=ncid,name=this%name_var_pcprate,varid=varid_pcprate)
+    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to find ''',trim(this%name_var_pcprate),''' variable in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
+    status = nf90_get_var(ncid=ncid,varid=varid_pcprate,values=this%read_pcprate)
+    if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to read ''',trim(this%name_var_pcprate),''' variable from forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
 
     ! time
-    status = nf90_inq_varid(ncid,this%name_var_time,varid_time)
+    status = nf90_inq_varid(ncid=ncid,name=this%name_var_time,varid=varid_time)
     if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to find ''',trim(this%name_var_time),''' variable in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_get_var(ncid,varid_time)
+    status = nf90_get_var(ncid=ncid,varid=varid_time,values=this%read_time)
     if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to read ''',trim(this%name_var_time),''' variable from forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
 
     !---------------------------------------------------------------------
@@ -448,7 +464,7 @@ contains
     if(any(time_dif.le.epsilon(datetime_unix))) then
       this%iread = minloc(time_dif,1)
     else
-      write(*,*) 'ERROR Cound not find ''',trim(datetime_str),''' in forcing file ''',trim(this%forcing_filename),''' -- unix time =',datetime_unix
+      write(*,*) 'ERROR Cound not find ''',trim(datetime_str),''' in forcing file ''',trim(this%forcing_filename),''' -- unix time =',datetime_unix; stop ":  ERROR EXIT"
     end if
 
     !---------------------------------------------------------------------
@@ -462,7 +478,7 @@ contains
       if(any(time_dif.le.epsilon(next_datetime_unix))) then
         iread_next = minloc(time_dif,1)
       else
-        write(*,*) 'ERROR Cound not find second time step in forcing file ''',trim(this%forcing_filename),''' -- unix time =',datetime_unix
+        write(*,*) 'ERROR Cound not find second time step in forcing file ''',trim(this%forcing_filename),''' -- unix time =',datetime_unix; stop ":  ERROR EXIT"
       end if
       iread_step = iread_next - iread
       if(iread_step.lt.1) then; write(*,*) 'ERROR Unable to determine reading time step for ''',trim(this%forcing_filename),''''; stop ":  ERROR EXIT"; end if
@@ -483,12 +499,12 @@ contains
 
     ! check if iread is within read arrays
     if(iread.gt.size(this%read_time,1)) then
-      write(*,*) 'ERROR Unable to find datetime ''',trim(datetime_str),''' in forcing file ''',trim(this%forcings_file_name),''' - unix time = ',datetime_unix
+      write(*,*) 'ERROR Unable to find datetime ''',trim(datetime_str),''' in forcing file ''',trim(this%forcings_file_name),''' - unix time = ',datetime_unix; stop ":  ERROR EXIT"
     end if
 
     ! sanity check
     if(abs(this%read_time(iread)-datetime_unix).gt.epsilon(datetime_unix)) then
-      write(*,*) 'ERROR Unable to find datetime ''',trim(datetime_str),''' in forcing file ''',trim(this%forcings_file_name),''' - unix time = ',datetime_unix
+      write(*,*) 'ERROR Unable to find datetime ''',trim(datetime_str),''' in forcing file ''',trim(this%forcings_file_name),''' - unix time = ',datetime_unix; stop ":  ERROR EXIT"
     end if
 
     this%UU(:,:)     = this%read_UU(:,:,iread)  ! should iread be first in dimension order to improve performance/copy time lengths?
