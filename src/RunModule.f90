@@ -302,11 +302,8 @@ contains
 
     implicit none
     type(noahowpgrid_type), intent(inout) :: noahowpgrid
-    type(noahowp_type)                    :: noahowp                                             !local instance 
+    type(noahowp_type)                    :: noahowp       
     integer                               :: ix, iy, ierr
-    integer                               :: iunit = 10
-    real                                  :: read_UU, read_VV, read_SFCTMP, read_Q2, read_SFCPRS !to read in forcing
-    real                                  :: read_SOLDN, read_LWDN, read_PRCP                    !to read in forcing
 
     associate(namelist       => noahowpgrid%namelist,       &
               domain         => noahowp%domain,             &

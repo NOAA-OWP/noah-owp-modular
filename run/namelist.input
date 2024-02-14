@@ -1,7 +1,7 @@
 &timing                                             ! and input/output paths
-  dt                 = 1800.0                       ! timestep [seconds]
-  startdate          = "199801010630"               ! UTC time start of simulation (YYYYMMDDhhmm)
-  enddate            = "199901010630"               ! UTC time end of simulation (YYYYMMDDhhmm)
+  dt                 = 3600.0                       ! timestep [seconds]
+  startdate          = "202304010000"               ! UTC time start of simulation (YYYYMMDDhhmm)
+  enddate            = "202304192300"               ! UTC time end of simulation (YYYYMMDDhhmm)
   output_filename    = "../data/output.nc"
 /
 
@@ -11,15 +11,15 @@
   soil_table         = "SOILPARM.TBL"               ! soil param table
   noahowp_table      = "MPTABLE.TBL"                ! model param tables (includes veg)
   soil_class_name    = "STAS"                       ! soil class data source - "STAS" or "STAS-RUC"
-  veg_class_name     = "MODIFIED_IGBP_MODIS_NOAH"   ! vegetation class data source - "MODIFIED_IGBP_MODIS_NOAH" or "USGS"
+  veg_class_name     = "USGS"                       ! vegetation class data source - "MODIFIED_IGBP_MODIS_NOAH" or "USGS"
 /
 
 &forcing
-  forcings_dir         = "../forcings/"             ! directory/name of the input/forcing files
-  forcings_file_prefix = "AORC"                     ! forcing file prefix followed by date pattern - "prefix.YYYYMMDDhhmm.nc"
-  forcing_file_type    = "HOURLY"                   ! type of forcing file organization - 'HOURLY', 'DAILY', 'MONTHLY', or 'YEARLY'
-  ZREF                 = 10.0                       ! measurement height for wind speed (m)
-  rain_snow_thresh     = 1.0                        ! rain-snow temperature threshold (degrees Celcius)
+  forcings_dir         = "../data/For_Grey_NWM_slice_fix"  ! directory/name of the input/forcing files
+  forcings_file_prefix = "LDASIN_DOMAIN1"                  ! forcing file prefix followed by date pattern - "prefix.YYYYMMDDhhmm.nc"
+  forcing_file_type    = "HOURLY"                          ! type of forcing file organization - 'HOURLY', 'DAILY', 'MONTHLY', or 'YEARLY'
+  ZREF                 = 10.0                              ! measurement height for wind speed (m)
+  rain_snow_thresh     = 1.0                               ! rain-snow temperature threshold (degrees Celcius)
 /
 
 &model_options                                      ! see OptionsType.f90 for details
