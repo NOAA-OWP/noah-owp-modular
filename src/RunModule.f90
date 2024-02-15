@@ -247,6 +247,7 @@ contains
       ! --- AWW:  calculate start and end utimes & records for requested station data read period ---
       call get_utime_list (domaingrid%start_datetime, domaingrid%end_datetime, domaingrid%dt, domaingrid%sim_datetimes)  ! makes unix-time list for desired records (end-of-timestep)
       domaingrid%ntime = size (domaingrid%sim_datetimes)   
+      domaingrid%curr_datetime = domaingrid%start_datetime 
       !print *, "---------"; 
       !print *, 'Simulation startdate = ', domain%startdate, ' enddate = ', domain%enddate, ' dt(sec) = ', domain%dt, ' ntimes = ', domain%ntime  ! YYYYMMDD dates
       !print *, "---------"
@@ -257,7 +258,7 @@ contains
       ! Nextgen forcing is being used (https://github.com/NOAA-OWP/ngen)
       !---------------------------------------------------------------------
 #ifndef NGEN_FORCING_ACTIVE
-      call forcinggrid%ReadForcings(domaingrid%start_datetime,domaingrid%startdate)
+call forcinggrid%ReadForcings(domaingrid%start_datetime/60.,domaingrid%startdate)
 #endif
       
       !---------------------------------------------------------------------
@@ -291,10 +292,21 @@ contains
     
     implicit none
     type (noahowpgrid_type), intent (inout) :: model
+    integer                                 :: idt    ! change in time since beginning of run (in minutes)
 
+    associate(domaingrid => model%domaingrid)
+
+    ! execute model
     call solve_noahowp_grid(model)
-    model%domaingrid%itime    = model%domaingrid%itime + 1 ! increment the integer time by 1
-    model%domaingrid%time_dbl = dble(model%domaingrid%time_dbl + model%domaingrid%dt) ! increment model time in seconds by DT
+
+    !set time variables for next time step
+    domaingrid%itime    = domaingrid%itime + 1                                                                     ! increment itime by 1
+    domaingrid%time_dbl = dble(domaingrid%time_dbl + domaingrid%dt)                                                ! increment model time in seconds by DT
+    idt = (domaingrid%itime-1) * (domaingrid%dt / 60)                                                              ! calculate change in time since beginning of run (in minutes)
+    call geth_newdate(domaingrid%startdate, idt, domaingrid%nowdate)                                               ! update nowdate
+    if(domaingrid%itime <= domaingrid%ntime) domaingrid%curr_datetime = domaingrid%sim_datetimes(domaingrid%itime) ! update curr_datetime 
+
+    end associate
 
   END SUBROUTINE advance_in_time
 
@@ -322,7 +334,7 @@ contains
               watergrid      => noahowpgrid%watergrid)
 
 #ifndef NGEN_FORCING_ACTIVE
-    call forcinggrid%SetForcings(domaingrid%curr_datetime,domaingrid%nowdate)
+    call forcinggrid%SetForcings(domaingrid%curr_datetime/60.,domaingrid%nowdate)
 #endif
 
     !---------------------------------------------------------------------
@@ -391,7 +403,7 @@ contains
     !---------------------------------------------------------------------
     ! call the main utility routines
     !---------------------------------------------------------------------
-    call UtilitiesMain (domain%itime, domain, forcing, energy)
+    call UtilitiesMain (domain, forcing, energy)
 
     !---------------------------------------------------------------------
     ! call the main forcing routines
