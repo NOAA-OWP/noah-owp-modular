@@ -549,7 +549,7 @@ module ForcingGridType
   
       ! sanity check
       if(abs(this%read_time(this%iread)-datetime_unix_minutes).gt.epsilon(datetime_unix_minutes)) then
-        write(*,*) 'ERROR Unable to find datetime ''',trim(datetime_str),''' in forcing file ''',trim(this%forcings_file_name),''' - unix time = ',datetime_unix_minutes; stop ":  ERROR EXIT"
+        write(*,*) 'ERROR model time (date = ',trim(datetime_str),', unix [minutes] = ',datetime_unix_minutes,') does not match forcings file time (unix [minutes]',this%read_time(this%iread),')'; stop ":  ERROR EXIT"
       end if
   
       this%UU(:,:)     = this%read_UU(:,:,this%iread)  ! should iread be first in dimension order to improve performance/copy time lengths?
