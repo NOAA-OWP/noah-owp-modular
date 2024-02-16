@@ -513,14 +513,14 @@ module ForcingGridType
       end if
   
       !---------------------------------------------------------------------
-      ! Set iread_step (i.e., the index value of the next simulation time step in read_time minus iread)
+      ! Set iread_step (i.e., the index value of the next simulation time step in read_time minus iread -- cannot assume 1 because dt resolution of the file may be higher than domaingrid%dt)
       !---------------------------------------------------------------------
       this%iread_step = 1 ! default value
       next_datetime_unix_minutes = datetime_unix_minutes + (this%dt/60.)
       if(next_datetime_unix_minutes.le.this%datetime_file_max) then
-        time_dif = abs(this%read_time-datetime_unix_minutes)
+        time_dif = abs(this%read_time-next_datetime_unix_minutes)
         iread_next = 0
-        if(any(time_dif.le.epsilon(datetime_unix_minutes))) then
+        if(any(time_dif.le.epsilon(next_datetime_unix_minutes))) then
           iread_next = minloc(time_dif,1)
         else
           write(*,*) 'ERROR Cound not find second time step in forcing file ''',trim(this%forcings_file_name),''' -- unix time =',next_datetime_unix_minutes; stop ":  ERROR EXIT"
@@ -549,8 +549,9 @@ module ForcingGridType
   
       ! sanity check
       if(abs(this%read_time(this%iread)-datetime_unix_minutes).gt.epsilon(datetime_unix_minutes)) then
-        write(*,*) 'ERROR model time (date = ',trim(datetime_str),', unix [minutes] = ',datetime_unix_minutes,') does not match forcings file time (unix [minutes]',this%read_time(this%iread),')'; stop ":  ERROR EXIT"
+        write(*,*) 'ERROR Unable to find datetime ''',trim(datetime_str),''' in forcing file ''',trim(this%forcings_file_name),''' - unix time = ',datetime_unix_minutes; stop ":  ERROR EXIT"
       end if
+  
   
       this%UU(:,:)     = this%read_UU(:,:,this%iread)  ! should iread be first in dimension order to improve performance/copy time lengths?
       this%VV(:,:)     = this%read_VV(:,:,this%iread)
