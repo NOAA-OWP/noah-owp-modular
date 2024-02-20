@@ -995,7 +995,7 @@ contains
 
     integer,intent(in)    :: month
     integer,intent(in)    :: year
-    integer,intent(inout) :: days
+    integer,intent(out)   :: days
     logical               :: lleap
 
     days=0
@@ -1015,12 +1015,9 @@ contains
   subroutine is_leap(year,lleap)
 
     integer,intent(in)    :: year
-    logical,intent(inout) :: lleap
+    logical,intent(out)   :: lleap
 
-    lleap = .false.
-    if (iand(year,3) == 0 .and. (mod(year,25) /= 0 .or. iand(year,15) == 0)) then
-      lleap = .true.
-    end if
+    lleap = (mod(year,4)==0 .and. .not. mod(year,100)==0) .or. (mod(year,400)==0)
 
   end subroutine
 
