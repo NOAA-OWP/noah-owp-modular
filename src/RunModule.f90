@@ -294,18 +294,16 @@ call forcinggrid%ReadForcings(domaingrid%start_datetime/60.,domaingrid%startdate
     type (noahowpgrid_type), intent (inout) :: model
     integer                                 :: idt    ! change in time since beginning of run (in minutes)
 
-    associate(domaingrid => model%domaingrid)
-
     ! execute model
     call solve_noahowp_grid(model)
 
-    !set time variables for next time step
+    !advance/set time variables for next time step
+    associate(domaingrid => model%domaingrid)
     domaingrid%itime    = domaingrid%itime + 1                                                                     ! increment itime by 1
     domaingrid%time_dbl = dble(domaingrid%time_dbl + domaingrid%dt)                                                ! increment model time in seconds by DT
     idt = (domaingrid%itime-1) * (domaingrid%dt / 60)                                                              ! calculate change in time since beginning of run (in minutes)
     call geth_newdate(domaingrid%startdate, idt, domaingrid%nowdate)                                               ! update nowdate
     if(domaingrid%itime <= domaingrid%ntime) domaingrid%curr_datetime = domaingrid%sim_datetimes(domaingrid%itime) ! update curr_datetime 
-
     end associate
 
   END SUBROUTINE advance_in_time
@@ -333,6 +331,9 @@ call forcinggrid%ReadForcings(domaingrid%start_datetime/60.,domaingrid%startdate
               water          => noahowp%water,              &
               watergrid      => noahowpgrid%watergrid)
 
+  !---------------------------------------------------------------------
+  ! Set forcings if not NGEN_FORCING_ACTIVE
+  !---------------------------------------------------------------------
 #ifndef NGEN_FORCING_ACTIVE
     call forcinggrid%SetForcings(domaingrid%curr_datetime/60.,domaingrid%nowdate)
 #endif
