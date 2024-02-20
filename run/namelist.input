@@ -16,7 +16,7 @@
 
 &forcing
   forcings_dir         = "../data/forcings/"        ! directory/name of the input/forcing files
-  forcings_file_prefix = "LDASIN_DOMAIN1"           ! forcing file prefix followed by date pattern - "prefix.YYYYMMDDhhmm.nc"
+  forcings_file_prefix = "LDASIN_DOMAIN1"           ! forcing file prefix to be followed by date string - i.e., "prefix.YYYYMMDDhhmm.nc"
   forcings_file_type   = "HOURLY"                   ! type of forcing file organization - 'HOURLY', 'DAILY', 'MONTHLY', or 'YEARLY'
   ZREF                 = 10.0                       ! measurement height for wind speed (m)
   rain_snow_thresh     = 1.0                        ! rain-snow temperature threshold (degrees Celcius)
