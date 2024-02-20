@@ -46,41 +46,39 @@ module ForcingGridType
   real, allocatable, dimension(:,:,:)               :: SOLAD  !incoming direct solar radiation (w/m2)
   real, allocatable, dimension(:,:,:)               :: SOLAI  !incoming diffuse solar radiation (w/m2)
   
-  ! standalone forcings
-  character(len=256)                                :: forcings_dir         ! name of the forcings directory
-  character(len=256)                                :: forcings_file_prefix ! prefix for forcings files
-  character(len=256)                                :: forcings_file_name   ! name of the currently read-in forcings file
-  character(len=7)                                  :: forcings_file_type    ! type of forcing file ( HOURLY, DAILY, MONTHLY, or YEARLY )
-  integer                                           :: iread
-  integer                                           :: iread_step
-  integer                                           :: ncid
-  integer                                           :: status
-  integer                                           :: n_x
-  integer                                           :: n_y
-  real,allocatable,dimension(:,:,:)                 :: read_UU
-  real,allocatable,dimension(:,:,:)                 :: read_VV
-  real,allocatable,dimension(:,:,:)                 :: read_sfctmp
-  real,allocatable,dimension(:,:,:)                 :: read_sfcprs
-  real,allocatable,dimension(:,:,:)                 :: read_Q2
-  real,allocatable,dimension(:,:,:)                 :: read_swrad
-  real,allocatable,dimension(:,:,:)                 :: read_lwrad
-  real,allocatable,dimension(:,:,:)                 :: read_pcprate
-  real,allocatable,dimension(:)                     :: read_time
-  real*8                                            :: datetime_file_min
-  real*8                                            :: datetime_file_max
-  character(len=256)                                :: name_forcings_pcprate
-  character(len=256)                                :: name_forcings_sfctmp
-  character(len=256)                                :: name_forcings_sfcprs
-  character(len=256)                                :: name_forcings_UU
-  character(len=256)                                :: name_forcings_VV
-  character(len=256)                                :: name_forcings_swrad
-  character(len=256)                                :: name_forcings_lwrad
-  character(len=256)                                :: name_forcings_Q2
-  character(len=256)                                :: name_dim_x
-  character(len=256)                                :: name_dim_y
-  character(len=256)                                :: name_dim_time
-  real                                              :: dt               ! run timestep (s)
-  
+  ! variables for standalone forcings
+  character(len=256)                                :: forcings_dir            ! name of the forcings directory
+  character(len=256)                                :: forcings_file_prefix    ! prefix for forcings files
+  character(len=256)                                :: forcings_file_name      ! name of the currently read-in forcings file
+  character(len=7)                                  :: forcings_file_type      ! type of forcing file ( HOURLY, DAILY, MONTHLY, or YEARLY )
+  integer                                           :: iread                   ! index position for argument date in read arrays
+  integer                                           :: iread_step              ! step index size for each time step   
+  integer                                           :: n_x                     ! domain n_x 
+  integer                                           :: n_y                     ! domain n_y
+  real,allocatable,dimension(:,:,:)                 :: read_UU                 ! read-in wind speed in eastward dir forcings values
+  real,allocatable,dimension(:,:,:)                 :: read_VV                 ! read-in wind speed in northward dir forcings values
+  real,allocatable,dimension(:,:,:)                 :: read_sfctmp             ! read-in surface temperature forcings values
+  real,allocatable,dimension(:,:,:)                 :: read_sfcprs             ! read-in surface pressure forcings values
+  real,allocatable,dimension(:,:,:)                 :: read_Q2                 ! read-in specific humidity forcings values
+  real,allocatable,dimension(:,:,:)                 :: read_swrad              ! read-in short wave radiation forcings values
+  real,allocatable,dimension(:,:,:)                 :: read_lwrad              ! read-in long wave radiation forcings values
+  real,allocatable,dimension(:,:,:)                 :: read_pcprate            ! read-in precipitation rate forcings values
+  real,allocatable,dimension(:)                     :: read_time               ! read-in time values
+  real*8                                            :: datetime_file_min       ! minimum expected unix time (minutes) for current forcings file
+  real*8                                            :: datetime_file_max       ! maximum expected unix time (minutes) for current forcings file
+  character(len=256)                                :: name_forcings_pcprate   ! name of precipitation rate (mm/s) variable in forcings file(s) 
+  character(len=256)                                :: name_forcings_sfctmp    ! name of surface temperature (K) variable in forcings file(s)
+  character(len=256)                                :: name_forcings_sfcprs    ! name of surface pressure (pa) variable in forcings file(s)
+  character(len=256)                                :: name_forcings_UU        ! name of wind speed in eastward dir (m/s) variable in forcings file(s)
+  character(len=256)                                :: name_forcings_VV        ! name of wind speed in northward dir (m/s) variable in forcings file(s)
+  character(len=256)                                :: name_forcings_swrad     ! name ofdownward shortwave radiation (w/m2) variable in forcings file(s) 
+  character(len=256)                                :: name_forcings_lwrad     ! name ofdownward longwave radiation (w/m2) variable in forcings file(s)
+  character(len=256)                                :: name_forcings_Q2        ! name of specific humidity (kg/kg) variable in forcings file(s)
+  character(len=256)                                :: name_dim_x              ! name of NetCDF 'x' dimension (longitude dimension)
+  character(len=256)                                :: name_dim_y              ! name of NetCDF 'y' dimension (latitude dimension)
+  character(len=256)                                :: name_dim_time           ! name of NetCDF 'time' dimension (latitude dimension)
+  real                                              :: dt                      ! model run timestep (s)
+
     contains
   
       procedure, public  :: Init         
@@ -209,34 +207,34 @@ module ForcingGridType
     subroutine ReadForcings(this,datetime_unix_minutes,datetime_str)
   
       class(forcinggrid_type), intent(inout) :: this
-      real*8,intent(in)                      :: datetime_unix_minutes                             ! unix datetime (minutes since 1970-01-01 00:00:00) ?UTC? 
-      character(len=12),intent(in)           :: datetime_str                                      ! character date ( YYYYMMDDHHmm )
-      character(len=14)                      :: datetime_long_str                                 ! character date ( YYYYMMDDHHmmss )
-      character(len=4)                       :: year_str                                          ! date string
-      character(len=2)                       :: month_str,day_str,minute_str,hour_str,second_str  ! more date strings
+      real*8,intent(in)                      :: datetime_unix_minutes                                      ! unix datetime (minutes since 1970-01-01 00:00:00) ?UTC? 
+      character(len=12),intent(in)           :: datetime_str                                               ! character date ( YYYYMMDDHHmm )
+      character(len=14)                      :: datetime_long_str                                          ! character date ( YYYYMMDDHHmmss )
+      character(len=4)                       :: year_str                                                   ! date string
+      character(len=2)                       :: month_str,day_str,minute_str,hour_str,second_str           ! more date strings
       integer                                :: year_int,month_int,day_int,hour_int,minute_int,second_int  ! date ints
-      integer                                :: ncid
-      integer                                :: ndays
-      real*8,allocatable,dimension(:)        :: time_dif
-      real*8                                 :: next_datetime_unix_minutes
-      integer                                :: varid_pcprate
-      integer                                :: varid_sfctmp 
-      integer                                :: varid_sfcprs
-      integer                                :: varid_UU
-      integer                                :: varid_VV
-      integer                                :: varid_swrad
-      integer                                :: varid_lwrad
-      integer                                :: varid_Q2
-      integer                                :: varid_time
-      integer                                :: dimid_y
-      integer                                :: dimid_x
-      integer                                :: dimid_time
-      integer                                :: dim_len_y
-      integer                                :: dim_len_x
-      integer                                :: dim_len_time
-      integer                                :: status
-      integer                                :: iread_next
-      logical                                :: lexist
+      integer                                :: ncid                                                       ! netcdf file id
+      integer                                :: ndays                                                      ! number of days in month
+      real*8,allocatable,dimension(:)        :: time_dif                                                   ! difference between given time and time variable values      
+      real*8                                 :: next_datetime_unix_minutes                                 ! unix datetime for next time step
+      integer                                :: varid_pcprate                                              ! netcdf varid id for precip rate
+      integer                                :: varid_sfctmp                                               ! netcdf varid id for surface temp rate
+      integer                                :: varid_sfcprs                                               ! netcdf varid id for surface pressure rate
+      integer                                :: varid_UU                                                   ! netcdf varid id for wind speed in eastward dir
+      integer                                :: varid_VV                                                   ! netcdf varid id for wind speed in northward dir
+      integer                                :: varid_swrad                                                ! netcdf varid id for short wave radiation
+      integer                                :: varid_lwrad                                                ! netcdf varid id for long wave radiation
+      integer                                :: varid_Q2                                                   ! netcdf varid id for specific humidity
+      integer                                :: varid_time                                                 ! netcdf varid id for time
+      integer                                :: dimid_y                                                    ! netcdf y dimension id
+      integer                                :: dimid_x                                                    ! netcdf x dimension id
+      integer                                :: dimid_time                                                 ! netcdf time dimension id
+      integer                                :: dim_len_y                                                  ! length of y dimension
+      integer                                :: dim_len_x                                                  ! length of x dimension
+      integer                                :: dim_len_time                                               ! length of time dimension
+      integer                                :: status                                                     ! status indicator
+      integer                                :: iread_next                                                 ! index read position for next time step
+      logical                                :: lexist                                                     ! logical indicator if file exists
   
       !---------------------------------------------------------------------
       ! Determine expected file name
@@ -269,7 +267,7 @@ module ForcingGridType
         this%datetime_file_min = date_to_unix (datetime_long_str) ! in seconds for call to unix_to_date
         call unix_to_date (this%datetime_file_min, year_int, month_int, day_int, hour_int, minute_int, second_int)
         call days_in_month(month_int,year_int,ndays)
-        this%datetime_file_min = this%datetime_file_min/60. ! change to minutes
+        this%datetime_file_min = this%datetime_file_min/60.       ! change seconds to minutes
         write(day_str,'(i2)') ndays; if(ndays < 10) day_str(1:1) = '0'
         datetime_long_str(1:4) = year_str; datetime_long_str(5:6) = month_str; datetime_long_str(7:8) = day_str; datetime_long_str(9:10) = '23'; datetime_long_str(11:12) = '59'; datetime_long_str(13:14) = '59' 
         this%datetime_file_max = date_to_unix (datetime_long_str)/60.
@@ -303,19 +301,19 @@ module ForcingGridType
       ! Read dimension lengths
       !---------------------------------------------------------------------
       ! x
-      status = nf90_inq_dimid(ncid,'x',dimid_x)
+      status = nf90_inq_dimid(ncid,trim(this%name_dim_x),dimid_x)
       if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to find dimension ''',trim(this%name_dim_x),''' in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
       status = nf90_inquire_dimension(ncid,dimid_x,len=dim_len_x)
       if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to read length of dimension ''',trim(this%name_dim_x),''' in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
       
       ! y
-      status = nf90_inq_dimid(ncid,'y',dimid_y)
+      status = nf90_inq_dimid(ncid,trim(this%name_dim_y),dimid_y)
       if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to find dimension ''',trim(this%name_dim_y),''' in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
       status = nf90_inquire_dimension(ncid,dimid_y,len=dim_len_y)
       if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to read length of dimension ''',trim(this%name_dim_y),''' in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
       
       ! time
-      status = nf90_inq_dimid(ncid,this%name_dim_time,dimid_time)
+      status = nf90_inq_dimid(ncid,trim(this%name_dim_time),dimid_time)
       if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to find dimension ''',trim(this%name_dim_time),''' in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
       status = nf90_inquire_dimension(ncid,dimid_time,len=dim_len_time)
       if (status .ne. nf90_noerr) then; write(*,*) 'ERROR Unable to read length of dimension ''',trim(this%name_dim_time),''' in forcing file ''',trim(this%forcings_file_name),'''';  stop ":  ERROR EXIT"; end if
@@ -552,7 +550,7 @@ module ForcingGridType
         write(*,*) 'ERROR model time (date = ',trim(datetime_str),', unix [minutes] = ',datetime_unix_minutes,') does not match forcings file time (unix [minutes]',this%read_time(this%iread),')'; stop ":  ERROR EXIT"
       end if
   
-  
+      ! transfer forcings values
       this%UU(:,:)     = this%read_UU(:,:,this%iread)  ! should iread be first in dimension order to improve performance/copy time lengths?
       this%VV(:,:)     = this%read_VV(:,:,this%iread)
       this%SFCTMP(:,:) = this%read_sfctmp(:,:,this%iread)

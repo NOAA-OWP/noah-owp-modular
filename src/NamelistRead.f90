@@ -67,17 +67,17 @@ type, public :: namelist_type
   !-------------------------------!
   !   gridded forcings            !
   !-------------------------------!
-  character(len=256)  :: forcings_dir           ! directory/name of the input/forcing files
-  character(len=256)  :: forcings_file_prefix   ! 
-  character(len=256)  :: forcings_file_type
-  character(len=256)  :: name_forcings_pcprate  
-  character(len=256)  :: name_forcings_sfctmp  
-  character(len=256)  :: name_forcings_sfcprs  
-  character(len=256)  :: name_forcings_UU  
-  character(len=256)  :: name_forcings_VV  
-  character(len=256)  :: name_forcings_swrad  
-  character(len=256)  :: name_forcings_lwrad 
-  character(len=256)  :: name_forcings_Q2  
+  character(len=256)  :: forcings_dir           ! name of directory containing forcings file(s)
+  character(len=256)  :: forcings_file_prefix   ! forcings file prefix 
+  character(len=256)  :: forcings_file_type     ! forcings file type -- 'HOURLY', 'DAILY', 'MONTHLY', or 'YEARLY'
+  character(len=256)  :: name_forcings_pcprate  ! name of precipitation rate (mm/s) variable in forcings file(s)
+  character(len=256)  :: name_forcings_sfctmp   ! name of surface temperature (K) variable in forcings file(s)
+  character(len=256)  :: name_forcings_sfcprs   ! name of surface pressure (pa) variable in forcings file(s)
+  character(len=256)  :: name_forcings_UU       ! name of wind speed in eastward dir (m/s) variable in forcings file(s)
+  character(len=256)  :: name_forcings_VV       ! name of wind speed in northward dir (m/s) variable in forcings file(s)
+  character(len=256)  :: name_forcings_swrad    ! name ofdownward shortwave radiation (w/m2) variable in forcings file(s) 
+  character(len=256)  :: name_forcings_lwrad    ! name ofdownward longwave radiation (w/m2) variable in forcings file(s)
+  character(len=256)  :: name_forcings_Q2       ! name of specific humidity (kg/kg) variable in forcings file(s)
 
   !-------------------------------!
   !   gridded dimensions, etc     !
