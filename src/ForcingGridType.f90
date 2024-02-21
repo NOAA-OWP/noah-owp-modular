@@ -331,6 +331,7 @@ module ForcingGridType
         end if 
       else
         allocate(this%read_UU(dim_len_x,dim_len_y,dim_len_time))
+        this%read_UU = 0
       end if
   
       ! VV 
@@ -343,6 +344,7 @@ module ForcingGridType
         end if 
       else
         allocate(this%read_VV(dim_len_x,dim_len_y,dim_len_time))
+        this%read_VV = 0
       end if
   
       ! sfctmp
@@ -355,6 +357,7 @@ module ForcingGridType
         end if 
       else
         allocate(this%read_sfctmp(dim_len_x,dim_len_y,dim_len_time))
+        this%read_sfctmp = 0
       end if
   
       ! sfcprs
@@ -367,6 +370,7 @@ module ForcingGridType
         end if 
       else
         allocate(this%read_sfcprs(dim_len_x,dim_len_y,dim_len_time))
+        this%read_sfcprs = 0
       end if
   
       ! swrad
@@ -379,6 +383,7 @@ module ForcingGridType
         end if 
       else
         allocate(this%read_swrad(dim_len_x,dim_len_y,dim_len_time))
+        this%read_swrad = 0
       end if
   
       ! lwrad
@@ -391,6 +396,7 @@ module ForcingGridType
         end if 
       else
         allocate(this%read_lwrad(dim_len_x,dim_len_y,dim_len_time))
+        this%read_lwrad = 0
       end if
   
       ! pcprate
@@ -403,6 +409,7 @@ module ForcingGridType
         end if 
       else
         allocate(this%read_pcprate(dim_len_x,dim_len_y,dim_len_time))
+        this%read_pcprate = 0
       end if
   
       ! Q2
@@ -415,6 +422,7 @@ module ForcingGridType
         end if 
       else
         allocate(this%read_Q2(dim_len_x,dim_len_y,dim_len_time))
+        this%read_Q2 = 0
       end if
   
       ! time
@@ -427,6 +435,7 @@ module ForcingGridType
         end if 
       else
         allocate(this%read_time(dim_len_time))
+        this%read_time = 0
       end if
   
       !---------------------------------------------------------------------
