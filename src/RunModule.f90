@@ -83,8 +83,8 @@ contains
     type (noahowpgrid_type), intent (out)   :: model
     character(len=*), intent (in)           :: config_filename    ! config file from command line argument
     integer                                 :: forcing_timestep   ! integer time step (set to dt) for some subroutine calls
-    integer                                 :: ii, ix, iy         ! indeces
-    integer, allocatable, dimension(:,:)    :: tmp
+    integer                                 :: ii, ix, iy         ! indices
+    integer, allocatable, dimension(:,:)    :: tmp                ! to catch land use vs. soil inconsistencies
         
     associate(namelist       => model%namelist,       &
               attributes     => model%attributes,     &
@@ -227,10 +227,6 @@ contains
       forcinggrid%YEARLEN       = 365        ! Setting year to be normal (i.e. not a leap year)  
       forcinggrid%FOLN(:,:)     = 1.0        ! foliage nitrogen concentration (%); for now, set to nitrogen saturation
       forcinggrid%TBOT(:,:)     = 285.0      ! bottom condition for soil temperature [K]
-
-      !testing DELETE THIS
-      domaingrid%vegtyp(1,1) = parametersgrid%ISWATER
-      !domaingrid%isltyp(1,1) = 14
 
       ! domain variables
       domaingrid%zsnso(:,:,-namelist%nsnow+1:0) = 0.0
