@@ -82,8 +82,9 @@ contains
     
     type (noahowpgrid_type), intent (out)   :: model
     character(len=*), intent (in)           :: config_filename    ! config file from command line argument
-    integer                                 :: forcing_timestep         ! integer time step (set to dt) for some subroutine calls
-    integer                                 :: ii, ix, iy
+    integer                                 :: forcing_timestep   ! integer time step (set to dt) for some subroutine calls
+    integer                                 :: ii, ix, iy         ! indeces
+    integer, allocatable, dimension(:,:)    :: tmp
         
     associate(namelist       => model%namelist,       &
               attributes     => model%attributes,     &
@@ -227,13 +228,22 @@ contains
       forcinggrid%FOLN(:,:)     = 1.0        ! foliage nitrogen concentration (%); for now, set to nitrogen saturation
       forcinggrid%TBOT(:,:)     = 285.0      ! bottom condition for soil temperature [K]
 
+      !testing DELETE THIS
+      domaingrid%vegtyp(1,1) = parametersgrid%ISWATER
+      !domaingrid%isltyp(1,1) = 14
+
       ! domain variables
       domaingrid%zsnso(:,:,-namelist%nsnow+1:0) = 0.0
       do ii = 1, namelist%nsoil
         domaingrid%zsnso(:,:,ii) = namelist%zsoil(ii)
       end do
-      domaingrid%IST(:,:) = 1                                                ! 1 = soil
-      where (domaingrid%vegtyp == parametersgrid%ISWATER) domaingrid%IST = 2 ! 2 = lake
+      domaingrid%IST(:,:) = 1                                                  ! 1 = soil
+      where (domaingrid%vegtyp.eq.parametersgrid%ISWATER) domaingrid%IST = 2   ! 2 = lake
+      allocate(tmp(domaingrid%n_x,domaingrid%n_y)); tmp(:,:) = 0
+      where (domaingrid%vegtyp.ne.parametersgrid%ISWATER.and.domaingrid%isltyp.eq.14) tmp = 1
+      if(sum(tmp)>0) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have a non-water land cover (vegtyp = ',parametersgrid%ISWATER,') and a water soil type (isltyp = 14)'; stop; end if
+      where (domaingrid%vegtyp.eq.parametersgrid%ISWATER.and.domaingrid%isltyp.ne.14) tmp = 1
+      if(sum(tmp)>0) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have a water land cover (vegtyp = ',parametersgrid%ISWATER,') and a non-water soil type (isltyp != 14)'; stop; end if
 
       ! time variables
       domaingrid%nowdate   = domaingrid%startdate ! start the model with nowdate = startdate
