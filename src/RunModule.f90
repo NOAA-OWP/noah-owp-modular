@@ -84,7 +84,7 @@ contains
     character(len=*), intent (in)           :: config_filename    ! config file from command line argument
     integer                                 :: forcing_timestep   ! integer time step (set to dt) for some subroutine calls
     integer                                 :: ii, ix, iy         ! indices
-    integer, allocatable, dimension(:,:)    :: tmp                ! to catch land use vs. soil inconsistencies
+    integer, allocatable, dimension(:,:)    :: err_grid           ! to catch land use vs. soil inconsistencies
         
     associate(namelist       => model%namelist,       &
               attributes     => model%attributes,     &
@@ -235,15 +235,6 @@ contains
       end do
       domaingrid%IST(:,:) = 1                                                  ! 1 = soil
       where (domaingrid%vegtyp.eq.parametersgrid%ISWATER) domaingrid%IST = 2   ! 2 = lake
-      allocate(tmp(domaingrid%n_x,domaingrid%n_y)); tmp(:,:) = 0
-      where (domaingrid%vegtyp.ne.parametersgrid%ISWATER.and.domaingrid%isltyp.eq.14) tmp = 1
-      if(sum(tmp)>0) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have a non-water land cover (vegtyp != ',parametersgrid%ISWATER,') and a water soil type (isltyp = 14)'; stop; end if
-      where (domaingrid%vegtyp.eq.parametersgrid%ISWATER.and.domaingrid%isltyp.ne.14) tmp = 1
-      if(sum(tmp)>0) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have a water land cover (vegtyp = ',parametersgrid%ISWATER,') and a non-water soil type (isltyp != 14)'; stop; end if
-      where (domaingrid%vegtyp.ne.parametersgrid%ISICE.and.domaingrid%isltyp.eq.16) tmp = 1
-      if(sum(tmp)>0) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have a non-ice land cover (vegtyp != ',parametersgrid%ISICE,') and an ice soil type (isltyp = 16)'; stop; end if
-      where (domaingrid%vegtyp.eq.parametersgrid%ISICE.and.domaingrid%isltyp.ne.16) tmp = 1
-      if(sum(tmp)>0) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have an ice land cover (vegtyp = ',parametersgrid%ISICE,') and a non-ice soil type (isltyp != 16)'; stop; end if
 
       ! time variables
       domaingrid%nowdate   = domaingrid%startdate ! start the model with nowdate = startdate
@@ -251,6 +242,19 @@ contains
       domaingrid%itime     = 1                     ! initialize the time loop counter at 1
       domaingrid%time_dbl  = 0.d0                  ! start model run at t = 0
       
+      !---------------------------------------------------------------------
+      !--- check consistency of domain land use and soil attributes ---
+      !---------------------------------------------------------------------
+      allocate(err_grid(domaingrid%n_x,domaingrid%n_y)); err_grid(:,:) = 0
+      where (domaingrid%vegtyp.ne.parametersgrid%ISWATER.and.domaingrid%isltyp.eq.14) err_grid = 1
+      if(sum(err_grid)>0) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have a non-water land cover (vegtyp != ',parametersgrid%ISWATER,') and a water soil type (isltyp = 14)'; stop; end if
+      where (domaingrid%vegtyp.eq.parametersgrid%ISWATER.and.domaingrid%isltyp.ne.14) err_grid = 1
+      if(sum(err_grid)>0) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have a water land cover (vegtyp = ',parametersgrid%ISWATER,') and a non-water soil type (isltyp != 14)'; stop; end if
+      where (domaingrid%vegtyp.ne.parametersgrid%ISICE.and.domaingrid%isltyp.eq.16) err_grid = 1
+      if(sum(err_grid)>0) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have a non-ice land cover (vegtyp != ',parametersgrid%ISICE,') and an ice soil type (isltyp = 16)'; stop; end if
+      where (domaingrid%vegtyp.eq.parametersgrid%ISICE.and.domaingrid%isltyp.ne.16) err_grid = 1
+      if(sum(err_grid)>0) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have an ice land cover (vegtyp = ',parametersgrid%ISICE,') and a non-ice soil type (isltyp != 16)'; stop; end if
+
       !---------------------------------------------------------------------
       !--- set a time vector for simulation ---
       !---------------------------------------------------------------------
