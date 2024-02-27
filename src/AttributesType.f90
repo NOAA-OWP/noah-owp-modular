@@ -344,19 +344,28 @@ module AttributesType
     ! Get dx and dy (i.e., the grid spacing from lat and lon arrays)
     ! Assume uniform rectilinear grid
     !----------------------------------------------------------------------------
-    if(abs(this%lon(1)) >= abs(this%lon(2))) then
-      dx = abs(this%lon(1))-abs(this%lon(2)) ! western hemisphere
-    else if (abs(this%lon(1)) < abs(this%lon(2))) then
-      dx = abs(this%lon(2))-abs(this%lon(1)) ! eastern hemisphere
+    if(size(this%lon,1).gt.1) then
+      if(abs(this%lon(1)) > abs(this%lon(2))) then
+        dx = abs(this%lon(1))-abs(this%lon(2)) ! western hemisphere
+      else if (abs(this%lon(1)) < abs(this%lon(2))) then
+        dx = abs(this%lon(2))-abs(this%lon(1)) ! eastern hemisphere
+      else
+        write(*,*) 'ERROR domain grid dx is 0 but grid n_x > 1. Check values for ''',trim(name_var_x),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"
+      end if
+    else
+      dx = 0.
     end if
-    if(dx < 0.) then; write(*,*) 'Unable to infer dx from variable ''',trim(name_var_x),''' in ''',trim(filename),''' (dx should be postive but has value:',dx; stop ":  ERROR EXIT"; end if
-
-    if(abs(this%lat(1)) >= abs(this%lat(2))) then
-      dy = abs(this%lat(1))-abs(this%lat(2)) ! northern hemisphere
-    else if (abs(this%lat(1)) < abs(this%lat(2))) then
-      dy = abs(this%lat(2))-abs(this%lat(1)) ! southern hemisphere
+    if(size(this%lat,1).gt.1) then
+      if(abs(this%lat(1)) > abs(this%lat(2))) then
+        dy = abs(this%lat(1))-abs(this%lat(2)) ! northern hemisphere
+      else if (abs(this%lat(1)) < abs(this%lat(2))) then
+        dy = abs(this%lat(2))-abs(this%lat(1)) ! southern hemisphere
+      else
+        write(*,*) 'ERROR domain grid dy is 0 but grid n_y > 1. Check values for ''',trim(name_var_y),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"
+      end if
+    else
+      dy = 0.
     end if
-    if(dy < 0.) then; write(*,*) 'Unable to infer dy from variable ''',trim(name_var_y),''' in ''',trim(filename),''' (dy should be postive but has value:',dy; stop ":  ERROR EXIT"; end if
 
     end associate
 
