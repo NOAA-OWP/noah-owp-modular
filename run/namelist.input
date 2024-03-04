@@ -48,7 +48,7 @@
 /
 
 &attributes
- attributes_filename = "../data/NorthForkGriddedAttributes.nc"  ! directory and name of NetCDF file holding gridded model attributes
+ attributes_filename = "../data/NorthForkAttributes.nc"  ! directory and name of NetCDF file holding gridded model attributes
 /
 
 &initial_values

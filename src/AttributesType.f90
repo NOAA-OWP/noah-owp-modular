@@ -7,81 +7,66 @@ module AttributesType
   integer, parameter :: max_file_name_length = 512
   integer, parameter :: max_var_name_length  = 256
 
-  type, public :: attributes_2d_type 
-
-    character(len=max_var_name_length) :: name
-    integer                            :: varid
-
+  type, public :: attributes_var_type 
+    character(len=max_var_name_length)  :: name
+    integer                             :: varid
   end type
 
-  type, extends(attributes_2d_type) :: attributes_2dint_type
-
-    integer,allocatable,dimension(:,:) :: data
-
+  type, extends(attributes_var_type) :: attributes_var_1d_type 
+    integer,dimension(1)                :: dimlen
+    integer,dimension(1)                :: dimids
   end type
 
-  type, extends(attributes_2d_type) :: attributes_2dreal_type
+  type, extends(attributes_var_type) :: attributes_var_2d_type 
+    integer,dimension(2)                :: dimlen
+    integer,dimension(2)                :: dimids
+  end type
 
-    real,allocatable,dimension(:,:)    :: data
+  type, extends(attributes_var_1d_type) :: attributes_var_1dreal_type
+    real,allocatable,dimension(:)       :: data
+  end type
 
+  type, extends(attributes_var_2d_type) :: attributes_var_2dint_type
+    integer,allocatable,dimension(:,:)  :: data
+  end type
+
+  type, extends(attributes_var_2d_type) :: attributes_var_2dreal_type
+    real,allocatable,dimension(:,:)     :: data
   end type
 
   type, public :: attributes_metadata_type
-
-    character(len=max_var_name_length)  :: name_var_vegtyp  
-    character(len=max_var_name_length)  :: name_var_isltyp   
-    character(len=max_var_name_length)  :: name_var_soilcolor 
-    character(len=max_var_name_length)  :: name_var_slope    
-    character(len=max_var_name_length)  :: name_var_azimuth
-    character(len=max_var_name_length)  :: name_var_mask      
+    integer                             :: ncid    
+    character(len=max_file_name_length) :: filename      
+    character(len=max_var_name_length)  :: name_att_dx       
+    character(len=max_var_name_length)  :: name_att_dy       
     character(len=max_var_name_length)  :: name_dim_x       
-    character(len=max_var_name_length)  :: name_dim_y      
-    character(len=max_var_name_length)  :: name_var_x       
-    character(len=max_var_name_length)  :: name_var_y 
-    integer                             :: varid_vegtyp
-    integer                             :: varid_isltyp
-    integer                             :: varid_soilcolor
-    integer                             :: varid_slope
-    integer                             :: varid_azimuth
-    integer                             :: varid_mask
-    integer                             :: varid_x
-    integer                             :: varid_y
+    character(len=max_var_name_length)  :: name_dim_y        
     integer                             :: n_x                             
     integer                             :: n_y                         
     real                                :: dx                        
-    real                                :: dy                              
-    integer                             :: dimid_x                      
-    integer                             :: dimid_y                         
+    real                                :: dy                                                
     integer                             :: integerMissing
     real                                :: realMissing
-
   end type
 
   type, public :: attributes_type
-
+    type(attributes_var_2dint_type)     :: vegtyp    
+    type(attributes_var_2dint_type)     :: isltyp     
+    type(attributes_var_2dint_type)     :: soilcolor   
+    type(attributes_var_2dreal_type)    :: slope      
+    type(attributes_var_2dreal_type)    :: azimuth
+    type(attributes_var_2dint_type)     :: mask     
+    type(attributes_var_1dreal_type)    :: lat
+    type(attributes_var_1dreal_type)    :: lon       
     type(attributes_metadata_type)      :: metadata
-    type(attributes_2dint_type)         :: vegtyp    
-    type(attributes_2dint_type)         :: isltyp     
-    type(attributes_2dint_type)         :: soilcolor   
-    type(attributes_2dreal_type)        :: slope      
-    type(attributes_2dreal_type)        :: azimuth
-    type(attributes_2dint_type)         :: mask     
-    real,allocatable,dimension(:)       :: lat         
-    real,allocatable,dimension(:)       :: lon         
-    character(len=max_file_name_length) :: filename    
-    integer                             :: ncid    
-
   contains
-
-    procedure, public     :: Init
-    procedure, private    :: InitTransfer
-    procedure, private    :: ValidateNetcdf
-    procedure, private    :: ReadSpatial
-    procedure, private    :: ReadVars
-    procedure, private    :: ReadVar2D
-    procedure, private    :: OpenNetcdf
-    procedure, private    :: CloseNetcdf
-
+    procedure, public                   :: Init
+    procedure, private                  :: InitTransfer
+    procedure, private                  :: ValidateFile
+    procedure, private                  :: ReadVar
+    procedure, private                  :: ReadVars
+    procedure, private                  :: OpenNetcdf
+    procedure, private                  :: CloseNetcdf
   end type
 
   contains 
@@ -98,343 +83,365 @@ module AttributesType
     call this%InitTransfer(namelist)
 
     !----------------------------------------------------------------------------
-    ! Open netcdf file
+    ! Open file
     !----------------------------------------------------------------------------
     call this%OpenNetcdf()
 
     !----------------------------------------------------------------------------
-    ! Validate netcdf file contents 
+    ! Validate file contents 
     !----------------------------------------------------------------------------
-    call this%ValidateNetcdf()
+    call this%ValidateFile()
 
     !----------------------------------------------------------------------------
-    ! Read spatial information -- i.e., n_x, n_y, dx, dy, lat(:), lon(:)
-    !----------------------------------------------------------------------------
-    call this%ReadSpatial()
-
-    !----------------------------------------------------------------------------
-    ! Read all gridded attribute variables
+    ! Read variables
     !----------------------------------------------------------------------------
     call this%ReadVars()
 
     !----------------------------------------------------------------------------
-    ! Close netcdf file
+    ! Close file
     !----------------------------------------------------------------------------
     call this%CloseNetcdf()
 
   end subroutine
 
-  subroutine ValidateNetcdf(this)
+  subroutine ValidateFile(this)
 
     class(attributes_type),intent(inout) :: this
     integer                              :: status
-    logical                              :: lexist
     integer                              :: ndims
     integer,dimension(1)                 :: dimids_1d
-    integer,dimension(2)                 :: dimids_2d
+    character(len=max_var_name_length)   :: iname
+    integer                              :: ivarid
+    integer                              :: varid_x, varid_y, dimid_x, dimid_y
+    integer                              :: att_num_dx, att_num_dy, att_len_dx, att_len_dy
+    real,dimension(1)                    :: x1, x2, y1, y2
 
-    associate(ncid               => this%ncid,                        &
+    associate(ncid               => this%metadata%ncid,               &
+              name_att_dx        => this%metadata%name_att_dx,        & 
+              name_att_dy        => this%metadata%name_att_dy,        &
               name_dim_x         => this%metadata%name_dim_x,         & 
               name_dim_y         => this%metadata%name_dim_y,         &
-              name_var_x         => this%metadata%name_var_x,         & 
-              name_var_y         => this%metadata%name_var_y,         & 
-              name_var_vegtyp    => this%metadata%name_var_vegtyp,    & 
-              name_var_isltyp    => this%metadata%name_var_isltyp,    & 
-              name_var_soilcolor => this%metadata%name_var_soilcolor, &   
-              name_var_slope     => this%metadata%name_var_slope,     &
-              name_var_azimuth   => this%metadata%name_var_azimuth,   &
-              name_var_mask      => this%metadata%name_var_mask,      &
-              varid_x            => this%metadata%varid_x,            & 
-              varid_y            => this%metadata%varid_y,            & 
-              varid_vegtyp       => this%metadata%varid_vegtyp,       & 
-              varid_isltyp       => this%metadata%varid_isltyp,       & 
-              varid_soilcolor    => this%metadata%varid_soilcolor,    &   
-              varid_slope        => this%metadata%varid_slope,        &
-              varid_azimuth      => this%metadata%varid_azimuth,      &
-              varid_mask         => this%metadata%varid_mask,         &
-              dimid_x            => this%metadata%dimid_x,            &
-              dimid_y            => this%metadata%dimid_y,            &
-              filename           => this%filename,                    &
-              integerMissing     => this%metadata%integerMissing)
+              n_x                => this%metadata%n_x,                &
+              n_y                => this%metadata%n_y,                &
+              dx                 => this%metadata%dx,                 &
+              dy                 => this%metadata%dy,                 &
+              filename           => this%metadata%filename,           &
+              integerMissing     => this%metadata%integerMissing,     &
+              realMissing        => this%metadata%realMissing)
 
     !----------------------------------------------------------------------------
-    ! Set varids to missing values
+    ! Check for required dimensions + set dimension ids and n_x, n_y
     !----------------------------------------------------------------------------
-    varid_x         = integerMissing
-    varid_y         = integerMissing
-    varid_vegtyp    = integerMissing
-    varid_isltyp    = integerMissing
-    varid_soilcolor = integerMissing 
-    varid_slope     = integerMissing
-    varid_azimuth   = integerMissing
-    varid_mask      = integerMissing
-    dimid_x         = integerMissing
-    dimid_y         = integerMissing
+
+    ! x
+    iname = trim(name_dim_x)
+    dimid_x = integerMissing
+    status = nf90_inq_dimid(ncid = ncid, name = trim(iname), dimid = dimid_x)
+    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the dimension ''',trim(iname),''''; stop ":  ERROR EXIT"; end if
+    if (dimid_x .eq. integerMissing) then; write(*,*) 'Problem finding dimension ''',trim(iname),''' in the file ''',trim(filename),'''';  stop ":  ERROR EXIT"; end if
+    status = nf90_inquire_dimension(ncid = ncid, dimid = dimid_x, len=n_x)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to read length of dimension ''',trim(iname),''' in ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
+    if (n_x .eq. integerMissing) then; write(*,*) 'Problem reading length of dimension ''',trim(iname),''' in ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
+
+    ! y
+    iname = trim(name_dim_y)
+    dimid_y = integerMissing
+    status = nf90_inq_dimid(ncid = ncid, name = trim(iname), dimid = dimid_y)
+    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the dimension ''',trim(iname),''''; stop ":  ERROR EXIT"; end if
+    if (dimid_y .eq. integerMissing) then; write(*,*) 'Problem finding variable ''',trim(iname),''' in the file ''',trim(filename),'''';  stop ":  ERROR EXIT"; end if
+    status = nf90_inquire_dimension(ncid = ncid, dimid = dimid_y, len=n_y)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to read length of dimension ''',trim(iname),''' in ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
+    if (n_y .eq. integerMissing) then; write(*,*) 'Problem reading length of dimension ''',trim(iname),''' in ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
 
     !----------------------------------------------------------------------------
-    ! Check for required dimensions
+    ! Check for required attributes
     !----------------------------------------------------------------------------
-    status = nf90_inq_dimid(ncid = ncid, name = trim(name_dim_x), dimid = dimid_x)
-    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the dimension ''',trim(name_dim_x),''''; stop ":  ERROR EXIT"; end if
-    status = nf90_inq_dimid(ncid = ncid, name = trim(name_dim_y), dimid = dimid_y)
-    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the dimension ''',trim(name_dim_y),''''; stop ":  ERROR EXIT"; end if
     
+    ! dx
+    iname = trim(name_att_dx)
+    att_num_dx = integerMissing
+    att_len_dx = integerMissing
+    status = nf90_inquire_attribute(ncid = ncid, varid = NF90_GLOBAL, name = iname, len = att_len_dx, attnum = att_num_dx)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to find global attribute ''',trim(iname),''' in ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
+    if (att_len_dx .ne. 1) then; write(*,*) 'ERROR global attribute ''',trim(iname),''' in ''',trim(filename),''' must have length 1 but is length: ',att_len_dx;stop ":  ERROR EXIT"; end if
+    status = nf90_get_att(ncid = ncid, varid = NF90_GLOBAL, name = iname, values = dx)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to read global attribute ''',trim(iname),''' in ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
+
+    ! dy
+    iname = trim(name_att_dy)
+    att_num_dy = integerMissing
+    att_len_dy = integerMissing
+    status = nf90_inquire_attribute(ncid = ncid, varid = NF90_GLOBAL, name = iname, len = att_len_dy, attnum = att_num_dy)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to find global attribute ''',trim(iname),''' in ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
+    if (att_len_dx .ne. 1) then; write(*,*) 'ERROR global attribute ''',trim(iname),''' in ''',trim(filename),''' must have length 1 but is length: ',att_len_dy;stop ":  ERROR EXIT"; end if
+    status = nf90_get_att(ncid = ncid, varid = NF90_GLOBAL, name = iname, values = dy)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to read global attribute ''',trim(iname),''' in ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
+
     !----------------------------------------------------------------------------
-    ! Check for required variables
+    ! Check for required variables + set variable ids
     !----------------------------------------------------------------------------
-    status = nf90_inq_varid(ncid = ncid, name = trim(name_var_x), varid = varid_x)
-    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(name_var_x),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_inq_varid(ncid = ncid, name = trim(name_var_y), varid = varid_y)
-    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(name_var_y),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_inq_varid(ncid = ncid, name = trim(name_var_vegtyp), varid = varid_vegtyp)
-    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(name_var_vegtyp),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_inq_varid(ncid = ncid, name = trim(name_var_isltyp), varid = varid_isltyp)
-    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(name_var_isltyp),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_inq_varid(ncid = ncid, name = trim(name_var_soilcolor), varid = varid_soilcolor)
-    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(name_var_soilcolor),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_inq_varid(ncid = ncid, name = trim(name_var_slope), varid = varid_slope)
-    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(name_var_slope),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_inq_varid(ncid = ncid, name = trim(name_var_azimuth), varid = varid_azimuth)
-    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(name_var_azimuth),'''';  stop ":  ERROR EXIT"; end if
-    status = nf90_inq_varid(ncid = ncid, name = trim(name_var_mask), varid = varid_mask)
-    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(name_var_mask),'''';  stop ":  ERROR EXIT"; end if
+    
+    ! vegtyp
+    iname = this%vegtyp%name
+    this%vegtyp%varid = integerMissing
+    status = nf90_inq_varid(ncid = ncid, name = trim(iname), varid = this%vegtyp%varid)
+    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(iname),'''';  stop ":  ERROR EXIT"; end if
+    if (this%vegtyp%varid .eq. integerMissing) then; write(*,*) 'Problem finding variable ''',trim(iname),''' in the file ''',trim(filename),'''';  stop ":  ERROR EXIT"; end if
+
+    ! isltyp
+    iname = this%isltyp%name
+    this%isltyp%varid = integerMissing
+    status = nf90_inq_varid(ncid = ncid, name = trim(iname), varid = this%isltyp%varid)
+    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(iname),'''';  stop ":  ERROR EXIT"; end if
+    if (this%isltyp%varid .eq. integerMissing) then; write(*,*) 'Problem finding variable ''',trim(iname),''' in the file ''',trim(filename),'''';  stop ":  ERROR EXIT"; end if
+
+    ! soil color
+    iname = this%soilcolor%name
+    this%soilcolor%varid = integerMissing
+    status = nf90_inq_varid(ncid = ncid, name = trim(iname), varid = this%soilcolor%varid)
+    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(iname),'''';  stop ":  ERROR EXIT"; end if
+    if (this%soilcolor%varid .eq. integerMissing) then; write(*,*) 'Problem finding variable ''',trim(iname),''' in the file ''',trim(filename),'''';  stop ":  ERROR EXIT"; end if
+
+    ! slope
+    iname = this%slope%name
+    this%slope%varid = integerMissing
+    status = nf90_inq_varid(ncid = ncid, name = trim(iname), varid = this%slope%varid)
+    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(iname),'''';  stop ":  ERROR EXIT"; end if
+    if (this%slope%varid .eq. integerMissing) then; write(*,*) 'Problem finding variable ''',trim(iname),''' in the file ''',trim(filename),'''';  stop ":  ERROR EXIT"; end if
+
+    ! azimuth
+    iname = this%azimuth%name
+    this%azimuth%varid = integerMissing
+    status = nf90_inq_varid(ncid = ncid, name = trim(iname), varid = this%azimuth%varid)
+    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(iname),'''';  stop ":  ERROR EXIT"; end if
+    if (this%azimuth%varid .eq. integerMissing) then; write(*,*) 'Problem finding variable ''',trim(iname),''' in the file ''',trim(filename),'''';  stop ":  ERROR EXIT"; end if
+
+    ! mask
+    iname = this%mask%name
+    this%mask%varid = integerMissing
+    status = nf90_inq_varid(ncid = ncid, name = trim(iname), varid = this%mask%varid)
+    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(iname),'''';  stop ":  ERROR EXIT"; end if
+    if (this%mask%varid .eq. integerMissing) then; write(*,*) 'Problem finding variable ''',trim(iname),''' in the file ''',trim(filename),'''';  stop ":  ERROR EXIT"; end if
+
+    ! lon
+    iname = this%lon%name
+    this%lon%varid = integerMissing
+    status = nf90_inq_varid(ncid = ncid, name = trim(iname), varid = this%lon%varid)
+    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(iname),'''';  stop ":  ERROR EXIT"; end if
+    if (this%lon%varid .eq. integerMissing) then; write(*,*) 'Problem finding variable ''',trim(iname),''' in the file ''',trim(filename),'''';  stop ":  ERROR EXIT"; end if
+
+    ! lat
+    iname = this%lat%name
+    this%lat%varid = integerMissing
+    status = nf90_inq_varid(ncid = ncid, name = trim(iname), varid = this%lat%varid)
+    if (status .ne. nf90_noerr) then; write(*,*) 'The file ''',trim(filename),''' must have have the variable ''',trim(iname),'''';  stop ":  ERROR EXIT"; end if
+    if (this%lat%varid .eq. integerMissing) then; write(*,*) 'Problem finding variable ''',trim(iname),''' in the file ''',trim(filename),'''';  stop ":  ERROR EXIT"; end if
 
     !----------------------------------------------------------------------------
     ! Check that required variables have required number of dimensions
     !----------------------------------------------------------------------------
-    ndims = -1
-    status = nf90_inquire_variable(ncid = ncid, varid = varid_x, ndims = ndims)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get the number of dimensions for variable ''',trim(name_var_x),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    if (ndims  .ne. 1)          then; write(*,*) 'The variable ''',trim(name_var_x),''' in the file ''',trim(filename),''' must have 1 dimensions but has ',ndims;  stop ":  ERROR EXIT"; end if
-    ndims = -1
-    status = nf90_inquire_variable(ncid = ncid, varid = varid_y, ndims = ndims)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get the number of dimensions for variable ''',trim(name_var_y),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    if (ndims  .ne. 1)          then; write(*,*) 'The variable ''',trim(name_var_y),''' in the file ''',trim(filename),''' must have 1 dimensions but has ',ndims;  stop ":  ERROR EXIT"; end if
-    ndims = -1
-    status = nf90_inquire_variable(ncid = ncid, varid = varid_vegtyp, ndims = ndims)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get the number of dimensions for variable ''',trim(name_var_vegtyp),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    if (ndims  .ne. 2)          then; write(*,*) 'The variable ''',trim(name_var_vegtyp),''' in the file ''',trim(filename),''' must have 2 dimensions but has ',ndims;  stop ":  ERROR EXIT"; end if
-    ndims = -1
-    status = nf90_inquire_variable(ncid = ncid, varid = varid_isltyp, ndims = ndims)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get the number of dimensions for variable ''',trim(name_var_isltyp),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    if (ndims  .ne. 2)          then; write(*,*) 'The variable ''',trim(name_var_isltyp),''' in the file ''',trim(filename),''' must have 2 dimensions but has ',ndims;  stop ":  ERROR EXIT"; end if
-    ndims = -1
-    status = nf90_inquire_variable(ncid = ncid, varid = varid_soilcolor, ndims = ndims)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get the number of dimensions for variable ''',trim(name_var_soilcolor),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    if (ndims  .ne. 2)          then; write(*,*) 'The variable ''',trim(name_var_soilcolor),''' in the file ''',trim(filename),''' must have 2 dimensions but has ',ndims;  stop ":  ERROR EXIT"; end if
-    ndims = -1
-    status = nf90_inquire_variable(ncid = ncid, varid = varid_slope, ndims = ndims)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get the number of dimensions for variable ''',trim(name_var_slope),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    if (ndims  .ne. 2)          then; write(*,*) 'The variable ''',trim(name_var_slope),''' in the file ''',trim(filename),''' must have 2 dimensions but has ',ndims;  stop ":  ERROR EXIT"; end if
-    ndims = -1
-    status = nf90_inquire_variable(ncid = ncid, varid = varid_azimuth, ndims = ndims)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get the number of dimensions for variable ''',trim(name_var_azimuth),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    if (ndims  .ne. 2)          then; write(*,*) 'The variable ''',trim(name_var_azimuth),''' in the file ''',trim(filename),''' must have 2 dimensions but has ',ndims;  stop ":  ERROR EXIT"; end if
-    ndims = -1
-    status = nf90_inquire_variable(ncid = ncid, varid = varid_mask, ndims = ndims)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get the number of dimensions for variable ''',trim(name_var_mask),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    if (ndims  .ne. 2)          then; write(*,*) 'The variable ''',trim(name_var_mask),''' in the file ''',trim(filename),''' must have 2 dimensions but has ',ndims;  stop ":  ERROR EXIT"; end if
 
+    ! vegtyp
+    iname = this%vegtyp%name
+    ivarid = this%vegtyp%varid
+    ndims = integerMissing
+    status = nf90_inquire_variable(ncid = ncid, varid = ivarid, ndims = ndims)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get the number of dimensions for variable ''',trim(iname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if (ndims  .ne. 2)          then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have 2 dimensions but has ',ndims;  stop ":  ERROR EXIT"; end if
+    
+    ! isltyp
+    iname = this%isltyp%name
+    ivarid = this%isltyp%varid
+    ndims = -1
+    status = nf90_inquire_variable(ncid = ncid, varid = ivarid, ndims = ndims)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get the number of dimensions for variable ''',trim(iname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if (ndims  .ne. 2)          then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have 2 dimensions but has ',ndims;  stop ":  ERROR EXIT"; end if
+    
+    ! soil color
+    iname = this%soilcolor%name
+    ivarid = this%soilcolor%varid
+    ndims = -1
+    status = nf90_inquire_variable(ncid = ncid, varid = ivarid, ndims = ndims)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get the number of dimensions for variable ''',trim(iname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if (ndims  .ne. 2)          then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have 2 dimensions but has ',ndims;  stop ":  ERROR EXIT"; end if
+    
+    ! slope
+    iname = this%slope%name
+    ivarid = this%slope%varid
+    ndims = -1
+    status = nf90_inquire_variable(ncid = ncid, varid = ivarid, ndims = ndims)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get the number of dimensions for variable ''',trim(iname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if (ndims  .ne. 2)          then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have 2 dimensions but has ',ndims;  stop ":  ERROR EXIT"; end if
+    
+    ! azimuth
+    iname = this%azimuth%name
+    ivarid = this%azimuth%varid
+    ndims = -1
+    status = nf90_inquire_variable(ncid = ncid, varid = ivarid, ndims = ndims)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get the number of dimensions for variable ''',trim(iname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if (ndims  .ne. 2)          then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have 2 dimensions but has ',ndims;  stop ":  ERROR EXIT"; end if
+    
+    ! mask
+    iname = this%mask%name
+    ivarid = this%mask%varid
+    ndims = -1
+    status = nf90_inquire_variable(ncid = ncid, varid = ivarid, ndims = ndims)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get the number of dimensions for variable ''',trim(iname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if (ndims  .ne. 2)          then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have 2 dimensions but has ',ndims;  stop ":  ERROR EXIT"; end if
+    
+    ! lon
+    iname = this%lon%name
+    ivarid = this%lon%varid
+    ndims = -1
+    status = nf90_inquire_variable(ncid = ncid, varid = ivarid, ndims = ndims)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get the number of dimensions for variable ''',trim(iname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if (ndims  .ne. 1)          then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have 1 dimensions but has ',ndims;  stop ":  ERROR EXIT"; end if
+    
+    ! lat
+    iname = this%lat%name
+    ivarid = this%lat%varid
+    ndims = -1
+    status = nf90_inquire_variable(ncid = ncid, varid = ivarid, ndims = ndims)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get the number of dimensions for variable ''',trim(iname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if (ndims  .ne. 1)          then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have 1 dimensions but has ',ndims;  stop ":  ERROR EXIT"; end if
 
     !----------------------------------------------------------------------------
     ! Check that required variables have required dimensions
     !----------------------------------------------------------------------------
-    dimids_1d = -1
-    status = nf90_inquire_variable(ncid = ncid, varid = varid_x, dimids = dimids_1d)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get dimension ID numbers for the variable ''',trim(name_var_x),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    if(.NOT.(ANY(dimids_1d == dimid_x))) then; write(*,*) 'The variable ''',trim(name_var_x),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_x),'''';  stop ":  ERROR EXIT"; end if
-    dimids_1d = -1
-    status = nf90_inquire_variable(ncid = ncid, varid = varid_y, dimids = dimids_1d)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get dimension ID numbers for the variable ''',trim(name_var_y),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    if(.NOT.(ANY(dimids_1d == dimid_y))) then; write(*,*) 'The variable ''',trim(name_var_y),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_y),'''';  stop ":  ERROR EXIT"; end if
-    dimids_2d = -1
-    status = nf90_inquire_variable(ncid = ncid, varid = varid_vegtyp, dimids = dimids_2d)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get dimension ID numbers for the variable ''',trim(name_var_vegtyp),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    if(.NOT.(ANY(dimids_2d == dimid_x))) then; write(*,*) 'The variable ''',trim(name_var_vegtyp),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_x),'''';  stop ":  ERROR EXIT"; end if
-    if(.NOT.(ANY(dimids_2d == dimid_y))) then; write(*,*) 'The variable ''',trim(name_var_vegtyp),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_y),'''';  stop ":  ERROR EXIT"; end if
-    dimids_2d = -1
-    status = nf90_inquire_variable(ncid = ncid, varid = varid_isltyp, dimids = dimids_2d)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get dimension ID numbers for the variable ''',trim(name_var_isltyp),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    if(.NOT.(ANY(dimids_2d == dimid_x))) then; write(*,*) 'The variable ''',trim(name_var_isltyp),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_x),'''';  stop ":  ERROR EXIT"; end if
-    if(.NOT.(ANY(dimids_2d == dimid_y))) then; write(*,*) 'The variable ''',trim(name_var_isltyp),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_y),'''';  stop ":  ERROR EXIT"; end if
-    dimids_2d = -1
-    status = nf90_inquire_variable(ncid = ncid, varid = varid_soilcolor, dimids = dimids_2d)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get dimension ID numbers for the variable ''',trim(name_var_soilcolor),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    if(.NOT.(ANY(dimids_2d == dimid_x))) then; write(*,*) 'The variable ''',trim(name_var_soilcolor),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_x),'''';  stop ":  ERROR EXIT"; end if
-    if(.NOT.(ANY(dimids_2d == dimid_y))) then; write(*,*) 'The variable ''',trim(name_var_soilcolor),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_y),'''';  stop ":  ERROR EXIT"; end if
-    dimids_2d = -1
-    status = nf90_inquire_variable(ncid = ncid, varid = varid_slope, dimids = dimids_2d)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get dimension ID numbers for the variable ''',trim(name_var_slope),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    if(.NOT.(ANY(dimids_2d == dimid_x))) then; write(*,*) 'The variable ''',trim(name_var_slope),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_x),'''';  stop ":  ERROR EXIT"; end if
-    if(.NOT.(ANY(dimids_2d == dimid_y))) then; write(*,*) 'The variable ''',trim(name_var_slope),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_y),'''';  stop ":  ERROR EXIT"; end if
-    dimids_2d = -1
-    status = nf90_inquire_variable(ncid = ncid, varid = varid_azimuth, dimids = dimids_2d)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get dimension ID numbers for the variable ''',trim(name_var_azimuth),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    if(.NOT.(ANY(dimids_2d == dimid_x))) then; write(*,*) 'The variable ''',trim(name_var_azimuth),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_x),'''';  stop ":  ERROR EXIT"; end if
-    if(.NOT.(ANY(dimids_2d == dimid_y))) then; write(*,*) 'The variable ''',trim(name_var_azimuth),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_y),'''';  stop ":  ERROR EXIT"; end if
-    dimids_2d = -1
-    status = nf90_inquire_variable(ncid = ncid, varid = varid_mask, dimids = dimids_2d)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get dimension ID numbers for the variable ''',trim(name_var_mask),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-    if(.NOT.(ANY(dimids_2d == dimid_x))) then; write(*,*) 'The variable ''',trim(name_var_mask),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_x),'''';  stop ":  ERROR EXIT"; end if
-    if(.NOT.(ANY(dimids_2d == dimid_y))) then; write(*,*) 'The variable ''',trim(name_var_mask),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_y),'''';  stop ":  ERROR EXIT"; end if
+
+    ! vegtyp
+    iname = this%vegtyp%name
+    ivarid = this%vegtyp%varid
+    this%vegtyp%dimids = integerMissing
+    status = nf90_inquire_variable(ncid = ncid, varid = ivarid, dimids = this%vegtyp%dimids)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get dimension ID numbers for the variable ''',trim(iname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if(this%vegtyp%dimids(1).ne.dimid_x) then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_x),'''';  stop ":  ERROR EXIT"; end if
+    if(this%vegtyp%dimids(2).ne.dimid_y) then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_y),'''';  stop ":  ERROR EXIT"; end if
+    this%vegtyp%dimlen(1) = n_x
+    this%vegtyp%dimlen(2) = n_y
+
+    ! isltyp
+    iname = this%isltyp%name
+    ivarid = this%isltyp%varid
+    this%isltyp%dimids = integerMissing
+    status = nf90_inquire_variable(ncid = ncid, varid = ivarid, dimids = this%isltyp%dimids)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get dimension ID numbers for the variable ''',trim(iname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if(this%isltyp%dimids(1).ne.dimid_x) then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_x),'''';  stop ":  ERROR EXIT"; end if
+    if(this%isltyp%dimids(2).ne.dimid_y) then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_y),'''';  stop ":  ERROR EXIT"; end if
+    this%isltyp%dimlen(1) = n_x
+    this%isltyp%dimlen(2) = n_y
+
+    ! soil color
+    iname = this%soilcolor%name
+    ivarid = this%soilcolor%varid
+    this%soilcolor%dimids = integerMissing
+    status = nf90_inquire_variable(ncid = ncid, varid = ivarid, dimids = this%soilcolor%dimids)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get dimension ID numbers for the variable ''',trim(iname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if (this%soilcolor%dimids(1).ne.dimid_x) then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_x),'''';  stop ":  ERROR EXIT"; end if
+    if (this%soilcolor%dimids(2).ne.dimid_y) then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_y),'''';  stop ":  ERROR EXIT"; end if
+    this%soilcolor%dimlen(1) = n_x
+    this%soilcolor%dimlen(2) = n_y
+
+    ! slope
+    iname = this%slope%name
+    ivarid = this%slope%varid
+    this%slope%dimids = integerMissing
+    status = nf90_inquire_variable(ncid = ncid, varid = ivarid, dimids = this%slope%dimids)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get dimension ID numbers for the variable ''',trim(iname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if (this%slope%dimids(1).ne.dimid_x) then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_x),'''';  stop ":  ERROR EXIT"; end if
+    if (this%slope%dimids(2).ne.dimid_y) then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_y),'''';  stop ":  ERROR EXIT"; end if
+    this%slope%dimlen(1) = n_x
+    this%slope%dimlen(2) = n_y
+
+    ! azimuth
+    iname = this%azimuth%name
+    ivarid = this%azimuth%varid
+    this%azimuth%dimids = integerMissing
+    status = nf90_inquire_variable(ncid = ncid, varid = ivarid, dimids = this%azimuth%dimids)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get dimension ID numbers for the variable ''',trim(iname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if (this%azimuth%dimids(1).ne.dimid_x) then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_x),'''';  stop ":  ERROR EXIT"; end if
+    if (this%azimuth%dimids(2).ne.dimid_y) then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_y),'''';  stop ":  ERROR EXIT"; end if
+    this%azimuth%dimlen(1) = n_x
+    this%azimuth%dimlen(2) = n_y
+
+    ! mask
+    iname = this%mask%name
+    ivarid = this%mask%varid
+    this%mask%dimids = integerMissing
+    status = nf90_inquire_variable(ncid = ncid, varid = ivarid, dimids = this%mask%dimids)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get dimension ID numbers for the variable ''',trim(iname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if (this%mask%dimids(1).ne.dimid_x) then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_x),'''';  stop ":  ERROR EXIT"; end if
+    if (this%mask%dimids(2).ne.dimid_y) then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_y),'''';  stop ":  ERROR EXIT"; end if
+    this%mask%dimlen(1) = n_x
+    this%mask%dimlen(2) = n_y
+
+    ! lon
+    iname = this%lon%name
+    ivarid = this%lon%varid
+    this%lon%dimids = integerMissing
+    status = nf90_inquire_variable(ncid = ncid, varid = ivarid, dimids = this%lon%dimids)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get dimension ID numbers for the variable ''',trim(iname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if (this%lon%dimids(1).ne.dimid_x) then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_x),'''';  stop ":  ERROR EXIT"; end if
+    this%lon%dimlen(1) = n_x
+
+    ! lat
+    iname = this%lat%name
+    ivarid = this%lat%varid
+    this%lat%dimids = integerMissing
+    status = nf90_inquire_variable(ncid = ncid, varid = ivarid, dimids = this%lat%dimids)
+    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to get dimension ID numbers for the variable ''',trim(iname),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+    if (this%lat%dimids(1).ne.dimid_y) then; write(*,*) 'The variable ''',trim(iname),''' in the file ''',trim(filename),''' must have the dimension ''',trim(name_dim_y),'''';  stop ":  ERROR EXIT"; end if
+    this%lat%dimlen(1) = n_y
 
     end associate
 
   end subroutine
-
-  subroutine ReadSpatial(this)
-
-    class(attributes_type),intent(inout) :: this
-    integer                              :: status
-
-    associate(ncid           => this%ncid,                     &
-              name_dim_x     => this%metadata%name_dim_x,      & 
-              name_dim_y     => this%metadata%name_dim_y,      & 
-              name_var_x     => this%metadata%name_var_x,      &
-              name_var_y     => this%metadata%name_var_y,      &
-              dimid_x        => this%metadata%dimid_x,         & 
-              dimid_y        => this%metadata%dimid_y,         & 
-              varid_x        => this%metadata%varid_x,         & 
-              varid_y        => this%metadata%varid_y,         &
-              dx             => this%metadata%dx,              &
-              dy             => this%metadata%dy,              &
-              n_x            => this%metadata%n_x,             &
-              n_y            => this%metadata%n_y,             &
-              filename       => this%filename,                 &
-              integerMissing => this%metadata%integerMissing,  &
-              realMissing    => this%metadata%realMissing)
-
-    !----------------------------------------------------------------------------
-    ! Initialize to missing values
-    !----------------------------------------------------------------------------
-    n_x = integerMissing
-    n_y = integerMissing
-    dx  = realMissing
-    dy  = realMissing
-
-    !----------------------------------------------------------------------------
-    ! Read n_x and n_y
-    !----------------------------------------------------------------------------
-    status = nf90_inquire_dimension(ncid = ncid, dimid = dimid_x, len=n_x)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to read length of dimension ''',trim(name_dim_x),''' in ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
-    if (n_x .eq. integerMissing) then; write(*,*) 'Problem reading length of dimension ''',trim(name_dim_x),''' in ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
-    status = nf90_inquire_dimension(ncid = ncid, dimid = dimid_y, len=n_y)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to read length of dimension ''',trim(name_dim_y),''' in ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
-    if (n_y .eq. integerMissing) then; write(*,*) 'Problem reading length of dimension ''',trim(name_dim_y),''' in ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
-
-    !----------------------------------------------------------------------------
-    ! Allocate local arrays and set to missing values
-    !----------------------------------------------------------------------------
-    allocate(this%lon(n_x))
-    allocate(this%lat(n_y))
-    this%lon(:) = realMissing
-    this%lat(:) = realMissing
-
-    !----------------------------------------------------------------------------
-    ! Read latitude and longitude values
-    !----------------------------------------------------------------------------
-    status = nf90_get_var(ncid = ncid, varid = varid_x, values = this%lon)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to read variable ''',trim(name_var_x),''' from ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
-    if(this%lon(1) .eq. realMissing) then; write(*,*) 'Problem reading variable ''',trim(name_var_x),''' from ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
-    status = nf90_get_var(ncid = ncid, varid = varid_y, values = this%lat)
-    if (status .ne. nf90_noerr) then; write(*,*) 'Unable to read variable ''',trim(name_var_y),''' from ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
-    if(this%lat(1) .eq. realMissing) then; write(*,*) 'Problem reading variable ''',trim(name_var_y),''' from ''',trim(filename),'''';stop ":  ERROR EXIT"; end if
-
-    !----------------------------------------------------------------------------
-    ! Get dx and dy (i.e., the grid spacing from lat and lon arrays)
-    ! Assume uniform rectilinear grid
-    !----------------------------------------------------------------------------
-    if(size(this%lon,1).gt.1) then
-      if(abs(this%lon(1)) > abs(this%lon(2))) then
-        dx = abs(this%lon(1))-abs(this%lon(2)) ! western hemisphere
-      else if (abs(this%lon(1)) < abs(this%lon(2))) then
-        dx = abs(this%lon(2))-abs(this%lon(1)) ! eastern hemisphere
-      else
-        write(*,*) 'ERROR domain grid dx is 0 but grid n_x > 1. Check values for ''',trim(name_var_x),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"
-      end if
-    else
-      dx = 0.
-    end if
-    if(size(this%lat,1).gt.1) then
-      if(abs(this%lat(1)) > abs(this%lat(2))) then
-        dy = abs(this%lat(1))-abs(this%lat(2)) ! northern hemisphere
-      else if (abs(this%lat(1)) < abs(this%lat(2))) then
-        dy = abs(this%lat(2))-abs(this%lat(1)) ! southern hemisphere
-      else
-        write(*,*) 'ERROR domain grid dy is 0 but grid n_y > 1. Check values for ''',trim(name_var_y),''' in ''',trim(filename),''''; stop ":  ERROR EXIT"
-      end if
-    else
-      dy = 0.
-    end if
-
-    end associate
-
-  end subroutine ReadSpatial
 
   subroutine ReadVars(this)
 
     class(attributes_type), intent(inout) :: this
     integer                               :: status
 
-    !----------------------------------------------------------------------------
-    ! Name the variables
-    !----------------------------------------------------------------------------
-    this%vegtyp%name     = this%metadata%name_var_vegtyp
-    this%isltyp%name     = this%metadata%name_var_isltyp 
-    this%soilcolor%name  = this%metadata%name_var_soilcolor
-    this%slope%name      = this%metadata%name_var_slope 
-    this%azimuth%name    = this%metadata%name_var_azimuth    
-    this%mask%name       = this%metadata%name_var_mask 
-
-    !----------------------------------------------------------------------------
-    ! Set variable id numbers
-    !----------------------------------------------------------------------------
-    this%vegtyp%varid    = this%metadata%varid_vegtyp
-    this%isltyp%varid    = this%metadata%varid_isltyp
-    this%soilcolor%varid = this%metadata%varid_soilcolor
-    this%slope%varid     = this%metadata%varid_slope   
-    this%azimuth%varid   = this%metadata%varid_azimuth 
-    this%mask%varid      = this%metadata%varid_mask      
-
-    !----------------------------------------------------------------------------
-    ! Read variables
-    !----------------------------------------------------------------------------
-    call this%ReadVar2D(this%vegtyp)
-    call this%ReadVar2D(this%isltyp)
-    call this%ReadVar2D(this%soilcolor)
-    call this%ReadVar2D(this%slope)
-    call this%ReadVar2D(this%azimuth)
-    call this%ReadVar2D(this%mask)
+    call this%ReadVar(this%lat)
+    call this%ReadVar(this%lon)
+    call this%ReadVar(this%vegtyp)
+    call this%ReadVar(this%isltyp)
+    call this%ReadVar(this%soilcolor)
+    call this%ReadVar(this%slope)
+    call this%ReadVar(this%azimuth)
+    call this%ReadVar(this%mask)
 
   end subroutine
 
-  subroutine ReadVar2D(this,attributes_2d)
+  subroutine ReadVar(this,attributes_var)
 
-    class(attributes_type),      intent(in)  :: this
-    class(attributes_2d_type), intent(inout) :: attributes_2d    
-    integer                                  :: status
+    class(attributes_type),      intent(in)   :: this
+    class(attributes_var_type), intent(inout) :: attributes_var   
+    integer                                   :: status
   
-    associate(ncid           => this%ncid,                      & 
-              n_x            => this%metadata%n_x,              &
-              n_y            => this%metadata%n_y,              &
-              varname        => attributes_2d%name,              &
-              varid          => attributes_2d%varid,             &
-              filename       => this%filename,                  &
+    associate(ncid           => this%metadata%ncid,             & 
+              varname        => attributes_var%name,            &
+              varid          => attributes_var%varid,           &
+              filename       => this%metadata%filename,         &
               integerMissing => this%metadata%integerMissing,   &
               realMissing    => this%metadata%realMissing)
 
     !----------------------------------------------------------------------------
     ! Allocate array to be populated and set to missing value
     !----------------------------------------------------------------------------
-    select type (attributes_2d)
-    type is (attributes_2dint_type)
-      if(allocated(attributes_2d%data)) deallocate(attributes_2d%data)    
-      allocate(attributes_2d%data(n_x,n_y))
-      attributes_2d%data(:,:) = integerMissing
-    type is (attributes_2dreal_type)
-      if(allocated(attributes_2d%data)) deallocate(attributes_2d%data)
-      allocate(attributes_2d%data(n_x,n_y))
-      attributes_2d%data(:,:) = realMissing
+    select type (attributes_var)
+    type is (attributes_var_1dreal_type)
+      if(allocated(attributes_var%data)) deallocate(attributes_var%data)    
+      allocate(attributes_var%data(attributes_var%dimlen(1)))
+      attributes_var%data(:) = realMissing
+    type is (attributes_var_2dint_type)
+      if(allocated(attributes_var%data)) deallocate(attributes_var%data)    
+      allocate(attributes_var%data(attributes_var%dimlen(1),attributes_var%dimlen(2)))
+      attributes_var%data(:,:) = integerMissing
+    type is (attributes_var_2dreal_type)
+      if(allocated(attributes_var%data)) deallocate(attributes_var%data)
+      allocate(attributes_var%data(attributes_var%dimlen(1),attributes_var%dimlen(2)))
+      attributes_var%data(:,:) = realMissing
     class default 
       write(*,*) 'ERROR : problem reading ''',trim(varname),''' from ''',trim(filename),''' -- attempted to allocate unrecognized data type'; stop
     end select
@@ -442,22 +449,26 @@ module AttributesType
     !----------------------------------------------------------------------------
     ! Read and check for missing values
     !----------------------------------------------------------------------------
-    select type (attributes_2d)
-    type is (attributes_2dint_type)
-      status = nf90_get_var(ncid = ncid,varid = varid, values = attributes_2d%data)
+    select type (attributes_var)
+    type is (attributes_var_1dreal_type)
+      status = nf90_get_var(ncid = ncid,varid = varid, values = attributes_var%data)
       if (status /= nf90_noerr) then; write(*,*) 'Unable to read variable ''',trim(varname),''' from ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-      if(attributes_2d%data(1,1) == integerMissing) then; write(*,*) 'ERROR : problem reading ''',trim(varname),''' from ''',trim(filename),''''; stop; end if
-    type is (attributes_2dreal_type)
-      status = nf90_get_var(ncid = ncid,varid = varid, values = attributes_2d%data)
+      if(attributes_var%data(1) == realMissing) then; write(*,*) 'ERROR : problem reading ''',trim(varname),''' from ''',trim(filename),''''; stop; end if
+    type is (attributes_var_2dint_type)
+      status = nf90_get_var(ncid = ncid,varid = varid, values = attributes_var%data)
       if (status /= nf90_noerr) then; write(*,*) 'Unable to read variable ''',trim(varname),''' from ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
-      if(attributes_2d%data(1,1) == realMissing) then; write(*,*) 'ERROR : problem reading ''',trim(varname),''' from ''',trim(filename),''''; stop; end if
+      if(attributes_var%data(1,1) == integerMissing) then; write(*,*) 'ERROR : problem reading ''',trim(varname),''' from ''',trim(filename),''''; stop; end if
+    type is (attributes_var_2dreal_type)
+      status = nf90_get_var(ncid = ncid,varid = varid, values = attributes_var%data)
+      if (status /= nf90_noerr) then; write(*,*) 'Unable to read variable ''',trim(varname),''' from ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
+      if(attributes_var%data(1,1) == realMissing) then; write(*,*) 'ERROR : problem reading ''',trim(varname),''' from ''',trim(filename),''''; stop; end if
     class default 
       write(*,*) 'ERROR : problem reading ''',trim(varname),''' from ''',trim(filename),''' -- attempted to read unrecognized data type'; stop
     end select
   
     end associate
   
-  end subroutine ReadVar2D
+  end subroutine ReadVar
 
   subroutine OpenNetcdf(this)
 
@@ -465,8 +476,8 @@ module AttributesType
     logical                               :: lexist
     integer                               :: status
 
-    associate(filename => this%filename, &
-              ncid     => this%ncid)
+    associate(filename => this%metadata%filename, &
+              ncid     => this%metadata%ncid)
 
     inquire(file = trim(filename), exist = lexist)
     if (.not. lexist) then; write(*,*) 'ERROR Could not find ''',trim(filename),''''; stop ":  ERROR EXIT"; endif
@@ -482,8 +493,8 @@ module AttributesType
     class(attributes_type), intent(inout) :: this
     integer                               :: status
 
-    associate(filename => this%filename, &
-              ncid     => this%ncid)
+    associate(filename => this%metadata%filename, &
+              ncid     => this%metadata%ncid)
 
     status = nf90_close(ncid = ncid)
     if (status /= nf90_noerr) then; write(*,*) 'Unable to close ''',trim(filename),''''; stop ":  ERROR EXIT"; end if
@@ -500,19 +511,21 @@ module AttributesType
     !----------------------------------------------------------------------------
     ! Transfer values from namelist
     !----------------------------------------------------------------------------
-    this%filename                    = namelist%attributes_filename
-    this%metadata%name_var_vegtyp    = namelist%name_var_vegtyp                          
-    this%metadata%name_var_isltyp    = namelist%name_var_isltyp
-    this%metadata%name_var_soilcolor = namelist%name_var_soilcolor
-    this%metadata%name_var_slope     = namelist%name_var_slope
-    this%metadata%name_var_azimuth   = namelist%name_var_azimuth
-    this%metadata%name_var_mask      = namelist%name_var_mask       
-    this%metadata%name_dim_x         = namelist%name_dim_x
-    this%metadata%name_dim_y         = namelist%name_dim_y
-    this%metadata%name_var_x         = namelist%name_var_x
-    this%metadata%name_var_y         = namelist%name_var_y
-    this%metadata%integerMissing     = namelist%integerMissing
-    this%metadata%realMissing        = namelist%realMissing
+    this%metadata%filename       = namelist%attributes_filename
+    this%lon%name                = namelist%name_var_lon
+    this%lat%name                = namelist%name_var_lat
+    this%vegtyp%name             = namelist%name_var_vegtyp                          
+    this%isltyp%name             = namelist%name_var_isltyp
+    this%soilcolor%name          = namelist%name_var_soilcolor
+    this%slope%name              = namelist%name_var_slope
+    this%azimuth%name            = namelist%name_var_azimuth
+    this%mask%name               = namelist%name_var_mask       
+    this%metadata%name_dim_x     = namelist%name_dim_x
+    this%metadata%name_dim_y     = namelist%name_dim_y
+    this%metadata%name_att_dx    = namelist%name_att_dx
+    this%metadata%name_att_dy    = namelist%name_att_dy
+    this%metadata%integerMissing = namelist%integerMissing
+    this%metadata%realMissing    = namelist%realMissing
 
   end subroutine
 

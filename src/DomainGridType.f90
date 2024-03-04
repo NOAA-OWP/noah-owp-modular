@@ -136,8 +136,8 @@ module DomainGridType
       this%n_y                  = attributes%metadata%n_y
       this%startdate            = namelist%startdate
       this%enddate              = namelist%enddate
-      this%lat(:,:)             = spread(source=attributes%lat(:),dim=1,ncopies=attributes%metadata%n_x)
-      this%lon(:,:)             = spread(source=attributes%lon(:),dim=2,ncopies=attributes%metadata%n_y)
+      this%lat(:,:)             = spread(source=attributes%lat%data(:),dim=1,ncopies=attributes%metadata%n_x)
+      this%lon(:,:)             = spread(source=attributes%lon%data(:),dim=2,ncopies=attributes%metadata%n_y)
       this%terrain_slope(:,:)   = attributes%slope%data(:,:)
       this%azimuth(:,:)         = attributes%azimuth%data(:,:)
       this%mask(:,:)            = attributes%mask%data(:,:)

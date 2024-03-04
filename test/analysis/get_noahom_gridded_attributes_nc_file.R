@@ -1,8 +1,8 @@
 suppressPackageStartupMessages({
-library(hydrofabric)
-library(terra)
-library(aws.s3)
-library(ncdf4)
+  library(hydrofabric)
+  library(terra)
+  library(aws.s3)
+  library(ncdf4)
 })
 
 # Set input and output names from script arguments
@@ -55,19 +55,21 @@ rasts$mask <- as.int(rasts$mask)
 rasts$soilcolor <- as.int(rasts$soilcolor)
 
 # Define NetCDF dimensions
-dim_x <- ncdim_def(name='longitude',units='degrees',longname='longitude',vals=xs)
-dim_y <- ncdim_def(name='latitude',units='degrees',longname='latitute',vals=ys)
+dim_x <- ncdim_def(name='x',units='',vals=seq(1, length(xs), by=1))
+dim_y <- ncdim_def(name='y',units='',vals=seq(1, length(ys), by=1))
 
 # Define NetCDF variables
-var_isltyp <- ncvar_def(name="isltyp",units="",dim=list(dim_x,dim_y),missval=NULL,longname="soil type", prec="integer")
-var_vegtyp <- ncvar_def(name="vegtyp",units="",dim=list(dim_x,dim_y),missval=NULL,longname="vegetation type", prec="integer")
-var_slope <- ncvar_def(name="slope",units="degrees",dim=list(dim_x,dim_y),missval=NA,longname="slope", prec="float")
-var_azimuth <- ncvar_def(name="azimuth",units="degrees",dim=list(dim_x,dim_y),missval=NA,longname="azimuth", prec="float")
-var_mask <- ncvar_def(name="mask",units="",dim=list(dim_x,dim_y),missval=NULL,longname="mask", prec="integer")
-var_soilcolor <- ncvar_def(name="soilcolor",units="",dim=list(dim_x,dim_y),missval=NULL,longname="soil color", prec="integer")
+var_isltyp <- ncvar_def(name="isltyp",units="",dim=list(dim_x,dim_y),missval=NULL, prec="integer")
+var_vegtyp <- ncvar_def(name="vegtyp",units="",dim=list(dim_x,dim_y),missval=NULL, prec="integer")
+var_slope <- ncvar_def(name="slope",units="degrees",dim=list(dim_x,dim_y),missval=NA, prec="float")
+var_azimuth <- ncvar_def(name="azimuth",units="degrees",dim=list(dim_x,dim_y),missval=NA, prec="float")
+var_mask <- ncvar_def(name="mask",units="",dim=list(dim_x,dim_y),missval=NULL, prec="integer")
+var_soilcolor <- ncvar_def(name="soilcolor",units="",dim=list(dim_x,dim_y),missval=NULL, prec="integer")
+var_lat <- ncvar_def(name="latitude",units="degrees",dim=list(dim_y),missval=NULL, prec="float")
+var_lon <- ncvar_def(name="longitude",units="degrees",dim=list(dim_x),missval=NULL, prec="float")
 
 # Create NetCDF file
-vars_all <- list(var_isltyp,var_vegtyp,var_slope,var_azimuth,var_mask,var_soilcolor)
+vars_all <- list(var_isltyp,var_vegtyp,var_slope,var_azimuth,var_mask,var_soilcolor,var_lon,var_lat)
 nc <- nc_create(output_file_nc, vars_all, force_v4=FALSE, verbose=FALSE)
 
 # Populate NetCDF variables
@@ -77,6 +79,12 @@ ncvar_put(nc=nc,varid=var_slope,vals=values(rasts$slope))
 ncvar_put(nc=nc,varid=var_azimuth,vals=values(rasts$azimuth))
 ncvar_put(nc=nc,varid=var_mask,vals=values(rasts$mask))
 ncvar_put(nc=nc,varid=var_soilcolor,vals=values(rasts$soilcolor))
+ncvar_put(nc=nc,varid=var_lat,vals=ys)
+ncvar_put(nc=nc,varid=var_lon,vals=xs)
+
+# Create dx and dy attributes
+ncatt_put(nc=nc, varid=0, attname='dx', attval=1000)
+ncatt_put(nc=nc, varid=0, attname='dy', attval=1000)
 
 # Close NetCDF file
 nc_close(nc)

@@ -67,8 +67,11 @@ type, public :: namelist_type
   character(len=256)  :: name_var_mask        ! name of NetCDF variable for model mask
   character(len=256)  :: name_dim_x           ! name of NetCDF 'x' dimension (longitude dimension)
   character(len=256)  :: name_dim_y           ! name of NetCDF 'y' dimension (latitude dimension)
-  character(len=256)  :: name_var_x           ! name of NetCDF 'x' variable (longitude dimension)
-  character(len=256)  :: name_var_y           ! name of NetCDF 'y' varaible (latitude dimension)
+  character(len=256)  :: name_var_lon         ! name of NetCDF 'x' variable (longitude dimension)
+  character(len=256)  :: name_var_lat         ! name of NetCDF 'y' varaible (latitude dimension)
+  character(len=256)  :: name_att_dx          ! name of NetCDF 'dx' global attribute
+  character(len=256)  :: name_att_dy          ! name of NetCDF 'dy' global attribute
+
 
   ! define missing values against which namelist options can be checked
   integer            :: integerMissing
@@ -355,10 +358,12 @@ contains
     this%name_var_slope             = "slope"   
     this%name_var_azimuth           = "azimuth" 
     this%name_var_mask              = "mask"   
-    this%name_dim_x                 = "longitude"
-    this%name_dim_y                 = "latitude" 
-    this%name_var_x                 = this%name_dim_x
-    this%name_var_y                 = this%name_dim_y
+    this%name_dim_x                 = "x"
+    this%name_dim_y                 = "y" 
+    this%name_var_lon               = "longitude"
+    this%name_var_lat               = "latitude" 
+    this%name_att_dx                = "dx"
+    this%name_att_dy                = "dy"
 
   end subroutine ReadNamelist
 
