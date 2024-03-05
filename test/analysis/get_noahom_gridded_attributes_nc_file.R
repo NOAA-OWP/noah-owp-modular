@@ -83,8 +83,8 @@ ncvar_put(nc=nc,varid=var_lat,vals=ys)
 ncvar_put(nc=nc,varid=var_lon,vals=xs)
 
 # Create dx and dy attributes
-ncatt_put(nc=nc, varid=0, attname='dx', attval=1000)
-ncatt_put(nc=nc, varid=0, attname='dy', attval=1000)
+ncatt_put(nc=nc, varid=0, attname='dx', attval=1/110.574)
+ncatt_put(nc=nc, varid=0, attname='dy', attval=1/(111.320*cos(ys[1]*pi/180)))
 
 # Close NetCDF file
 nc_close(nc)
