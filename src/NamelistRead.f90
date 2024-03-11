@@ -63,6 +63,9 @@ type, public :: namelist_type
   character(len=256)  :: name_var_soilcolor   ! name of NetCDF variable for soilcolor
   character(len=256)  :: name_var_slope       ! name of NetCDF variable for slope
   character(len=256)  :: name_var_azimuth     ! name of NetCDF variable for azimuth
+  character(len=256)  :: name_var_mask        ! name of NetCDF variable for model mask
+  character(len=256)  :: name_var_lon         ! name of NetCDF 'x' variable (longitude dimension)
+  character(len=256)  :: name_var_lat         ! name of NetCDF 'y' varaible (latitude dimension)
 
   !-------------------------------!
   !   gridded forcings            !
@@ -78,6 +81,7 @@ type, public :: namelist_type
   character(len=256)  :: name_forcings_swrad    ! name ofdownward shortwave radiation (w/m2) variable in forcings file(s) 
   character(len=256)  :: name_forcings_lwrad    ! name ofdownward longwave radiation (w/m2) variable in forcings file(s)
   character(len=256)  :: name_forcings_Q2       ! name of specific humidity (kg/kg) variable in forcings file(s)
+  character(len=256)  :: name_var_time        ! name of NetCDF 'time' varaible (latitude dimension)
 
   !-------------------------------!
   !   gridded dimensions, etc     !
@@ -85,11 +89,8 @@ type, public :: namelist_type
   character(len=256)  :: name_dim_x           ! name of NetCDF 'x' dimension (longitude dimension)
   character(len=256)  :: name_dim_y           ! name of NetCDF 'y' dimension (latitude dimension)
   character(len=256)  :: name_dim_time        ! name of NetCDF 'time' dimension (latitude dimension)
-  character(len=256)  :: name_var_x           ! name of NetCDF 'x' variable (longitude dimension)
-  character(len=256)  :: name_var_y           ! name of NetCDF 'y' varaible (latitude dimension)
-  character(len=256)  :: name_var_time        ! name of NetCDF 'time' varaible (latitude dimension)
-  character(len=256)  :: name_att_dx          ! name of NetCDF 'x' dimension resolution (spacing)
-  character(len=256)  :: name_att_dy          ! name of NetCDF 'y' dimension resolution (spacing)
+  character(len=256)  :: name_att_dx          ! name of NetCDF 'dx' global attribute
+  character(len=256)  :: name_att_dy          ! name of NetCDF 'dy' global attribute
 
   ! define missing values against which namelist options can be checked
   integer            :: integerMissing
@@ -380,13 +381,19 @@ contains
     this%stringMissing               = stringMissing 
 
     ! hardcode names for gridded dimensions, etc
-    this%name_dim_x                 = "longitude"
-    this%name_dim_y                 = "latitude" 
     this%name_dim_time              = "time"
-    this%name_var_x                 = this%name_dim_x
-    this%name_var_y                 = this%name_dim_y
     this%name_var_time              = this%name_dim_time
     this%name_att_dx                = "dx"     
+    this%name_var_vegtyp            = "vegtyp"     
+    this%name_var_isltyp            = "isltyp"  
+    this%name_var_soilcolor         = "soilcolor" 
+    this%name_var_slope             = "slope"   
+    this%name_var_azimuth           = "azimuth" 
+    this%name_var_mask              = "mask"   
+    this%name_dim_x                 = "x"
+    this%name_dim_y                 = "y" 
+    this%name_var_lon               = "longitude"
+    this%name_var_lat               = "latitude" 
     this%name_att_dy                = "dy"
 
     ! hardcode names for gridded attributes

@@ -886,14 +886,13 @@ contains
 
   ! Get a copy of a real variable's values, flattened.
   function noahowp_get_float(this, name, dest) result (bmi_status)
-   class (bmi_noahowp), intent(in) :: this
-   character (len=*), intent(in) :: name
-   real, intent(inout) :: dest(:)
-   integer :: bmi_status
-   integer :: ix, iy
-   real, allocatable, dimension(:,:) :: temp
-   real    :: mm2m = 0.001       ! unit conversion mm to m     
-   real    :: m2mm = 1000.       ! unit conversion m to mm
+   class (bmi_noahowp), intent(in)    :: this
+   character (len=*), intent(in)      :: name
+   real, intent(inout)                :: dest(:)
+   integer                            :: bmi_status
+   real, allocatable, dimension(:,:)  :: conv
+   real                               :: mm2m = 0.001       ! unit conversion mm to m     
+   real                               :: m2mm = 1000.       ! unit conversion m to mm
 
    associate(domaingrid  => this%model%domaingrid,      &
              forcinggrid => this%model%forcinggrid,     &
@@ -932,13 +931,25 @@ contains
       dest = reshape(watergrid%qinsur,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("ETRAN")
-      dest = reshape(watergrid%etran*domaingrid%DT,[n_x*n_y])
+      if(allocated(conv)) deallocate(conv)
+      allocate(conv(n_x,n_y))
+      conv = 0.
+      where(domaingrid%mask == 1) conv = watergrid%etran*domaingrid%DT
+      dest = reshape(conv,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("QSEVA")
-      dest = reshape(watergrid%qseva*m2mm,[n_x*n_y])
+      if(allocated(conv)) deallocate(conv)
+      allocate(conv(n_x,n_y))
+      conv = 0.
+      where(domaingrid%mask == 1) conv = watergrid%qseva*m2mm
+      dest = reshape(conv,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("EVAPOTRANS")
-      dest = reshape(watergrid%evapotrans*domaingrid%DT*mm2m,[n_x*n_y])
+      if(allocated(conv)) deallocate(conv)
+      allocate(conv(n_x,n_y))
+      conv = 0.
+      where(domaingrid%mask == 1) conv = watergrid%evapotrans*domaingrid%DT*mm2m
+      dest = reshape(conv,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("TG")
       dest = reshape(energygrid%tg,[n_x*n_y])
@@ -971,7 +982,11 @@ contains
       dest = reshape(watergrid%QSNOW,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("ECAN")
-      dest = reshape(watergrid%ECAN(:,:)*domaingrid%DT,[n_x*n_y])
+      if(allocated(conv)) deallocate(conv)
+      allocate(conv(n_x,n_y))
+      conv = 0.
+      where(domaingrid%mask == 1) conv = watergrid%ECAN*domaingrid%DT
+      dest = reshape(conv,[n_x*n_y])
       bmi_status = BMI_SUCCESS
    case("GH")
       dest = reshape(energygrid%GH(:,:),[n_x*n_y])
@@ -1152,11 +1167,12 @@ contains
   ! Set new real values.
   function noahowp_set_float(this, name, src) result (bmi_status)
    class (bmi_noahowp), intent(inout) :: this
-   character (len=*), intent(in) :: name
-   real, intent(in) :: src(:)
-   integer :: bmi_status
-   real    :: mm2m = 0.001       ! unit conversion mm to m     
-   real    :: m2mm = 1000.       ! unit conversion m to mm
+   character (len=*), intent(in)      :: name
+   real, intent(in)                   :: src(:)
+   integer                            :: bmi_status
+   real, allocatable, dimension(:,:)  :: conv
+   real                               :: mm2m = 0.001       ! unit conversion mm to m     
+   real                               :: m2mm = 1000.       ! unit conversion m to mm
 
    associate(domaingrid  => this%model%domaingrid,   &
              forcinggrid => this%model%forcinggrid,  &
@@ -1194,13 +1210,25 @@ contains
       watergrid%qinsur = reshape(src,[n_x,n_y])
       bmi_status = BMI_SUCCESS
    case("ETRAN")
-      watergrid%etran = reshape(src/domaingrid%DT,[n_x,n_y])
+      if(allocated(conv)) deallocate(conv)
+      allocate(conv(n_x,n_y))
+      conv = reshape(src,[n_x,n_y])
+      where(domaingrid%mask == 1) conv = conv/domaingrid%DT
+      watergrid%etran = conv
       bmi_status = BMI_SUCCESS
    case("QSEVA")
-      watergrid%qseva = reshape(src*mm2m,[n_x,n_y])
+      if(allocated(conv)) deallocate(conv)
+      allocate(conv(n_x,n_y))
+      conv = reshape(src,[n_x,n_y])
+      where(domaingrid%mask == 1) conv = conv*mm2m
+      watergrid%qseva = conv
       bmi_status = BMI_SUCCESS
    case("EVAPOTRANS")
-      watergrid%evapotrans = reshape(src*m2mm/domaingrid%DT,[n_x,n_y])
+      if(allocated(conv)) deallocate(conv)
+      allocate(conv(n_x,n_y))
+      conv = reshape(src,[n_x,n_y])
+      where(domaingrid%mask == 1) conv = conv*m2mm/domaingrid%DT
+      watergrid%evapotrans = conv
       bmi_status = BMI_SUCCESS
    case("TG")
       energygrid%tg = reshape(src,[n_x,n_y])

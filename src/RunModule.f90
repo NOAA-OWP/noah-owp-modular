@@ -356,32 +356,39 @@ call forcinggrid%ReadForcings(domaingrid%start_datetime/60.,domaingrid%startdate
       do iy = 1, noahowpgrid%domaingrid%n_y
 
         !---------------------------------------------------------------------
-        ! Transfer all other variable values from noahowpgrid_type to noahowp_type
+        ! If (x,y) is within the model domain
         !---------------------------------------------------------------------
-        call domain%TransferIn       (domaingrid,     ix, iy)
-        call levels%TransferIn       (levelsgrid,     ix, iy)
-        call energy%TransferIn       (energygrid,     ix, iy)
-        call forcing%TransferIn      (forcinggrid,    ix, iy)
-        call options%TransferIn      (optionsgrid,    ix, iy)
-        call parameters%TransferIn   (parametersgrid, ix, iy)
-        call water%TransferIn        (watergrid,      ix, iy)
+        if(domaingrid%mask(ix,iy) == 1) then
+
+          !---------------------------------------------------------------------
+          ! Transfer all other variable values from noahowpgrid_type to noahowp_type
+          !---------------------------------------------------------------------
+          call domain%TransferIn       (domaingrid,     ix, iy)
+          call levels%TransferIn       (levelsgrid,     ix, iy)
+          call energy%TransferIn       (energygrid,     ix, iy)
+          call forcing%TransferIn      (forcinggrid,    ix, iy)
+          call options%TransferIn      (optionsgrid,    ix, iy)
+          call parameters%TransferIn   (parametersgrid, ix, iy)
+          call water%TransferIn        (watergrid,      ix, iy)
+          
+          !---------------------------------------------------------------------
+          ! Execute the column model
+          !---------------------------------------------------------------------
+          call solve_noahowp           (noahowp)
+
+          !---------------------------------------------------------------------
+          ! Transfer variable values from noahowp_type back to noahowpgrid_type
+          !---------------------------------------------------------------------
+          call domain%TransferOut      (domaingrid,     ix, iy)
+          call levels%TransferOut      (levelsgrid,     ix, iy)
+          call energy%TransferOut      (energygrid,     ix, iy)
+          call forcing%TransferOut     (forcinggrid,    ix, iy)
+          call options%TransferOut     (optionsgrid,    ix, iy)
+          call parameters%TransferOut  (parametersgrid, ix, iy)
+          call water%TransferOut       (watergrid,      ix, iy)
+
+        end if
         
-        !---------------------------------------------------------------------
-        ! Execute the column model
-        !---------------------------------------------------------------------
-        call solve_noahowp           (noahowp)
-
-        !---------------------------------------------------------------------
-        ! Transfer variable values from noahowp_type back to noahowpgrid_type
-        !---------------------------------------------------------------------
-        call domain%TransferOut      (domaingrid,     ix, iy)
-        call levels%TransferOut      (levelsgrid,     ix, iy)
-        call energy%TransferOut      (energygrid,     ix, iy)
-        call forcing%TransferOut     (forcinggrid,    ix, iy)
-        call options%TransferOut     (optionsgrid,    ix, iy)
-        call parameters%TransferOut  (parametersgrid, ix, iy)
-        call water%TransferOut       (watergrid,      ix, iy)
-
       end do
     end do
 
