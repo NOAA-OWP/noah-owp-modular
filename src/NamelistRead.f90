@@ -81,7 +81,6 @@ type, public :: namelist_type
   character(len=256)  :: name_forcings_swrad    ! name ofdownward shortwave radiation (w/m2) variable in forcings file(s) 
   character(len=256)  :: name_forcings_lwrad    ! name ofdownward longwave radiation (w/m2) variable in forcings file(s)
   character(len=256)  :: name_forcings_Q2       ! name of specific humidity (kg/kg) variable in forcings file(s)
-  character(len=256)  :: name_var_time        ! name of NetCDF 'time' varaible (latitude dimension)
 
   !-------------------------------!
   !   gridded dimensions, etc     !
@@ -382,18 +381,11 @@ contains
 
     ! hardcode names for gridded dimensions, etc
     this%name_dim_time              = "time"
-    this%name_var_time              = this%name_dim_time
-    this%name_att_dx                = "dx"     
-    this%name_var_vegtyp            = "vegtyp"     
-    this%name_var_isltyp            = "isltyp"  
-    this%name_var_soilcolor         = "soilcolor" 
-    this%name_var_slope             = "slope"   
-    this%name_var_azimuth           = "azimuth" 
-    this%name_var_mask              = "mask"   
     this%name_dim_x                 = "x"
     this%name_dim_y                 = "y" 
     this%name_var_lon               = "longitude"
     this%name_var_lat               = "latitude" 
+    this%name_att_dx                = "dx" 
     this%name_att_dy                = "dy"
 
     ! hardcode names for gridded attributes
@@ -402,16 +394,17 @@ contains
     this%name_var_soilcolor         = "soilcolor" 
     this%name_var_slope             = "slope"   
     this%name_var_azimuth           = "azimuth"   
+    this%name_var_mask              = "mask"  
 
     ! hardcode names for gridded forcings
-    this%name_forcings_pcprate           = 'pcprate'
-    this%name_forcings_sfctmp            = 'sfctmp'
-    this%name_forcings_sfcprs            = 'sfcprs'
-    this%name_forcings_UU                = 'UU'
-    this%name_forcings_VV                = 'VV'
-    this%name_forcings_swrad             = 'swrad'
-    this%name_forcings_lwrad             = 'lwrad'
-    this%name_forcings_Q2                = 'Q2'
+    this%name_forcings_pcprate           = 'RAINRATE'
+    this%name_forcings_sfctmp            = 'T2D'
+    this%name_forcings_sfcprs            = 'PSFC'
+    this%name_forcings_UU                = 'U2D'
+    this%name_forcings_VV                = 'V2D'
+    this%name_forcings_swrad             = 'SWDOWN'
+    this%name_forcings_lwrad             = 'LWDOWN'
+    this%name_forcings_Q2                = 'Q2D'
 
   end subroutine ReadNamelist
 
