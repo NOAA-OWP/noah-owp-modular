@@ -37,6 +37,7 @@ module DomainGridType
     real, allocatable, dimension(:,:,:)   :: dzsnso            ! snow/soil layer thickness [m]
     real, allocatable, dimension(:,:,:)   :: zsnso             ! depth of snow/soil layer-bottom
     integer, allocatable, dimension(:,:)  :: soilcolor         !
+    integer, allocatable, dimension(:,:)  :: mask              !
   
     contains
   
@@ -80,6 +81,7 @@ module DomainGridType
       allocate(this%isltyp          (n_x,n_y))
       allocate(this%IST             (n_x,n_y))
       allocate(this%soilcolor       (n_x,n_y))
+      allocate(this%mask            (n_x,n_y))
       allocate(this%zsoil           (n_x,n_y,nsoil))                   
       allocate(this%dzsnso          (n_x,n_y,-nsnow+1:nsoil)) 
       allocate(this%zsnso           (n_x,n_y,-nsnow+1:nsoil)) 
@@ -108,6 +110,7 @@ module DomainGridType
       this%lon(:,:)            = huge(1.0)
       this%terrain_slope(:,:)  = huge(1.0)
       this%azimuth(:,:)        = huge(1.0)
+      this%mask(:,:)           = huge(1)
       this%ZREF                = huge(1.0)
       this%vegtyp(:,:)         = huge(1)
       this%croptype(:,:)       = huge(1)
@@ -133,10 +136,11 @@ module DomainGridType
       this%n_y                  = attributes%metadata%n_y
       this%startdate            = namelist%startdate
       this%enddate              = namelist%enddate
-      this%lat(:,:)             = spread(source=attributes%lat(:),dim=1,ncopies=attributes%metadata%n_x)
-      this%lon(:,:)             = spread(source=attributes%lon(:),dim=2,ncopies=attributes%metadata%n_y)
+      this%lat(:,:)             = spread(source=attributes%lat%data(:),dim=1,ncopies=attributes%metadata%n_x)
+      this%lon(:,:)             = spread(source=attributes%lon%data(:),dim=2,ncopies=attributes%metadata%n_y)
       this%terrain_slope(:,:)   = attributes%slope%data(:,:)
       this%azimuth(:,:)         = attributes%azimuth%data(:,:)
+      this%mask(:,:)            = attributes%mask%data(:,:)
       this%ZREF                 = namelist%ZREF
       this%vegtyp(:,:)          = attributes%vegtyp%data(:,:)
       this%croptype(:,:)        = namelist%croptype
