@@ -47,6 +47,7 @@ program noahmp_driver_test
     double precision                                  :: current_time     ! current model time
     character (len = 1)                               :: ts_units         ! timestep units
     real, allocatable, target                         :: var_value_get_real(:) ! value of a variable
+    real, allocatable, target                         :: var_value_get_real_temp(:) ! value of a variable
     real, allocatable                                 :: var_value_set_real(:) ! value of a variable
     integer, allocatable, target                      :: var_value_get_int(:) ! value of a variable
     integer, allocatable                              :: var_value_set_int(:) ! value of a variable
@@ -61,7 +62,7 @@ program noahmp_driver_test
     double precision, dimension(1)                    :: grid_x           ! X coordinate of grid nodes (change dims if multiple nodes)
     double precision, dimension(1)                    :: grid_y           ! Y coordinate of grid nodes (change dims if multiple nodes)
     double precision, dimension(1)                    :: grid_z           ! Y coordinate of grid nodes (change dims if multiple nodes)
-    
+    real                                              :: temp_scalar
     real, pointer                                     :: var_value_get_real_ptr(:) ! value of a variable for get_value_ptr
     integer, pointer                                  :: var_value_get_int_ptr(:) ! value of a variable for get_value_ptr
 
@@ -214,10 +215,50 @@ program noahmp_driver_test
         var_value_set_real = 999
         status = m%get_value(trim(name), var_value_get_real)
         print*, trim(name), " from get_value = ", var_value_get_real
+        select case (trim(name))
+        case('SMCMAX')
+          if(allocated(var_value_get_real_temp)) deallocate(var_value_get_real_temp)
+          allocate(var_value_get_real_temp(1))
+          status = m%get_value('FRZX', var_value_get_real_temp)
+          print*,"    (FRZX is recalculated by setting SMCMAX)"
+          print*,"    from get_value (for FRZX)= ", var_value_get_real_temp
+        case('DKSAT')
+          if(allocated(var_value_get_real_temp)) deallocate(var_value_get_real_temp)
+          allocate(var_value_get_real_temp(1))
+          status = m%get_value('KDT', var_value_get_real_temp)
+          print*,"    (KDT is recalculated by setting DKSAT)"
+          print*,"    from get_value (for KDT)= ", var_value_get_real_temp
+        case('REFKDT')
+          if(allocated(var_value_get_real_temp)) deallocate(var_value_get_real_temp)
+          allocate(var_value_get_real_temp(1))
+          status = m%get_value('KDT', var_value_get_real_temp)
+          print*,"    (KDT is recalculated by setting REFKDT)"
+          print*,"    from get_value (for KDT)= ", var_value_get_real_temp
+        end select
         print*, "    our replacement value = ", var_value_set_real
         status = m%set_value(trim(name), var_value_set_real)
         status = m%get_value(trim(name), var_value_get_real)
         print*, "    and the new value of ", trim(name), " = ", var_value_get_real
+        select case (trim(name))
+        case('SMCMAX')
+          if(allocated(var_value_get_real_temp)) deallocate(var_value_get_real_temp)
+          allocate(var_value_get_real_temp(1))
+          status = m%get_value('FRZX', var_value_get_real_temp)
+          print*,"    (FRZX is recalculated by setting SMCMAX)"
+          print*,"    from get_value (for FRZX)= ", var_value_get_real_temp
+        case('DKSAT')
+          if(allocated(var_value_get_real_temp)) deallocate(var_value_get_real_temp)
+          allocate(var_value_get_real_temp(1))
+          status = m%get_value('KDT', var_value_get_real_temp)
+          print*,"    (KDT is recalculated by setting DKSAT)"
+          print*,"    from get_value (for KDT)= ", var_value_get_real_temp
+        case('REFKDT')
+          if(allocated(var_value_get_real_temp)) deallocate(var_value_get_real_temp)
+          allocate(var_value_get_real_temp(1))
+          status = m%get_value('KDT', var_value_get_real_temp)
+          print*,"    (KDT is recalculated by setting REFKDT)"
+          print*,"    from get_value (for KDT)= ", var_value_get_real_temp
+        end select
       end if
     end do
     
