@@ -152,7 +152,6 @@ contains
     input_items(7) = 'Q2'       ! mixing ratio (kg/kg)
     input_items(8) = 'PRCPNONC' ! precipitation rate (mm/s)
     
-
     names => input_items
     bmi_status = BMI_SUCCESS
   end function noahowp_input_var_names
@@ -307,7 +306,7 @@ contains
          'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS',    & ! output vars
          'ACSNOM','SNOWT_AVG','ISNOW','QRAIN','FSNO','SNOWH','QSNOW',       &
          'ECAN','GH','TRAD','FSA','CMC','LH','FIRA','FSH','CWP','VCMX25',   &
-         'MP','MFSNO','RSURF_SNOW','HVT','FRXZ','KDT','RSURF_EXP','REFKDT', &
+         'MP','MFSNO','RSURF_SNOW','HVT','FRZX','KDT','RSURF_EXP','REFKDT', &
          'AXAJ','BXAJ','XXAJ','SLOPE','SCAMAX')
          grid = 0
          bmi_status = BMI_SUCCESS
@@ -1304,6 +1303,9 @@ contains
        parameters%dksat(:) = src(:)
        parameters%kdt     = parameters%refkdt * parameters%dksat(1) / parameters%refdk
        bmi_status = BMI_SUCCESS
+    case("KDT")
+       parameters%KDT = src(1)
+       bmi_status = BMI_SUCCESS
     case("RSURF_EXP")
        parameters%RSURF_EXP = src(1)
        bmi_status = BMI_SUCCESS
@@ -1325,6 +1327,9 @@ contains
        bmi_status = BMI_SUCCESS
     case("SCAMAX")
        parameters%SCAMAX = src(1)
+       bmi_status = BMI_SUCCESS
+    case("FRZX")
+       parameters%FRZX = src(1)
        bmi_status = BMI_SUCCESS
     case default
        bmi_status = BMI_FAILURE
