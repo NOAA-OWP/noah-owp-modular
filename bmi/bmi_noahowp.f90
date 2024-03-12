@@ -383,10 +383,10 @@ contains
 !        shape(:) = [this%model%n_y, this%model%n_x]
 !        bmi_status = BMI_SUCCESS
     case (1)
-       shape(:) = [this%model%levels%nsnow]
+       shape(:) = this%model%levels%nsnow
        bmi_status = BMI_SUCCESS
     case (2)
-       shape(:) = [this%model%levels%nsoil]
+       shape(:) = this%model%levels%nsoil
        bmi_status = BMI_SUCCESS
     case default
        shape(:) = -1
