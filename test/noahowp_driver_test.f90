@@ -93,7 +93,7 @@ program noahmp_driver_test
     n_outputs = count
 
     count = size(names_params)
-    write(*,'(a,I5)') "Total calibratable parameters = ", count
+    print*, "Total calibratable parameters = ", count
     n_params = count
 
     status = m%get_input_var_names(names_inputs)

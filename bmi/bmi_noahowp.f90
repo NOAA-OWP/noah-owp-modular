@@ -106,14 +106,6 @@ module bminoahowp
   character (len=BMI_MAX_VAR_NAME), target, &
        dimension(output_item_count) :: output_items 
 
-  character(len=BMI_MAX_VAR_NAME), &
-       dimension(param_item_count) :: param_items = &
-       [character(len=BMI_MAX_VAR_NAME) :: &
-       "CWP","VCMX25","MP","MFSNO","RSURF_SNOW","HVT", & 
-       "BEXP","SMCMAX","FRZX","DKSAT","KDT","RSURF_EXP","REFKDT", &
-       "AXAJ","BXAJ","XXAJ","SLOPE","SCAMAX"]
-   integer, dimension(param_item_count) :: param_grid = 0
-
 contains
 
   ! Get the name of the model.
@@ -393,6 +385,12 @@ contains
 !     case(1)
 !        shape(:) = [this%model%n_y, this%model%n_x]
 !        bmi_status = BMI_SUCCESS
+    case (1)
+       shape(:) = [this%model%levels%nsnow]
+       bmi_status = BMI_SUCCESS
+    case (2)
+       shape(:) = [this%model%levels%nsoil]
+       bmi_status = BMI_SUCCESS
     case default
        shape(:) = -1
        bmi_status = BMI_FAILURE
@@ -608,8 +606,8 @@ contains
     case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! forcing vars
        'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS', 'ACSNOM', 'SNOWT_AVG', &      ! output vars
        'QRAIN', 'FSNO', 'SNOWH', 'SNLIQ', 'QSNOW', 'ECAN', 'GH', 'TRAD', 'FSA', 'CMC', 'LH', 'FIRA', 'FSH', &
-       'CWP','VCMX25','MP','MFSNO','RSURF_SNOW','HVT','FRXZ','KDT','RSURF_EXP','REFKDT', &
-       'AXAJ','BXAJ','XXAJ','SLOPE','SCAMAX')
+       'CWP','VCMX25','MP','MFSNO','RSURF_SNOW','HVT','FRZX','KDT','RSURF_EXP','REFKDT', &
+       'AXAJ','BXAJ','XXAJ','SLOPE','SCAMAX','BEXP','SMCMAX','DKSAT')
        type = "real"
        bmi_status = BMI_SUCCESS
     case('ISNOW')
