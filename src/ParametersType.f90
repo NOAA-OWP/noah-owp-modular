@@ -142,7 +142,8 @@ type, public :: parameters_type
   real                            :: TBOT                      ! bottom condition for soil temp. (k)
   real                            :: GRAV                      ! acceleration due to gravity (m/s2)
   real                            :: rain_snow_thresh          ! user-defined rain-snow temperature threshold (°C)
-
+  real                            :: SCAMAX                    ! maximum fractional snow-covered area
+  
   contains
 
     procedure, public  :: Init
@@ -193,6 +194,7 @@ contains
     this%VAI        = huge(1.0)
     this%VEG        = .true.
     this%FVEG       = huge(1.0)
+    this%SCAMAX     = 1.
 
   end subroutine InitDefault
 
