@@ -61,19 +61,32 @@ contains
   ! This subroutine is a temporary way to connect BMI grid definitions to the NOAH-OWP-Modular domain
   ! I think we can further refine/refactor the domain structure to take advantage of the same information/data stucture
   subroutine set_grid_from_model(model, grid)
-    implicit none
-    ! A fully initialized model instance with domain information already set
-    type(noahowpgrid_type), intent (in) :: model
-    type(GridType), intent(inout) :: grid
-    ! note these are in y, x order
-    !TODO align model%domaingrid with GridType and reduce this redundancy
-    if(grid%rank==2) grid%shape = (/model%domaingrid%n_y, model%domaingrid%n_x/)
-    if(grid%rank==3) grid%shape = (/model%levelsgrid%nsnow,model%domaingrid%n_y, model%domaingrid%n_x/)
-    grid%spacing = (/model%domaingrid%dy, model%domaingrid%dx/)
-    grid%origin = (/model%domaingrid%lat(1,1), model%domaingrid%lon(1,1)/) 
-    ! in a projected system, it is possible that grid spacing has units, for now just use none
-    grid%units = none
-  
+ 
+    type(noahowpgrid_type), intent (in)   :: model ! A fully initialized model instance with domain information already set
+    type(GridType),         intent(inout) :: grid
+
+    select case(grid%id)
+    case(0) ! scalar 
+      ! Nothing to do
+    case(1) ! 2D grid
+      grid%shape = (/model%domaingrid%n_y, model%domaingrid%n_x/)
+      grid%spacing = (/model%domaingrid%dy, model%domaingrid%dx/)
+      grid%origin = (/model%domaingrid%lat(1,1), model%domaingrid%lon(1,1)/)
+      grid%units = none ! in a projected system, it is possible that grid spacing has units, for now just use none
+    case(2) ! 3D grid [nsnow,n_y,n_x]
+      grid%shape = (/model%levelsgrid%nsnow,model%domaingrid%n_y, model%domaingrid%n_x/)
+      grid%spacing = (/model%domaingrid%dy, model%domaingrid%dx/)
+      grid%origin = (/model%domaingrid%lat(1,1), model%domaingrid%lon(1,1)/)
+      grid%units = none
+    case(3) ! 3D grid [nsoil,n_y,n_x]
+      grid%shape = (/model%levelsgrid%nsoil,model%domaingrid%n_y, model%domaingrid%n_x/)
+      grid%spacing = (/model%domaingrid%dy, model%domaingrid%dx/)
+      grid%origin = (/model%domaingrid%lat(1,1), model%domaingrid%lon(1,1)/)
+      grid%units = none
+    case default  
+      write(*,*) 'ERROR set_grid_from_model : unrecognized grid identifiction number'; stop
+    end select
+    
   end subroutine
 
   SUBROUTINE initialize_from_file(model, config_filename)

@@ -141,6 +141,7 @@ module ParametersType
     real                            :: TBOT                      ! bottom condition for soil temp. (k)
     real                            :: GRAV                      ! acceleration due to gravity (m/s2)
     real                            :: rain_snow_thresh          ! user-defined rain-snow temperature threshold (°C)
+    real                            :: SCAMAX                    ! maximum fractional snow-covered area
   
     contains
   
@@ -207,6 +208,7 @@ module ParametersType
       this%dksat(:)   = huge(1.0)
       this%dwsat(:)   = huge(1.0)
       this%psisat(:)  = huge(1.0)
+      this%SCAMAX     = huge(1.0)
   
     end subroutine InitDefault
   
@@ -361,6 +363,7 @@ module ParametersType
       this%PSIWLT = parametersgrid%PSIWLT(ix,iy)
       this%TBOT = parametersgrid%TBOT(ix,iy)
       this%rain_snow_thresh = parametersgrid%rain_snow_thresh(ix,iy)
+      this%SCAMAX = parametersgrid%SCAMAX(ix,iy)
   
     end subroutine TransferIn
   
