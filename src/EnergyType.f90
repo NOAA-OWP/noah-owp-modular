@@ -336,8 +336,8 @@ module EnergyType
   
       this%LH        = huge(1.0)    
       this%TGS       = huge(1.0)    
-      this%ICE       = huge(1)   
-      this%SNOWT_AVG = huge(1.0) 
+      this%ICE       = huge(1)
+      this%SNOWT_AVG = huge(1.0)    
       
       this%IMELT(:)  = huge(1)
       this%STC(:)    = huge(1.0)
