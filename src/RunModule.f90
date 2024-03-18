@@ -127,7 +127,7 @@ contains
       call parametersgrid%paramRead(namelist,domaingrid)
 
       call forcinggrid%Init(attributes)
-      call forcinggrid%InitTransfer(namelist)
+      call forcinggrid%InitTransfer(namelist,attributes)
 
       call energygrid%Init(namelist,attributes)
       call energygrid%InitTransfer(namelist)
@@ -260,18 +260,18 @@ contains
       ! --- AWW:  calculate start and end utimes & records for requested station data read period ---
       call get_utime_list (domaingrid%start_datetime, domaingrid%end_datetime, domaingrid%dt, domaingrid%sim_datetimes)  ! makes unix-time list for desired records (end-of-timestep)
       domaingrid%ntime = size (domaingrid%sim_datetimes)   
+      domaingrid%curr_datetime = domaingrid%start_datetime 
       !print *, "---------"; 
       !print *, 'Simulation startdate = ', domain%startdate, ' enddate = ', domain%enddate, ' dt(sec) = ', domain%dt, ' ntimes = ', domain%ntime  ! YYYYMMDD dates
       !print *, "---------"
       
       !---------------------------------------------------------------------
-      ! Open the forcing file
-      ! Code adapted from the ASCII_IO from NOAH-MP V1.1
+      ! Open/read the first forcing file
       ! Compiler directive NGEN_FORCING_ACTIVE to be defined if 
       ! Nextgen forcing is being used (https://github.com/NOAA-OWP/ngen)
       !---------------------------------------------------------------------
 #ifndef NGEN_FORCING_ACTIVE
-      call open_forcing_file(namelist%forcing_filename)
+call forcinggrid%ReadForcings(domaingrid%start_datetime/60.,domaingrid%startdate)
 #endif
       
       !---------------------------------------------------------------------
@@ -305,10 +305,19 @@ contains
     
     implicit none
     type (noahowpgrid_type), intent (inout) :: model
+    integer                                 :: idt    ! change in time since beginning of run (in minutes)
 
+    ! execute model
     call solve_noahowp_grid(model)
-    model%domaingrid%itime    = model%domaingrid%itime + 1 ! increment the integer time by 1
-    model%domaingrid%time_dbl = dble(model%domaingrid%time_dbl + model%domaingrid%dt) ! increment model time in seconds by DT
+
+    !advance/set time variables for next time step
+    associate(domaingrid => model%domaingrid)
+    domaingrid%itime    = domaingrid%itime + 1                                                                     ! increment itime by 1
+    domaingrid%time_dbl = dble(domaingrid%time_dbl + domaingrid%dt)                                                ! increment model time in seconds by DT
+    idt = (domaingrid%itime-1) * (domaingrid%dt / 60)                                                              ! calculate change in time since beginning of run (in minutes)
+    call geth_newdate(domaingrid%startdate, idt, domaingrid%nowdate)                                               ! update nowdate
+    if(domaingrid%itime <= domaingrid%ntime) domaingrid%curr_datetime = domaingrid%sim_datetimes(domaingrid%itime) ! update curr_datetime 
+    end associate
 
   END SUBROUTINE advance_in_time
 
@@ -316,11 +325,8 @@ contains
 
     implicit none
     type(noahowpgrid_type), intent(inout) :: noahowpgrid
-    type(noahowp_type)                    :: noahowp                                             !local instance 
+    type(noahowp_type)                    :: noahowp       
     integer                               :: ix, iy, ierr
-    integer                               :: iunit = 10
-    real                                  :: read_UU, read_VV, read_SFCTMP, read_Q2, read_SFCPRS !to read in forcing
-    real                                  :: read_SOLDN, read_LWDN, read_PRCP                    !to read in forcing
 
     associate(namelist       => noahowpgrid%namelist,       &
               domain         => noahowp%domain,             &
@@ -338,23 +344,11 @@ contains
               water          => noahowp%water,              &
               watergrid      => noahowpgrid%watergrid)
 
+  !---------------------------------------------------------------------
+  ! Set forcings if not NGEN_FORCING_ACTIVE
+  !---------------------------------------------------------------------
 #ifndef NGEN_FORCING_ACTIVE
-
-    !Read forcings for nowdate
-    call read_forcing_text(iunit, domaingrid%nowdate, int(domaingrid%dt), &
-          read_UU, read_VV, read_SFCTMP, read_Q2, read_SFCPRS, read_SOLDN, read_LWDN, read_PRCP, ierr)
-
-    !Give read-in forcings to all grid cells
-    forcinggrid%UU(:,:)     = read_UU
-    forcinggrid%VV(:,:)     = read_VV
-    forcinggrid%SFCTMP(:,:) = read_SFCTMP
-    forcinggrid%Q2(:,:)     = read_Q2
-    forcinggrid%SFCPRS(:,:) = read_SFCPRS
-    forcinggrid%SOLDN(:,:)  = read_SOLDN
-    forcinggrid%LWDN(:,:)   = read_LWDN
-    forcinggrid%PRCP(:,:)   = read_PRCP
-    forcinggrid%UU(:,:)     = read_UU
-
+    call forcinggrid%SetForcings(domaingrid%curr_datetime/60.,domaingrid%nowdate)
 #endif
 
     !---------------------------------------------------------------------
@@ -430,7 +424,7 @@ contains
     !---------------------------------------------------------------------
     ! call the main utility routines
     !---------------------------------------------------------------------
-    call UtilitiesMain (domain%itime, domain, forcing, energy)
+    call UtilitiesMain (domain, forcing, energy)
 
     !---------------------------------------------------------------------
     ! call the main forcing routines

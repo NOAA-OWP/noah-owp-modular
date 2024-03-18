@@ -14,22 +14,13 @@ module UtilitiesModule
 
 contains
 
-  SUBROUTINE UtilitiesMain (itime, domain, forcing, energy)
+  SUBROUTINE UtilitiesMain (domain, forcing, energy)
     
     IMPLICIT NONE
     
-    integer, intent(in)                   :: ITIME ! current integer time step
     type (    domain_type)                :: domain
     type (   forcing_type)                :: forcing
     type (    energy_type)                :: energy
-    
-    ! local variable
-    integer  :: idt ! change in time since beginning of run (in minutes)
-    idt = itime * (domain%dt / 60)
-
-    ! calculate current 'nowdate' from start date + integer length of run to current time
-    call geth_newdate(domain%startdate, idt, &  ! in
-                      domain%nowdate)           ! out
 
     ! calculate current declination of direct solar radiation input
     call calc_declin(domain%nowdate(1:4)//"-"//domain%nowdate(5:6)//"-"//domain%nowdate(7:8)//"_"//domain%nowdate(9:10)//":"//domain%nowdate(11:12)//":00", & ! in

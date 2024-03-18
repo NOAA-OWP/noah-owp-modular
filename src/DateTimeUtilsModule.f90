@@ -991,6 +991,36 @@ contains
  
   end subroutine get_utime_list  
   
+  subroutine days_in_month(month,year,days)
+
+    integer,intent(in)    :: month
+    integer,intent(in)    :: year
+    integer,intent(out)   :: days
+    logical               :: lleap
+
+    days=0
+    select case(month)
+    case(1,3,5,7,8,10,12)
+      days=31
+    case(2)
+      days=28
+      call is_leap(year,lleap)
+      if (lleap) days=29
+    case(4,6,9,11)
+      days=30
+    end select
+
+  end subroutine
+
+  subroutine is_leap(year,lleap)
+
+    integer,intent(in)    :: year
+    logical,intent(out)   :: lleap
+
+    lleap = (mod(year,4)==0 .and. .not. mod(year,100)==0) .or. (mod(year,400)==0)
+
+  end subroutine
+
 !**********************************************************************
  
 end module DateTimeUtilsModule
