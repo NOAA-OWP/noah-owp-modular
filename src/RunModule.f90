@@ -84,6 +84,7 @@ contains
       grid%origin = (/model%domaingrid%lat(1,1), model%domaingrid%lon(1,1)/)
       grid%units = none
     case default  
+      write(*,*) 'ERROR set_grid_from_model : unrecognized grid identifiction number'; stop
     end select
     
   end subroutine
