@@ -24,9 +24,9 @@ module ParametersGridType
     real,allocatable,dimension(:,:)                   :: BBVIC                     ! DVIC heterogeniety parameter for infiltration
     real,allocatable,dimension(:,:)                   :: G                         ! Mean Capillary Drive (m) for infiltration models
     real,allocatable,dimension(:,:)                   :: QUARTZ                    ! fraction of soil comprised of quartz [-] (equal to pctsand/100)
-    real,allocatable,dimension(:,:)                   :: kdt                       !
-    real,allocatable,dimension(:,:)                   :: refkdt                    !
-    real,allocatable,dimension(:,:)                   :: refdk                     !
+    real,allocatable,dimension(:,:)                   :: kdt                       ! coefficient for computing maximum soil infiltration rate
+    real,allocatable,dimension(:,:)                   :: refkdt                    ! Reference Soil Infiltration Parameter (used in runoff formulation)
+    real,allocatable,dimension(:,:)                   :: refdk                     ! Reference Soil Conductivity parameter (used in runoff formulation)
     real,allocatable,dimension(:,:)                   :: csoil                     ! volumetric soil heat capacity [j/m3/K]
     real,allocatable,dimension(:,:)                   :: Z0                        ! bare soil roughness length (m)
     real,allocatable,dimension(:,:)                   :: CZIL                      ! Parameter used in the calculation of the roughness length for heat, originally in GENPARM.TBL
@@ -143,6 +143,7 @@ module ParametersGridType
     real                                              :: VKC                       ! von Karman constant
     integer                                           :: NBAND                     ! Number of shortwave bands (2, visible and NIR)
     real                                              :: MPE                       ! MPE is nominally small to prevent dividing by zero error
+    real,allocatable,dimension(:,:)                   :: SCAMAX                    ! maximum fractional snow-covered area
 
   contains
 
@@ -260,6 +261,7 @@ module ParametersGridType
     allocate(this%PSIWLT(n_x,n_y))
     allocate(this%TBOT(n_x,n_y))
     allocate(this%rain_snow_thresh(n_x,n_y))
+    allocate(this%SCAMAX(n_x,n_y))
 
     end associate
 
@@ -404,6 +406,7 @@ module ParametersGridType
     this%VKC = huge(1.0)
     this%NBAND = huge(1)
     this%MPE = huge(1.0)
+    this%SCAMAX = huge(1.0)
 
   end subroutine InitDefault
 
@@ -499,91 +502,95 @@ module ParametersGridType
     this%O2                        = 0.209       ! o2 partial pressure, from O2_TABLE var (set in MPTABLE.TBL)
     this%PSIWLT(:,:)               = -150.0      ! originally a fixed parameter set in ENERGY()
     this%TBOT(:,:)                 = 263.0       ! (K) can be updated depending on option OPT_TBOT
+    this%SCAMAX(:,:)               = 1.
     
     do ix = 1, domaingrid%n_x
       do iy = 1, domaingrid%n_y
+        if (domaingrid%mask(ix,iy) == 1) then
 
-        associate(isltyp    => domaingrid%isltyp(ix,iy), &
-                  vegtyp    => domaingrid%vegtyp(ix,iy), &
-                  soilcolor => domaingrid%soilcolor(ix,iy))
+          associate(isltyp    => domaingrid%isltyp(ix,iy), &
+                    vegtyp    => domaingrid%vegtyp(ix,iy), &
+                    soilcolor => domaingrid%soilcolor(ix,iy))
 
-        this%bexp(ix,iy,:) = BEXP_TABLE(isltyp)
-        this%smcmax(ix,iy,:)  = SMCMAX_TABLE(isltyp)
-        this%smcwlt(ix,iy,:)  = SMCWLT_TABLE(isltyp)
-        this%smcref(ix,iy,:)  = SMCREF_TABLE(isltyp)
-        this%dksat(ix,iy,:)   = DKSAT_TABLE(isltyp)
-        this%dwsat(ix,iy,:)   = DWSAT_TABLE(isltyp)
-        this%psisat(ix,iy,:)  = PSISAT_TABLE(isltyp)
-        this%bvic(ix,iy)    = BVIC_table(isltyp)
-        this%AXAJ(ix,iy)    = AXAJ_table(isltyp)
-        this%BXAJ(ix,iy)    = BXAJ_table(isltyp)
-        this%XXAJ(ix,iy)    = XXAJ_table(isltyp)
-        this%BBVIC(ix,iy)   = BBVIC_table(isltyp)
-        this%G(ix,iy)       = GDVIC_table(isltyp)
-        this%QUARTZ(ix,iy)  = QUARTZ_table(isltyp)
-        do ii = 1,12
-          this%LAIM(ix,iy,ii) = LAIM_TABLE(vegtyp, ii)
-          this%SAIM(ix,iy,ii) = SAIM_TABLE(vegtyp, ii)
-        end do
-        this%CH2OP(ix,iy)   = CH2OP_TABLE(vegtyp)
-        this%NROOT(ix,iy)   = NROOT_TABLE(vegtyp)
-        this%HVT(ix,iy)     = HVT_TABLE(vegtyp)
-        this%HVB(ix,iy)     = HVB_TABLE(vegtyp)
-        this%TMIN(ix,iy)    = TMIN_TABLE(vegtyp)
-        this%SHDFAC(ix,iy)  = SHDFAC_TABLE(vegtyp) ! this used to be in VEGPARM.TBL, but now somewhere else for hrldas. this is temporarily in MPTABLE.TBL.
-        this%SHDMAX(ix,iy)  = SHDFAC_TABLE(vegtyp)
-        this%Z0MVT(ix,iy)   = Z0MVT_TABLE(vegtyp)
-        this%RC(ix,iy)      = RC_TABLE(vegtyp)
-        this%XL(ix,iy)      = XL_TABLE(vegtyp)
-        this%BP(ix,iy)      = BP_TABLE(vegtyp)
-        this%FOLNMX(ix,iy)  = FOLNMX_TABLE(vegtyp)
-        this%QE25(ix,iy)    = QE25_TABLE(vegtyp)
-        this%VCMX25(ix,iy)  = VCMX25_TABLE(vegtyp)
-        this%MP(ix,iy)      = MP_TABLE(vegtyp)
-        this%RGL(ix,iy)     = RGL_TABLE(vegtyp)
-        this%RSMIN(ix,iy)   = RS_TABLE(vegtyp)
-        this%HS(ix,iy)      = HS_TABLE(vegtyp)
-        this%AKC(ix,iy)     = AKC_TABLE(vegtyp)
-        this%AKO(ix,iy)     = AKO_TABLE(vegtyp)
-        this%AVCMX(ix,iy)   = AVCMX_TABLE(vegtyp)
-        this%RSMAX(ix,iy)   = RSMAX_TABLE(vegtyp)
-        this%CWP(ix,iy)     = CWPVT_TABLE(vegtyp)
-        this%C3PSN(ix,iy)   = C3PSN_TABLE(vegtyp)
-        this%DLEAF(ix,iy)   = DLEAF_TABLE(vegtyp)
-        this%KC25(ix,iy)    = KC25_TABLE(vegtyp)
-        this%KO25(ix,iy)    = KO25_TABLE(vegtyp)
-        this%RHOL(ix,iy,1) = RHOL_TABLE(vegtyp, 1)
-        this%RHOL(ix,iy,2) = RHOL_TABLE(vegtyp, 2)
-        this%RHOS(ix,iy,1) = RHOS_TABLE(vegtyp, 1)
-        this%RHOS(ix,iy,2) = RHOS_TABLE(vegtyp, 2)
-        this%TAUL(ix,iy,1) = TAUL_TABLE(vegtyp, 1)
-        this%TAUL(ix,iy,2) = TAUL_TABLE(vegtyp, 2)
-        this%TAUS(ix,iy,1) = TAUS_TABLE(vegtyp, 1)
-        this%TAUS(ix,iy,2) = TAUS_TABLE(vegtyp, 2)
-        this%kdt(ix,iy)      = this%refkdt(ix,iy) * this%dksat(ix,iy,1) / this%refdk(ix,iy)
-        this%frzx(ix,iy)     = 0.15 * (this%smcmax(ix,iy,1) / this%smcref(ix,iy,1)) * (0.412 / 0.468)
-        this%MFSNO(ix,iy)    = MFSNO_TABLE(vegtyp)
-        this%ALBSAT(ix,iy,1) = ALBSAT_TABLE(soilcolor, 1)
-        this%ALBSAT(ix,iy,2) = ALBSAT_TABLE(soilcolor, 2)
-        this%ALBDRY(ix,iy,1) = ALBDRY_TABLE(soilcolor, 1)
-        this%ALBDRY(ix,iy,2) = ALBDRY_TABLE(soilcolor, 2)
-        this%ALBICE(:) = ALBICE_TABLE
-        this%ALBLAK(:) = ALBLAK_TABLE
-        this%OMEGAS(:) = OMEGAS_TABLE
-        this%EG(ix,iy,:)     = EG_TABLE
+          this%bexp(ix,iy,:) = BEXP_TABLE(isltyp)
+          this%smcmax(ix,iy,:)  = SMCMAX_TABLE(isltyp)
+          this%smcwlt(ix,iy,:)  = SMCWLT_TABLE(isltyp)
+          this%smcref(ix,iy,:)  = SMCREF_TABLE(isltyp)
+          this%dksat(ix,iy,:)   = DKSAT_TABLE(isltyp)
+          this%dwsat(ix,iy,:)   = DWSAT_TABLE(isltyp)
+          this%psisat(ix,iy,:)  = PSISAT_TABLE(isltyp)
+          this%bvic(ix,iy)    = BVIC_table(isltyp)
+          this%AXAJ(ix,iy)    = AXAJ_table(isltyp)
+          this%BXAJ(ix,iy)    = BXAJ_table(isltyp)
+          this%XXAJ(ix,iy)    = XXAJ_table(isltyp)
+          this%BBVIC(ix,iy)   = BBVIC_table(isltyp)
+          this%G(ix,iy)       = GDVIC_table(isltyp)
+          this%QUARTZ(ix,iy)  = QUARTZ_table(isltyp)
+          do ii = 1,12
+            this%LAIM(ix,iy,ii) = LAIM_TABLE(vegtyp, ii)
+            this%SAIM(ix,iy,ii) = SAIM_TABLE(vegtyp, ii)
+          end do
+          this%CH2OP(ix,iy)   = CH2OP_TABLE(vegtyp)
+          this%NROOT(ix,iy)   = NROOT_TABLE(vegtyp)
+          this%HVT(ix,iy)     = HVT_TABLE(vegtyp)
+          this%HVB(ix,iy)     = HVB_TABLE(vegtyp)
+          this%TMIN(ix,iy)    = TMIN_TABLE(vegtyp)
+          this%SHDFAC(ix,iy)  = SHDFAC_TABLE(vegtyp) ! this used to be in VEGPARM.TBL, but now somewhere else for hrldas. this is temporarily in MPTABLE.TBL.
+          this%SHDMAX(ix,iy)  = SHDFAC_TABLE(vegtyp)
+          this%Z0MVT(ix,iy)   = Z0MVT_TABLE(vegtyp)
+          this%RC(ix,iy)      = RC_TABLE(vegtyp)
+          this%XL(ix,iy)      = XL_TABLE(vegtyp)
+          this%BP(ix,iy)      = BP_TABLE(vegtyp)
+          this%FOLNMX(ix,iy)  = FOLNMX_TABLE(vegtyp)
+          this%QE25(ix,iy)    = QE25_TABLE(vegtyp)
+          this%VCMX25(ix,iy)  = VCMX25_TABLE(vegtyp)
+          this%MP(ix,iy)      = MP_TABLE(vegtyp)
+          this%RGL(ix,iy)     = RGL_TABLE(vegtyp)
+          this%RSMIN(ix,iy)   = RS_TABLE(vegtyp)
+          this%HS(ix,iy)      = HS_TABLE(vegtyp)
+          this%AKC(ix,iy)     = AKC_TABLE(vegtyp)
+          this%AKO(ix,iy)     = AKO_TABLE(vegtyp)
+          this%AVCMX(ix,iy)   = AVCMX_TABLE(vegtyp)
+          this%RSMAX(ix,iy)   = RSMAX_TABLE(vegtyp)
+          this%CWP(ix,iy)     = CWPVT_TABLE(vegtyp)
+          this%C3PSN(ix,iy)   = C3PSN_TABLE(vegtyp)
+          this%DLEAF(ix,iy)   = DLEAF_TABLE(vegtyp)
+          this%KC25(ix,iy)    = KC25_TABLE(vegtyp)
+          this%KO25(ix,iy)    = KO25_TABLE(vegtyp)
+          this%RHOL(ix,iy,1) = RHOL_TABLE(vegtyp, 1)
+          this%RHOL(ix,iy,2) = RHOL_TABLE(vegtyp, 2)
+          this%RHOS(ix,iy,1) = RHOS_TABLE(vegtyp, 1)
+          this%RHOS(ix,iy,2) = RHOS_TABLE(vegtyp, 2)
+          this%TAUL(ix,iy,1) = TAUL_TABLE(vegtyp, 1)
+          this%TAUL(ix,iy,2) = TAUL_TABLE(vegtyp, 2)
+          this%TAUS(ix,iy,1) = TAUS_TABLE(vegtyp, 1)
+          this%TAUS(ix,iy,2) = TAUS_TABLE(vegtyp, 2)
+          this%kdt(ix,iy)      = this%refkdt(ix,iy) * this%dksat(ix,iy,1) / this%refdk(ix,iy)
+          this%frzx(ix,iy)     = 0.15 * (this%smcmax(ix,iy,1) / this%smcref(ix,iy,1)) * (0.412 / 0.468)
+          this%MFSNO(ix,iy)    = MFSNO_TABLE(vegtyp)
+          this%ALBSAT(ix,iy,1) = ALBSAT_TABLE(soilcolor, 1)
+          this%ALBSAT(ix,iy,2) = ALBSAT_TABLE(soilcolor, 2)
+          this%ALBDRY(ix,iy,1) = ALBDRY_TABLE(soilcolor, 1)
+          this%ALBDRY(ix,iy,2) = ALBDRY_TABLE(soilcolor, 2)
+          this%ALBICE(:) = ALBICE_TABLE
+          this%ALBLAK(:) = ALBLAK_TABLE
+          this%OMEGAS(:) = OMEGAS_TABLE
+          this%EG(ix,iy,:)     = EG_TABLE
 
-        ! Assign rain-snow threshold based on option
-        IF(namelist%precip_phase_option == 2) THEN
-          this%rain_snow_thresh(ix,iy) = this%TFRZ + 2.2
-        ELSE IF(namelist%precip_phase_option == 3) THEN
-          this%rain_snow_thresh(ix,iy) = this%TFRZ
-        ELSE IF(namelist%precip_phase_option == 5 .or. namelist%precip_phase_option == 6) THEN
-          this%rain_snow_thresh(ix,iy) = this%TFRZ + namelist%rain_snow_thresh
-        ELSE 
-          this%rain_snow_thresh(ix,iy) = this%TFRZ ! set to TFRZ as a backup
-        ENDIF
-        
-        end associate
+          ! Assign rain-snow threshold based on option
+          IF(namelist%precip_phase_option == 2) THEN
+            this%rain_snow_thresh(ix,iy) = this%TFRZ + 2.2
+          ELSE IF(namelist%precip_phase_option == 3) THEN
+            this%rain_snow_thresh(ix,iy) = this%TFRZ
+          ELSE IF(namelist%precip_phase_option == 5 .or. namelist%precip_phase_option == 6) THEN
+            this%rain_snow_thresh(ix,iy) = this%TFRZ + namelist%rain_snow_thresh
+          ELSE 
+            this%rain_snow_thresh(ix,iy) = this%TFRZ ! set to TFRZ as a backup
+          ENDIF
+          
+          end associate
+          
+        end if
       end do
     end do
 
