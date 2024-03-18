@@ -259,13 +259,13 @@ contains
       !--- check consistency of domain land use and soil attributes ---
       !---------------------------------------------------------------------
       allocate(err_grid(domaingrid%n_x,domaingrid%n_y)); err_grid(:,:) = 0
-      where (domaingrid%mask(ix,iy)== 1.and.domaingrid%vegtyp.ne.parametersgrid%ISWATER.and.domaingrid%isltyp.eq.14) err_grid = 1
+      where (domaingrid%mask.eq.1.and.domaingrid%vegtyp.ne.parametersgrid%ISWATER.and.domaingrid%isltyp.eq.14) err_grid = 1
       if(any(err_grid.eq.1)) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have a non-water land cover (vegtyp != ',parametersgrid%ISWATER,') and a water soil type (isltyp = 14)'; stop; end if
-      where (domaingrid%mask(ix,iy)== 1.and.domaingrid%vegtyp.eq.parametersgrid%ISWATER.and.domaingrid%isltyp.ne.14) err_grid = 1
+      where (domaingrid%mask.eq.1.and.domaingrid%vegtyp.eq.parametersgrid%ISWATER.and.domaingrid%isltyp.ne.14) err_grid = 1
       if(any(err_grid.eq.1)) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have a water land cover (vegtyp = ',parametersgrid%ISWATER,') and a non-water soil type (isltyp != 14)'; stop; end if
-      where (domaingrid%mask(ix,iy)== 1.and.domaingrid%vegtyp.ne.parametersgrid%ISICE.and.domaingrid%isltyp.eq.16) err_grid = 1
+      where (domaingrid%mask.eq.1.and.domaingrid%vegtyp.ne.parametersgrid%ISICE.and.domaingrid%isltyp.eq.16) err_grid = 1
       if(any(err_grid.eq.1)) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have a non-ice land cover (vegtyp != ',parametersgrid%ISICE,') and an ice soil type (isltyp = 16)'; stop; end if
-      where (domaingrid%mask(ix,iy)== 1.and.domaingrid%vegtyp.eq.parametersgrid%ISICE.and.domaingrid%isltyp.ne.16) err_grid = 1
+      where (domaingrid%mask.eq.1.and.domaingrid%vegtyp.eq.parametersgrid%ISICE.and.domaingrid%isltyp.ne.16) err_grid = 1
       if(any(err_grid.eq.1)) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have an ice land cover (vegtyp = ',parametersgrid%ISICE,') and a non-ice soil type (isltyp != 16)'; stop; end if
 
       !---------------------------------------------------------------------
