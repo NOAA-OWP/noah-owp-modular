@@ -98,6 +98,8 @@ jobs:
         with:
           mod-dir: " extern/noah-owp-modular/"
           targets: "surfacebmi"
+          initialize: "false"
+          cmake-flags: "-DNGEN_IS_MAIN_PROJECT:BOOL=ON"
 
       - name: Run Ngen Test
         run: |
