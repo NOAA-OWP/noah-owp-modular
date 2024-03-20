@@ -85,7 +85,7 @@ contains
     IF(water%SNOWH > 0.0)  THEN
       water%BDSNO  = water%SNEQV / water%SNOWH
       FMELT        = (water%BDSNO / 100.)**parameters%MFSNO
-      water%FSNO   = TANH( water%SNOWH /(2.5 * parameters%Z0 * FMELT)) ! eq. 4 from Niu and Yang (2007)
+      water%FSNO   = parameters%SCAMAX * TANH( water%SNOWH /(2.5 * parameters%Z0 * FMELT)) ! eq. 4 from Niu and Yang (2007)
     ENDIF
 
     ! Compute ground roughness length
