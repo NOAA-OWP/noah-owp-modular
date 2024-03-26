@@ -267,6 +267,7 @@ contains
       if(any(err_grid.eq.1)) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have a non-ice land cover (vegtyp != ',parametersgrid%ISICE,') and an ice soil type (isltyp = 16)'; stop; end if
       where (domaingrid%mask.eq.1.and.domaingrid%vegtyp.eq.parametersgrid%ISICE.and.domaingrid%isltyp.ne.16) err_grid = 1
       if(any(err_grid.eq.1)) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have an ice land cover (vegtyp = ',parametersgrid%ISICE,') and a non-ice soil type (isltyp != 16)'; stop; end if
+      deallocate(err_grid)
 
       !---------------------------------------------------------------------
       !--- set a time vector for simulation ---
