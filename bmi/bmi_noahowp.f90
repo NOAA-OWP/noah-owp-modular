@@ -269,7 +269,12 @@ contains
     integer :: bmi_status
 
     call advance_in_time(this%model)
-    bmi_status = BMI_SUCCESS
+    if (this%model%domain%error_flag /= 0) then
+      bmi_status = BMI_FAILURE
+      return
+    else
+      bmi_status = BMI_SUCCESS
+    end if
   end function noahowp_update
 
   ! Advance the model until the given time.

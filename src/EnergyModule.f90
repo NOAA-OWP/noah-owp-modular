@@ -300,12 +300,13 @@ contains
 
     FIRE = forcing%LWDN + energy%FIRA
     IF(FIRE <=0.) THEN
+      domain%error_flag = 1
       WRITE(*,*) 'emitted longwave <0; skin T may be wrong due to inconsistent'
       WRITE(*,*) 'input of SHDFAC with LAI'
       WRITE(*,*) domain%ILOC, domain%JLOC, 'SHDFAC=',parameters%FVEG,'parameters%VAI=',parameters%VAI,'TV=',energy%TV,'TG=',energy%TG
       WRITE(*,*) 'LWDN=',forcing%LWDN,'energy%FIRA=',energy%FIRA,'water%SNOWH=',water%SNOWH
       WRITE(*,*) 'Exiting ...'
-      STOP
+      RETURN
     END IF
 
     ! Compute a net emissivity

@@ -31,6 +31,8 @@ type, public :: domain_type
   integer             :: croptype          ! crop type
   integer             :: isltyp            ! soil type
   integer             :: IST               ! surface type 1-soil; 2-lake
+  integer             :: error_flag        ! flag for energy balance error (0 = no error, 1 = longwave < 0)
+  
   real, allocatable, dimension(:) :: zsoil   ! depth of layer-bottom from soil surface
   real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
   real, allocatable, dimension(:) :: zsnso   ! depth of snow/soil layer-bottom
@@ -93,6 +95,7 @@ contains
     this%croptype       = huge(1)
     this%isltyp         = huge(1)
     this%IST            = huge(1)
+    this%error_flag     = huge(1)
 
 
   end subroutine InitDefault
@@ -116,6 +119,7 @@ contains
     this%croptype       = namelist%croptype
     this%isltyp         = namelist%isltyp
     this%IST            = namelist%sfctyp
+    this%error_flag     = 0 ! model initializes with no errors
     this%start_datetime = date_to_unix(namelist%startdate)  ! returns seconds-since-1970-01-01
     this%end_datetime   = date_to_unix(namelist%enddate)
   
