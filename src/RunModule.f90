@@ -96,8 +96,9 @@ contains
     type (noahowpgrid_type), intent (out)   :: model
     character(len=*), intent (in)           :: config_filename    ! config file from command line argument
     integer                                 :: forcing_timestep   ! integer time step (set to dt) for some subroutine calls
-    integer                                 :: ii, ix, iy         ! indices
+    integer                                 :: ii                 ! indices
     integer, allocatable, dimension(:,:)    :: err_grid           ! to catch land use vs. soil inconsistencies
+    integer, dimension(2)                   :: err_indices        ! to hold ix, iy for err_grid
         
     associate(namelist       => model%namelist,       &
               attributes     => model%attributes,     &
@@ -260,13 +261,13 @@ contains
       !---------------------------------------------------------------------
       allocate(err_grid(domaingrid%n_x,domaingrid%n_y)); err_grid(:,:) = 0
       where (domaingrid%mask.eq.1.and.domaingrid%vegtyp.ne.parametersgrid%ISWATER.and.domaingrid%isltyp.eq.14) err_grid = 1
-      if(any(err_grid.eq.1)) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have a non-water land cover (vegtyp != ',parametersgrid%ISWATER,') and a water soil type (isltyp = 14)'; stop; end if
+      if(any(err_grid.eq.1)) then; err_indices = maxloc(err_grid); write(*,*) 'ERROR: vegtyp is not water but isltyp is water - x=',err_indices(1),' y=',err_indices(2); stop; end if
       where (domaingrid%mask.eq.1.and.domaingrid%vegtyp.eq.parametersgrid%ISWATER.and.domaingrid%isltyp.ne.14) err_grid = 1
-      if(any(err_grid.eq.1)) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have a water land cover (vegtyp = ',parametersgrid%ISWATER,') and a non-water soil type (isltyp != 14)'; stop; end if
+      if(any(err_grid.eq.1)) then; err_indices = maxloc(err_grid); write(*,*) 'ERROR: vegtyp is water but isltyp is not water - x=',err_indices(1),' y=',err_indices(2); stop; end if
       where (domaingrid%mask.eq.1.and.domaingrid%vegtyp.ne.parametersgrid%ISICE.and.domaingrid%isltyp.eq.16) err_grid = 1
-      if(any(err_grid.eq.1)) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have a non-ice land cover (vegtyp != ',parametersgrid%ISICE,') and an ice soil type (isltyp = 16)'; stop; end if
+      if(any(err_grid.eq.1)) then; err_indices = maxloc(err_grid); write(*,*) 'ERROR: vegtyp is not ice but isltyp is ice - x=',err_indices(1),' y=',err_indices(2); stop; end if
       where (domaingrid%mask.eq.1.and.domaingrid%vegtyp.eq.parametersgrid%ISICE.and.domaingrid%isltyp.ne.16) err_grid = 1
-      if(any(err_grid.eq.1)) then; write(*,'(A,i2,A)') 'ERROR: one or more grid cells have an ice land cover (vegtyp = ',parametersgrid%ISICE,') and a non-ice soil type (isltyp != 16)'; stop; end if
+      if(any(err_grid.eq.1)) then; err_indices = maxloc(err_grid); write(*,*) 'ERROR: vegtyp is ice but isltyp is not ice - x=',err_indices(1),' y=',err_indices(2); stop; end if
       deallocate(err_grid)
 
       !---------------------------------------------------------------------
