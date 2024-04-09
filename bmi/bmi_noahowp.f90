@@ -689,153 +689,153 @@ contains
               parameters => this%model%parameters)
 
     select case(name)
-    case("SFCPRS")
-       size = sizeof(forcing%sfcprs)  ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("SFCTMP")
-       size = sizeof(forcing%sfctmp)             ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("SOLDN")
-       size = sizeof(forcing%soldn)                ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("LWDN")
-       size = sizeof(forcing%lwdn)                ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("UU")
-       size = sizeof(forcing%uu)                ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("VV")
-       size = sizeof(forcing%vv)                ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("Q2")
-       size = sizeof(forcing%q2)                ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("PRCPNONC")
-       size = sizeof(forcing%prcpnonc)                ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("QINSUR")
-       size = sizeof(water%qinsur)                ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("ETRAN")
-       size = sizeof(water%etran)                ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("QSEVA")
-       size = sizeof(water%qseva)                ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("EVAPOTRANS")
-       size = sizeof(water%evapotrans)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("TG")
-       size = sizeof(energy%tg)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("SNEQV")
-       size = sizeof(water%sneqv)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("TGS")
-       size = sizeof(energy%tgs)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
     case("ACSNOM")
-       size = sizeof(water%ACSNOM)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("SNOWT_AVG")
-       size = sizeof(energy%SNOWT_AVG)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("ISNOW")
-       size = sizeof(water%ISNOW)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("QRAIN")
-       size = sizeof(water%QRAIN)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("FSNO")
-       size = sizeof(water%FSNO)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("SNOWH")
-       size = sizeof(water%SNOWH)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("QSNOW")
-       size = sizeof(water%QSNOW)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("ECAN")
-       size = sizeof(water%ECAN)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("GH")
-       size = sizeof(energy%GH)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("TRAD")
-       size = sizeof(energy%TRAD)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("FSA")
-       size = sizeof(energy%FSA)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("CMC")
-       size = sizeof(water%CMC)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("LH")
-       size = sizeof(energy%LH)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("FIRA")
-       size = sizeof(energy%FIRA)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("FSH")
-       size = sizeof(energy%FSH)            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("SNLIQ")
-       size = sizeof(water%SNLIQ(1))            ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("CWP")
-       size = sizeof(parameters%CWP)           ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("VCMX25")
-       size = sizeof(parameters%VCMX25)        ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("MP")
-       size = sizeof(parameters%MP)        ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("MFSNO")
-       size = sizeof(parameters%MFSNO)        ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("RSURF_SNOW")
-       size = sizeof(parameters%RSURF_SNOW)        ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("HVT")
-       size = sizeof(parameters%HVT)        ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("BEXP")
-       size = sizeof(parameters%bexp(1))        ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("SMCMAX")
-       size = sizeof(parameters%smcmax(1))        ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("DKSAT")
-       size = sizeof(parameters%dksat(1))        ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("RSURF_EXP")
-       size = sizeof(parameters%RSURF_EXP)        ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("REFKDT")
-       size = sizeof(parameters%refkdt)        ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
+      size = sizeof(water%ACSNOM)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
     case("AXAJ")
-       size = sizeof(parameters%AXAJ)        ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
+      size = sizeof(parameters%AXAJ)        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("BEXP")
+      size = sizeof(parameters%bexp(1))        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
     case("BXAJ")
-       size = sizeof(parameters%BXAJ)        ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("XXAJ")
-       size = sizeof(parameters%XXAJ)        ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
-    case("SLOPE")
-       size = sizeof(parameters%slope)        ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
+      size = sizeof(parameters%BXAJ)        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("CMC")
+      size = sizeof(water%CMC)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("CWP")
+      size = sizeof(parameters%CWP)           ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("DKSAT")
+      size = sizeof(parameters%dksat(1))        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("ECAN")
+      size = sizeof(water%ECAN)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("ETRAN")
+      size = sizeof(water%etran)                ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("EVAPOTRANS")
+      size = sizeof(water%evapotrans)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("FIRA")
+      size = sizeof(energy%FIRA)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
     case("FRZX")
-       size = sizeof(parameters%frzx)        ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
+      size = sizeof(parameters%frzx)        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("FSA")
+      size = sizeof(energy%FSA)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("FSH")
+      size = sizeof(energy%FSH)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("FSNO")
+      size = sizeof(water%FSNO)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("GH")
+      size = sizeof(energy%GH)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("HVT")
+      size = sizeof(parameters%HVT)        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("ISNOW")
+      size = sizeof(water%ISNOW)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
     case("KDT")
-       size = sizeof(parameters%kdt)        ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
+      size = sizeof(parameters%kdt)        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("LH")
+      size = sizeof(energy%LH)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("LWDN")
+      size = sizeof(forcing%lwdn)                ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("MFSNO")
+      size = sizeof(parameters%MFSNO)        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("MP")
+      size = sizeof(parameters%MP)        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("PRCPNONC")
+      size = sizeof(forcing%prcpnonc)                ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("Q2")
+      size = sizeof(forcing%q2)                ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("QINSUR")
+      size = sizeof(water%qinsur)                ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("QRAIN")
+      size = sizeof(water%QRAIN)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("QSEVA")
+      size = sizeof(water%qseva)                ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("QSNOW")
+      size = sizeof(water%QSNOW)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("REFKDT")
+      size = sizeof(parameters%refkdt)        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("RSURF_EXP")
+      size = sizeof(parameters%RSURF_EXP)        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("RSURF_SNOW")
+      size = sizeof(parameters%RSURF_SNOW)        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
     case("SCAMAX")
-       size = sizeof(parameters%SCAMAX)        ! 'sizeof' in gcc & ifort
-       bmi_status = BMI_SUCCESS
+      size = sizeof(parameters%SCAMAX)        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("SFCPRS")
+      size = sizeof(forcing%sfcprs)  ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("SFCTMP")
+      size = sizeof(forcing%sfctmp)             ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("SLOPE")
+      size = sizeof(parameters%slope)        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("SMCMAX")
+      size = sizeof(parameters%smcmax(1))        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("SNEQV")
+      size = sizeof(water%sneqv)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("SNLIQ")
+      size = sizeof(water%SNLIQ(1))            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("SNOWH")
+      size = sizeof(water%SNOWH)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("SNOWT_AVG")
+      size = sizeof(energy%SNOWT_AVG)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("SOLDN")
+      size = sizeof(forcing%soldn)                ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("TG")
+      size = sizeof(energy%tg)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("TGS")
+      size = sizeof(energy%tgs)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("TRAD")
+      size = sizeof(energy%TRAD)            ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("UU")
+      size = sizeof(forcing%uu)                ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("VCMX25")
+      size = sizeof(parameters%VCMX25)        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("VV")
+      size = sizeof(forcing%vv)                ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
+    case("XXAJ")
+      size = sizeof(parameters%XXAJ)        ! 'sizeof' in gcc & ifort
+      bmi_status = BMI_SUCCESS
     case default
        size = -1
        bmi_status = BMI_FAILURE
@@ -918,150 +918,150 @@ contains
               parameters => this%model%parameters)
 
     select case(name)
-    case("SFCPRS")
-       dest = [forcing%sfcprs]
-       bmi_status = BMI_SUCCESS
-    case("SFCTMP")
-       dest = [forcing%sfctmp]
-       bmi_status = BMI_SUCCESS
-    case("SOLDN")
-       dest = [forcing%soldn]
-       bmi_status = BMI_SUCCESS
-    case("LWDN")
-       dest = [forcing%lwdn]
-       bmi_status = BMI_SUCCESS
-    case("UU")
-       dest = [forcing%uu]
-       bmi_status = BMI_SUCCESS
-    case("VV")
-       dest = [forcing%vv]
-       bmi_status = BMI_SUCCESS
-    case("Q2")
-       dest = [forcing%q2]
-       bmi_status = BMI_SUCCESS
-    case("PRCPNONC")
-       dest = [forcing%prcpnonc]
-       bmi_status = BMI_SUCCESS
-    case("QINSUR")
-       dest = [water%qinsur]
-       bmi_status = BMI_SUCCESS
-    case("ETRAN")
-       dest = [water%etran*domain%DT]
-       bmi_status = BMI_SUCCESS
-    case("QSEVA")
-       dest = [water%qseva*m2mm]
-       bmi_status = BMI_SUCCESS
-    case("EVAPOTRANS")
-       dest = [water%evapotrans*domain%DT*mm2m]
-       bmi_status = BMI_SUCCESS
-    case("TG")
-       dest = [energy%tg]
-       bmi_status = BMI_SUCCESS
-    case("SNEQV")
-       dest = [water%sneqv]
-       bmi_status = BMI_SUCCESS
-    case("TGS")
-       dest = [energy%tgs]
-       bmi_status = BMI_SUCCESS
     case("ACSNOM")
-       dest = [water%ACSNOM]
-       bmi_status = BMI_SUCCESS
-    case("SNOWT_AVG")
-       dest = [energy%SNOWT_AVG]
-       bmi_status = BMI_SUCCESS
-    case("QRAIN")
-       dest = [water%QRAIN]
-       bmi_status = BMI_SUCCESS
-    case("FSNO")
-       dest = [water%FSNO]
-       bmi_status = BMI_SUCCESS
-    case("SNOWH")
-       dest = [water%SNOWH]
-       bmi_status = BMI_SUCCESS
-    case("SNLIQ")
-       dest = water%SNLIQ
-       bmi_status = BMI_SUCCESS
-    case("QSNOW")
-       dest = [water%QSNOW]
-       bmi_status = BMI_SUCCESS
-    case("ECAN")
-       dest = [water%ECAN*domain%DT]
-       bmi_status = BMI_SUCCESS
-    case("GH")
-       dest = [energy%GH]
-       bmi_status = BMI_SUCCESS
-    case("TRAD")
-       dest = [energy%TRAD]
-       bmi_status = BMI_SUCCESS
-    case("FSA")
-       dest = [energy%FSA]
-       bmi_status = BMI_SUCCESS
-    case("CMC")
-       dest = [water%CMC]
-       bmi_status = BMI_SUCCESS
-    case("LH")
-       dest = [energy%LH]
-       bmi_status = BMI_SUCCESS
-    case("FIRA")
-       dest = [energy%FIRA]
-       bmi_status = BMI_SUCCESS
-    case("FSH")
-       dest = [energy%FSH]
-       bmi_status = BMI_SUCCESS
-    case("CWP")
-       dest = [parameters%CWP]
-       bmi_status = BMI_SUCCESS
-    case("VCMX25")
-       dest = [parameters%VCMX25]
-       bmi_status = BMI_SUCCESS
-    case("MP")
-       dest = [parameters%MP]
-       bmi_status = BMI_SUCCESS
-    case("MFSNO")
-       dest = [parameters%MFSNO]
-       bmi_status = BMI_SUCCESS
-    case("RSURF_SNOW")
-       dest = [parameters%RSURF_SNOW]
-       bmi_status = BMI_SUCCESS
-    case("HVT")
-       dest = [parameters%HVT]
-       bmi_status = BMI_SUCCESS
-    case("BEXP")
-       dest = [parameters%bexp]
-       bmi_status = BMI_SUCCESS
-    case("SMCMAX")
-       dest = [parameters%smcmax]
-       bmi_status = BMI_SUCCESS
-    case("FRZX")
-       dest = [parameters%frzx]
-       bmi_status = BMI_SUCCESS
-    case("DKSAT")
-       dest = [parameters%dksat]
-       bmi_status = BMI_SUCCESS
-    case("KDT")
-       dest = [parameters%kdt]
-       bmi_status = BMI_SUCCESS
-    case("RSURF_EXP")
-       dest = [parameters%RSURF_EXP]
-       bmi_status = BMI_SUCCESS
-    case("REFKDT")
-       dest = [parameters%refkdt]
-       bmi_status = BMI_SUCCESS
+      dest = [water%ACSNOM]
+      bmi_status = BMI_SUCCESS
     case("AXAJ")
-       dest = [parameters%AXAJ]
-       bmi_status = BMI_SUCCESS
+      dest = [parameters%AXAJ]
+      bmi_status = BMI_SUCCESS
+    case("BEXP")
+      dest = [parameters%bexp]
+      bmi_status = BMI_SUCCESS
     case("BXAJ")
-       dest = [parameters%BXAJ]
-       bmi_status = BMI_SUCCESS
-    case("XXAJ")
-       dest = [parameters%XXAJ]
-       bmi_status = BMI_SUCCESS
-    case("SLOPE")
-       dest = [parameters%slope]
-       bmi_status = BMI_SUCCESS
+      dest = [parameters%BXAJ]
+      bmi_status = BMI_SUCCESS
+    case("CMC")
+      dest = [water%CMC]
+      bmi_status = BMI_SUCCESS
+    case("CWP")
+      dest = [parameters%CWP]
+      bmi_status = BMI_SUCCESS
+    case("DKSAT")
+      dest = [parameters%dksat]
+      bmi_status = BMI_SUCCESS
+    case("ECAN")
+      dest = [water%ECAN*domain%DT]
+      bmi_status = BMI_SUCCESS
+    case("ETRAN")
+      dest = [water%etran*domain%DT]
+      bmi_status = BMI_SUCCESS
+    case("EVAPOTRANS")
+      dest = [water%evapotrans*domain%DT*mm2m]
+      bmi_status = BMI_SUCCESS
+    case("FIRA")
+      dest = [energy%FIRA]
+      bmi_status = BMI_SUCCESS
+    case("FRZX")
+      dest = [parameters%frzx]
+      bmi_status = BMI_SUCCESS
+    case("FSA")
+      dest = [energy%FSA]
+      bmi_status = BMI_SUCCESS
+    case("FSH")
+      dest = [energy%FSH]
+      bmi_status = BMI_SUCCESS
+    case("FSNO")
+      dest = [water%FSNO]
+      bmi_status = BMI_SUCCESS
+    case("GH")
+      dest = [energy%GH]
+      bmi_status = BMI_SUCCESS
+    case("HVT")
+      dest = [parameters%HVT]
+      bmi_status = BMI_SUCCESS
+    case("KDT")
+      dest = [parameters%kdt]
+      bmi_status = BMI_SUCCESS
+    case("LH")
+      dest = [energy%LH]
+      bmi_status = BMI_SUCCESS
+    case("LWDN")
+      dest = [forcing%lwdn]
+      bmi_status = BMI_SUCCESS
+    case("MFSNO")
+      dest = [parameters%MFSNO]
+      bmi_status = BMI_SUCCESS
+    case("MP")
+      dest = [parameters%MP]
+      bmi_status = BMI_SUCCESS
+    case("PRCPNONC")
+      dest = [forcing%prcpnonc]
+      bmi_status = BMI_SUCCESS
+    case("Q2")
+      dest = [forcing%q2]
+      bmi_status = BMI_SUCCESS
+    case("QINSUR")
+      dest = [water%qinsur]
+      bmi_status = BMI_SUCCESS
+    case("QRAIN")
+      dest = [water%QRAIN]
+      bmi_status = BMI_SUCCESS
+    case("QSEVA")
+      dest = [water%qseva*m2mm]
+      bmi_status = BMI_SUCCESS
+    case("QSNOW")
+      dest = [water%QSNOW]
+      bmi_status = BMI_SUCCESS
+    case("REFKDT")
+      dest = [parameters%refkdt]
+      bmi_status = BMI_SUCCESS
+    case("RSURF_EXP")
+      dest = [parameters%RSURF_EXP]
+      bmi_status = BMI_SUCCESS
+    case("RSURF_SNOW")
+      dest = [parameters%RSURF_SNOW]
+      bmi_status = BMI_SUCCESS
     case("SCAMAX")
-       dest = [parameters%SCAMAX]
-       bmi_status = BMI_SUCCESS
+      dest = [parameters%SCAMAX]
+      bmi_status = BMI_SUCCESS    
+    case("SFCPRS")
+      dest = [forcing%sfcprs]
+      bmi_status = BMI_SUCCESS
+    case("SFCTMP")
+      dest = [forcing%sfctmp]
+      bmi_status = BMI_SUCCESS
+    case("SLOPE")
+      dest = [parameters%slope]
+      bmi_status = BMI_SUCCESS
+    case("SMCMAX")
+      dest = [parameters%smcmax]
+      bmi_status = BMI_SUCCESS
+    case("SNEQV")
+      dest = [water%sneqv]
+      bmi_status = BMI_SUCCESS
+    case("SNLIQ")
+      dest = [water%SNLIQ]
+      bmi_status = BMI_SUCCESS
+    case("SNOWH")
+      dest = [water%SNOWH]
+      bmi_status = BMI_SUCCESS
+    case("SNOWT_AVG")
+      dest = [energy%SNOWT_AVG]
+      bmi_status = BMI_SUCCESS
+    case("SOLDN")
+      dest = [forcing%soldn]
+      bmi_status = BMI_SUCCESS
+    case("TG")
+      dest = [energy%tg]
+      bmi_status = BMI_SUCCESS
+    case("TGS")
+      dest = [energy%tgs]
+      bmi_status = BMI_SUCCESS
+    case("TRAD")
+      dest = [energy%TRAD]
+      bmi_status = BMI_SUCCESS
+    case("UU")
+      dest = [forcing%uu]
+      bmi_status = BMI_SUCCESS
+    case("VCMX25")
+      dest = [parameters%VCMX25]
+      bmi_status = BMI_SUCCESS
+    case("VV")
+      dest = [forcing%vv]
+      bmi_status = BMI_SUCCESS
+    case("XXAJ")
+      dest = [parameters%XXAJ]
+      bmi_status = BMI_SUCCESS
     case default
        dest(:) = -1.0
        bmi_status = BMI_FAILURE
@@ -1231,108 +1231,108 @@ contains
               parameters => this%model%parameters)
 
     select case(name)
-    case("SFCPRS")
-       forcing%sfcprs = src(1)
-       bmi_status = BMI_SUCCESS
-    case("SFCTMP")
-       forcing%sfctmp = src(1)
-       bmi_status = BMI_SUCCESS
-    case("SOLDN")
-       forcing%soldn = src(1)
-       bmi_status = BMI_SUCCESS
-    case("LWDN")
-       forcing%lwdn = src(1)
-       bmi_status = BMI_SUCCESS
-    case("UU")
-       forcing%uu = src(1)
-       bmi_status = BMI_SUCCESS
-    case("VV")
-       forcing%vv = src(1)
-       bmi_status = BMI_SUCCESS
-    case("Q2")
-       forcing%q2 = src(1)
-       bmi_status = BMI_SUCCESS
-    case("PRCPNONC")
-       forcing%prcpnonc = src(1)
-       bmi_status = BMI_SUCCESS
-    case("QINSUR")
-       water%qinsur = src(1)
-       bmi_status = BMI_SUCCESS
-    case("ETRAN")
-       water%etran = src(1) / domain%DT
-       bmi_status = BMI_SUCCESS
-    case("QSEVA")
-       water%qseva = src(1) * mm2m 
-       bmi_status = BMI_SUCCESS
-    case("EVAPOTRANS")
-       water%evapotrans = src(1) * m2mm / domain%DT
-       bmi_status = BMI_SUCCESS
-    case("TG")
-       energy%tg = src(1)
-       bmi_status = BMI_SUCCESS
-    case("SNEQV")
-       water%sneqv = src(1)
-       bmi_status = BMI_SUCCESS
-    case("TGS")
-       energy%tgs = src(1)
-       bmi_status = BMI_SUCCESS
-    case("CWP")
-       parameters%CWP = src(1)
-       bmi_status = BMI_SUCCESS
-    case("VCMX25")
-       parameters%VCMX25 = src(1)
-       bmi_status = BMI_SUCCESS
-    case("MP")
-       parameters%MP = src(1)
-       bmi_status = BMI_SUCCESS
-    case("MFSNO")
-       parameters%MFSNO = src(1)
-       bmi_status = BMI_SUCCESS
-    case("RSURF_SNOW")
-       parameters%RSURF_SNOW = src(1)
-       bmi_status = BMI_SUCCESS
-    case("HVT")
-       parameters%HVT = src(1)
-       bmi_status = BMI_SUCCESS
-    case("BEXP")
-       parameters%bexp(:) = src(:)
-       bmi_status = BMI_SUCCESS
-    case("SMCMAX")
-       parameters%smcmax(:) = src(:)
-       parameters%frzx      = 0.15 * (parameters%smcmax(1) / parameters%smcref(1)) * (0.412 / 0.468)
-       bmi_status = BMI_SUCCESS
-    case("DKSAT")
-       parameters%dksat(:) = src(:)
-       parameters%kdt     = parameters%refkdt * parameters%dksat(1) / parameters%refdk
-       bmi_status = BMI_SUCCESS
-    case("KDT")
-       parameters%KDT = src(1)
-       bmi_status = BMI_SUCCESS
-    case("RSURF_EXP")
-       parameters%RSURF_EXP = src(1)
-       bmi_status = BMI_SUCCESS
-    case("REFKDT")
-       parameters%refkdt = src(1)
-       parameters%kdt     = parameters%refkdt * parameters%dksat(1) / parameters%refdk
-       bmi_status = BMI_SUCCESS
     case("AXAJ")
-       parameters%AXAJ = src(1)
-       bmi_status = BMI_SUCCESS
+      parameters%AXAJ = src(1)
+      bmi_status = BMI_SUCCESS
+    case("BEXP")
+      parameters%bexp(:) = src(:)
+      bmi_status = BMI_SUCCESS
     case("BXAJ")
-       parameters%BXAJ = src(1)
-       bmi_status = BMI_SUCCESS
-    case("XXAJ")
-       parameters%XXAJ = src(1)
-       bmi_status = BMI_SUCCESS
-    case("SLOPE")
-       parameters%slope = src(1)
-       bmi_status = BMI_SUCCESS
-    case("SCAMAX")
-       parameters%SCAMAX = src(1)
-       bmi_status = BMI_SUCCESS
+      parameters%BXAJ = src(1)
+      bmi_status = BMI_SUCCESS
+    case("CWP")
+      parameters%CWP = src(1)
+      bmi_status = BMI_SUCCESS
+    case("DKSAT")
+      parameters%dksat(:) = src(:)
+      parameters%kdt     = parameters%refkdt * parameters%dksat(1) / parameters%refdk
+      bmi_status = BMI_SUCCESS
+    case("ETRAN")
+      water%etran = src(1) / domain%DT
+      bmi_status = BMI_SUCCESS
+    case("EVAPOTRANS")
+      water%evapotrans = src(1) * m2mm / domain%DT
+      bmi_status = BMI_SUCCESS
     case("FRZX")
-       parameters%FRZX = src(1)
-       bmi_status = BMI_SUCCESS
+      parameters%FRZX = src(1)
+      bmi_status = BMI_SUCCESS
+    case("HVT")
+      parameters%HVT = src(1)
+      bmi_status = BMI_SUCCESS
+    case("KDT")
+      parameters%KDT = src(1)
+      bmi_status = BMI_SUCCESS
+    case("LWDN")
+      forcing%lwdn = src(1)
+      bmi_status = BMI_SUCCESS
+    case("MFSNO")
+      parameters%MFSNO = src(1)
+      bmi_status = BMI_SUCCESS
+    case("MP")
+      parameters%MP = src(1)
+      bmi_status = BMI_SUCCESS
+    case("PRCPNONC")
+      forcing%prcpnonc = src(1)
+      bmi_status = BMI_SUCCESS
+    case("Q2")
+      forcing%q2 = src(1)
+      bmi_status = BMI_SUCCESS
+    case("QINSUR")
+      water%qinsur = src(1)
+      bmi_status = BMI_SUCCESS
+    case("QSEVA")
+      water%qseva = src(1) * mm2m 
+      bmi_status = BMI_SUCCESS
+    case("REFKDT")
+      parameters%refkdt = src(1)
+      parameters%kdt     = parameters%refkdt * parameters%dksat(1) / parameters%refdk
+      bmi_status = BMI_SUCCESS
+    case("RSURF_EXP")
+      parameters%RSURF_EXP = src(1)
+      bmi_status = BMI_SUCCESS
+    case("RSURF_SNOW")
+      parameters%RSURF_SNOW = src(1)
+      bmi_status = BMI_SUCCESS
+    case("SCAMAX")
+      parameters%SCAMAX = src(1)
+      bmi_status = BMI_SUCCESS
+    case("SFCPRS")
+      forcing%sfcprs = src(1)
+      bmi_status = BMI_SUCCESS
+    case("SFCTMP")
+      forcing%sfctmp = src(1)
+      bmi_status = BMI_SUCCESS
+    case("SLOPE")
+      parameters%slope = src(1)
+      bmi_status = BMI_SUCCESS
+    case("SMCMAX")
+      parameters%smcmax(:) = src(:)
+      parameters%frzx      = 0.15 * (parameters%smcmax(1) / parameters%smcref(1)) * (0.412 / 0.468)
+      bmi_status = BMI_SUCCESS
+    case("SNEQV")
+      water%sneqv = src(1)
+      bmi_status = BMI_SUCCESS
+    case("SOLDN")
+      forcing%soldn = src(1)
+      bmi_status = BMI_SUCCESS
+    case("TG")
+      energy%tg = src(1)
+      bmi_status = BMI_SUCCESS
+    case("TGS")
+      energy%tgs = src(1)
+      bmi_status = BMI_SUCCESS
+    case("UU")
+      forcing%uu = src(1)
+      bmi_status = BMI_SUCCESS
+    case("VCMX25")
+      parameters%VCMX25 = src(1)
+      bmi_status = BMI_SUCCESS
+    case("VV")
+      forcing%vv = src(1)
+      bmi_status = BMI_SUCCESS
+    case("XXAJ")
+      parameters%XXAJ = src(1)
+      bmi_status = BMI_SUCCESS
     case default
        bmi_status = BMI_FAILURE
     end select
