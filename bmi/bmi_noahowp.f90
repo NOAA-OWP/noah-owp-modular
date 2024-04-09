@@ -301,18 +301,19 @@ contains
     integer :: bmi_status
 
     select case(name)
-    case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! input vars
-         'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS',    & ! output vars
-         'ACSNOM','SNOWT_AVG','ISNOW','QRAIN','FSNO','SNOWH','QSNOW',       &
-         'ECAN','GH','TRAD','FSA','CMC','LH','FIRA','FSH','CWP','VCMX25',   &
-         'MP','MFSNO','RSURF_SNOW','HVT','FRZX','KDT','RSURF_EXP','REFKDT', &
-         'AXAJ','BXAJ','XXAJ','SLOPE','SCAMAX')
+    case('ACSNOM', 'AXAJ', 'BXAJ', 'CMC', 'CWP', 'ECAN', 'ETRAN',            &
+         'EVAPOTRANS', 'FIRA', 'FRZX', 'FSA', 'FSH', 'FSNO', 'GH',           &
+         'HVT', 'ISNOW', 'KDT', 'LH', 'LWDN', 'MFSNO', 'MP', 'PRCPNONC',     &
+         'Q2', 'QINSUR', 'QRAIN', 'QSEVA', 'QSNOW', 'REFKDT', 'RSURF_EXP',   &
+         'RSURF_SNOW', 'SCAMAX', 'SFCPRS', 'SFCTMP', 'SLOPE', 'SNEQV',       &
+         'SNOWH', 'SNOWT_AVG', 'SOLDN', 'TG', 'TGS', 'TRAD', 'UU', 'VCMX25', &
+         'VV', 'XXAJ')
          grid = 0
          bmi_status = BMI_SUCCESS
     case('SNLIQ')
          grid = 1
          bmi_status = BMI_SUCCESS
-    case('BEXP','SMCMAX','DKSAT')
+    case('BEXP','DKSAT','SMCMAX')
          grid = 2
          bmi_status = BMI_SUCCESS
     case default
@@ -600,11 +601,13 @@ contains
     integer :: bmi_status
 
     select case(name)
-    case('SFCPRS', 'SFCTMP', 'SOLDN', 'LWDN', 'UU', 'VV', 'Q2', 'PRCPNONC', & ! forcing vars
-       'QINSUR', 'ETRAN', 'QSEVA', 'EVAPOTRANS', 'TG', 'SNEQV', 'TGS', 'ACSNOM', 'SNOWT_AVG', &      ! output vars
-       'QRAIN', 'FSNO', 'SNOWH', 'SNLIQ', 'QSNOW', 'ECAN', 'GH', 'TRAD', 'FSA', 'CMC', 'LH', 'FIRA', 'FSH', &
-       'CWP','VCMX25','MP','MFSNO','RSURF_SNOW','HVT','FRZX','KDT','RSURF_EXP','REFKDT', &
-       'AXAJ','BXAJ','XXAJ','SLOPE','SCAMAX','BEXP','SMCMAX','DKSAT')
+    case('ACSNOM', 'AXAJ', 'BEXP', 'BXAJ', 'CMC', 'CWP', 'DKSAT',          &
+         'ECAN', 'ETRAN', 'EVAPOTRANS', 'FIRA', 'FRZX', 'FSA', 'FSH',      &
+         'FSNO', 'GH', 'HVT', 'KDT', 'LH', 'LWDN', 'MFSNO', 'MP',          &
+         'PRCPNONC', 'Q2', 'QINSUR', 'QRAIN', 'QSEVA', 'QSNOW', 'REFKDT',  &
+         'RSURF_EXP', 'RSURF_SNOW', 'SCAMAX', 'SFCPRS', 'SFCTMP', 'SLOPE', &
+         'SMCMAX', 'SNEQV', 'SNLIQ', 'SNOWH', 'SNOWT_AVG', 'SOLDN', 'TG',  &
+         'TGS', 'TRAD', 'UU', 'VCMX25', 'VV', 'XXAJ')
        type = "real"
        bmi_status = BMI_SUCCESS
     case('ISNOW')
