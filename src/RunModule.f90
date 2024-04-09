@@ -259,9 +259,6 @@ contains
       !---------------------------------------------------------------------
       !--- check consistency of domain land use and soil attributes ---
       !---------------------------------------------------------------------
-      where (domaingrid%mask.eq.1) domaingrid%vegtyp = parametersgrid%ISWATER
-      where (domaingrid%mask.eq.1) domaingrid%isltyp = 1
-
       allocate(err_grid(domaingrid%n_x,domaingrid%n_y)); err_grid(:,:) = 0
       where (domaingrid%mask.eq.1.and.domaingrid%vegtyp.ne.parametersgrid%ISWATER.and.domaingrid%isltyp.eq.14) err_grid = 1
       if(any(err_grid.eq.1)) then; err_indices = maxloc(err_grid); write(*,*) 'ERROR: vegtyp is not water but isltyp is water - lat=',domaingrid%lat(err_indices(1),err_indices(2)),' lon=',domaingrid%lon(err_indices(1),err_indices(2)); stop; end if
