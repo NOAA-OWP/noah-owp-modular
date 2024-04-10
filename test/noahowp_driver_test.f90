@@ -34,6 +34,7 @@ program noahmp_driver_test
     character (len = BMI_MAX_VAR_NAME)                :: name             ! var name
     integer                                           :: n_inputs         ! n input vars
     integer                                           :: n_outputs        ! n output vars
+    integer                                           :: n_params         ! n calibratable parameters
     integer                                           :: iBMI             ! loop counter
     character (len = 20)                              :: var_type         ! name of variable type
     character (len = 10)                              :: var_units        ! variable units
@@ -46,6 +47,7 @@ program noahmp_driver_test
     double precision                                  :: current_time     ! current model time
     character (len = 1)                               :: ts_units         ! timestep units
     real, allocatable, target                         :: var_value_get_real(:) ! value of a variable
+    real, allocatable, target                         :: var_value_get_real_temp(:) ! value of a variable
     real, allocatable                                 :: var_value_set_real(:) ! value of a variable
     integer, allocatable, target                      :: var_value_get_int(:) ! value of a variable
     integer, allocatable                              :: var_value_set_int(:) ! value of a variable
@@ -60,11 +62,14 @@ program noahmp_driver_test
     double precision, dimension(1)                    :: grid_x           ! X coordinate of grid nodes (change dims if multiple nodes)
     double precision, dimension(1)                    :: grid_y           ! Y coordinate of grid nodes (change dims if multiple nodes)
     double precision, dimension(1)                    :: grid_z           ! Y coordinate of grid nodes (change dims if multiple nodes)
-    
+    real                                              :: temp_scalar
     real, pointer                                     :: var_value_get_real_ptr(:) ! value of a variable for get_value_ptr
     integer, pointer                                  :: var_value_get_int_ptr(:) ! value of a variable for get_value_ptr
 
     integer, allocatable, dimension(:)                :: grid_indices       ! grid indices (change dims as needed)
+    character (len = BMI_MAX_VAR_NAME), dimension(17) :: names_params = [character(len=BMI_MAX_VAR_NAME) :: "CWP","VCMX25","MP","MFSNO","RSURF_SNOW","HVT","BEXP","SMCMAX","FRZX", &
+                                                                                                            "DKSAT","KDT","RSURF_EXP","REFKDT","AXAJ","BXAJ","SLOPE","SCAMAX"]
+
   !---------------------------------------------------------------------
   !  Initialize
   !---------------------------------------------------------------------
@@ -88,6 +93,10 @@ program noahmp_driver_test
     print*, "Total output vars = ", count
     n_outputs = count
 
+    count = size(names_params)
+    print*, "Total calibratable parameters = ", count
+    n_params = count
+
     status = m%get_input_var_names(names_inputs)
     do iBMI = 1, n_inputs
       print*, "Input var = ", trim(names_inputs(iBMI))
@@ -97,17 +106,23 @@ program noahmp_driver_test
     do iBMI = 1, n_outputs
       print*, "Output var = ", trim(names_outputs(iBMI))
     end do
+
+    do iBMI = 1, n_params
+      print*, "Calibratable param = ", trim(names_params(iBMI))
+    end do
     
     ! Sum input and outputs to get total vars
-    count = n_inputs + n_outputs
+    count = n_inputs + n_outputs + n_params
     
     ! Get other variable info
     do j = 1, count
       name = ''
       if(j <= n_inputs) then
-        name = names_inputs(j)
+        name = trim(names_inputs(j))
+      else if(j <= n_inputs + n_outputs) then
+        name = trim(names_outputs(j - n_inputs))
       else
-        name = names_outputs(j - n_inputs)
+        name = trim(names_params(j - n_inputs - n_outputs))
       end if
       status = m%get_var_type(trim(name), var_type)
       status = m%get_var_units(trim(name), var_units)
@@ -171,9 +186,11 @@ program noahmp_driver_test
     do iBMI = 1, count
       name = ''
       if(iBMI <= n_inputs) then
-        name = names_inputs(iBMI)
+        name = trim(names_inputs(iBMI))
+      else if(iBMI <= n_inputs + n_outputs) then
+        name = trim(names_outputs(iBMI - n_inputs))
       else
-        name = names_outputs(iBMI - n_inputs)
+        name = trim(names_params(iBMI - n_inputs - n_outputs))
       end if
       status = m%get_var_type(trim(name),var_type)
       status = m%get_var_grid(trim(name),grid_int)
@@ -198,10 +215,50 @@ program noahmp_driver_test
         var_value_set_real = 999
         status = m%get_value(trim(name), var_value_get_real)
         print*, trim(name), " from get_value = ", var_value_get_real
+        select case (trim(name))
+        case('SMCMAX')
+          if(allocated(var_value_get_real_temp)) deallocate(var_value_get_real_temp)
+          allocate(var_value_get_real_temp(1))
+          status = m%get_value('FRZX', var_value_get_real_temp)
+          print*,"    (FRZX is recalculated by setting SMCMAX)"
+          print*,"    from get_value (for FRZX)= ", var_value_get_real_temp
+        case('DKSAT')
+          if(allocated(var_value_get_real_temp)) deallocate(var_value_get_real_temp)
+          allocate(var_value_get_real_temp(1))
+          status = m%get_value('KDT', var_value_get_real_temp)
+          print*,"    (KDT is recalculated by setting DKSAT)"
+          print*,"    from get_value (for KDT)= ", var_value_get_real_temp
+        case('REFKDT')
+          if(allocated(var_value_get_real_temp)) deallocate(var_value_get_real_temp)
+          allocate(var_value_get_real_temp(1))
+          status = m%get_value('KDT', var_value_get_real_temp)
+          print*,"    (KDT is recalculated by setting REFKDT)"
+          print*,"    from get_value (for KDT)= ", var_value_get_real_temp
+        end select
         print*, "    our replacement value = ", var_value_set_real
         status = m%set_value(trim(name), var_value_set_real)
         status = m%get_value(trim(name), var_value_get_real)
         print*, "    and the new value of ", trim(name), " = ", var_value_get_real
+        select case (trim(name))
+        case('SMCMAX')
+          if(allocated(var_value_get_real_temp)) deallocate(var_value_get_real_temp)
+          allocate(var_value_get_real_temp(1))
+          status = m%get_value('FRZX', var_value_get_real_temp)
+          print*,"    (FRZX is recalculated by setting SMCMAX)"
+          print*,"    from get_value (for FRZX)= ", var_value_get_real_temp
+        case('DKSAT')
+          if(allocated(var_value_get_real_temp)) deallocate(var_value_get_real_temp)
+          allocate(var_value_get_real_temp(1))
+          status = m%get_value('KDT', var_value_get_real_temp)
+          print*,"    (KDT is recalculated by setting DKSAT)"
+          print*,"    from get_value (for KDT)= ", var_value_get_real_temp
+        case('REFKDT')
+          if(allocated(var_value_get_real_temp)) deallocate(var_value_get_real_temp)
+          allocate(var_value_get_real_temp(1))
+          status = m%get_value('KDT', var_value_get_real_temp)
+          print*,"    (KDT is recalculated by setting REFKDT)"
+          print*,"    from get_value (for KDT)= ", var_value_get_real_temp
+        end select
       end if
     end do
     
@@ -213,9 +270,11 @@ program noahmp_driver_test
     do iBMI = 1, count
       name = ''
       if(iBMI <= n_inputs) then
-        name = names_inputs(iBMI)
+        name = trim(names_inputs(iBMI))
+      else if(iBMI <= n_inputs + n_outputs) then
+        name = trim(names_outputs(iBMI - n_inputs))
       else
-        name = names_outputs(iBMI - n_inputs)
+        name = trim(names_params(iBMI - n_inputs - n_outputs))
       end if
       status = m%get_var_type(trim(name),var_type)
       status = m%get_var_grid(trim(name),grid_int)
@@ -250,9 +309,11 @@ program noahmp_driver_test
     do iBMI = 1, count
       name = ''
       if(iBMI <= n_inputs) then
-        name = names_inputs(iBMI)
+        name = trim(names_inputs(iBMI))
+      else if(iBMI <= n_inputs + n_outputs) then
+        name = trim(names_outputs(iBMI - n_inputs))
       else
-        name = names_outputs(iBMI - n_inputs)
+        name = trim(names_params(iBMI - n_inputs - n_outputs))
       end if
       status = m%get_var_type(trim(name),var_type)
       status = m%get_var_grid(trim(name),grid_int)
@@ -300,22 +361,28 @@ program noahmp_driver_test
   !---------------------------------------------------------------------
   ! Test the grid info functionality with BMI
   !---------------------------------------------------------------------
+  do iBMI = 1, count
 
-    ! All vars currently have same spatial discretization
-    ! Modify to test all discretizations if > 1
+    name = ''
+    if(iBMI <= n_inputs) then
+      name = trim(names_inputs(iBMI))
+    else if(iBMI <= n_inputs + n_outputs) then
+      name = trim(names_outputs(iBMI - n_inputs))
+    else
+      name = trim(names_params(iBMI - n_inputs - n_outputs))
+    end if
     
     ! get_var_grid
-    iBMI = 1
-    status = m%get_var_grid(trim(names_outputs(iBMI)), grid_int)
-    print*, "The integer value for the ", trim(names_outputs(iBMI)), " grid is ", grid_int
+    status = m%get_var_grid(trim(name), grid_int)
+    print*, "The integer value for the ", trim(name), " grid is ", grid_int
     
     ! get_grid_type
     status = m%get_grid_type(grid_int, grid_type)
-    print*, "The grid type for ", trim(names_outputs(iBMI)), " is ", trim(grid_type)
+    print*, "The grid type for ", trim(name), " is ", trim(grid_type)
     
     ! get_grid_rank
     status = m%get_grid_rank(grid_int, grid_rank)
-    print*, "The grid rank for ", trim(names_outputs(iBMI)), " is ", grid_rank
+    print*, "The grid rank for ", trim(name), " is ", grid_rank
     
     ! get_grid_shape
     ! only scalars implemented thus far
@@ -326,7 +393,7 @@ program noahmp_driver_test
     
     ! get_grid_size
     status = m%get_grid_size(grid_int, grid_size)
-    print*, "The grid size for ", trim(names_outputs(iBMI)), " is ", grid_size
+    print*, "The grid size for ", trim(name), " is ", grid_size
     
     ! get_grid_spacing
     ! only scalars implemented thus far
@@ -351,6 +418,8 @@ program noahmp_driver_test
     print*, "The Y coord for grid ", grid_int, " is ", grid_y
     print*, "The Z coord for grid ", grid_int, " is ", grid_z
     
+  end do
+
   !---------------------------------------------------------------------
   ! The following functions are not implemented/only return BMI_FAILURE
   ! Change if your model implements them
