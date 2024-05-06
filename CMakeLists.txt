@@ -3,7 +3,7 @@
 # cd ../build
 # cmake ../noah-owp-modular
 # cmake --build . -- VERBOSE=1
-# cd ../noah-owp-modular
+# cd ../noah-owp-modular/run
 # ../../build/noah-owp-modular.exe namelist.input
 # cd ../test
 # ../../build/noahowp_driver_test.exe ../run/namelist.input
