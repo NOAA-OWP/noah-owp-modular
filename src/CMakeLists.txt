@@ -1,10 +1,3 @@
-set(SRC_X    DomainGridType.f90
-             EnergyGridType.f90
-             ForcingType.f90
-             UtilitiesModule.f90
-             WaterType.f90
-             CACHE INTERNAL "")
-
 set(SRC_MODS AsciiReadModule.f90
              AlbedoModule.f90
              AtmProcessing.f90
@@ -17,6 +10,10 @@ set(SRC_MODS AsciiReadModule.f90
              DevNotes.txt
              DomainType.f90
              DomainGridType.f90
+             EnergyGridType.f90
+             ForcingType.f90
+             UtilitiesModule.f90
+             WaterType.f90
              EnergyModule.f90
              EnergyGridType.f90
              EnergyType.f90
@@ -54,5 +51,4 @@ set(SRC_MODS AsciiReadModule.f90
              WaterModule.f90
              WaterType.f90
              CACHE INTERNAL "")
-add_library(srcx "${SRC_X}")
 add_library(src "${SRC_MODS}")
