@@ -45,13 +45,13 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "G95")
   message(FATAL_ERROR "G95 Fortran compiler not configured.")
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
   # Mac OS Gfortran F90FLAGS and FREESOURCE flags
-  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-g;-cpp;-fbacktrace;-Wall;-fcheck=all>")
+  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-cpp;-fbacktrace;-fcheck=all>")
   add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-ffree-form;-ffree-line-length-none;-fbounds-check;-ffpe-trap=overflow,invalid,zero>")
   # Linux Gfortran F90FLAGS and FREESOURCE flags
-  #add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-g;-cpp;-fbacktrace;-Wall;-fcheck=all>")
+  #add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-cpp;-fbacktrace;-fcheck=all>")
   #add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-ffree-form;-ffree-line-length-none>")
   # Big Sur Gfortran F90FLAGS and FREESOURCE flags
-  #add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-g;-cpp;-fbacktrace;-Wall;-fcheck=all>")
+  #add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-cpp;-fbacktrace;-fcheck=all>")
   #add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-ffree-form;-ffree-line-length-none>")
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
   add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-check;-warn;-traceback>")
@@ -61,15 +61,12 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "LLVMFlang")
   message(FATAL_ERROR "LLVM Flang Fortran compiler not configured.")
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "PGI")
   # Linux pgf90 F90FLAGS and FREESOURCE flags
-  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-g;-cpp;-Kieee>")
+  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-cpp;-Kieee>")
   add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Mfree>")
   # Cheyenne pgf90 F90FLAGS and FREESOURCE flags
-  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-g;-cpp;-Kieee;-byteswapio;-Mbackslash>")
+  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-cpp;-Kieee;-byteswapio;-Mbackslash>")
   add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Mfree>")
 endif()
-
-# NetCDF compiler flags
-add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-I ${NETCDF_INC_DIR};-L ${NETCDF_LIB_DIR} -lnetcdff>")
 
 # Set some options the user may choose
 # Uncomment the below if you want the user to choose a parallelization library
@@ -117,7 +114,7 @@ add_executable(noahowp_driver_test.exe "${PROJECT_SOURCE_DIR}/test/noahowp_drive
 include_directories(bmi src ${lib})
 target_link_libraries(noah-owp-modular.exe bmi src ${NETCDF_LIBRARIES})
 target_link_libraries(noahowp_driver_test.exe bmi src ${NETCDF_LIBRARIES})
-add_link_options("$<$<COMPILE_LANGUAGE:Fortran>:-I ${NETCDF_INC_DIR};-L ${NETCDF_LIB_DIR} -lnetcdff>")
+add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-I ${NETCDF_INC_DIR};-L ${NETCDF_LIB_DIR} -lnetcdff>")
 
 # Have the .mod files placed in the lib folder
 set(CMAKE_Fortran_MODULE_DIRECTORY ${lib})
