@@ -1,12 +1,15 @@
 module ErrorCheckModule
 
-  ! General error checking routins
-
+  ! General error checking routines
   implicit none
+  integer, parameter, public :: NOM_SUCCESS = 0
+  integer, parameter, public :: NOM_FAILURE = 1
+  integer, parameter, public :: NOM_MESSAGE = 2
 
   private
   public:: sys_abort
   public:: is_within_bound
+  public:: log_message
 
   interface is_within_bound
     module procedure is_within_bound_int
@@ -31,6 +34,29 @@ contains
     endif
 
   end subroutine sys_abort
+
+  subroutine log_message(err, message)
+
+    ! log information, typically an error
+
+    implicit none
+
+    integer, intent(in) :: err                  ! error code
+    character(*), intent(in) :: message         ! message
+
+    ! If error, write the error. If message, write message unless NGEN_QUIET
+    if(err==NOM_FAILURE)then
+      write(*, '(A,I2,A)') ' Error Code: ', err, ',  Message: '//trim(message)
+      call flush(6)
+    endif
+#ifndef NGEN_QUIET
+    if(err==NOM_MESSAGE)then
+      write(*, '(A,I2,A)') ' Error Code: ', err, ',  Message: '//trim(message)
+      call flush(6)
+    endif
+#endif
+
+  end subroutine log_message
 
   function is_within_bound_int(var, lower_bound, upper_bound) result(withinbound)
 

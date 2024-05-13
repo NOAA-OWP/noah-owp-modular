@@ -2,6 +2,7 @@ module DomainType
 
 use NamelistRead, only: namelist_type
 use DateTimeUtilsModule
+use ErrorCheckModule
 
 implicit none
 save
@@ -122,6 +123,9 @@ contains
     this%error_flag     = 0 ! model initializes with no errors
     this%start_datetime = date_to_unix(namelist%startdate)  ! returns seconds-since-1970-01-01
     this%end_datetime   = date_to_unix(namelist%enddate)
+    if (this%start_datetime < 0 .OR. this%end_datetime < 0) then
+      this%error_flag = NOM_FAILURE
+    endif
   
   end subroutine InitTransfer
 

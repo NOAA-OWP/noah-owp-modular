@@ -2,6 +2,7 @@ module ParametersType
 
 use NamelistRead, only: namelist_type
 use ParametersRead
+use ErrorCheckModule
 
 implicit none
 save
@@ -196,22 +197,37 @@ contains
 
   end subroutine InitDefault
 
-  subroutine paramRead(this, namelist)
+  subroutine paramRead(this, namelist, error_flag)
     implicit none
     class(parameters_type)           :: this
     class(namelist_type), intent(in) :: namelist
+    integer,              intent(out):: error_flag
     ! local variables
     integer                          :: ix
     character(len=50)                :: dataset_identifier
 
     !dataset_identifier = "MODIFIED_IGBP_MODIS_NOAH"   ! This can be in namelist
     !call read_veg_parameters(namelist%parameter_dir, namelist%noahowp_table, dataset_identifier)
-    call read_soil_parameters(namelist%parameter_dir, namelist%soil_table, namelist%general_table, namelist%soil_class_name)
-    call read_veg_parameters(namelist%parameter_dir, namelist%noahowp_table, namelist%veg_class_name)
-    !call read_soil_parameters(namelist%parameter_dir, namelist%soil_table, namelist%general_table)
 
-    call read_rad_parameters(namelist%parameter_dir, namelist%noahowp_table)
-    call read_global_parameters(namelist%parameter_dir, namelist%noahowp_table)
+    call read_soil_parameters(namelist%parameter_dir, namelist%soil_table, namelist%general_table, namelist%soil_class_name, error_flag)
+    if (error_flag == NOM_FAILURE) then
+      return
+    end if
+
+    call read_veg_parameters(namelist%parameter_dir, namelist%noahowp_table, namelist%veg_class_name, error_flag)
+    if (error_flag == NOM_FAILURE) then
+      return
+    end if
+
+    call read_rad_parameters(namelist%parameter_dir, namelist%noahowp_table, error_flag)
+    if (error_flag == NOM_FAILURE) then
+      return
+    end if
+
+    call read_global_parameters(namelist%parameter_dir, namelist%noahowp_table, error_flag)
+    if (error_flag == NOM_FAILURE) then
+      return
+    end if
 
 !---------------------------------------------------------------------
 !  transfer to structure

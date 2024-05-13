@@ -1,16 +1,19 @@
 module AsciiReadModule
   
   use UtilitiesModule
+  use ErrorCheckModule
   
   implicit none
   
 contains
   
-  subroutine open_forcing_file(filename)
+  subroutine open_forcing_file(filename, error_flag)
     
     implicit none
     
     character*256, intent(in)  :: filename
+    integer,       intent(out) :: error_flag
+    character(len=256)         :: error_string
     
     !---------------------------------------------------------------------
     !  local variables
@@ -22,23 +25,25 @@ contains
     !  Check if the specified file exists
     inquire(file = trim(filename), exist = lexist)
     if (.not. lexist) then
-       write(*,'(/," ***** Problem *****")')
-       write(*,'(" ***** File ''", A, "'' does not exist.")') trim(filename)
-       write(*,'(" ***** Check the forcing file specified as a command-line argument",/)')
-       stop ":  ERROR EXIT"
+       error_flag = NOM_FAILURE
+       write(error_string,'(A,A,A)') "AsciiReadModule.f90:open_forcing_file(): File: ",trim(filename), " does not exist. Check the forcing file specified as a command-line argument"
+       call log_message(error_flag, error_string)
+       return
     endif
     
     ! Open the forcing file 
     open(10, file = trim(filename), form = 'formatted', action = 'read', iostat = ierr)
     if (ierr /= 0) then
-       write(*,'("Problem opening file ''", A, "''")') trim(filename)
-       stop ":  ERROR EXIT"
+       error_flag = NOM_FAILURE
+       write(error_string,'(A,A,A)') "ReadModule.f90:open_forcing_file(): Problem opening file: ",trim(filename)
+       call log_message(error_flag, error_string)
+       return
     endif
     
   end subroutine open_forcing_file
   
   subroutine read_forcing_text(iunit, nowdate, forcing_timestep, &
-    u, v, sfctmp, spechumd, sfcprs, swrad, lwrad, pcprate, ierr)
+    u, v, sfctmp, spechumd, sfcprs, swrad, lwrad, pcprate, ierr, error_flag)
     
     implicit none
 
@@ -55,6 +60,7 @@ contains
     real,              intent(out) :: lwrad
     real,              intent(out) :: pcprate
     integer,           intent(out) :: ierr
+    integer,           intent(out) :: error_flag
     real,              intent(out) :: u
     real,              intent(out) :: v
 
@@ -66,6 +72,7 @@ contains
     integer           :: hour
     integer           :: minute
     character(len=12) :: readdate
+    character(len=256):: error_string
     real              :: read_windspeed
     real              :: read_winddir
     real              :: read_temperature
@@ -166,10 +173,11 @@ contains
 
           return
        endif
-       if (ierr /= 0) then
-          write(*,'("Error reading from data file.")')
-          ierr = 2
-          return
+       if (ierr /= 0) then 
+         error_flag = NOM_FAILURE
+         write(error_string,'(A)') "AsciiReadModule.f90:read_forcing_text(): Error reading from data file."
+         call log_message(error_flag, error_string)
+         return
        endif
        write(readdate,'(I4.4,4I2.2)') year, month, day, hour, minute
 
@@ -185,7 +193,10 @@ contains
           before = fdata ( readdate, read_windspeed, read_winddir, read_temperature, read_humidity, read_pressure, read_swrad, read_lwrad, read_rain )
           cycle READLOOP
        else
-          stop "Logic problem"
+         error_flag = NOM_FAILURE
+         write(error_string,'(A)') "AsciiReadModule.f90:read_forcing_text(): Logic problem."
+         call log_message(error_flag, error_string)
+         return
        endif
     enddo READLOOP
 
@@ -216,8 +227,11 @@ contains
 
     else if (before%readdate < nowdate .and. nowdate < after%readdate) then
 
-       call geth_idts(nowdate, before%readdate, idts)
-       call geth_idts(after%readdate, before%readdate, idts2)
+       call geth_idts(nowdate, before%readdate, idts, error_flag)
+       call geth_idts(after%readdate, before%readdate, idts2, error_flag)
+       if (error_flag == NOM_FAILURE) then
+         return
+       endif
 
        if (idts2*60 /= forcing_timestep) then
           print*, 'forcing_timestep = ', forcing_timestep
@@ -226,7 +240,10 @@ contains
           print*, 'idts = ', idts
           print*,' after%readdate = ', after%readdate
           print*, 'idts2 = ', idts2
-          stop "IDTS PROBLEM"
+          error_flag = NOM_FAILURE
+          write(error_string,'(A)') "AsciiReadModule.f90:read_forcing_text(): IDTS PROBLEM."
+          call log_message(error_flag, error_string)
+          return
        endif
 
        fraction = real(idts2-idts)/real(idts2)
@@ -250,8 +267,10 @@ contains
        rhf = rhf * 1.E-2
 
     else
-       print*, 'nowdate = "'//nowdate//'"'
-       stop "Problem in the logic of read_forcing_text."
+       error_flag = NOM_FAILURE
+       write(error_string,'(A,A,A)') "AsciiReadModule.f90:read_forcing_text(): date: ", nowdate, ". Problem in the logic of read_forcing_text."
+       call log_message(error_flag, error_string)
+       return
     endif
 
 ! Below commented out KSJ 2021-06-09

@@ -196,12 +196,14 @@ contains
     character (len=*), intent(in) :: config_file
     integer :: bmi_status
 
+    bmi_status = BMI_SUCCESS
     if (len(config_file) > 0) then
        call initialize_from_file(this%model, config_file)
     else
        !call initialize_from_defaults(this%model)
     end if
-    bmi_status = BMI_SUCCESS
+    bmi_status = this%model%domain%error_flag
+
   end function noahowp_initialize
 
   ! BMI finalizer.
@@ -267,14 +269,14 @@ contains
   function noahowp_update(this) result (bmi_status)
     class (bmi_noahowp), intent(inout) :: this
     integer :: bmi_status
+    bmi_status = BMI_SUCCESS
 
     call advance_in_time(this%model)
-    if (this%model%domain%error_flag /= 0) then
+    if (this%model%domain%error_flag == BMI_FAILURE) then
       bmi_status = BMI_FAILURE
       return
-    else
-      bmi_status = BMI_SUCCESS
     end if
+
   end function noahowp_update
 
   ! Advance the model until the given time.

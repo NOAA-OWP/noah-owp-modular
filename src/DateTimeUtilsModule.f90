@@ -3,6 +3,8 @@
 
 module DateTimeUtilsModule
 
+  use ErrorCheckModule
+
   implicit none
   public
  
@@ -879,14 +881,15 @@ contains
     character (len=*), intent (in) :: date
     double precision :: u_day, i_day, days
     integer :: sec, min, hour, day, month, year, error
+    character(len=256) :: error_string
  
     call parse_date (date, year, month, day, hour, min, sec, error)
     
     if (error /= 0) then
       date_to_unix = -9999.99
-      print*, 'error in date_to_unix -- date, year, month, day, hour, min, sec, error:'
-      print*, date, year, month, day, hour, min, sec, error
-      stop !return
+      write(error_string,'(A,A,A,I4,A,I4,A,I4,A,I4,A,I4,A,I4,A,I4)') "DateTimeUtilsModule.f90:date_to_unix():  date: ",date,"  year: ",year,"  month: ",month,"  day: ",day,"  hour: ",hour,"  min: ",min,"  sec: ",sec, "  Error: ",error
+      call log_message(NOM_FAILURE, error_string)
+      return
     end if
  
     u_day = julian_date (1, 1, 1970)
@@ -959,7 +962,7 @@ contains
   end function julian_date
 
   
-  subroutine get_utime_list (start_datetime, end_datetime, dt, times)
+  subroutine get_utime_list (start_datetime, end_datetime, dt, times, error_flag)
     ! makes a list of data times in secs since 1970-1-1 corresponding to requested period
     ! reports end-of-timestep points
     implicit none
@@ -967,15 +970,18 @@ contains
     real*8, intent (in)               :: start_datetime, end_datetime
     real, intent (in)                 :: dt
     real*8, allocatable, intent (out) :: times(:)
+    integer, intent (out)             :: error_flag
     !local
     integer                           :: t, ntimes
     real*8                            :: utime
+    character(len=256)                :: error_string
 
     if(abs(mod(end_datetime - start_datetime, dt)) > 1e-5) then
-      print*, 'start and end datetimes are not an even multiple of dt -- check dates in namelist' 
-      print*, 'end_datetime, start_datetime, dt, mod:', end_datetime, start_datetime, dt, mod(end_datetime-start_datetime, dt) 
-      stop 
-    end if
+       error_flag = NOM_FAILURE  
+       write(error_string,'(A,G8.3,A,G8.3,A,G8.3,A,G8.3)') "DateTimeUtilsModule.f90:get_utime_list(): start and end datetimes are not an even multiple of dt -- check dates in namelist: end_datetime: ",end_datetime,"  start_datetime: ",start_datetime,"  dt: ",dt,"  mod: ", mod(end_datetime-start_datetime, dt)
+       call log_message(error_flag, error_string)
+       return
+    endif
 
     ntimes = int((end_datetime - start_datetime)/dt) + 1
     allocate (times(ntimes))

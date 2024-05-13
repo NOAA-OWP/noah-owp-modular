@@ -18,8 +18,10 @@ module RunModule
   use EnergyModule
   use WaterModule
   use DateTimeUtilsModule
+  use ErrorCheckModule
   
   implicit none
+
   type :: noahowp_type
     type(namelist_type)   :: namelist
     type(levels_type)     :: levels
@@ -60,12 +62,18 @@ contains
 
       call domain%Init(namelist)
       call domain%InitTransfer(namelist)
+      if (domain%error_flag == NOM_FAILURE) then
+        return
+      end if
 
       call options%Init()
       call options%InitTransfer(namelist)
 
       call parameters%Init(namelist)
-      call parameters%paramRead(namelist)
+      call parameters%paramRead(namelist, model%domain%error_flag)
+      if (model%domain%error_flag == NOM_FAILURE) then
+        return
+      end if 
 
       call forcing%Init(namelist)
       call forcing%InitTransfer(namelist)
@@ -195,7 +203,10 @@ contains
       !--- set a time vector for simulation ---
       !---------------------------------------------------------------------
       ! --- AWW:  calculate start and end utimes & records for requested station data read period ---
-      call get_utime_list (domain%start_datetime, domain%end_datetime, domain%dt, domain%sim_datetimes)  ! makes unix-time list for desired records (end-of-timestep)
+      call get_utime_list (domain%start_datetime, domain%end_datetime, domain%dt, domain%sim_datetimes, domain%error_flag)  ! makes unix-time list for desired records (end-of-timestep)
+      if (domain%error_flag == NOM_FAILURE) then
+        return
+      end if
       domain%ntime = size (domain%sim_datetimes)   
       !print *, "---------"; 
       !print *, 'Simulation startdate = ', domain%startdate, ' enddate = ', domain%enddate, ' dt(sec) = ', domain%dt, ' ntimes = ', domain%ntime  ! YYYYMMDD dates
@@ -208,7 +219,10 @@ contains
       ! Nextgen forcing is being used (https://github.com/NOAA-OWP/ngen)
       !---------------------------------------------------------------------
 #ifndef NGEN_FORCING_ACTIVE
-      call open_forcing_file(namelist%forcing_filename)
+      call open_forcing_file(namelist%forcing_filename, model%domain%error_flag)
+      if (model%domain%error_flag == NOM_FAILURE) then
+        return
+      end if
 #endif
       
       !---------------------------------------------------------------------
@@ -246,6 +260,9 @@ contains
     type (noahowp_type), intent (inout) :: model
 
     call solve_noahowp(model)
+    if (model%domain%error_flag == NOM_FAILURE) then
+      return
+    end if
 
     model%domain%itime    = model%domain%itime + 1 ! increment the integer time by 1
     model%domain%time_dbl = dble(model%domain%time_dbl + model%domain%dt) ! increment model time in seconds by DT
@@ -283,13 +300,19 @@ contains
     forcing_timestep = domain%dt
 #ifndef NGEN_FORCING_ACTIVE
     call read_forcing_text(iunit, domain%nowdate, forcing_timestep, &
-         forcing%UU, forcing%VV, forcing%SFCTMP, forcing%Q2, forcing%SFCPRS, forcing%SOLDN, forcing%LWDN, forcing%PRCP, ierr)
+         forcing%UU, forcing%VV, forcing%SFCTMP, forcing%Q2, forcing%SFCPRS, forcing%SOLDN, forcing%LWDN, forcing%PRCP, ierr, domain%error_flag)
+    if (domain%error_flag == NOM_FAILURE) then
+      return
+    end if
 #endif
    
     !---------------------------------------------------------------------
     ! call the main utility routines
     !---------------------------------------------------------------------
     call UtilitiesMain (domain%itime, domain, forcing, energy)
+    if (domain%error_flag == NOM_FAILURE) then
+      return
+    end if
 
     !---------------------------------------------------------------------
     ! call the main forcing routines
@@ -308,6 +331,9 @@ contains
     !---------------------------------------------------------------------
 
     call EnergyMain (domain, levels, options, parameters, forcing, energy, water)
+    if (domain%error_flag == NOM_FAILURE) then
+      return
+    end if
 
     !---------------------------------------------------------------------
     ! call the main water routines (canopy + snow + soil water components)

@@ -2,6 +2,7 @@ module EnergyModule
 
   use LevelsType
   use DomainType
+  use ErrorCheckModule
   use OptionsType
   use ParametersType
   use WaterType
@@ -45,6 +46,7 @@ contains
     REAL                                 :: D_RSURF  ! Reduced vapor diffusivity in soil for computing RSURF (SZ09)
     
     REAL                                 :: FIRE   !emitted IR (w/m2)
+    CHARACTER(len=256)                   :: error_string
     !---------------------------------------------------------------------
 
     ! Initialize the the fluxes from the vegetated fraction
@@ -300,12 +302,13 @@ contains
 
     FIRE = forcing%LWDN + energy%FIRA
     IF(FIRE <=0.) THEN
-      domain%error_flag = 1
-      WRITE(*,*) 'emitted longwave <0; skin T may be wrong due to inconsistent'
-      WRITE(*,*) 'input of SHDFAC with LAI'
-      WRITE(*,*) domain%ILOC, domain%JLOC, 'SHDFAC=',parameters%FVEG,'parameters%VAI=',parameters%VAI,'TV=',energy%TV,'TG=',energy%TG
-      WRITE(*,*) 'LWDN=',forcing%LWDN,'energy%FIRA=',energy%FIRA,'water%SNOWH=',water%SNOWH
-      WRITE(*,*) 'Exiting ...'
+      domain%error_flag = NOM_FAILURE
+      write(error_string,101) 'EnergyModule.f90:EnergyMain(): emitted longwave <0; skin T &
+       may be wrong due to inconsistent input of SHDFAC with LAI. ILOC=', &
+       domain%ILOC, ', JLOC=',domain%JLOC, ', SHDFAC=',parameters%FVEG,', &
+       parameters%VAI=',parameters%VAI,', TV=',energy%TV,', TG=',energy%TG
+101   format(A,I10,A,I10,A,F8.3,A,F8.3,A,F8.3,A,F8.3)
+      call log_message(domain%error_flag, trim(error_string))
       RETURN
     END IF
 

@@ -9,6 +9,7 @@ module UtilitiesModule
 
   use DomainType
   use EnergyType
+  use ErrorCheckModule
   use ForcingType
   implicit none
 
@@ -28,25 +29,33 @@ contains
     idt = itime * (domain%dt / 60)
 
     ! calculate current 'nowdate' from start date + integer length of run to current time
-    call geth_newdate(domain%startdate, idt, &  ! in
-                      domain%nowdate)           ! out
+    call geth_newdate(domain%startdate, idt, &           ! in
+                      domain%nowdate, domain%error_flag) ! out
+    if (domain%error_flag == NOM_FAILURE) then
+      return
+    end if
 
     ! calculate current declination of direct solar radiation input
     call calc_declin(domain%nowdate(1:4)//"-"//domain%nowdate(5:6)//"-"//domain%nowdate(7:8)//"_"//domain%nowdate(9:10)//":"//domain%nowdate(11:12)//":00", & ! in
                      domain%lat, domain%lon, domain%terrain_slope, domain%azimuth,&                                                                           ! in
-                     energy%cosz, energy%cosz_horiz,forcing%yearlen, forcing%julian)                                                                                            ! out
+                     energy%cosz, energy%cosz_horiz,forcing%yearlen, forcing%julian, domain%error_flag)                                                                                            ! out
     
+    if (domain%error_flag == NOM_FAILURE) then
+      return
+    end if
+
   END SUBROUTINE UtilitiesMain
 
   ! calculate current 'nowdate' from start date + integer length of run to current time
-  subroutine geth_newdate (odate, idt, & ! in
-                           ndate)        ! out
+  subroutine geth_newdate (odate, idt, &      ! in
+                           ndate, error_flag) ! out
 
     IMPLICIT NONE
 
     character (len=*), intent(in)  :: odate ! start date
     integer,           intent(in)  :: idt   ! change in time (in minutes)
     character (len=*), intent(out) :: ndate ! current 
+    integer,           intent(out) :: error_flag
 
     ! ------------------------ local variables ---------------------------
     integer :: nlen  ! length of "ndate" string
@@ -75,7 +84,8 @@ contains
     integer :: ifrc
     logical :: opass    ! logical for whether odate components pass their checks
     character (len=10) :: hfrc
-    character (len=1) :: sp
+    character (len=1)  :: sp
+    character (len=256):: error_string
 
     logical :: punctuated ! logical for whether the date string has hyphens to separate
     logical :: idtdy      ! logical for whether idt has units of days
@@ -209,8 +219,10 @@ contains
     
     ! If opass = false, then cancel the run
     if (.not.opass) then
-       write(*,*) 'Crazy ODATE: ', odate(1:olen), olen
-       call abort()
+       error_flag = NOM_FAILURE
+       write(error_string,'(A,A)') "UtilitiesModule.f90:geth_newdate(): Crazy ODATE: ",odate(1:olen)
+       call log_message(error_flag, trim(error_string))
+       return
     end if
 
     ! Date Checks are completed.  Continue.
@@ -258,10 +270,10 @@ contains
        nsec   = 0
        nfrac  = 0
     else
-       write(*,'(''GETH_NEWDATE: Strange length for ODATE: '', i3)') &
-            olen
-       write(*,*) odate(1:olen)
-       call abort()
+       error_flag = NOM_FAILURE
+       write(error_string,'(A,I3)') "UtilitiesModule.f90:geth_newdate(): Strange length for ODATE: ",olen
+       call log_message(error_flag, trim(error_string))
+       return
     end if
 
     if (idt >= 0) then
@@ -407,7 +419,10 @@ contains
 8         format(i4,i2.2,i2.2)
 
        else
-          stop "DATELEN PROBLEM"
+          error_flag = NOM_FAILURE
+          write(error_string,'(A)') "UtilitiesModule.f90:geth_newdate(): DATELEN PROBLEM"
+          call log_message(error_flag, trim(error_string))
+          return
        end if
     endif
 
@@ -415,18 +430,20 @@ contains
 
   ! calculate integer day of year for current time
   ! AW: not sure this is ever called in the code at present
-  subroutine geth_idts (newdate, olddate, idt)
+  subroutine geth_idts (newdate, olddate, idt, error_flag)
     
     implicit none
 
     character (len=*) , intent(in)  :: newdate ! current date of run
     character (len=*) , intent(in)  :: olddate ! first day of current year
     integer           , intent(out) :: idt     ! integer day of year
+    integer           , intent(out) :: error_flag
 
     ! ------------------------ local variables ---------------------------
     character(len=24)  :: ndate
     character(len=24)  :: odate
     character (len=24) :: tdate
+    character (len=256):: error_string
     integer :: olen  ! length of olddate
     integer :: nlen  ! length of newdate
     integer :: yrnew ! year associated with "ndate"
@@ -456,8 +473,10 @@ contains
     olen = len(olddate)
     nlen = len(newdate)
     if (nlen /= olen) then
-       write(*,'("GETH_IDTS: NLEN /= OLEN: ", A, 3x, A)') newdate(1:nlen), olddate(1:olen)
-       call abort
+       error_flag = NOM_FAILURE
+       write(error_string,'(A,A,2x,A)') "UtilitiesModule.f90:geth_idts(): NLEN /= OLEN: ",newdate(1:nlen), olddate(1:olen)
+       call log_message(error_flag, trim(error_string))
+       return
     endif
 
     if (olddate > newdate) then
@@ -673,13 +692,17 @@ contains
     end if
 
     if (.not. npass) then
-       print*, 'Screwy NDATE: ', ndate(1:nlen)
-       call abort()
+       error_flag = NOM_FAILURE
+       write(error_string,'(A,A)') "UtilitiesModule.f90:geth_idts(): Screwy NDATE: ",ndate(1:nlen)
+       call log_message(error_flag, trim(error_string))
+       return
     end if
 
     if (.not. opass) then
-       print*, 'Screwy ODATE: ', odate(1:olen)
-       call abort()
+       error_flag = NOM_FAILURE
+       write(error_string,'(A,A)') "UtilitiesModule.f90:geth_idts(): Screwy ODATE: ",odate(1:olen)
+       call log_message(error_flag, trim(error_string))
+       return
     end if
 
     ! Date Checks are completed.  Continue.
@@ -807,7 +830,7 @@ contains
 
   SUBROUTINE calc_declin (nowdate, &                             ! in
                           latitude, longitude, slope, azimuth, & ! in
-                          cosz, cosz_horiz, yearlen, julian)                 ! out
+                          cosz, cosz_horiz, yearlen, julian, error_flag)                 ! out
   !---------------------------------------------------------------------
     IMPLICIT NONE
   !---------------------------------------------------------------------
@@ -822,6 +845,7 @@ contains
     real,              intent(out) :: cosz_horiz ! cosine of solar zenith angle for flat ground
     integer,           intent(out) :: yearlen    ! year length
     real,              intent(out) :: JULIAN     ! julian day
+    integer,           intent(out) :: error_flag
 
     ! ------------------------ local variables ---------------------------
     REAL, PARAMETER :: DEGRAD = 3.14159265/180. ! convert degrees to radians 
@@ -866,7 +890,10 @@ contains
     endif
 
     ! Determine the Julian time (floating-point day of year)
-    call geth_idts(nowdate(1:10), nowdate(1:4)//"-01-01", iday)
+    call geth_idts(nowdate(1:10), nowdate(1:4)//"-01-01", iday, error_flag)
+    if (error_flag == NOM_FAILURE) then
+      return
+    endif
     read(nowdate(12:13), *) ihour
     read(nowdate(15:16), *) iminute
     read(nowdate(18:19), *) isecond
