@@ -55,7 +55,10 @@ contains
       !---------------------------------------------------------------------
       !  initialize
       !---------------------------------------------------------------------
-      call namelist%ReadNamelist(config_filename)
+      call namelist%ReadNamelist(config_filename,domain%error_flag)
+      if (domain%error_flag == NOM_FAILURE) then
+        return
+      end if
 
       call levels%Init
       call levels%InitTransfer(namelist)

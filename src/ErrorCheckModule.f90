@@ -7,7 +7,6 @@ module ErrorCheckModule
   integer, parameter, public :: NOM_MESSAGE = 2
 
   private
-  public:: sys_abort
   public:: is_within_bound
   public:: log_message
 
@@ -17,23 +16,6 @@ module ErrorCheckModule
   end interface
 
 contains
-
-  subroutine sys_abort(err, message)
-
-    ! terminate the program if error is detected (err is non-zero)
-
-    implicit none
-
-    integer, intent(in) :: err                  ! error code
-    character(*), intent(in) :: message         ! error message
-
-    if(err/=0)then
-      write(*, '(A)') 'FATAL ERROR: '//trim(message)
-      call flush(6)
-      stop
-    endif
-
-  end subroutine sys_abort
 
   subroutine log_message(err, message)
 
