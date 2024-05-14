@@ -63,42 +63,42 @@ contains
  
 !**********************************************************************
  
-  subroutine parse (str, delims, args, nargs)
+!  subroutine parse (str, delims, args, nargs)
  
 ! Parses the string 'str' into arguments args(1), ..., args(nargs) based on
 ! the delimiters contained in the string 'delims'. Preceding a delimiter in
 ! 'str' by a backslash (\) makes this particular instance not a delimiter.
 ! The integer output variable nargs contains the number of arguments found.
  
-    character (len=*) :: str, delims
-    character (len=len_trim(str)) :: strsav
-    character (len=*), dimension (:) :: args
-    integer :: i, k, na, nargs, lenstr
+!    character (len=*) :: str, delims
+!    character (len=len_trim(str)) :: strsav
+!    character (len=*), dimension (:) :: args
+!    integer :: i, k, na, nargs, lenstr
  
-    strsav = str
-    call compact (str)
-    na = size (args)
-    do i = 1, na
-      args (i) = ' '
-    end do
-    nargs = 0
-    lenstr = len_trim (str)
-    if (lenstr == 0) return
-    k = 0
+!    strsav = str
+!    call compact (str)
+!    na = size (args)
+!    do i = 1, na
+!      args (i) = ' '
+!    end do
+!    nargs = 0
+!    lenstr = len_trim (str)
+!    if (lenstr == 0) return
+!    k = 0
  
-    do
-      if (len_trim(str) == 0) exit
-      nargs = nargs + 1
-      if(nargs .gt. size(args)) then
-        print *,'Number of predictors larger than expected, check nPredict'
-        stop
-      end if
-      call split (str, delims, args(nargs))
-      call removebksl (args(nargs))
-    end do
-    str = strsav
+!    do
+!      if (len_trim(str) == 0) exit
+!      nargs = nargs + 1
+!      if(nargs .gt. size(args)) then
+!        print *,'Number of predictors larger than expected, check nPredict'
+!        stop
+!      end if
+!      call split (str, delims, args(nargs))
+!      call removebksl (args(nargs))
+!    end do
+!    str = strsav
  
-  end subroutine parse
+!  end subroutine parse
  
 !**********************************************************************
  
