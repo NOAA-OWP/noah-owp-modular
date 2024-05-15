@@ -7,10 +7,13 @@
 # ../../build/noah-owp-modular.exe namelist.input
 # cd ../test
 # ../../build/noahowp_driver_test.exe ../run/namelist.input
-
-##################################################
-# Define the project and the depencies that it has
-##################################################
+#
+# Tested on:
+# 1) MacOS Sonoma v14.4.1 (Darwin 23.4.0 arm64)
+# 2) Ubuntu Linux 6.5.0-35-generic running in Lima terminal on Mac
+############################################################
+# Define the project and the dependencies that it has
+############################################################
 
 cmake_minimum_required(VERSION 3.28)
 
@@ -19,9 +22,10 @@ project(noah-owp-modular VERSION 0.1
         LANGUAGES Fortran)
 
 # Add NetCDF Libraries
-include(${PROJECT_SOURCE_DIR}/FindNetCDF.cmake)
-set (NETCDF_F90 "YES")
-find_package (NetCDF REQUIRED)
+message(PROJECT_SOURCE_DIR:"${PROJECT_SOURCE_DIR}")
+
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
+include("FindNetCDF.cmake")
 cmake_path(GET NETCDF_LIBRARIES_F90 PARENT_PATH NETCDF_LIB_DIR)
 set(NETCDF_INC_DIR ${NETCDF_INCLUDES})
 message(NETCDF_INC_DIR:"${NETCDF_INC_DIR}")
@@ -112,8 +116,8 @@ set(bin ${CMAKE_BINARY_DIR}/bin)
 add_executable(noah-owp-modular.exe "${PROJECT_SOURCE_DIR}/driver/NoahModularDriver.f90")
 add_executable(noahowp_driver_test.exe "${PROJECT_SOURCE_DIR}/test/noahowp_driver_test.f90")
 include_directories(bmi src ${lib})
-target_link_libraries(noah-owp-modular.exe bmi src ${NETCDF_LIBRARIES})
-target_link_libraries(noahowp_driver_test.exe bmi src ${NETCDF_LIBRARIES})
+target_link_libraries(noah-owp-modular.exe src bmi ${NETCDF_LIBRARIES})
+target_link_libraries(noahowp_driver_test.exe src bmi ${NETCDF_LIBRARIES})
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-I ${NETCDF_INC_DIR};-L ${NETCDF_LIB_DIR} -lnetcdff>")
 
 # Have the .mod files placed in the lib folder

@@ -1,5 +1,6 @@
 # - Find NetCDF
 # Find the native NetCDF includes and library
+# From: https://github.com/jedbrown/cmake-modules/blob/master/FindNetCDF.cmake
 #
 #  NETCDF_INCLUDES    - where to find netcdf.h, etc
 #  NETCDF_LIBRARIES   - Link these libraries when using NetCDF
@@ -19,11 +20,7 @@
 #  NETCDF_LIBRARIES_F77  - Fortran 77 interface, if available
 #  NETCDF_LIBRARIES_F90  - Fortran 90 interface, if available
 #
-# Normal usage would be:
   set (NETCDF_F90 "YES")
-  find_package (NetCDF REQUIRED)
-#  target_link_libraries (uses_f90_interface ${NETCDF_LIBRARIES})
-#  target_link_libraries (only_uses_c_interface ${NETCDF_LIBRARIES_C})
 
 if (NETCDF_INCLUDES AND NETCDF_LIBRARIES)
   # Already in cache, be silent
