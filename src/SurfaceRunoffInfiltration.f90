@@ -129,8 +129,8 @@ contains
   water%ASAT  = 0.0
 
   DO IZ=1,levels%nsoil-2
-    TOP_MOIST     = TOP_MOIST + (water%SMC(IZ) * -1 * domain%ZSOIL(IZ)) ! m
-    TOP_MAX_MOIST = TOP_MAX_MOIST + (parameters%SMCMAX(IZ)*-1*domain%ZSOIL(IZ)) ! m  
+    TOP_MOIST     = TOP_MOIST + (water%SMC(IZ) * (-1) * domain%ZSOIL(IZ)) ! m
+    TOP_MAX_MOIST = TOP_MAX_MOIST + (parameters%SMCMAX(IZ)*(-1)*domain%ZSOIL(IZ)) ! m  
   END DO
 
   ! Saturated area from soil moisture
@@ -197,13 +197,13 @@ contains
 
     DO IZ=1,levels%nsoil-2
        IF ((water%SMC(IZ)-parameters%SMCREF(IZ)) .GT. 0.) THEN ! soil moisture greater than field capacity
-          SM     = SM + (water%SMC(IZ) - parameters%SMCREF(IZ) )*-1*domain%ZSOIL(IZ) !m
-          WM     = WM + (parameters%SMCREF(IZ)*-1*domain%ZSOIL(IZ))            !m  
+          SM     = SM + (water%SMC(IZ) - parameters%SMCREF(IZ) )*(-1)*domain%ZSOIL(IZ) !m
+          WM     = WM + (parameters%SMCREF(IZ)*(-1)*domain%ZSOIL(IZ))            !m  
        ELSE
-          WM     = WM + (water%SMC(IZ)*-1*domain%ZSOIL(IZ))
+          WM     = WM + (water%SMC(IZ)*(-1)*domain%ZSOIL(IZ))
        END IF
-       WM_MAX = WM_MAX + (parameters%SMCREF(IZ)*-1*domain%ZSOIL(IZ))
-       SM_MAX = SM_MAX + (parameters%SMCMAX(IZ) - parameters%SMCREF(IZ))*-1*domain%ZSOIL(IZ)
+       WM_MAX = WM_MAX + (parameters%SMCREF(IZ)*(-1)*domain%ZSOIL(IZ))
+       SM_MAX = SM_MAX + (parameters%SMCMAX(IZ) - parameters%SMCREF(IZ))*(-1)*domain%ZSOIL(IZ)
     END DO
     WM = MIN(WM,WM_MAX) ! tension water (m) 
     SM = MIN(SM,SM_MAX) ! free water (m)
@@ -286,8 +286,8 @@ contains
   BB = parameters%BBVIC
 
   DO IZ=1,levels%nsoil-2
-    TOP_MOIST     = TOP_MOIST + (water%SMC(IZ)*-1*domain%ZSOIL(IZ))                      ! actual moisture in top layers, [m]
-    TOP_MAX_MOIST = TOP_MAX_MOIST + (parameters%SMCMAX(IZ)*-1*domain%ZSOIL(IZ))          ! maximum moisture in top layers, [m]  
+    TOP_MOIST     = TOP_MOIST + (water%SMC(IZ)*(-1)*domain%ZSOIL(IZ))                      ! actual moisture in top layers, [m]
+    TOP_MAX_MOIST = TOP_MAX_MOIST + (parameters%SMCMAX(IZ)*(-1)*domain%ZSOIL(IZ))          ! maximum moisture in top layers, [m]  
   END DO
   IF(TOP_MOIST .GT. TOP_MAX_MOIST) TOP_MOIST = TOP_MAX_MOIST
   DP     = water%QINSUR * DT                                                              ! precipitation depth, [m]
@@ -566,7 +566,7 @@ contains
       ! estimate initial soil hydraulic conductivty (Ki in the equation), WCND (m/s)
       CALL WDFCND2 (parameters,WDF,WCND,parameters%SMCWLT(ISOIL),0.0,ISOIL)
       ! Maximum infiltrability based on the Eq. 6.25. (m/s)
-      JJ   = parameters%G * (parameters%SMCMAX(ISOIL) - parameters%SMCWLT(ISOIL)) * -1 * domain%ZSOIL(ISOIL)
+      JJ   = parameters%G * (parameters%SMCMAX(ISOIL) - parameters%SMCWLT(ISOIL)) * (-1) * domain%ZSOIL(ISOIL)
       FSUR = parameters%DKSAT(ISOIL) + (GAM * (parameters%DKSAT(ISOIL) - WCND) / (EXP(GAM * 1E-05 / JJ) -1))
       ! infiltration rate at surface
       IF(parameters%DKSAT(ISOIL) .LT. water%QINSUR)THEN
@@ -579,7 +579,7 @@ contains
       ! estimate initial soil hydraulic conductivty (Ki in the equation), WCND (m/s)
       CALL WDFCND2 (parameters,WDF,WCND,water%SMC(ISOIL),water%SICE(ISOIL),ISOIL)
       ! Maximum infiltrability based on the Eq. 6.25. (m/s)
-      JJ   = parameters%G * (parameters%SMCMAX(ISOIL) - water%SMC(ISOIL)) * -1 * domain%ZSOIL(ISOIL)
+      JJ   = parameters%G * (parameters%SMCMAX(ISOIL) - water%SMC(ISOIL)) * (-1) * domain%ZSOIL(ISOIL)
       FSUR = parameters%DKSAT(ISOIL) + (GAM * (parameters%DKSAT(ISOIL) - WCND)/(EXP(GAM*water%FACC/JJ)-1))
       ! infiltration rate at surface  
       IF(parameters%DKSAT(ISOIL) .LT. water%QINSUR)THEN
@@ -623,7 +623,7 @@ contains
      ! estimate initial soil hydraulic conductivty (Ki in the equation), WCND (m/s)
      CALL WDFCND2 (parameters,WDF,WCND,parameters%SMCWLT(ISOIL),0.0,ISOIL)
      ! Maximum infiltrability based on the Eq. 6.25. (m/s)
-     JJ   = parameters%G*(parameters%SMCMAX(ISOIL)-parameters%SMCWLT(ISOIL))*-1*domain%ZSOIL(ISOIL)
+     JJ   = parameters%G*(parameters%SMCMAX(ISOIL)-parameters%SMCWLT(ISOIL))*(-1)*domain%ZSOIL(ISOIL)
      FSUR = parameters%DKSAT(ISOIL) + ((JJ/1E-05) * (parameters%DKSAT(ISOIL) - WCND))
      !maximum infiltration rate at surface
      IF(FSUR .LT. 0.0) FSUR = 0.0
@@ -631,7 +631,7 @@ contains
      ! estimate initial soil hydraulic conductivty (Ki in the equation), WCND (m/s)
      CALL WDFCND2 (parameters,WDF,WCND,water%SMC(ISOIL),water%SICE(ISOIL),ISOIL)
      ! Maximum infiltrability based on the Eq. 6.25. (m/s)
-     JJ   = parameters%G * (parameters%SMCMAX(ISOIL) - water%SMC(ISOIL))*-1*domain%ZSOIL(ISOIL)
+     JJ   = parameters%G * (parameters%SMCMAX(ISOIL) - water%SMC(ISOIL))*(-1)*domain%ZSOIL(ISOIL)
      FSUR = parameters%DKSAT(ISOIL) + ((JJ/water%FACC) * (parameters%DKSAT(ISOIL) - WCND))
      ! infiltration rate at surface
      IF(parameters%DKSAT(ISOIL) .LT. water%QINSUR)THEN
