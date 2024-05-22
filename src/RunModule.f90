@@ -95,8 +95,10 @@ contains
     
     type (noahowpgrid_type), intent (out)   :: model
     character(len=*), intent (in)           :: config_filename    ! config file from command line argument
-    integer                                 :: forcing_timestep         ! integer time step (set to dt) for some subroutine calls
-    integer                                 :: ii, ix, iy
+    integer                                 :: forcing_timestep   ! integer time step (set to dt) for some subroutine calls
+    integer                                 :: ii                 ! indices
+    integer, allocatable, dimension(:,:)    :: err_grid           ! to catch land use vs. soil inconsistencies
+    integer, dimension(2)                   :: err_indices        ! to hold ix, iy for err_grid
         
     associate(namelist       => model%namelist,       &
               attributes     => model%attributes,     &
@@ -245,8 +247,8 @@ contains
       do ii = 1, namelist%nsoil
         domaingrid%zsnso(:,:,ii) = namelist%zsoil(ii)
       end do
-      domaingrid%IST(:,:) = 1                                                ! 1 = soil
-      where (domaingrid%vegtyp == parametersgrid%ISWATER) domaingrid%IST = 2 ! 2 = lake
+      domaingrid%IST(:,:) = 1                                                  ! 1 = soil
+      where (domaingrid%vegtyp.eq.parametersgrid%ISWATER) domaingrid%IST = 2   ! 2 = lake
 
       ! time variables
       domaingrid%nowdate   = domaingrid%startdate ! start the model with nowdate = startdate
@@ -254,6 +256,20 @@ contains
       domaingrid%itime     = 1                     ! initialize the time loop counter at 1
       domaingrid%time_dbl  = 0.d0                  ! start model run at t = 0
       
+      !---------------------------------------------------------------------
+      !--- check consistency of domain land use and soil attributes ---
+      !---------------------------------------------------------------------
+      allocate(err_grid(domaingrid%n_x,domaingrid%n_y)); err_grid(:,:) = 0
+      where (domaingrid%mask.eq.1.and.domaingrid%vegtyp.ne.parametersgrid%ISWATER.and.domaingrid%isltyp.eq.14) err_grid = 1
+      if(any(err_grid.eq.1)) then; err_indices = maxloc(err_grid); write(*,*) 'ERROR: vegtyp is not water but isltyp is water - lat=',domaingrid%lat(err_indices(1),err_indices(2)),' lon=',domaingrid%lon(err_indices(1),err_indices(2)); stop; end if
+      where (domaingrid%mask.eq.1.and.domaingrid%vegtyp.eq.parametersgrid%ISWATER.and.domaingrid%isltyp.ne.14) err_grid = 1
+      if(any(err_grid.eq.1)) then; err_indices = maxloc(err_grid); write(*,*) 'ERROR: vegtyp is water but isltyp is not water - lat=',domaingrid%lat(err_indices(1),err_indices(2)),' lon=',domaingrid%lon(err_indices(1),err_indices(2)); stop; end if
+      where (domaingrid%mask.eq.1.and.domaingrid%vegtyp.ne.parametersgrid%ISICE.and.domaingrid%isltyp.eq.16) err_grid = 1
+      if(any(err_grid.eq.1)) then; err_indices = maxloc(err_grid); write(*,*) 'ERROR: vegtyp is not ice but isltyp is ice - lat=',domaingrid%lat(err_indices(1),err_indices(2)),' lon=',domaingrid%lon(err_indices(1),err_indices(2)); stop; end if
+      where (domaingrid%mask.eq.1.and.domaingrid%vegtyp.eq.parametersgrid%ISICE.and.domaingrid%isltyp.ne.16) err_grid = 1
+      if(any(err_grid.eq.1)) then; err_indices = maxloc(err_grid); write(*,*) 'ERROR: vegtyp is ice but isltyp is not ice - lat=',domaingrid%lat(err_indices(1),err_indices(2)),' lon=',domaingrid%lon(err_indices(1),err_indices(2)); stop; end if
+      deallocate(err_grid)
+
       !---------------------------------------------------------------------
       !--- set a time vector for simulation ---
       !---------------------------------------------------------------------
