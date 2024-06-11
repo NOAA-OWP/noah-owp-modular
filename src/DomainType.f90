@@ -32,7 +32,7 @@ type, public :: domain_type
   integer             :: croptype          ! crop type
   integer             :: isltyp            ! soil type
   integer             :: IST               ! surface type 1-soil; 2-lake
-  integer             :: error_flag        ! flag for energy balance error (0 = no error, 1 = longwave < 0)
+!  integer             :: error_flag        ! flag for energy balance error (0 = no error, 1 = longwave < 0)
   
   real, allocatable, dimension(:) :: zsoil   ! depth of layer-bottom from soil surface
   real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]

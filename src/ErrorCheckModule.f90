@@ -2,11 +2,14 @@ module ErrorCheckModule
 
   ! General error checking routines
   implicit none
+
   integer, parameter, public :: NOM_SUCCESS = 0
   integer, parameter, public :: NOM_FAILURE = 1
   integer, parameter, public :: NOM_MESSAGE = 2
 
   private
+
+  type, public :: error_type
   public:: is_within_bound
   public:: log_message
 
@@ -14,6 +17,8 @@ module ErrorCheckModule
     module procedure is_within_bound_int
     module procedure is_within_bound_real
   end interface
+
+end error_type
 
 contains
 
