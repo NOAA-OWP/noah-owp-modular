@@ -1,11 +1,12 @@
 module NamelistRead
 
-use ErrorCheckModule, only: sys_abort
-use ErrorCheckModule, only: is_within_bound
+use ErrorCheckModule
 
 implicit none
 save
 private
+character(len=*), PARAMETER :: moduleName='NamelistRead'
+private                     :: moduleName
 
 type, public :: namelist_type
 
@@ -168,6 +169,7 @@ contains
     integer            :: integerMissing
     real               :: realMissing
     character(len=12)  :: stringMissing
+    character(len=*), PARAMETER  :: subroutineName = 'ReadNamelist'
     
     ! ----------------------------------------------------------------------------------------------- !
     !   initialize all namelist variables to missing values to allow for checking after namelist read !
@@ -229,46 +231,45 @@ contains
     ierr = 0
     if( trim(namelist_file) .ne. '' ) then
       open(30, file=namelist_file, form="formatted", status='old', iostat=ierr)
-      if(ierr /= 0) then; write(*,'(A)') 'ERROR: user specified namelist file not found: '//trim(namelist_file); stop; end if
-      !print*, 'Reading namelist: ', trim(namelist_file)
+      if(ierr /= 0) then; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: user specified namelist file not found: '//trim(namelist_file); call log_message(error_flag, error_string); return; end if
     else
       open(30, file='./namelist.input', form="formatted", status='old', iostat=ierr)
-      if(ierr /= 0) then; write(*,'(A)') 'ERROR: default namelist file not found: ./namelist.input'; stop; end if
-      !print*, 'No namelist filename supplied -- attempting to read namelist.input (default)'
+      if(ierr /= 0) then; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: default namelist file not found: ./namelist.input'; call log_message(error_flag, error_string); return; end if
     endif
 
     read(30, timing, iostat=ierr)
-    if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; write(*,'(A)') 'ERROR: invalid line in namelist: '//trim(line); stop; end if      
+    if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: invalid line in namelist: '//trim(line); call log_message(error_flag, error_string); return; end if      
     read(30, parameters, iostat=ierr)
-    if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; write(*,'(A)') 'ERROR: invalid line in namelist: '//trim(line); stop; end if      
+    if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: invalid line in namelist: '//trim(line); call log_message(error_flag, error_string); return; end if      
     read(30, location, iostat=ierr)
-    if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; write(*,'(A)') 'ERROR: invalid line in namelist: '//trim(line); stop; end if      
+    if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: invalid line in namelist: '//trim(line); call log_message(error_flag, error_string); return; end if      
     read(30, forcing, iostat=ierr)
-    if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; write(*,'(A)') 'ERROR: invalid line in namelist: '//trim(line); stop; end if      
+    if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: invalid line in namelist: '//trim(line); call log_message(error_flag, error_string); return; end if      
     read(30, model_options, iostat=ierr)
-    if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; write(*,'(A)') 'ERROR: invalid line in namelist: '//trim(line); stop; end if      
+    if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: invalid line in namelist: '//trim(line); call log_message(error_flag, error_string); return; end if      
     read(30, structure, iostat=ierr)
-    if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; write(*,'(A)') 'ERROR: invalid line in namelist: '//trim(line); stop; end if      
+    if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: invalid line in namelist: '//trim(line); call log_message(error_flag, error_string); return; end if      
 
     !---------------------------------------------------------------------
     !  Check model option validity, part 2
     !---------------------------------------------------------------------
-    if (.not. is_within_bound(precip_phase_option, 1, 7)) then; call sys_abort(1,'model options: precip_phase_option should be 1-7'); end if
-    if (.not. is_within_bound(runoff_option, 1, 8)) then; call sys_abort(1,'model options: runoff_option should be 1-8'); end if
-    if (.not. is_within_bound(drainage_option, 1, 8)) then; call sys_abort(1,'model options: drainage_option should be 1-8'); end if
-    if (.not. is_within_bound(frozen_soil_option ,1, 2)) then; call sys_abort(1,'model options: frozen_soil_option should be 1-2'); end if
-    if (.not. is_within_bound(dynamic_vic_option ,1, 3)) then; call sys_abort(1,'model options: dynamic_vic_option should be 1-3'); end if
-    if (.not. is_within_bound(dynamic_veg_option ,1, 9)) then; call sys_abort(1,'model options: dynamic_veg_option should be 1-9'); end if
-    if (.not. is_within_bound(snow_albedo_option ,1, 2)) then; call sys_abort(1,'model options: snow_albedo_option should be 1-2'); end if
-    if (.not. is_within_bound(radiative_transfer_option,1, 3)) then; call sys_abort(1,'model options: radiative_transfer_option should be 1-3'); end if
-    if (.not. is_within_bound(sfc_drag_coeff_option, 1, 2)) then; call sys_abort(1,'model options: sfc_drag_coeff_option should be 1-3'); end if
-    if (.not. is_within_bound(canopy_stom_resist_option, 1, 2)) then; call sys_abort(1,'model options: sfc_drag_coeff_option should be 1-2'); end if
-    if (.not. is_within_bound(snowsoil_temp_time_option, 1, 3)) then; call sys_abort(1,'model options: snowsoil_temp_time_option should be 1-3'); end if
-    if (.not. is_within_bound(soil_temp_boundary_option, 1, 2)) then; call sys_abort(1,'model options: soil_temp_boundary_option should be 1-2'); end if
-    if (.not. is_within_bound(supercooled_water_option, 1, 2)) then; call sys_abort(1,'model options: supercooled_water_option should be 1-2'); end if
-    if (.not. is_within_bound(stomatal_resistance_option, 1, 3)) then; call sys_abort(1,'model options: stomatal_resistance_option should be 1-3'); end if
-    if (.not. is_within_bound(evap_srfc_resistance_option, 1, 4)) then; call sys_abort(1,'model options: evap_srfc_resistance_option should be 1-4'); end if
-    if (.not. is_within_bound(subsurface_option, 1, 3)) then; call sys_abort(1,'model options: subsurface_option should be 1-3'); end if
+    if (.not. is_within_bound(precip_phase_option, 1, 7)) then; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): model options: precip_phase_option should be 1-7'; call log_message(error_flag, error_string); return; end if
+    if (.not. is_within_bound(runoff_option, 1, 8)) then; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): model options: runoff_option should be 1-8'; call log_message(error_flag, error_string); return; end if
+    if (.not. is_within_bound(drainage_option, 1, 8)) then; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): model options: drainage_option should be 1-8'; call log_message(error_flag, error_string); return; end if
+    if (.not. is_within_bound(frozen_soil_option ,1, 2)) then; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): model options: frozen_soil_option should be 1-2'; call log_message(error_flag, error_string); return; end if
+    if (.not. is_within_bound(dynamic_vic_option ,1, 3)) then; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): model options: dynamic_vic_option should be 1-3'; call log_message(error_flag, error_string); return; end if
+    if (.not. is_within_bound(dynamic_veg_option ,1, 9)) then; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): model options: dynamic_veg_option should be 1-9'; call log_message(error_flag, error_string); return; end if
+    if (.not. is_within_bound(snow_albedo_option ,1, 2)) then; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): model options: snow_albedo_option should be 1-2'; call log_message(error_flag, error_string); return; end if
+    if (.not. is_within_bound(radiative_transfer_option,1, 3)) then; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): model options: radiative_transfer_option should be 1-3'; call log_message(error_flag, error_string); return; end if
+    if (.not. is_within_bound(sfc_drag_coeff_option, 1, 2)) then; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): model options: sfc_drag_coeff_option should be 1-3'; call log_message(error_flag, error_string); return; end if
+    if (.not. is_within_bound(canopy_stom_resist_option, 1, 2)) then; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): model options: canopy_stom_resist_option should be 1-2'; call log_message(error_flag, error_string); return; end if
+    if (.not. is_within_bound(snowsoil_temp_time_option, 1, 3)) then; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): model options: snowsoil_temp_time_option should be 1-3'; call log_message(error_flag, error_string); return; end if
+    if (.not. is_within_bound(soil_temp_boundary_option, 1, 2)) then; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): model options: soil_temp_boundary_option should be 1-2'; call log_message(error_flag, error_string); return;end if
+    if (.not. is_within_bound(supercooled_water_option, 1, 2)) then; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): model options: supercooled_water_option should be 1-2'; call log_message(error_flag, error_string); return;end if
+    if (.not. is_within_bound(stomatal_resistance_option, 1, 3)) then; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): model options: stomatal_resistance_option should be 1-3'; call log_message(error_flag, error_string); return; end if
+    if (.not. is_within_bound(evap_srfc_resistance_option, 1, 4)) then; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): model options: evap_srfc_resistance_option should be 1-4'; call log_message(error_flag, error_string); return; end if
+    if (.not. is_within_bound(subsurface_option, 1, 3)) then; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): model options: subsurface_option should be 1-3'; call log_message(error_flag, error_string); return; end if
+
 
     !  after reading # of soil layers, allocate local arrays and read soil structure info
     allocate (zsoil (       1:nsoil))   ! depth of layer-bottom from soil surface
@@ -283,7 +284,7 @@ contains
 
     ! read remaining group from namelist
     read(30, initial_values)
-    if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; write(*,'(A)') 'ERROR: invalid line in namelist: '//trim(line); stop; end if      
+    if (ierr/=0) then; backspace(30); read(30,fmt='(A)') line; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: invalid line in namelist: '//trim(line); call log_message(error_flag, error_string); return; end if      
     close(30)
     
     ! calculate total soil depth and populate array for depth of layer-bottom from soil surface
@@ -294,64 +295,65 @@ contains
         zsoil(iz) = -1. * sum(dzsnso(1:iz))      
       end do
     else 
-      write(*,'(A)') 'ERROR: required entry dzsnso not found in namelist'; stop
+      error_flag=NOM_FAILURE; 
+      write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry dzsnso not found in namelist'; call log_message(error_flag, error_string); return
     end if 
     
     !---------------------------------------------------------------------
     !  transfer values to namelist data structure
     !---------------------------------------------------------------------
-    if(dt               /= realMissing) then; this%dt = dt; else; write(*,'(A)') 'ERROR: required entry dt not found in namelist'; stop; end if 
-    if(startdate        /= stringMissing) then; this%startdate = startdate; else; write(*,'(A)') 'ERROR: required entry startdate not found in namelist'; stop; end if
-    if(enddate          /= stringMissing) then; this%enddate = enddate; else; write(*,'(A)') 'ERROR: required entry enddate not found in namelist'; stop; end if
-    if(forcing_filename /= stringMissing) then; this%forcing_filename = forcing_filename; else; write(*,'(A)') 'ERROR: required entry forcing_filename not found in namelist'; stop; end if
-    if(output_filename  /= stringMissing) then; this%output_filename = output_filename; else; write(*,'(A)') 'ERROR: required entry output_filename not found in namelist'; stop; end if
-    if(parameter_dir    /= stringMissing) then; this%parameter_dir = parameter_dir; else; write(*,'(A)') 'ERROR: required entry parameter_dir not found in namelist'; stop; end if
-    if(soil_table       /= stringMissing) then; this%soil_table = soil_table; else; write(*,'(A)') 'ERROR: required entry soil_table  not found in namelist'; stop; end if
-    if(general_table    /= stringMissing) then; this%general_table = general_table; else; write(*,'(A)') 'ERROR: required entry general_table not found in namelist'; stop; end if
-    if(noahowp_table    /= stringMissing) then; this%noahowp_table = noahowp_table; else; write(*,'(A)') 'ERROR: required entry noahowp_table not found in namelist'; stop; end if
-    if(soil_class_name  /= stringMissing) then; this%soil_class_name = soil_class_name; else; write(*,'(A)') 'ERROR: required entry soil_class_name not found in namelist'; stop; end if
-    if(veg_class_name   /= stringMissing) then; this%veg_class_name = veg_class_name; else; write(*,'(A)') 'ERROR: required entry veg_class_name not found in namelist'; stop; end if
+    if(dt               /= realMissing) then; this%dt = dt; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry dt not found in namelist'; call log_message(error_flag, error_string); return; end if 
+    if(startdate        /= stringMissing) then; this%startdate = startdate; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry startdate not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(enddate          /= stringMissing) then; this%enddate = enddate; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry enddate not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(forcing_filename /= stringMissing) then; this%forcing_filename = forcing_filename; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry forcing_filename not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(output_filename  /= stringMissing) then; this%output_filename = output_filename; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry output_filename not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(parameter_dir    /= stringMissing) then; this%parameter_dir = parameter_dir; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry parameter_dir not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(soil_table       /= stringMissing) then; this%soil_table = soil_table; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry soil_table not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(general_table    /= stringMissing) then; this%general_table = general_table; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry general_table not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(noahowp_table    /= stringMissing) then; this%noahowp_table = noahowp_table; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry noahowp_table not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(soil_class_name  /= stringMissing) then; this%soil_class_name = soil_class_name; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry soil_class_name not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(veg_class_name   /= stringMissing) then; this%veg_class_name = veg_class_name; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry veg_class_name not found in namelist'; call log_message(error_flag, error_string); return; end if
     
-    if(lat              /= realMissing) then; this%lat = lat; else; write(*,'(A)') 'ERROR: required entry lat not found in namelist'; stop; end if
-    if(lon              /= realMissing) then; this%lon = lon; else; write(*,'(A)') 'ERROR: required entry lon not found in namelist'; stop; end if
-    if(terrain_slope    /= realMissing) then; this%terrain_slope = terrain_slope; else; write(*,'(A)') 'ERROR: required entry terrain_slope not found in namelist'; stop; end if
-    if(azimuth          /= realMissing) then; this%azimuth = azimuth; else; write(*,'(A)') 'ERROR: required entry azimuth not found in namelist'; stop; end if
-    if(zref             /= realMissing) then; this%ZREF = ZREF; else; write(*,'(A)') 'ERROR: required entry ZREF not found in namelist'; stop; end if
-    if(rain_snow_thresh /= realMissing) then; this%rain_snow_thresh = rain_snow_thresh; else; write(*,'(A)') 'ERROR: required entry rain_snow_thresh not found in namelist'; stop; end if
+    if(lat              /= realMissing) then; this%lat = lat; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry lat not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(lon              /= realMissing) then; this%lon = lon; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry lon not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(terrain_slope    /= realMissing) then; this%terrain_slope = terrain_slope; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry terrain_slope not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(azimuth          /= realMissing) then; this%azimuth = azimuth; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry azimuth not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(zref             /= realMissing) then; this%ZREF = ZREF; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry ZREF not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(rain_snow_thresh /= realMissing) then; this%rain_snow_thresh = rain_snow_thresh; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry rain_snow_thresh not found in namelist'; call log_message(error_flag, error_string); return; end if
 
-    if(isltyp     /= integerMissing) then; this%isltyp = isltyp; else; write(*,'(A)') 'ERROR: required entry isltyp not found in namelist'; stop; end if
-    if(nsoil      /= integerMissing) then; this%nsoil = nsoil; else; write(*,'(A)') 'ERROR: required entry nsoil not found in namelist'; stop; end if
-    if(nsnow      /= integerMissing) then; this%nsnow = nsnow; else; write(*,'(A)') 'ERROR: required entry nsnow not found in namelist'; stop; end if
-    if(nveg       /= integerMissing) then; this%nveg = nveg; else; write(*,'(A)') 'ERROR: required entry nveg not found in namelist'; stop; end if
-    if(soil_depth /= integerMissing) then; this%soil_depth = soil_depth; else; write(*,'(A)') 'ERROR: required entry soil_depth not found in namelist'; stop; end if
-    if(vegtyp     /= integerMissing) then; this%vegtyp = vegtyp; else; write(*,'(A)') 'ERROR: required entry vegtyp not found in namelist'; stop; end if
-    if(croptype   /= integerMissing) then; this%croptype = croptype; else; write(*,'(A)') 'ERROR: required entry croptype not found in namelist'; stop; end if
-    if(sfctyp     /= integerMissing) then; this%sfctyp = sfctyp; else; write(*,'(A)') 'ERROR: required entry sfctyp not found in namelist'; stop; end if
-    if(soilcolor  /= integerMissing) then; this%soilcolor = soilcolor; else; write(*,'(A)') 'ERROR: required entry soilcolor not found in namelist'; stop; end if
+    if(isltyp     /= integerMissing) then; this%isltyp = isltyp; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry isltyp not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(nsoil      /= integerMissing) then; this%nsoil = nsoil; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry nsoil not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(nsnow      /= integerMissing) then; this%nsnow = nsnow; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry nsnow not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(nveg       /= integerMissing) then; this%nveg = nveg; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry nveg not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(soil_depth /= integerMissing) then; this%soil_depth = soil_depth; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry soil_depth not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(vegtyp     /= integerMissing) then; this%vegtyp = vegtyp; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry vegtyp not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(croptype   /= integerMissing) then; this%croptype = croptype; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry croptype not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(sfctyp     /= integerMissing) then; this%sfctyp = sfctyp; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry sfctyp not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(soilcolor  /= integerMissing) then; this%soilcolor = soilcolor; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry soilcolor not found in namelist'; call log_message(error_flag, error_string); return; end if
 
-    if(zsoil(1)   /= realMissing) then; this%zsoil = zsoil; else; write(*,'(A)') 'ERROR: required entry zsoil not found in namelist'; stop; end if
-    if(dzsnso(1)  /= realMissing) then; this%dzsnso = dzsnso; else; write(*,'(A)') 'ERROR: required entry dzsnso not found in namelist'; stop; end if
-    if(sice(1)    /= realMissing) then; this%sice = sice; else; write(*,'(A)') 'ERROR: required entry sice not found in namelist'; stop; end if
-    if(sh2o(1)    /= realMissing) then; this%sh2o = sh2o; else; write(*,'(A)') 'ERROR: required entry sh2o not found in namelist'; stop; end if
-    if(zwt        /= realMissing) then; this%zwt = zwt; else; write(*,'(A)') 'ERROR: required entry zwt not found in namelist'; stop; end if
+    if(zsoil(1)   /= realMissing) then; this%zsoil = zsoil; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry zsoil not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(dzsnso(1)  /= realMissing) then; this%dzsnso = dzsnso; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry dzsnso not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(sice(1)    /= realMissing) then; this%sice = sice; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry sice not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(sh2o(1)    /= realMissing) then; this%sh2o = sh2o; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry sh2o not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(zwt        /= realMissing) then; this%zwt = zwt; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry zwt not found in namelist'; call log_message(error_flag, error_string); return; end if
 
-    if(precip_phase_option         /= integerMissing) then; this%precip_phase_option = precip_phase_option; else; write(*,'(A)') 'ERROR: required entry precip_phase_option not found in namelist'; stop; end if
-    if(runoff_option               /= integerMissing) then; this%runoff_option = runoff_option; else; write(*,'(A)') 'ERROR: required entry runoff_option not found in namelist'; stop; end if
-    if(drainage_option             /= integerMissing) then; this%drainage_option = drainage_option; else; write(*,'(A)') 'ERROR: required entry drainage_option not found in namelist'; stop; end if
-    if(frozen_soil_option          /= integerMissing) then; this%frozen_soil_option = frozen_soil_option; else; write(*,'(A)') 'ERROR: required entry frozen_soil_option not found in namelist'; stop; end if
-    if(dynamic_vic_option          /= integerMissing) then; this%dynamic_vic_option = dynamic_vic_option; else; write(*,'(A)') 'ERROR: required entry dynamic_vic_option not found in namelist'; stop; end if
-    if(dynamic_veg_option          /= integerMissing) then; this%dynamic_veg_option = dynamic_veg_option; else; write(*,'(A)') 'ERROR: required entry dynamic_veg_option not found in namelist'; stop; end if
-    if(snow_albedo_option          /= integerMissing) then; this%snow_albedo_option = snow_albedo_option; else; write(*,'(A)') 'ERROR: required entry snow_albedo_option not found in namelist'; stop; end if
-    if(radiative_transfer_option   /= integerMissing) then; this%radiative_transfer_option = radiative_transfer_option; else; write(*,'(A)') 'ERROR: required entry radiative_transfer_option not found in namelist'; stop; end if
-    if(sfc_drag_coeff_option       /= integerMissing) then; this%sfc_drag_coeff_option = sfc_drag_coeff_option; else; write(*,'(A)') 'ERROR: required entry sfc_drag_coeff_option not found in namelist'; stop; end if
-    if(crop_model_option           /= integerMissing) then; this%crop_model_option = crop_model_option; else; write(*,'(A)') 'ERROR: required entry crop_model_option not found in namelist'; stop; end if
-    if(canopy_stom_resist_option   /= integerMissing) then; this%canopy_stom_resist_option = canopy_stom_resist_option; else; write(*,'(A)') 'ERROR: required entry canopy_stom_resist_option not found in namelist'; stop; end if
-    if(snowsoil_temp_time_option   /= integerMissing) then; this%snowsoil_temp_time_option = snowsoil_temp_time_option; else; write(*,'(A)') 'ERROR: required entry snowsoil_temp_time_option not found in namelist'; stop; end if
-    if(soil_temp_boundary_option   /= integerMissing) then; this%soil_temp_boundary_option = soil_temp_boundary_option; else; write(*,'(A)') 'ERROR: required entry soil_temp_boundary_option not found in namelist'; stop; end if
-    if(supercooled_water_option    /= integerMissing) then; this%supercooled_water_option = supercooled_water_option; else; write(*,'(A)') 'ERROR: required entry supercooled_water_option not found in namelist'; stop; end if
-    if(stomatal_resistance_option  /= integerMissing) then; this%stomatal_resistance_option = stomatal_resistance_option; else; write(*,'(A)') 'ERROR: required entry stomatal_resistance_option not found in namelist'; stop; end if
-    if(evap_srfc_resistance_option /= integerMissing) then; this%evap_srfc_resistance_option = evap_srfc_resistance_option; else; write(*,'(A)') 'ERROR: required entry evap_srfc_resistance_option not found in namelist'; stop; end if
-    if(subsurface_option           /= integerMissing) then; this%subsurface_option = subsurface_option; else; write(*,'(A)') 'ERROR: required entry subsurface_option not found in namelist'; stop; end if
+    if(precip_phase_option         /= integerMissing) then; this%precip_phase_option = precip_phase_option; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry precip_phase_option not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(runoff_option               /= integerMissing) then; this%runoff_option = runoff_option; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry runoff_option not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(drainage_option             /= integerMissing) then; this%drainage_option = drainage_option; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry drainage_option not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(frozen_soil_option          /= integerMissing) then; this%frozen_soil_option = frozen_soil_option; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry frozen_soil_option not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(dynamic_vic_option          /= integerMissing) then; this%dynamic_vic_option = dynamic_vic_option; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry dynamic_vic_option not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(dynamic_veg_option          /= integerMissing) then; this%dynamic_veg_option = dynamic_veg_option; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry dynamic_veg_option not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(snow_albedo_option          /= integerMissing) then; this%snow_albedo_option = snow_albedo_option; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry snow_albedo_option not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(radiative_transfer_option   /= integerMissing) then; this%radiative_transfer_option = radiative_transfer_option; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry radiative_transfer_option not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(sfc_drag_coeff_option       /= integerMissing) then; this%sfc_drag_coeff_option = sfc_drag_coeff_option; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry sfc_drag_coeff_option not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(crop_model_option           /= integerMissing) then; this%crop_model_option = crop_model_option; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry crop_model_option not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(canopy_stom_resist_option   /= integerMissing) then; this%canopy_stom_resist_option = canopy_stom_resist_option; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry canopy_stom_resist_option not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(snowsoil_temp_time_option   /= integerMissing) then; this%snowsoil_temp_time_option = snowsoil_temp_time_option; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry snowsoil_temp_time_option not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(soil_temp_boundary_option   /= integerMissing) then; this%soil_temp_boundary_option = soil_temp_boundary_option; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry soil_temp_boundary_option not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(supercooled_water_option    /= integerMissing) then; this%supercooled_water_option = supercooled_water_option; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry supercooled_water_option not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(stomatal_resistance_option  /= integerMissing) then; this%stomatal_resistance_option = stomatal_resistance_option; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry stomatal_resistance_option not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(evap_srfc_resistance_option /= integerMissing) then; this%evap_srfc_resistance_option = evap_srfc_resistance_option; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry evap_srfc_resistance_option not found in namelist'; call log_message(error_flag, error_string); return; end if
+    if(subsurface_option           /= integerMissing) then; this%subsurface_option = subsurface_option; else; error_flag=NOM_FAILURE; write(error_string,'(A)') moduleName//' - '//subroutineName//'(): ERROR: required entry subsurface_option not found in namelist'; call log_message(error_flag, error_string); return; end if
     
     ! store missing values as well
     this%integerMissing              = integerMissing 
