@@ -10,6 +10,7 @@ module RunModule
   use WaterType
   use ForcingType
   use EnergyType
+  use ErrorType
   use AsciiReadModule
   use OutputModule
   use UtilitiesModule
@@ -31,6 +32,7 @@ module RunModule
     type(water_type)      :: water
     type(forcing_type)    :: forcing
     type(energy_type)     :: energy
+    type(error_type)      :: error
   end type noahowp_type
 contains
 
@@ -50,13 +52,17 @@ contains
               parameters => model%parameters, &
               water      => model%water,      &
               forcing    => model%forcing,    &
-              energy     => model%energy)
+              energy     => model%energy,     &
+              error      => model%error)
         
       !---------------------------------------------------------------------
       !  initialize
       !---------------------------------------------------------------------
-      call namelist%ReadNamelist(config_filename,domain%error_flag)
-      if (domain%error_flag == NOM_FAILURE) then
+      call error%Init()
+
+      call namelist%ReadNamelist(config_filename)
+      if (error_flag == NOM_FAILURE) then
+        call save_error_state(error%error_flag, error%error_string)
         return
       end if
 
@@ -65,7 +71,8 @@ contains
 
       call domain%Init(namelist)
       call domain%InitTransfer(namelist)
-      if (domain%error_flag == NOM_FAILURE) then
+      if (error_flag == NOM_FAILURE) then
+        call save_error_state(error%error_flag, error%error_string)
         return
       end if
 
@@ -73,8 +80,9 @@ contains
       call options%InitTransfer(namelist)
 
       call parameters%Init(namelist)
-      call parameters%paramRead(namelist, model%domain%error_flag)
-      if (model%domain%error_flag == NOM_FAILURE) then
+      call parameters%paramRead(namelist)
+      if (error_flag == NOM_FAILURE) then
+        call save_error_state(error%error_flag, error%error_string)
         return
       end if 
 
@@ -206,8 +214,9 @@ contains
       !--- set a time vector for simulation ---
       !---------------------------------------------------------------------
       ! --- AWW:  calculate start and end utimes & records for requested station data read period ---
-      call get_utime_list (domain%start_datetime, domain%end_datetime, domain%dt, domain%sim_datetimes, domain%error_flag)  ! makes unix-time list for desired records (end-of-timestep)
-      if (domain%error_flag == NOM_FAILURE) then
+      call get_utime_list (domain%start_datetime, domain%end_datetime, domain%dt, domain%sim_datetimes)  ! makes unix-time list for desired records (end-of-timestep)
+      if (error_flag == NOM_FAILURE) then
+        call save_error_state(error%error_flag, error%error_string)
         return
       end if
       domain%ntime = size (domain%sim_datetimes)   
@@ -222,8 +231,9 @@ contains
       ! Nextgen forcing is being used (https://github.com/NOAA-OWP/ngen)
       !---------------------------------------------------------------------
 #ifndef NGEN_FORCING_ACTIVE
-      call open_forcing_file(namelist%forcing_filename, model%domain%error_flag)
-      if (model%domain%error_flag == NOM_FAILURE) then
+      call open_forcing_file(namelist%forcing_filename)
+      if (error_flag == NOM_FAILURE) then
+        call save_error_state(error%error_flag, error%error_string)
         return
       end if
 #endif
@@ -263,7 +273,8 @@ contains
     type (noahowp_type), intent (inout) :: model
 
     call solve_noahowp(model)
-    if (model%domain%error_flag == NOM_FAILURE) then
+    if (error_flag == NOM_FAILURE) then
+      call save_error_state(model%error%error_flag, model%error%error_string)
       return
     end if
 
@@ -287,7 +298,8 @@ contains
               parameters => model%parameters, &
               water      => model%water, &
               forcing    => model%forcing, &
-              energy     => model%energy)
+              energy     => model%energy, &
+              error      => model%error)
     
     ! Compute the current UNIX datetime
     domain%curr_datetime = domain%sim_datetimes(domain%itime)     ! use end-of-timestep datetimes  because initial var values are being written
@@ -303,8 +315,9 @@ contains
     forcing_timestep = domain%dt
 #ifndef NGEN_FORCING_ACTIVE
     call read_forcing_text(iunit, domain%nowdate, forcing_timestep, &
-         forcing%UU, forcing%VV, forcing%SFCTMP, forcing%Q2, forcing%SFCPRS, forcing%SOLDN, forcing%LWDN, forcing%PRCP, ierr, domain%error_flag)
-    if (domain%error_flag == NOM_FAILURE) then
+         forcing%UU, forcing%VV, forcing%SFCTMP, forcing%Q2, forcing%SFCPRS, forcing%SOLDN, forcing%LWDN, forcing%PRCP, ierr)
+    if (error_flag == NOM_FAILURE) then
+      call save_error_state(error%error_flag, error%error_string)
       return
     end if
 #endif
@@ -313,7 +326,8 @@ contains
     ! call the main utility routines
     !---------------------------------------------------------------------
     call UtilitiesMain (domain%itime, domain, forcing, energy)
-    if (domain%error_flag == NOM_FAILURE) then
+    if (error_flag == NOM_FAILURE) then
+      call save_error_state(error%error_flag, error%error_string)
       return
     end if
 
@@ -334,7 +348,8 @@ contains
     !---------------------------------------------------------------------
 
     call EnergyMain (domain, levels, options, parameters, forcing, energy, water)
-    if (domain%error_flag == NOM_FAILURE) then
+    if (error_flag == NOM_FAILURE) then
+      call save_error_state(error%error_flag, error%error_string)
       return
     end if
 

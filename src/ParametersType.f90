@@ -197,11 +197,10 @@ contains
 
   end subroutine InitDefault
 
-  subroutine paramRead(this, namelist, error_flag)
+  subroutine paramRead(this, namelist)
     implicit none
     class(parameters_type)           :: this
     class(namelist_type), intent(in) :: namelist
-    integer,              intent(out):: error_flag
     ! local variables
     integer                          :: ix
     character(len=50)                :: dataset_identifier
@@ -209,22 +208,22 @@ contains
     !dataset_identifier = "MODIFIED_IGBP_MODIS_NOAH"   ! This can be in namelist
     !call read_veg_parameters(namelist%parameter_dir, namelist%noahowp_table, dataset_identifier)
 
-    call read_soil_parameters(namelist%parameter_dir, namelist%soil_table, namelist%general_table, namelist%soil_class_name, error_flag)
+    call read_soil_parameters(namelist%parameter_dir, namelist%soil_table, namelist%general_table, namelist%soil_class_name)
     if (error_flag == NOM_FAILURE) then
       return
     end if
 
-    call read_veg_parameters(namelist%parameter_dir, namelist%noahowp_table, namelist%veg_class_name, error_flag)
+    call read_veg_parameters(namelist%parameter_dir, namelist%noahowp_table, namelist%veg_class_name)
     if (error_flag == NOM_FAILURE) then
       return
     end if
 
-    call read_rad_parameters(namelist%parameter_dir, namelist%noahowp_table, error_flag)
+    call read_rad_parameters(namelist%parameter_dir, namelist%noahowp_table)
     if (error_flag == NOM_FAILURE) then
       return
     end if
 
-    call read_global_parameters(namelist%parameter_dir, namelist%noahowp_table, error_flag)
+    call read_global_parameters(namelist%parameter_dir, namelist%noahowp_table)
     if (error_flag == NOM_FAILURE) then
       return
     end if

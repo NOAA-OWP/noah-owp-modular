@@ -7,18 +7,14 @@ module ErrorCheckModule
   integer, parameter, public :: NOM_FAILURE = 1
   integer, parameter, public :: NOM_MESSAGE = 2
 
-  private
-
-  type, public :: error_type
-  public:: is_within_bound
-  public:: log_message
+  integer                    :: error_flag
+  character(len=256)         :: error_string
 
   interface is_within_bound
     module procedure is_within_bound_int
     module procedure is_within_bound_real
   end interface
 
-end error_type
 
 contains
 
@@ -44,6 +40,19 @@ contains
 #endif
 
   end subroutine log_message
+
+! Save state of error_flag and error_string to members of another object.
+  subroutine save_error_state(err, message)
+    implicit none
+
+    integer, intent(out)      :: err             ! error code
+    character(*), intent(out) :: message         ! message
+
+    err     = error_flag
+    message = error_string
+
+  end subroutine save_error_state
+
 
   function is_within_bound_int(var, lower_bound, upper_bound) result(withinbound)
 

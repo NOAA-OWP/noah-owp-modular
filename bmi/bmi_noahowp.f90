@@ -202,7 +202,7 @@ contains
     else
        !call initialize_from_defaults(this%model)
     end if
-    bmi_status = this%model%domain%error_flag
+    bmi_status = this%model%error%error_flag
 
   end function noahowp_initialize
 
@@ -272,10 +272,7 @@ contains
     bmi_status = BMI_SUCCESS
 
     call advance_in_time(this%model)
-    if (this%model%domain%error_flag == BMI_FAILURE) then
-      bmi_status = BMI_FAILURE
-      return
-    end if
+    bmi_status = this%model%error%error_flag
 
   end function noahowp_update
 
