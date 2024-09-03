@@ -164,7 +164,7 @@ contains
     output_items(1) = 'QINSUR'     ! total liquid water input to surface rate (m/s)
     output_items(2) = 'ETRAN'      ! transpiration rate (mm)
     output_items(3) = 'QSEVA'      ! evaporation rate (mm/s)
-    output_items(4) = 'EVAPOTRANS' ! evapotranspiration rate (mm)
+    output_items(4) = 'EVAPOTRANS' ! evapotranspiration rate (m/s)
     output_items(5) = 'TG'         ! surface/ground temperature (K) (becomes snow surface temperature when snow is present)
     output_items(6) = 'SNEQV'      ! snow water equivalent (mm)
     output_items(7) = 'TGS'        ! ground temperature (K) (is equal to TG when no snow and equal to bottom snow element temperature when there is snow)
@@ -642,13 +642,13 @@ contains
     case("Q2")
        units = "kg/kg"
        bmi_status = BMI_SUCCESS
-    case("QINSUR","DKSAT")
+    case("QINSUR","DKSAT", "EVAPOTRANS")
        units = "m/s"
        bmi_status = BMI_SUCCESS
     case("PRCPNONC", "QRAIN", "QSEVA", "QSNOW")
        units = "mm/s"
        bmi_status = BMI_SUCCESS
-    case("SNEQV", "ACSNOM", "EVAPOTRANS", "SNLIQ", "ECAN", "ETRAN", "CMC")
+    case("SNEQV", "ACSNOM", "SNLIQ", "ECAN", "ETRAN", "CMC")
        units = "mm"
        bmi_status = BMI_SUCCESS
     case("FSNO","ISNOW","MP","MFSNO","BEXP","KDT","RSURF_EXP","REFKDT","AXAJ","BXAJ","XXAJ","SLOPE","FRZX","SCAMAX")
@@ -946,7 +946,7 @@ contains
       dest = [water%etran*domain%DT]
       bmi_status = BMI_SUCCESS
     case("EVAPOTRANS")
-      dest = [water%evapotrans*domain%DT*mm2m]
+      dest = [water%evapotrans]
       bmi_status = BMI_SUCCESS
     case("FIRA")
       dest = [energy%FIRA]
@@ -1251,7 +1251,7 @@ contains
       water%etran = src(1) / domain%DT
       bmi_status = BMI_SUCCESS
     case("EVAPOTRANS")
-      water%evapotrans = src(1) * m2mm / domain%DT
+      water%evapotrans = src(1)
       bmi_status = BMI_SUCCESS
     case("FRZX")
       parameters%FRZX = src(1)
