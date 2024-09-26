@@ -2,6 +2,7 @@ module ParametersType
 
 use NamelistRead, only: namelist_type
 use ParametersRead
+use ErrorCheckModule
 
 implicit none
 save
@@ -208,12 +209,26 @@ contains
 
     !dataset_identifier = "MODIFIED_IGBP_MODIS_NOAH"   ! This can be in namelist
     !call read_veg_parameters(namelist%parameter_dir, namelist%noahowp_table, dataset_identifier)
+
     call read_soil_parameters(namelist%parameter_dir, namelist%soil_table, namelist%general_table, namelist%soil_class_name)
+    if (error_flag == NOM_FAILURE) then
+      return
+    end if
+
     call read_veg_parameters(namelist%parameter_dir, namelist%noahowp_table, namelist%veg_class_name)
-    !call read_soil_parameters(namelist%parameter_dir, namelist%soil_table, namelist%general_table)
+    if (error_flag == NOM_FAILURE) then
+      return
+    end if
 
     call read_rad_parameters(namelist%parameter_dir, namelist%noahowp_table)
+    if (error_flag == NOM_FAILURE) then
+      return
+    end if
+
     call read_global_parameters(namelist%parameter_dir, namelist%noahowp_table)
+    if (error_flag == NOM_FAILURE) then
+      return
+    end if
 
 !---------------------------------------------------------------------
 !  transfer to structure
