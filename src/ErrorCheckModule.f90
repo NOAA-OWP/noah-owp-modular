@@ -1,36 +1,58 @@
 module ErrorCheckModule
 
-  ! General error checking routins
-
+  ! General error checking routines
   implicit none
 
-  private
-  public:: sys_abort
-  public:: is_within_bound
+  integer, parameter, public :: NOM_SUCCESS = 0
+  integer, parameter, public :: NOM_FAILURE = 1
+  integer, parameter, public :: NOM_MESSAGE = 2
+
+  integer                    :: error_flag
+  character(len=256)         :: error_string
 
   interface is_within_bound
     module procedure is_within_bound_int
     module procedure is_within_bound_real
   end interface
 
+
 contains
 
-  subroutine sys_abort(err, message)
+  subroutine log_message(err, message)
 
-    ! terminate the program if error is detected (err is non-zero)
+    ! log information, typically an error
 
     implicit none
 
     integer, intent(in) :: err                  ! error code
-    character(*), intent(in) :: message         ! error message
+    character(*), intent(in) :: message         ! message
 
-    if(err/=0)then
-      write(*, '(A)') 'FATAL ERROR: '//trim(message)
+    ! If error, write the error. If message, write message unless NGEN_QUIET
+    if(err==NOM_FAILURE)then
+      write(*, '(A,I2,A)') ' Error Code: ', err, ',  Message: '//trim(message)
       call flush(6)
-      stop
     endif
+#ifndef NGEN_QUIET
+    if(err==NOM_MESSAGE)then
+      write(*, '(A,I2,A)') ' Error Code: ', err, ',  Message: '//trim(message)
+      call flush(6)
+    endif
+#endif
 
-  end subroutine sys_abort
+  end subroutine log_message
+
+! Save state of error_flag and error_string to members of another object.
+  subroutine save_error_state(err, message)
+    implicit none
+
+    integer, intent(out)      :: err             ! error code
+    character(*), intent(out) :: message         ! message
+
+    err     = error_flag
+    message = error_string
+
+  end subroutine save_error_state
+
 
   function is_within_bound_int(var, lower_bound, upper_bound) result(withinbound)
 

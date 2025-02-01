@@ -1,5 +1,7 @@
 MODULE ParametersRead
 
+use ErrorCheckModule
+
 !  Parameter table read routines:
 !  Adapted from the original module_sf_noahmplsm.F module with several modifications
 !  1. made _TABLE variables public.
@@ -7,6 +9,8 @@ MODULE ParametersRead
 !  3. replace error handle routine ("wrf_error_fatal") with "handle_err"
 
     implicit none
+    character(len=*), PARAMETER :: moduleName='ParametersRead'
+    private                     :: moduleName
 
     save
 
@@ -314,6 +318,7 @@ CONTAINS
     character(len=*), intent(in) :: param_dir
     character(len=*), intent(in) :: noahowp_table
     character(len=*), intent(in) :: DATASET_IDENTIFIER
+    character(len=*), PARAMETER  :: subroutineName = 'read_veg_parameters'
     integer :: ierr
     integer :: IK,IM
     logical :: file_named
@@ -451,7 +456,10 @@ CONTAINS
     end if
 
     if (ierr /= 0) then
-       call handle_err(ierr, "ParametersRead.f90: read_veg_parameters: Cannot find file MPTABLE.TBL")
+       error_flag = NOM_FAILURE
+       write(error_string,'(A)') moduleName//' - '//subroutineName//'(): Cannot find file MPTABLE.TBL'
+       call log_message(error_flag, error_string)
+       return
     endif
 
     if ( trim(DATASET_IDENTIFIER) == "USGS" ) then
@@ -461,8 +469,11 @@ CONTAINS
        read(15,modis_veg_categories)
        read(15,modis_veg_parameters)
     else
-       write(*,'("WARNING: DATASET_IDENTIFIER = ''", A, "''")') trim(DATASET_IDENTIFIER)
-       call handle_err(ierr, 'ParametersRead.f90: read_veg_parameters: Unrecognized DATASET_IDENTIFIER in subroutine read_VEG_PARAMETERS')
+       error_flag = NOM_FAILURE
+       write(error_string,'(A,A)') moduleName//' - '//subroutineName//'(): Unrecognized DATASET_IDENTIFIER: ', trim(DATASET_IDENTIFIER)
+       call log_message(error_flag, error_string)
+       close(15)
+       return
     endif
     close(15)
 
@@ -569,17 +580,18 @@ CONTAINS
 
   END SUBROUTINE read_veg_parameters
 
-  SUBROUTINE read_soil_parameters(param_dir, soil_table, general_table, soil_class_name)
+  SUBROUTINE read_soil_parameters(param_dir, soil_table, general_table, &
+                                  soil_class_name)
     implicit none
     character(len=*), intent(in) :: param_dir
     character(len=*), intent(in) :: soil_table
     character(len=*), intent(in) :: general_table
     character(len=*), intent(in) :: soil_class_name
+    character(len=*), PARAMETER  :: subroutineName = 'read_soil_parameters'
     integer             :: IERR
     character(len=20)   :: SLTYPE
     integer             :: ITMP, NUM_SLOPE, LC
     integer             :: iLine               ! loop index
-    character(len=256)  :: message
     logical             :: file_named
 
 
@@ -619,10 +631,13 @@ CONTAINS
       open(21, form='formatted',status='old',iostat=ierr)
     end if
 
-    if (ierr/=0) then
-      write(message,fmt='(A)') 'ParametersRead.f90: read_soil_parameters: failure opening SOILPARM.TBL'
-      call handle_err(ierr, message)
-    end if
+    if (ierr /= 0) then
+       error_flag = NOM_FAILURE
+       write(error_string,'(A)') moduleName//' - '//subroutineName//'(): failure opening SOILPARM.TBL'
+       call log_message(error_flag, error_string)
+       return
+    endif
+
 
     do iLine = 1,100
       READ (21,*) SLTYPE
@@ -655,8 +670,11 @@ CONTAINS
     end if
 
     if (ierr /= 0) then
-      call handle_err(ierr, 'ParametersRead.f90: read_soil_parameters: failure opening GENPARM.TBL')
-    end if
+       error_flag = NOM_FAILURE
+       write(error_string,'(A)') moduleName//' - '//subroutineName//'(): failure opening GENPARM.TBL'
+       call log_message(error_flag, error_string)
+       return
+    endif
 
     read (22,*)
     read (22,*)
@@ -702,6 +720,7 @@ CONTAINS
     implicit none
     character(len=*), intent(in) :: param_dir
     character(len=*), intent(in) :: noahowp_table
+    character(len=*), PARAMETER  :: subroutineName = 'read_rad_parameters'
     integer                      :: ierr
     logical                      :: file_named
 
@@ -731,7 +750,10 @@ CONTAINS
     end if
 
     if (ierr /= 0) then
-       call handle_err(ierr, 'ParametersRead.f90: read_rad_parameters: Cannot find file MPTABLE.TBL')
+       error_flag = NOM_FAILURE
+       write(error_string,'(A)') moduleName//' - '//subroutineName//'(): Cannot find file MPTABLE.TBL'
+       call log_message(error_flag, error_string)
+       return
     endif
 
     read(15,rad_parameters)
@@ -754,6 +776,7 @@ CONTAINS
     implicit none
     character(len=*), intent(in) :: param_dir
     character(len=*), intent(in) :: noahowp_table
+    character(len=*), PARAMETER  :: subroutineName = 'read_global_parameters'
     integer                      :: ierr
     logical                      :: file_named
 
@@ -800,7 +823,10 @@ CONTAINS
     end if
 
     if (ierr /= 0) then
-       call handle_err(ierr, 'ParametersRead.f90: read_global_parameters: Cannot find file MPTABLE.TBL')
+       error_flag = NOM_FAILURE
+       write(error_string,'(A)') moduleName//' - '//subroutineName//'(): Cannot find file MPTABLE.TBL'
+       call log_message(error_flag, error_string)
+       return
     endif
 
     read(15,global_parameters)
@@ -835,6 +861,7 @@ CONTAINS
     implicit none
     character(len=*), intent(in) :: param_dir
     character(len=*), intent(in) :: noahowp_table
+    character(len=*), PARAMETER  :: subroutineName = 'read_crop_parameters'
     integer                      :: ierr
     logical                      :: file_named
 
@@ -979,8 +1006,11 @@ CONTAINS
       open(15, status='old', form='formatted', action='read', iostat=ierr)
     end if
 
-    if (ierr /= 0) then
-       call handle_err(ierr, 'ParametersRead.f90: read_crop_parameters: Cannot find file MPTABLE.TBL')
+    if (ierr /= 0) then          
+       error_flag = NOM_FAILURE
+       write(error_string,'(A)') moduleName//' - '//subroutineName//'(): Cannot find file MPTABLE.TBL'
+       call log_message(error_flag, error_string)
+       return
     endif
 
     read(15,crop_parameters)
@@ -1130,6 +1160,7 @@ CONTAINS
     implicit none
     character(len=*), intent(in) :: param_dir
     character(len=*), intent(in) :: noahowp_table
+    character(len=*), PARAMETER  :: subroutineName = 'read_irrigation_parameters'
     integer                      :: ierr
     logical                      :: file_named
 
@@ -1163,8 +1194,11 @@ CONTAINS
       open(15, status='old', form='formatted', action='read', iostat=ierr)
     end if
 
-    if (ierr /= 0) then
-       call handle_err(ierr, 'ParametersRead.f90: read_irrigation_parameters: Cannot find file MPTABLE.TBL')
+    if (ierr /= 0) then           
+       error_flag = NOM_FAILURE  
+       write(error_string,'(A)') moduleName//' - '//subroutineName//'(): Cannot find file MPTABLE.TBL'            
+       call log_message(error_flag, error_string)
+       return
     endif
 
     read(15,irrigation_parameters)
@@ -1186,7 +1220,9 @@ CONTAINS
     implicit none
     character(len=*), intent(in)    :: param_dir
     character(len=*), intent(in)    :: noahowp_table
+    character(len=*), PARAMETER     :: subroutineName = 'read_tiledrain_parameters'
     integer                         :: ierr
+
     logical                         :: file_named
     real, dimension(MAX_SOILTYP)    :: TDSMC_FAC
     integer, dimension(MAX_SOILTYP) :: TD_DEPTH
@@ -1222,9 +1258,13 @@ CONTAINS
     else
       open(15, status='old', form='formatted', action='read', iostat=ierr)
     end if
-    if (ierr /= 0) then
-       call handle_err(ierr, 'ParametersRead.f90: read_tiledrain_parameters: Cannot find file MPTABLE.TBL')
+    if (ierr /= 0) then             
+       error_flag = NOM_FAILURE     
+       write(error_string,'(A)') moduleName//' - '//subroutineName//'(): Cannot find file MPTABLE.TBL'            
+       call log_message(error_flag, error_string)
+       return                       
     endif
+
     read(15,tiledrain_parameters)
     close(15)
     TDSMCFAC_TABLE           = TDSMC_FAC
@@ -1247,6 +1287,7 @@ CONTAINS
     implicit none
     character(len=*), intent(in) :: param_dir
     character(len=*), intent(in) :: noahowp_table
+    character(len=*), PARAMETER  :: subroutineName = 'read_optional_parameters'
     integer                      :: ierr
     logical                      :: file_named
 
@@ -1277,24 +1318,15 @@ CONTAINS
     end if
 
     if (ierr /= 0) then
-       call handle_err(ierr, 'ParametersRead.f90: read_optional_parameters: Cannot find file MPTABLE.TBL')
+       error_flag = NOM_FAILURE
+       write(error_string,'(A)') moduleName//' - '//subroutineName//'(): Cannot find file MPTABLE.TBL'
+       call log_message(error_flag, error_string)
+       return
     endif
 
     read(15,optional_parameters)
     close(15)
 
   END SUBROUTINE read_optional_parameters
-
-
-  SUBROUTINE handle_err(err,message)
-    implicit none
-    integer,     intent(in) :: err             ! error code
-    character(*),intent(in) :: message         ! error message
-    if(err/=0)then
-      write(*,*) 'FATAL ERROR: '//trim(message)
-      call flush(6)
-      stop
-    endif
-  END SUBROUTINE handle_err
 
 END MODULE ParametersRead

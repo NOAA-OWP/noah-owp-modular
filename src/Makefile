@@ -9,6 +9,7 @@ F90FLAGS := -cpp ${F90FLAGS}
 
 OBJS = ErrorCheckModule.o \
        NamelistRead.o \
+       ErrorType.o \
        ParametersRead.o  \
        LevelsType.o   \
        DomainType.o   \
@@ -105,7 +106,7 @@ EnergyModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyT
                 ForcingType.o WaterType.o ThermalPropertiesModule.o ShortwaveRadiationModule.o \
                 PrecipHeatModule.o EtFluxModule.o SnowSoilTempModule.o
 UtilitiesModule.o: DomainType.o ForcingType.o EnergyType.o
-RunModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o \
+RunModule.o: OptionsType.o LevelsType.o DomainType.o ParametersType.o EnergyType.o  ErrorType.o \
                 ForcingType.o WaterType.o NamelistRead.o ../driver/AsciiReadModule.o \
                 ../driver/OutputModule.o UtilitiesModule.o ForcingModule.o InterceptionModule.o \
                 EnergyModule.o WaterModule.o DateTimeUtilsModule.o
