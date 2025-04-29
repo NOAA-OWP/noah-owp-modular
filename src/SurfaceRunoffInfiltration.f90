@@ -682,10 +682,10 @@ contains
      ! Sorptivity approximations. Transport in Porous Media 1.1, 57-62.
      SP = SQRT(2 * (parameters%SMCMAX(ISOIL) - parameters%SMCWLT(ISOIL)) * (parameters%DWSAT(ISOIL) - WDF))
      ! Parameter A in Eq. 9 of Valiantzas (2010) is given by
-     AP = MIN(WCND, (2/3)*parameters%DKSAT(ISOIL))
-     AP = MAX(AP,   (1/3)*parameters%DKSAT(ISOIL))
+     AP = MIN(WCND, (2.0/3)*parameters%DKSAT(ISOIL))
+     AP = MAX(AP,   (1.0/3)*parameters%DKSAT(ISOIL))
      ! Maximun infiltration rate, m
-     FSUR = (1/2)*SP*(DT**(-1/2))+AP ! m/s
+     FSUR = (1.0/2)*SP*(DT**(-1.0/2))+AP ! m/s
      IF(FSUR .LT. 0.0) FSUR = 0.0
    ELSE
      ! estimate initial soil hydraulic conductivty and diffusivity (Ki, D(theta) in the equation)
@@ -694,10 +694,10 @@ contains
      ! Sorptivity approximations. Transport in Porous Media 1.1, 57-62.
      SP = SQRT(2 * (parameters%SMCMAX(ISOIL) - water%SMC(ISOIL)) * (parameters%DWSAT(ISOIL) - WDF))
      ! Parameter A in Eq. 9 of Valiantzas (2010) is given by
-     AP = MIN(WCND, (2/3)*parameters%DKSAT(ISOIL))
-     AP = MAX(AP,   (1/3)*parameters%DKSAT(ISOIL))
+     AP = MIN(WCND, (2.0/3)*parameters%DKSAT(ISOIL))
+     AP = MAX(AP,   (1.0/3)*parameters%DKSAT(ISOIL))
      ! Maximun infiltration rate, m
-     FSUR = (1/2)*SP*(DT**(-1/2))+AP ! m/s
+     FSUR = (1.0/2)*SP*(DT**(-1.0/2))+AP ! m/s
      ! infiltration rate at surface
      IF(parameters%DKSAT(ISOIL) .LT. water%QINSUR)THEN
        FSUR = MIN(water%QINSUR,FSUR)
