@@ -85,7 +85,7 @@ jobs:
         id: submod_build_6
         uses: ./.github/actions/ngen-submod-build
         with:
-		  cmake-flags: -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+          cmake-flags: -DCMAKE_POLICY_VERSION_MINIMUM=3.5
           mod-dir: "extern/sloth/"
           targets: "slothmodel"
 
