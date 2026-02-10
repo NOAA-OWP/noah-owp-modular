@@ -2,6 +2,7 @@ module DomainType
 
 use NamelistRead, only: namelist_type
 use DateTimeUtilsModule
+use ErrorCheckModule
 
 implicit none
 save
@@ -31,6 +32,7 @@ type, public :: domain_type
   integer             :: croptype          ! crop type
   integer             :: isltyp            ! soil type
   integer             :: IST               ! surface type 1-soil; 2-lake
+  
   real, allocatable, dimension(:) :: zsoil   ! depth of layer-bottom from soil surface
   real, allocatable, dimension(:) :: dzsnso  ! snow/soil layer thickness [m]
   real, allocatable, dimension(:) :: zsnso   ! depth of snow/soil layer-bottom
@@ -117,7 +119,17 @@ contains
     this%isltyp         = namelist%isltyp
     this%IST            = namelist%sfctyp
     this%start_datetime = date_to_unix(namelist%startdate)  ! returns seconds-since-1970-01-01
+    if (this%start_datetime < 0) then
+      error_flag   = NOM_FAILURE
+      error_string = 'DomainType - InitTransfer(): Invalid start time'
+      return
+    endif
     this%end_datetime   = date_to_unix(namelist%enddate)
+    if (this%end_datetime < 0) then
+      error_flag   = NOM_FAILURE
+      error_string = 'DomainType - InitTransfer(): Invalid end time'
+      return
+    endif
   
   end subroutine InitTransfer
 

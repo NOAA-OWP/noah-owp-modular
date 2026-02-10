@@ -29,6 +29,14 @@ program model_driver
   print*, "Initializing..."
   call get_command_argument(1, arg)
   status = m%initialize(arg)
+  if (status == BMI_FAILURE) then
+#ifdef NGEN_ACTIVE
+    return status                           ! if NGEN
+#else
+    print*, "Stopping program."
+    stop
+#endif
+  end if
 
   !---------------------------------------------------------------------
   ! Run the model with BMI
@@ -43,6 +51,14 @@ program model_driver
   print*, "Running..."
   do while (current_time < end_time)
     status = m%update()                       ! run the model one time step
+    if (status == BMI_FAILURE) then
+#ifdef NGEN_ACTIVE
+      return status                           ! if NGEN
+#else
+      print*, "Stopping program."
+      stop
+#endif
+    end if
     status = m%get_current_time(current_time) ! update current_time
   end do
 

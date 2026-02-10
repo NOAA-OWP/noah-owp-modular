@@ -1,8 +1,11 @@
 module AsciiReadModule
   
   use UtilitiesModule
+  use ErrorCheckModule
   
   implicit none
+  character(len=*), PARAMETER :: moduleName='AsciiReadModule'
+  private                     :: moduleName
   
 contains
   
@@ -11,6 +14,7 @@ contains
     implicit none
     
     character*256, intent(in)  :: filename
+    character(len=*), PARAMETER  :: subroutineName = 'open_forcing_file'
     
     !---------------------------------------------------------------------
     !  local variables
@@ -22,17 +26,19 @@ contains
     !  Check if the specified file exists
     inquire(file = trim(filename), exist = lexist)
     if (.not. lexist) then
-       write(*,'(/," ***** Problem *****")')
-       write(*,'(" ***** File ''", A, "'' does not exist.")') trim(filename)
-       write(*,'(" ***** Check the forcing file specified as a command-line argument",/)')
-       stop ":  ERROR EXIT"
+       error_flag = NOM_FAILURE
+       write(error_string,'(A,A,A)') 'AsciiReadModule'//' - '//subroutineName//'(): File: ',trim(filename), ' does not exist. Check the forcing file specified as a command-line argument.'
+       call log_message(error_flag, error_string)
+       return
     endif
     
     ! Open the forcing file 
     open(10, file = trim(filename), form = 'formatted', action = 'read', iostat = ierr)
     if (ierr /= 0) then
-       write(*,'("Problem opening file ''", A, "''")') trim(filename)
-       stop ":  ERROR EXIT"
+       error_flag = NOM_FAILURE
+       write(error_string,'(A,A,A)') 'AsciiReadModule'//' - '//subroutineName//'(): Problem opening file: ',trim(filename)
+       call log_message(error_flag, error_string)
+       return
     endif
     
   end subroutine open_forcing_file
@@ -110,6 +116,7 @@ contains
     real, parameter :: eps   = 0.622
 
     character(len=1024) :: string
+    character(len=*), PARAMETER  :: subroutineName = 'read_forcing_text'
 
     ! Flag to tell us whether this is the first time this subroutine is called, in which case
     ! we need to seek forward to the data.
@@ -166,10 +173,11 @@ contains
 
           return
        endif
-       if (ierr /= 0) then
-          write(*,'("Error reading from data file.")')
-          ierr = 2
-          return
+       if (ierr /= 0) then 
+         error_flag = NOM_FAILURE
+         write(error_string,'(A)') 'AsciiReadModule'//' - '//subroutineName//'(): Error reading from data file.'
+         call log_message(error_flag, error_string)
+         return
        endif
        write(readdate,'(I4.4,4I2.2)') year, month, day, hour, minute
 
@@ -185,7 +193,10 @@ contains
           before = fdata ( readdate, read_windspeed, read_winddir, read_temperature, read_humidity, read_pressure, read_swrad, read_lwrad, read_rain )
           cycle READLOOP
        else
-          stop "Logic problem"
+         error_flag = NOM_FAILURE
+         write(error_string,'(A)') 'AsciiReadModule'//' - '//subroutineName//'(): Logic problem.'
+         call log_message(error_flag, error_string)
+         return
        endif
     enddo READLOOP
 
@@ -218,6 +229,9 @@ contains
 
        call geth_idts(nowdate, before%readdate, idts)
        call geth_idts(after%readdate, before%readdate, idts2)
+       if (error_flag == NOM_FAILURE) then
+         return
+       endif
 
        if (idts2*60 /= forcing_timestep) then
           print*, 'forcing_timestep = ', forcing_timestep
@@ -226,7 +240,10 @@ contains
           print*, 'idts = ', idts
           print*,' after%readdate = ', after%readdate
           print*, 'idts2 = ', idts2
-          stop "IDTS PROBLEM"
+          error_flag = NOM_FAILURE
+          write(error_string,'(A)') 'AsciiReadModule'//' - '//subroutineName//'(): IDTS PROBLEM.'
+          call log_message(error_flag, error_string)
+          return
        endif
 
        fraction = real(idts2-idts)/real(idts2)
@@ -250,8 +267,10 @@ contains
        rhf = rhf * 1.E-2
 
     else
-       print*, 'nowdate = "'//nowdate//'"'
-       stop "Problem in the logic of read_forcing_text."
+       error_flag = NOM_FAILURE
+       write(error_string,'(A,A,A)') 'AsciiReadModule'//' - '//subroutineName//'(): date: ', nowdate, '. Problem in the logic of read_forcing_text.'
+       call log_message(error_flag, error_string)
+       return
     endif
 
 ! Below commented out KSJ 2021-06-09

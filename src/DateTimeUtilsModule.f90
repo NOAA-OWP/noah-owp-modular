@@ -3,7 +3,11 @@
 
 module DateTimeUtilsModule
 
+  use ErrorCheckModule
+
   implicit none
+  character(len=*), PARAMETER :: moduleName='DateTimeUtilsModule'
+  private                     :: moduleName
   public
  
   integer, parameter :: kr4 = selected_real_kind (6, 37)! single precision real
@@ -61,42 +65,42 @@ contains
  
 !**********************************************************************
  
-  subroutine parse (str, delims, args, nargs)
+!  subroutine parse (str, delims, args, nargs)
  
 ! Parses the string 'str' into arguments args(1), ..., args(nargs) based on
 ! the delimiters contained in the string 'delims'. Preceding a delimiter in
 ! 'str' by a backslash (\) makes this particular instance not a delimiter.
 ! The integer output variable nargs contains the number of arguments found.
  
-    character (len=*) :: str, delims
-    character (len=len_trim(str)) :: strsav
-    character (len=*), dimension (:) :: args
-    integer :: i, k, na, nargs, lenstr
+!    character (len=*) :: str, delims
+!    character (len=len_trim(str)) :: strsav
+!    character (len=*), dimension (:) :: args
+!    integer :: i, k, na, nargs, lenstr
  
-    strsav = str
-    call compact (str)
-    na = size (args)
-    do i = 1, na
-      args (i) = ' '
-    end do
-    nargs = 0
-    lenstr = len_trim (str)
-    if (lenstr == 0) return
-    k = 0
+!    strsav = str
+!    call compact (str)
+!    na = size (args)
+!    do i = 1, na
+!      args (i) = ' '
+!    end do
+!    nargs = 0
+!    lenstr = len_trim (str)
+!    if (lenstr == 0) return
+!    k = 0
  
-    do
-      if (len_trim(str) == 0) exit
-      nargs = nargs + 1
-      if(nargs .gt. size(args)) then
-        print *,'Number of predictors larger than expected, check nPredict'
-        stop
-      end if
-      call split (str, delims, args(nargs))
-      call removebksl (args(nargs))
-    end do
-    str = strsav
+!    do
+!      if (len_trim(str) == 0) exit
+!      nargs = nargs + 1
+!      if(nargs .gt. size(args)) then
+!        print *,'Number of predictors larger than expected, check nPredict'
+!        stop
+!      end if
+!      call split (str, delims, args(nargs))
+!      call removebksl (args(nargs))
+!    end do
+!    str = strsav
  
-  end subroutine parse
+!  end subroutine parse
  
 !**********************************************************************
  
@@ -879,14 +883,16 @@ contains
     character (len=*), intent (in) :: date
     double precision :: u_day, i_day, days
     integer :: sec, min, hour, day, month, year, error
+    character(len=*), PARAMETER  :: subroutineName = 'date_to_unix'
  
     call parse_date (date, year, month, day, hour, min, sec, error)
     
     if (error /= 0) then
+      error_flag = NOM_FAILURE  
       date_to_unix = -9999.99
-      print*, 'error in date_to_unix -- date, year, month, day, hour, min, sec, error:'
-      print*, date, year, month, day, hour, min, sec, error
-      stop !return
+      write(error_string,'(A,A,A,I4,A,I4,A,I4,A,I4,A,I4,A,I4,A,I4)') moduleName//" - "//subroutineName//"(): date: ",date,"  year: ",year,"  month: ",month,"  day: ",day,"  hour: ",hour,"  min: ",min,"  sec: ",sec, "  Error: ",error
+      call log_message(error_flag, error_string)
+      return
     end if
  
     u_day = julian_date (1, 1, 1970)
@@ -970,12 +976,14 @@ contains
     !local
     integer                           :: t, ntimes
     real*8                            :: utime
+    character(len=*), PARAMETER       :: subroutineName = 'get_utime_list'
 
     if(abs(mod(end_datetime - start_datetime, dt)) > 1e-5) then
-      print*, 'start and end datetimes are not an even multiple of dt -- check dates in namelist' 
-      print*, 'end_datetime, start_datetime, dt, mod:', end_datetime, start_datetime, dt, mod(end_datetime-start_datetime, dt) 
-      stop 
-    end if
+       error_flag = NOM_FAILURE  
+       write(error_string,'(A,G8.3,A,G8.3,A,G8.3,A,G8.3)') moduleName//" - "//subroutineName//"(): start and end datetimes are not an even multiple of dt -- check dates in namelist: end_datetime: ",end_datetime,"  start_datetime: ",start_datetime,"  dt: ",dt,"  mod: ", mod(end_datetime-start_datetime, dt)
+       call log_message(error_flag, error_string)
+       return
+    endif
 
     ntimes = int((end_datetime - start_datetime)/dt) + 1
     allocate (times(ntimes))
