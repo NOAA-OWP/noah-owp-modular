@@ -266,8 +266,8 @@ contains
     if (.not. is_within_bound(snowsoil_temp_time_option, 1, 3)) then; call sys_abort(1,'model options: snowsoil_temp_time_option should be 1-3'); end if
     if (.not. is_within_bound(soil_temp_boundary_option, 1, 2)) then; call sys_abort(1,'model options: soil_temp_boundary_option should be 1-2'); end if
     if (.not. is_within_bound(supercooled_water_option, 1, 2)) then; call sys_abort(1,'model options: supercooled_water_option should be 1-2'); end if
-    if (.not. is_within_bound(stomatal_resistance_option, 1, 3)) then; call sys_abort(1,'model options: stomatal_resistance_option should be 1-3'); end if
-    if (.not. is_within_bound(evap_srfc_resistance_option, 1, 4)) then; call sys_abort(1,'model options: evap_srfc_resistance_option should be 1-4'); end if
+    if (.not. is_within_bound(stomatal_resistance_option, 1, 4)) then; call sys_abort(1,'model options: stomatal_resistance_option should be 1-4'); end if
+    if (.not. is_within_bound(evap_srfc_resistance_option, 1, 5)) then; call sys_abort(1,'model options: evap_srfc_resistance_option should be 1-5'); end if
     if (.not. is_within_bound(subsurface_option, 1, 3)) then; call sys_abort(1,'model options: subsurface_option should be 1-3'); end if
 
     !  after reading # of soil layers, allocate local arrays and read soil structure info

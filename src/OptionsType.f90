@@ -94,12 +94,14 @@ type, public :: options_type
                         !   1 -> Noah (soil moisture) 
                         !   2 -> CLM  (matric potential)
                         !   3 -> SSiB (matric potential)
+                        !   4 -> Maximum ETRAN (BTRAN=1.0, RS=RSMIN) to approximate PET
   integer :: opt_rsf    ! evap_srfc_resistance_option
                         ! options for surface resistance to evaporation/sublimation
                         !   1 -> Sakaguchi and Zeng, 2009
                         !   2 -> Sellers (1992)
                         !   3 -> adjusted Sellers to decrease RSURF for wet soil
                         !   4 -> option 1 for non-snow; rsurf = rsurf_snow for snow (set in MPTABLE); AD v3.8
+                        !   5 -> minimize RSURF for soil evap; weight by FSNO when FSNO > 0 (approximate PET)
   integer :: opt_sub    ! subsurface_option
                         ! options for subsurface realization
                         !   1 -> full Noah-MP style subsurface

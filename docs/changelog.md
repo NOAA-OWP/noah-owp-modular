@@ -1,6 +1,9 @@
 # Changelog for Noah-OWP-Modular 
 
 ## Major changes:
+- Add options to approximate PET by maximizing transpiration and soil evaporation (output name is still EVAPOTRANS)
+    - Added `stomatal_resistance_option = 4` (OPT_BTR=4): Minimizes RS, and removes soil moisture stress (BTRAN=1.0) to maximize transpiration for a PET like output
+    - Added `evap_srfc_resistance_option = 5` (OPT_RSF=5): Sets RSURF=0.001 when FSNO=0 for maximum soil evaporation, and applies weighted mean (RSURF_SNOW for snow fraction, 0.001 for bare soil) when snow is present
 - Removed PGS from PHENOLOGY because we’re not implementing CARBON_CROP
 - Moved CanopyWaterIntercept to InterceptionModule
     - Removed call from WaterModule and added to InterceptionModule

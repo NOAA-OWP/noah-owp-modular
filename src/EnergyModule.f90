@@ -167,6 +167,9 @@ contains
           END IF
           GX = 1.-EXP(-5.8*(LOG(parameters%PSIWLT/PSI)))
         END IF
+        IF(options%OPT_BTR == 4) then                  ! Maximum ETRAN (no soil moisture stress)
+          GX = 1.0
+        END IF
         GX = MIN(1.,MAX(0.,GX))
         water%BTRANI(IZ) = MAX(parameters%MPE, domain%DZSNSO(IZ) / (-domain%ZSOIL(parameters%NROOT)) * GX)
         water%BTRAN      = water%BTRAN + water%BTRANI(IZ)
@@ -181,7 +184,7 @@ contains
       energy%RSURF = 1.0         ! avoid being divided by 0
       energy%RHSUR = 1.0
     ELSE
-      IF(options%OPT_RSF == 1 .OR. options%OPT_RSF == 4) THEN
+      IF(options%OPT_RSF == 1 .OR. options%OPT_RSF == 4 .OR. options%OPT_RSF == 5) THEN
         ! RSURF based on Sakaguchi and Zeng, 2009
         ! taking the "residual water content" to be the wilting point,
         ! and correcting the exponent on the D term (typo in SZ09 ?)
@@ -196,6 +199,10 @@ contains
     ENDIF
     IF(options%OPT_RSF == 4) THEN                                     ! AD: FSNO weighted; snow RSURF set in MPTABLE v3.8
       energy%RSURF = 1. / (water%FSNO * (1./parameters%RSURF_SNOW) + (1.-water%FSNO) * (1./max(energy%RSURF, 0.001)))
+    ENDIF
+    IF(options%OPT_RSF == 5) THEN                                     ! Minimize RSURF for soil evap; preserve sublimation when snow present
+      ! Weighted mean: RSURF_SNOW for snow fraction, 0.001 for non-snow fraction
+      energy%RSURF = 1. / (water%FSNO * (1./parameters%RSURF_SNOW) + (1.-water%FSNO) * (1./0.001))
     ENDIF
     IF(water%SH2O(1) < 0.01 .and. water%SNOWH == 0.) energy%RSURF = 1.E6
       PSI   = -parameters%PSISAT(1) * (MAX(0.01, water%SH2O(1))/parameters%SMCMAX(1))**(-parameters%BEXP(1))

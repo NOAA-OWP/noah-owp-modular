@@ -301,6 +301,12 @@ contains
                         energy%RSSHA, energy%PSNSHA )                                       ! out                   
         END IF
         
+        ! Maximum ETRAN: Force minimum stomatal resistance when OPT_BTR=4
+        IF (options%OPT_BTR == 4) THEN
+          energy%RSSUN = parameters%RSMIN
+          energy%RSSHA = parameters%RSMIN
+        END IF
+        
         ! Call GECROS
         ! Note:  GECROS option (opt_crop == 2) is not currently supported. 
        
