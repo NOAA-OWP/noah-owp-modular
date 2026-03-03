@@ -18,6 +18,10 @@ module RunModule
   use EnergyModule
   use WaterModule
   use DateTimeUtilsModule
+  use noahowp_log_module
+  use StateSerialization
+  use messagepack
+  use iso_fortran_env
   
   implicit none
   type :: noahowp_type
@@ -29,6 +33,7 @@ module RunModule
     type(water_type)      :: water
     type(forcing_type)    :: forcing
     type(energy_type)     :: energy
+    byte, dimension(:), allocatable :: serialization_buffer
   end type noahowp_type
 contains
 
@@ -237,7 +242,12 @@ contains
 #ifndef NGEN_OUTPUT_ACTIVE
       call finalize_output()
 #endif
-  
+    !Free up serialization buffer memory
+    if(allocated(model%serialization_buffer)) then
+      deallocate(model%serialization_buffer)
+    end if
+
+
   END SUBROUTINE cleanup
 
   !== Move the model ahead one time step ================================================================
@@ -326,5 +336,101 @@ contains
     
     end associate ! terminate associate block
   END SUBROUTINE solve_noahowp
+
+  SUBROUTINE new_serialization_request (model, exec_status)
+    type(noahowp_type), intent(inout) :: model
+    class(msgpack), allocatable :: mp
+    class(mp_arr_type), allocatable :: mp_sub_arr
+    class(mp_arr_type), allocatable :: mp_arr
+    byte, dimension(:), allocatable :: serialization_buffer
+    integer(kind=int64), intent(out) :: exec_status
+
+    mp = msgpack()
+    mp_arr = mp_arr_type(5) !forcing, domain, energy,water, parameters
+
+    call forcing_serialization(model%forcing,mp_sub_arr)
+    mp_arr%values(1)%obj = mp_sub_arr !forcing
+    deallocate(mp_sub_arr)
+
+    call energy_serialization(model%energy,mp_sub_arr)
+    mp_arr%values(2)%obj = mp_sub_arr !energy
+    deallocate(mp_sub_arr)
+
+    call domain_serialization(model%domain,mp_sub_arr)
+    mp_arr%values(3)%obj = mp_sub_arr !domain
+    deallocate(mp_sub_arr)
+
+    call water_serialization(model%water,mp_sub_arr)
+    mp_arr%values(4)%obj = mp_sub_arr !water
+    deallocate(mp_sub_arr)
+
+    call parameters_serialization(model%parameters,mp_sub_arr)
+    mp_arr%values(5)%obj = mp_sub_arr !parameters
+    deallocate(mp_sub_arr)
+
+    ! pack the data
+    call mp%pack_alloc(mp_arr, serialization_buffer)
+    if (mp%failed()) then
+        call write_log("Serialization using messagepack failed!. Error:" // mp%error_message, LOG_LEVEL_FATAL)
+        exec_status = 1
+    else
+        exec_status = 0
+        model%serialization_buffer = serialization_buffer
+        call write_log("Serialization using messagepack successful!", LOG_LEVEL_INFO)
+    end if
+  END SUBROUTINE new_serialization_request
+
+  SUBROUTINE deserialize_mp_buffer (model, serialized_data)
+    type(noahowp_type), intent(inout) :: model
+    integer , intent(in) :: serialized_data(:)
+    byte, allocatable :: serialized_data_1b(:)
+    class(mp_value_type), allocatable :: mpv
+    class(msgpack), allocatable :: mp
+    class(mp_arr_type), allocatable :: arr_all
+    class(mp_arr_type), allocatable :: arr
+    logical :: error, status
+    integer(kind=int64) :: index
+    
+    mp = msgpack()
+    !convert integer(4) to integer(1) for messagepack
+    allocate(serialized_data_1b(size(serialized_data, 1, int64)*4_int64))
+    serialized_data_1b = TRANSFER(serialized_data, serialized_data_1b)
+    call mp%unpack(serialized_data_1b, mpv)
+    if (is_arr(mpv)) then
+      call get_arr_ref(mpv, arr_all, status) 
+      if (status) then
+        !The number of elements in the serialized data array is expected to be 5. Check here and stop if they are not equal.
+        if (mpv%numelements() .NE. 5) then
+          call write_log("The serialized data does not contain all state information. Please check inputs", LOG_LEVEL_FATAL)
+          stop
+        end if
+
+        do index=1,5
+          call get_arr_ref(arr_all%values(index)%obj,arr,status)
+          if(status) then
+            select case(index)
+              case(1)
+                call forcing_deserialization (arr, model%forcing)
+              case(2)  
+                call energy_deserialization (arr, model%energy)
+              case(3)
+                call domain_deserialization (arr, model%domain)
+              case(4)
+                call water_deserialization (arr, model%water)
+              case(5)
+                call parameters_deserialization (arr, model%parameters)
+            end select
+          else
+            call write_log("Deserialization using messagepack (internal array) failed!. Error:" // mp%error_message, LOG_LEVEL_FATAL)
+          end if
+        end do
+      else
+        call write_log("Deserialization using messagepack (external array) failed!. Error:" // mp%error_message, LOG_LEVEL_FATAL)
+      end if
+    end if
+    deallocate (mpv)
+    deallocate (serialized_data_1b)
+    
+  END SUBROUTINE deserialize_mp_buffer
 
 end module RunModule

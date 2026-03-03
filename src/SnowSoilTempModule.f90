@@ -3,6 +3,7 @@
 
 module SnowSoilTempModule
 
+  use noahowp_log_module
   use LevelsType
   use DomainType
   use ParametersType
@@ -109,9 +110,13 @@ contains
 
     IF (ABS(ERR_EST) > 1.) THEN    ! W/m2
        WRITE(message,*) 'TSNOSOI is losing(-)/gaining(+) false energy', ERR_EST,' W/m2'
+       call write_log('TSNOSOI is losing(-)/gaining(+) false energy : '//rtoa(ERR_EST)//' W/m2', LOG_LEVEL_WARNING) 
        !call wrf_message(trim(message))
        WRITE(message,'(i6,1x,i6,1x,i3,F18.13,5F20.12)') &
             domain%ILOC, domain%JLOC, domain%IST, ERR_EST, SSOIL, SNOWH, TG, STC(ISNOW+1), EFLXB
+
+       call write_log('domain%ILOC :'//itoa(domain%ILOC) //", domain%JLOC : "//itoa(domain%JLOC), LOG_LEVEL_INFO)
+       call writelog('SSOIL : '//rtoa(SSOIL)//', SNOWH : '//rtoa(SNOWH)//', TG: '//rtoa(TG), "INFO")
        !call wrf_message(trim(message))
        !niu      STOP
     END IF

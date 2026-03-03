@@ -1,5 +1,5 @@
 module OutputModule
-
+  use noahowp_log_module
 !---------------------------------------------------------------------
 ! Compiler directive NGEN_OUTPUT_ACTIVE to be defined if 
 ! Nextgen is writing model output (https://github.com/NOAA-OWP/ngen)
@@ -87,7 +87,12 @@ contains
     ! time variable (need units / time datum)
     !iret = nf90_def_var(ncid, "timestep",             NF90_INT  , (/time_dim/), time_id)
     !iret = nf90_def_var(ncid, "time",                 NF90_DOUBLE, (/time_dim/), time_id)
-    call check (nf90_def_var(ncid, "time", NF90_DOUBLE, (/time_dim/), time_id), "time var def error", iret); if (iret /= 0) return   ! with error checking
+    call check (nf90_def_var(ncid, "time", NF90_DOUBLE, (/time_dim/), time_id), "time var def error", iret) 
+    if (iret /= 0) then
+      call write_log("time var def error. Returning", LOG_LEVEL_WARNING)
+      return   ! with error checking
+    end if 
+
     iret = nf90_put_att(ncid, time_id, "units", time_units)
     !if (error /= 0) return
         
@@ -232,12 +237,14 @@ contains
     integer, intent (out) :: error
  
     if (status /= nf90_noerr) then
+      call write_log(trim (info) // ": " // trim (nf90_strerror(status)), LOG_LEVEL_WARNING)      
       print *, trim (info) // ": " // trim (nf90_strerror(status))
       error = 1
     end if
   end subroutine check  
-  
-#endif     ! end of block to remove output if NGEN_OUTPUT_ACTIVE directive is True
+
+! end of block to remove output if NGEN_OUTPUT_ACTIVE directive is True
+#endif 
 
 end module OutputModule
 

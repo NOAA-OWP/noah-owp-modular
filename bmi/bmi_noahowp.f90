@@ -1,5 +1,5 @@
 module bminoahowp
-
+  use noahowp_log_module
 ! NGEN_ACTIVE is to be set when running in the Nextgen framework
 ! https://github.com/NOAA-OWP/ngen
 #ifdef NGEN_ACTIVE
@@ -195,6 +195,8 @@ contains
     character (len=*), intent(in) :: config_file
     integer :: bmi_status
 
+    !call create_logger()
+    call write_log("Initializing NOAHOWP BMI", LOG_LEVEL_INFO)
     if (len(config_file) > 0) then
        call initialize_from_file(this%model, config_file)
     else
@@ -278,9 +280,12 @@ contains
     integer :: bmi_status
     double precision :: n_steps_real
     integer :: n_steps, i, s
+    character(50) :: str_real
 
     if (time < this%model%domain%time_dbl) then
        bmi_status = BMI_FAILURE
+       write(str_real, '(f20.10)' ) time
+       call write_log("bmi:noahowp_update_until: time " // trim(str_real) //" is less than time_dbl", LOG_LEVEL_FATAL)
        return
     end if
 
@@ -318,6 +323,7 @@ contains
          bmi_status = BMI_SUCCESS
     case default
        grid = -1
+       call write_log("bmi:noahowp_var_grid: invalid variable " // name // ". Grid set to -1", LOG_LEVEL_WARNING)
        bmi_status = BMI_FAILURE
     end select
   end function noahowp_var_grid
@@ -342,6 +348,7 @@ contains
 !        bmi_status = BMI_SUCCESS
     case default
        type = "-"
+       call write_log("bmi:noahowp_grid_type: invalid grid " // itoa(grid) // ". Type set to -", LOG_LEVEL_WARNING)
        bmi_status = BMI_FAILURE
     end select
   end function noahowp_grid_type
@@ -366,6 +373,7 @@ contains
 !        bmi_status = BMI_SUCCESS
     case default
        rank = -1
+       call write_log("bmi:noahowp_grid_rank: invalid grid " // itoa(grid) // ". Rank set to -1", LOG_LEVEL_WARNING)
        bmi_status = BMI_FAILURE
     end select
   end function noahowp_grid_rank
@@ -391,6 +399,7 @@ contains
        bmi_status = BMI_SUCCESS
     case default
        shape(:) = -1
+       call write_log("bmi:noahowp_grid_shape: invalid grid " // itoa(grid) // ". shape set to -1", LOG_LEVEL_WARNING)
        bmi_status = BMI_FAILURE
     end select
   end function noahowp_grid_shape
@@ -418,6 +427,7 @@ contains
       bmi_status = BMI_SUCCESS
     case default
        size = -1
+       call write_log("bmi:noahowp_grid_shape: invalid grid " // itoa(grid) // ". Size set to -1", LOG_LEVEL_WARNING)
        bmi_status = BMI_FAILURE
     end select
   end function noahowp_grid_size
@@ -437,6 +447,7 @@ contains
 !        bmi_status = BMI_SUCCESS
     case default
        spacing(:) = -1.d0
+       call write_log("bmi:noahowp_grid_spacing: invalid grid " // itoa(grid) // ". Spacing set to -1.d0", LOG_LEVEL_WARNING)
        bmi_status = BMI_FAILURE
     end select
   end function noahowp_grid_spacing
@@ -456,6 +467,7 @@ contains
 !        bmi_status = BMI_SUCCESS
     case default
        origin(:) = -1.d0
+       call write_log("bmi:noahowp_grid_origin: invalid grid " // itoa(grid) // ". Origin set to -1.d0", LOG_LEVEL_WARNING)
        bmi_status = BMI_FAILURE
     end select
   end function noahowp_grid_origin
@@ -473,6 +485,7 @@ contains
        bmi_status = BMI_SUCCESS
     case default
        x(:) = -1.d0
+       call write_log("bmi:noahowp_grid_x: invalid grid " // itoa(grid) // ". x value set to -1.d0", LOG_LEVEL_WARNING)
        bmi_status = BMI_FAILURE
     end select
   end function noahowp_grid_x
@@ -490,6 +503,7 @@ contains
        bmi_status = BMI_SUCCESS
     case default
        y(:) = -1.d0
+       call write_log("bmi:noahowp_grid_y: invalid grid " // itoa(grid) // ". y value set to -1.d0", LOG_LEVEL_WARNING)
        bmi_status = BMI_FAILURE
     end select
   end function noahowp_grid_y
@@ -508,6 +522,7 @@ contains
     case default
        z(:) = -1.d0
        bmi_status = BMI_FAILURE
+       call write_log("bmi:noahowp_grid_z: invalid grid " // itoa(grid) // ". z value set to -1.d0", LOG_LEVEL_WARNING)
     end select
   end function noahowp_grid_z
 
@@ -524,6 +539,7 @@ contains
     case default
        count = -1
        bmi_status = BMI_FAILURE
+       call write_log("bmi:noahowp_grid_node_count: invalid grid " // itoa(grid) // ". Count value set to -1", LOG_LEVEL_WARNING)
     end select
   end function noahowp_grid_node_count
 
@@ -536,6 +552,7 @@ contains
 
     count = -1
     bmi_status = BMI_FAILURE
+    call write_log("bmi:noahowp_grid_edge_count: invalid grid " // itoa(grid) // ". Count value set to -1", LOG_LEVEL_WARNING)
   end function noahowp_grid_edge_count
 
   ! Get the number of faces in an unstructured grid.
@@ -547,6 +564,7 @@ contains
 
     count = -1
     bmi_status = BMI_FAILURE
+    call write_log("bmi:noahowp_grid_face_count: invalid grid " // itoa(grid) // ". Count value set to -1", LOG_LEVEL_WARNING)
   end function noahowp_grid_face_count
 
   ! Get the edge-node connectivity.
@@ -558,6 +576,7 @@ contains
 
     edge_nodes(:) = -1
     bmi_status = BMI_FAILURE
+    call write_log("bmi:noahowp_grid_edge_nodes: invalid grid " // itoa(grid) // ". Edge nodes value set to -1", LOG_LEVEL_WARNING)
   end function noahowp_grid_edge_nodes
 
   ! Get the face-edge connectivity.
@@ -569,6 +588,7 @@ contains
 
     face_edges(:) = -1
     bmi_status = BMI_FAILURE
+    call write_log("bmi:noahowp_grid_face_edges: invalid grid " // itoa(grid) // ". Face edge value set to -1", LOG_LEVEL_WARNING)
   end function noahowp_grid_face_edges
 
   ! Get the face-node connectivity.
@@ -591,6 +611,7 @@ contains
 
     nodes_per_face(:) = -1
     bmi_status = BMI_FAILURE
+    call write_log("bmi:noahowp_grid_nodes_per_face: invalid grid " // itoa(grid) // ". nodes_per_face value set to -1", LOG_LEVEL_WARNING)
   end function noahowp_grid_nodes_per_face
 
   ! The data type of the variable, as a string.
@@ -599,6 +620,10 @@ contains
     character (len=*), intent(in) :: name
     character (len=*), intent(out) :: type
     integer :: bmi_status
+    character(len=BMI_MAX_TYPE_NAME) :: ser_create = "uint64" !pads spaces upto 2048.
+    character(len=BMI_MAX_TYPE_NAME) :: ser_size = "uint64" !pads spaces upto 2048
+    character(len=BMI_MAX_TYPE_NAME) :: ser_state = "character" !pads spaces upto 2048
+    character(len=BMI_MAX_TYPE_NAME) :: ser_free = "int" !pads spaces upto 2048
 
     select case(name)
     case('ACSNOM', 'AXAJ', 'BEXP', 'BXAJ', 'CMC', 'CWP', 'DKSAT',          &
@@ -613,9 +638,22 @@ contains
     case('ISNOW')
        type = "integer"
        bmi_status = BMI_SUCCESS
+    case ('serialization_create')
+       type = ser_create
+       bmi_status = BMI_SUCCESS
+    case ('serialization_size')
+       type = ser_size
+       bmi_status = BMI_SUCCESS
+    case ('serialization_state')
+       type = ser_state
+       bmi_status = BMI_SUCCESS
+    case ('serialization_free')
+       type = ser_free
+       bmi_status = BMI_SUCCESS
     case default
        type = "-"
        bmi_status = BMI_FAILURE
+       call write_log("bmi:noahowp_var_type: invalid var " // name // ". type value set to '-'", LOG_LEVEL_WARNING)
     end select
   end function noahowp_var_type
 
@@ -671,6 +709,7 @@ contains
        bmi_status = BMI_SUCCESS
     case default
        units = "-"
+       call write_log("bmi:noahowp_var_units: invalid var " // name // ". unit value set to '-'", LOG_LEVEL_WARNING)
        bmi_status = BMI_FAILURE
     end select
 
@@ -839,6 +878,7 @@ contains
     case default
        size = -1
        bmi_status = BMI_FAILURE
+       call write_log("bmi:noahowp_var_itemsize: invalid var " // name // ". size value set to -1", LOG_LEVEL_WARNING)
     end select
     end associate
   end function noahowp_var_itemsize
@@ -851,19 +891,37 @@ contains
     integer :: bmi_status
     integer :: s1, s2, s3, grid, grid_size, item_size
 
-    s1 = this%get_var_grid(name, grid)
-    s2 = this%get_grid_size(grid, grid_size)
-    s3 = this%get_var_itemsize(name, item_size)
-
-    if (grid .eq. 0) then
-       nbytes = item_size
-       bmi_status = BMI_SUCCESS
-    else if ((s1 == BMI_SUCCESS).and.(s2 == BMI_SUCCESS).and.(s3 == BMI_SUCCESS)) then
-       nbytes = item_size * grid_size
-       bmi_status = BMI_SUCCESS
+    if (name == "serialization_create" .or. name == "serialization_size") then
+      nbytes = storage_size(0_int64)/8 !returns size in bits. So, divide by 8 for bytes.
+      bmi_status = BMI_SUCCESS
+    else if (name == "serialization_state") then
+      if(.not.allocated(this%model%serialization_buffer) .or. size(this%model%serialization_buffer) == 0) then
+         nbytes = -1
+         call write_log("Serialization not set yet!", LOG_LEVEL_WARNING)
+         bmi_status = BMI_FAILURE
+      else
+         nbytes = size(this%model%serialization_buffer,KIND=int64)
+         bmi_status = BMI_SUCCESS
+      end if
+    else if (name == "serialization_free") then 
+      nbytes = storage_size(0_int32)/8 !returns size in bits. So, divide by 8 for bytes.
+      bmi_status = BMI_SUCCESS
     else
-       nbytes = -1
-       bmi_status = BMI_FAILURE
+      s1 = this%get_var_grid(name, grid)
+      s2 = this%get_grid_size(grid, grid_size)
+      s3 = this%get_var_itemsize(name, item_size)
+
+      if (grid .eq. 0) then
+        nbytes = item_size
+        bmi_status = BMI_SUCCESS
+      else if ((s1 == BMI_SUCCESS).and.(s2 == BMI_SUCCESS).and.(s3 == BMI_SUCCESS)) then
+        nbytes = item_size * grid_size
+        bmi_status = BMI_SUCCESS
+      else
+        nbytes = -1
+        bmi_status = BMI_FAILURE
+        call write_log("bmi:noahowp_var_nbytes: invalid var " // name // ". nbytes value set to '-1'", LOG_LEVEL_WARNING)
+      end if
     end if
   end function noahowp_var_nbytes
 
@@ -896,9 +954,18 @@ contains
     case("ISNOW")
        dest(:) = this%model%water%ISNOW
        bmi_status = BMI_SUCCESS
+    case("serialization_size")
+        if(.not.allocated(this%model%serialization_buffer) .or. size(this%model%serialization_buffer) == 0) then
+            call write_log("Serialization not set yet!", LOG_LEVEL_WARNING)
+            bmi_status = BMI_FAILURE
+        else
+            dest = size(this%model%serialization_buffer,KIND=int64)
+            bmi_status = BMI_SUCCESS
+         end if
     case default
        dest(:) = -1
        bmi_status = BMI_FAILURE
+       call write_log("bmi:noahowp_get_int: invalid var " // name // ". dest value set to '-1'", LOG_LEVEL_WARNING)
     end select
   end function noahowp_get_int
 
@@ -1065,6 +1132,7 @@ contains
     case default
        dest(:) = -1.0
        bmi_status = BMI_FAILURE
+       call write_log("bmi:noahowp_get_float: invalid var " // name // ". dest value set to '-1.0'", LOG_LEVEL_WARNING)
     end select
     end associate
     ! NOTE, if vars are gridded, then use:
@@ -1084,6 +1152,7 @@ contains
     case default
        dest(:) = -1.d0
        bmi_status = BMI_FAILURE
+       call write_log("bmi:noahowp_get_double: invalid var " // name // ". return value set to '-1.d0'", LOG_LEVEL_WARNING)
     end select
   end function noahowp_get_double
 
@@ -1097,8 +1166,12 @@ contains
      integer :: n_elements
 
      select case(name)
-     case default
-        bmi_status = BMI_FAILURE
+      case("serialization_state")
+          dest_ptr = this%model%serialization_buffer
+          bmi_status = BMI_SUCCESS
+      case default
+          bmi_status = BMI_FAILURE
+          call write_log("bmi:noahowp_get_ptr_int: invalid var " // name, LOG_LEVEL_WARNING)
      end select
    end function noahowp_get_ptr_int
 
@@ -1114,6 +1187,7 @@ contains
      select case(name)
      case default
         bmi_status = BMI_FAILURE
+        call write_log("bmi:noahowp_get_ptr_float: invalid var " // name, LOG_LEVEL_WARNING)
      end select
 
      call c_f_pointer(src, dest_ptr, [n_elements])
@@ -1132,6 +1206,7 @@ contains
      select case(name)
      case default
         bmi_status = BMI_FAILURE
+        call write_log("bmi:noahowp_get_ptr_double: invalid var " // name, LOG_LEVEL_WARNING)
      end select
    end function noahowp_get_ptr_double
 
@@ -1150,6 +1225,7 @@ contains
      select case(name)
      case default
         bmi_status = BMI_FAILURE
+        call write_log("bmi:noahowp_get_at_indices_int: invalid var " // name, LOG_LEVEL_WARNING)
      end select
    end function noahowp_get_at_indices_int
 
@@ -1176,6 +1252,7 @@ contains
 !        bmi_status = BMI_SUCCESS
      case default
         bmi_status = BMI_FAILURE
+        call write_log("bmi:noahowp_get_at_indices_float: invalid var " // name, LOG_LEVEL_WARNING)
      end select
    end function noahowp_get_at_indices_float
 
@@ -1194,6 +1271,7 @@ contains
      select case(name)
      case default
         bmi_status = BMI_FAILURE
+        call write_log("bmi:noahowp_get_at_indices_double: invalid var " // name, LOG_LEVEL_WARNING)
      end select
    end function noahowp_get_at_indices_double
 
@@ -1203,6 +1281,7 @@ contains
     character (len=*), intent(in) :: name
     integer, intent(in) :: src(:)
     integer :: bmi_status
+    integer(kind=int64) :: exec_status
 
     !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR INTEGER VARS =================
 
@@ -1210,8 +1289,26 @@ contains
 !     case("model__identification_number")
 !        this%model%id = src(1)
 !        bmi_status = BMI_SUCCESS
-    case default
+      case("serialization_create")
+         call new_serialization_request(this%model, exec_status)
+         if (exec_status == 0) then
+            bmi_status = BMI_SUCCESS
+            call write_log("Serialization for state saving complete", LOG_LEVEL_INFO)
+         else
+            bmi_status = BMI_FAILURE
+            call write_log(" Failed to create serialized data for state saving", LOG_LEVEL_FATAL) 
+         end if
+      case("serialization_state")
+         call deserialize_mp_buffer(this%model,src)
+         bmi_status = BMI_SUCCESS
+      case("serialization_free")
+         if(allocated(this%model%serialization_buffer)) then
+            deallocate(this%model%serialization_buffer)
+         end if
+         bmi_status = BMI_SUCCESS
+      case default
        bmi_status = BMI_FAILURE
+       call write_log("bmi:noahowp_set_int: invalid var " // name, LOG_LEVEL_WARNING)
     end select
   end function noahowp_set_int
 
@@ -1335,6 +1432,7 @@ contains
       bmi_status = BMI_SUCCESS
     case default
        bmi_status = BMI_FAILURE
+       call write_log("bmi:noahowp_set_float: invalid var " // name, LOG_LEVEL_WARNING)
     end select
     end associate
     ! NOTE, if vars are gridded, then use:
@@ -1353,6 +1451,7 @@ contains
     select case(name)
     case default
        bmi_status = BMI_FAILURE
+       call write_log("bmi:noahowp_set_double: invalid var " // name, LOG_LEVEL_WARNING)
     end select
   end function noahowp_set_double
 
@@ -1371,6 +1470,7 @@ contains
      select case(name)
      case default
         bmi_status = BMI_FAILURE
+        call write_log("bmi:noahowp_set_at_indices_int: invalid var " // name, LOG_LEVEL_WARNING)
      end select
    end function noahowp_set_at_indices_int
 
@@ -1396,6 +1496,7 @@ contains
 !        bmi_status = BMI_SUCCESS
      case default
         bmi_status = BMI_FAILURE
+        call write_log("bmi:noahowp_set_at_indices_float: invalid var " // name, LOG_LEVEL_WARNING)
      end select
    end function noahowp_set_at_indices_float
 
@@ -1414,6 +1515,7 @@ contains
      select case(name)
      case default
         bmi_status = BMI_FAILURE
+        call write_log("bmi:noahowp_set_at_indices_double: invalid var " // name, LOG_LEVEL_WARNING)
      end select
    end function noahowp_set_at_indices_double
 
@@ -1459,6 +1561,7 @@ contains
 
    if( .not. associated( bmi_box ) .or. .not. associated( bmi_box%ptr ) ) then
     bmi_status = BMI_FAILURE
+    call write_log("bmi:register_bmi: bmi_box error", LOG_LEVEL_WARNING)
    else
     !Return the pointer to box
     this = c_loc(bmi_box)

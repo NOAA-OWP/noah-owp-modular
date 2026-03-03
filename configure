@@ -11,6 +11,7 @@
      print "   3. MacOS gfortran compiler, NETCDF from source \n";
      print "   4. MacOS BigSur gfortran compiler, NETCDF from Brew \n";
      print "   5. Linux gfortran compiler, NETCDF from source or module load  \n";
+     print "   6. Ubuntu gfortran compiler, NETCDF from package  \n";
      print "   0. exit only \n";
 
      printf "\nEnter selection : " ;
@@ -41,6 +42,10 @@
     elsif ($response == 5) {
                 # Linux, gfortran, NETCDF from source
                 system "cp config/user_build_options.gfortran.linux user_build_options"; 
+              }
+    elsif ($response == 6) {
+                # Ubuntu, gfortran, NETCDF from package
+                system "cp config/user_build_options.gfortran.ubuntu user_build_options"; 
               }
 
   else   {print "no selection $response\n"; last}
