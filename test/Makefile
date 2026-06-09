@@ -6,6 +6,8 @@
 include ../user_build_options
 
 OBJS = \
+        ../fdatetime/datetime_module.o \
+        ../src/noahowpLogger.o \
         ../src/ErrorCheckModule.o \
         ../src/NamelistRead.o \
         ../src/ParametersRead.o \

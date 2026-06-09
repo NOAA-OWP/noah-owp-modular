@@ -1,5 +1,6 @@
 module EnergyModule
 
+  use noahowp_log_module
   use LevelsType
   use DomainType
   use OptionsType
@@ -308,10 +309,16 @@ contains
     FIRE = forcing%LWDN + energy%FIRA
     IF(FIRE <=0.) THEN
       WRITE(*,*) 'emitted longwave <0; skin T may be wrong due to inconsistent'
+      call write_log('EnergyModule: emitted longwave <0; skin T may be wrong due to inconsistent', LOG_LEVEL_WARNING)
       WRITE(*,*) 'input of SHDFAC with LAI'
+      call write_log('input of SHDFAC with LAI', LOG_LEVEL_WARNING)
       WRITE(*,*) domain%ILOC, domain%JLOC, 'SHDFAC=',parameters%FVEG,'parameters%VAI=',parameters%VAI,'TV=',energy%TV,'TG=',energy%TG
       WRITE(*,*) 'LWDN=',forcing%LWDN,'energy%FIRA=',energy%FIRA,'water%SNOWH=',water%SNOWH
       WRITE(*,*) 'Exiting ...'
+      call write_log(itoa(domain%ILOC) //", " //itoa(domain%JLOC)// ', SHDFAC=' //rtoa(parameters%FVEG), LOG_LEVEL_WARNING)
+      call write_log('parameters%VAI=' //rtoa(parameters%VAI )//' TV='//rtoa(energy%TV) //' TG='//rtoa(energy%TG), LOG_LEVEL_WARNING)
+      call write_log('LWDN='//rtoa(forcing%LWDN) //', energy%FIRA=' //rtoa(energy%FIRA)// ', water%SNOWH=' //rtoa(water%SNOWH), LOG_LEVEL_WARNING)
+      call write_log("Exiting ...", LOG_LEVEL_FATAL)
       STOP
     END IF
 

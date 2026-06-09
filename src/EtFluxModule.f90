@@ -17,6 +17,8 @@ module EtFluxModule
   use EnergyType
   use ForcingType
   use OptionsType
+  use noahowp_log_module
+
   implicit none
   
   !REAL, PARAMETER      :: CP = 1004.5, RD = 287.04, SIGMA = 5.67E-8,    &
@@ -1096,6 +1098,7 @@ contains
   
     IF(ZLVL <= ZPD) THEN
        write(*,*) 'WARNING: critical problem: ZLVL <= ZPD; model stops'
+       call write_log('WARNING: critical problem: ZLVL <= ZPD; model stops', LOG_LEVEL_SEVERE)
     ENDIF
 
     TMPCM = LOG((ZLVL-ZPD) / Z0M)

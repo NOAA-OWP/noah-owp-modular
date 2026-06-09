@@ -1,5 +1,4 @@
 module CanopyWaterModule
-
   use LevelsType
   use DomainType
   use OptionsType
@@ -40,6 +39,7 @@ contains
   REAL                :: QFRZC   !refreezing rate of canopy liquid water (mm/s)
   REAL                :: CANMAS  !total canopy mass (kg/m2)
 ! --------------------------------------------------------------------
+
 ! initialization
 
       water%ECAN    = 0.0
