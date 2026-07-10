@@ -12,9 +12,14 @@ type, public :: domain_type
   integer             :: iloc              ! i index in grid  
   integer             :: jloc              ! j index in grid
   real                :: DT                ! run timestep (s)
-  character(len=12)   :: startdate         ! Start date of the model run ( YYYYMMDDHHmm ) 
-  character(len=12)   :: enddate           ! End date of the model run ( YYYYMMDDHHmm ) 
-  character(len=12)   :: nowdate           ! Current date of the model run ( YYYYMMDDHHmm ) 
+  character(len=12)   :: startdate         ! Start date of the model run ( YYYYMMDDHHmm )
+  character(len=12)   :: enddate           ! End date of the model run ( YYYYMMDDHHmm )
+  character(len=12)   :: nowdate           ! Current date of the model run ( YYYYMMDDHHmm )
+  integer             :: start_year        ! integer components of startdate, parsed once at
+  integer             :: start_month       !   init so the main loop needs no string parsing
+  integer             :: start_day         !
+  integer             :: start_hour        !
+  integer             :: start_minute      !
   real*8              :: start_datetime    ! unix start datetime (s since 1970-01-01 00:00:00) ?UTC? 
   real*8              :: end_datetime      ! unix end datetime (s since 1970-01-01 00:00:00) ?UTC? 
   real*8              :: curr_datetime     ! unix current datetime (s since 1970-01-01 00:00:00) ?UTC? 
@@ -78,6 +83,11 @@ contains
     this%startdate      = 'EMPTYDATE999'
     this%enddate        = 'EMPTYDATE999'
     this%nowdate        = 'EMPTYDATE999'
+    this%start_year     = huge(1)
+    this%start_month    = huge(1)
+    this%start_day      = huge(1)
+    this%start_hour     = huge(1)
+    this%start_minute   = huge(1)
     this%start_datetime = huge(1)
     this%end_datetime   = huge(1)
     this%curr_datetime  = huge(1)
@@ -118,6 +128,8 @@ contains
     this%IST            = namelist%sfctyp
     this%start_datetime = date_to_unix(namelist%startdate)  ! returns seconds-since-1970-01-01
     this%end_datetime   = date_to_unix(namelist%enddate)
+    read(namelist%startdate, '(I4,4I2)') this%start_year, this%start_month, this%start_day, &
+                                         this%start_hour, this%start_minute
   
   end subroutine InitTransfer
 

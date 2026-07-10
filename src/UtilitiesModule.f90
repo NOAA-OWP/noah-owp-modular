@@ -23,19 +23,28 @@ contains
     type (   forcing_type)                :: forcing
     type (    energy_type)                :: energy
     
-    ! local variable
+    ! local variables
     integer  :: idt ! change in time since beginning of run (in minutes)
+    integer  :: now_year, now_month, now_day, now_hour, now_minute ! current date/time components
     idt = itime * (domain%dt / 60)
 
-    ! calculate current 'nowdate' from start date + integer length of run to current time
-    call geth_newdate(domain%startdate, idt, &  ! in
-                      domain%nowdate)           ! out
+    ! calculate current date components from start date components (parsed
+    ! once at init) + integer length of run to current time; no string
+    ! parsing on this path (issue #131)
+    call advance_datetime(domain%start_year, domain%start_month, domain%start_day, & ! in
+                          domain%start_hour, domain%start_minute, idt,             & ! in
+                          now_year, now_month, now_day, now_hour, now_minute)        ! out
+
+    ! keep the string 'nowdate' current for output and other consumers
+    ! (formatted once; never re-parsed here)
+    write(domain%nowdate, '(I4.4,4I2.2)') now_year, now_month, now_day, now_hour, now_minute
 
     ! calculate current declination of direct solar radiation input
-    call calc_declin(domain%nowdate(1:4)//"-"//domain%nowdate(5:6)//"-"//domain%nowdate(7:8)//"_"//domain%nowdate(9:10)//":"//domain%nowdate(11:12)//":00", & ! in
-                     domain%lat, domain%lon, domain%terrain_slope, domain%azimuth,&                                                                           ! in
-                     energy%cosz, energy%cosz_horiz,forcing%yearlen, forcing%julian)                                                                                            ! out
-    
+    call calc_declin_components(now_year, day_of_year(now_year, now_month, now_day), & ! in
+                                now_hour, now_minute, 0,                             & ! in
+                                domain%lat, domain%lon, domain%terrain_slope, domain%azimuth, & ! in
+                                energy%cosz, energy%cosz_horiz, forcing%yearlen, forcing%julian)  ! out
+
   END SUBROUTINE UtilitiesMain
 
   ! calculate current 'nowdate' from start date + integer length of run to current time
