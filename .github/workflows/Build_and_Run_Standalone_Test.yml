@@ -76,3 +76,9 @@ jobs:
         make testBMI
         cd test
         ./noahowp_test.exe ../run/namelist.input
+
+    - name: Build and Run date/time unit test
+      run: |
+        make testDateTime
+        cd test
+        ./noahowp_datetime_test.exe

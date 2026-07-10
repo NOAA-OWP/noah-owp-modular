@@ -21,6 +21,12 @@ testBMI:
 	(cd driver;		make)
 	(cd test;		make)
 
+# Date/time unit test (issue #131): builds only the src objects it needs,
+# so it does not require NetCDF.
+testDateTime:
+	(cd src;		make ErrorCheckModule.o NamelistRead.o LevelsType.o DateTimeUtilsModule.o DomainType.o ForcingType.o EnergyType.o UtilitiesModule.o)
+	(cd test;		make datetime)
+
 testBMI_clean:
 	(cd src;		make clean)
 	(cd bmi;		make clean)
