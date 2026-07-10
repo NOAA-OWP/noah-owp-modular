@@ -216,8 +216,8 @@ contains
 
     else if (before%readdate < nowdate .and. nowdate < after%readdate) then
 
-       call geth_idts(nowdate, before%readdate, idts)
-       call geth_idts(after%readdate, before%readdate, idts2)
+       idts  = minutes_between(nowdate, before%readdate)
+       idts2 = minutes_between(after%readdate, before%readdate)
 
        if (idts2*60 /= forcing_timestep) then
           print*, 'forcing_timestep = ', forcing_timestep

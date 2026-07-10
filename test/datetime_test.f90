@@ -70,12 +70,10 @@ program datetime_test
   integer, parameter :: IMPL_STRING = 1, IMPL_COMPONENT = 2
   character(len=11), parameter :: impl_name(2) = (/ "[string]   ", "[component]" /)
 
-  ! geth_newdate and calc_declin were retired (phase 3c), so only the
-  ! component implementation remains for advance/declin/composed;
-  ! geth_idts still exists (used by the ASCII forcing reader), so the
-  ! day-of-year table covers both implementations.
+  ! All string routines are retired (geth_newdate and calc_declin in phase
+  ! 3c, geth_idts in phase 5), so only the component implementation remains.
   integer, parameter :: advance_impls(*)  = (/ IMPL_COMPONENT /)
-  integer, parameter :: doy_impls(*)      = (/ IMPL_STRING, IMPL_COMPONENT /)
+  integer, parameter :: doy_impls(*)      = (/ IMPL_COMPONENT /)
   integer, parameter :: declin_impls(*)   = (/ IMPL_COMPONENT /)
   integer, parameter :: composed_impls(*) = (/ IMPL_COMPONENT /)
 
@@ -192,6 +190,7 @@ program datetime_test
   call run_doy_cases(nfail)
   call run_declin_cases(nfail)
   call run_composed_cases(nfail)
+  call run_minutes_between_cases(nfail)
   call run_drift_check(nfail)
 
   write(*,'(A)') repeat("-", 60)
@@ -309,6 +308,31 @@ contains
     end do
   end subroutine run_composed_cases
 
+  ! minutes_between (used by the ASCII forcing reader) is the inverse of the
+  ! advance operation, so it reuses the advance table: for every row, the
+  ! minutes between the expected result and the input date must equal
+  ! dminutes. No new expected values are needed.
+  subroutine run_minutes_between_cases(nfail)
+    integer, intent(inout) :: nfail
+    type(advance_case) :: c
+    integer :: i, dmin
+    logical :: ok
+    character(len=12) :: date_new, date_old
+
+    write(*,'(A)') "minutes_between cases (advance table reused inversely):"
+    do i = 1, size(advance_cases)
+       c = advance_cases(i)
+       write(date_old,'(I4.4,4I2.2)') c%yr, c%mo, c%dy, c%hr, c%mi
+       write(date_new,'(I4.4,4I2.2)') c%eyr, c%emo, c%edy, c%ehr, c%emi
+       dmin = minutes_between(date_new, date_old)
+       ok = (dmin == c%dminutes)
+       call report(ok, c%epass, trim(c%label)//" [minutes_between]", nfail)
+       if (.not. ok) then
+          write(*,'(A,I9,A,I9)') "        expected:", c%dminutes, "  got:", dmin
+       end if
+    end do
+  end subroutine run_minutes_between_cases
+
   ! Self-consistency: advancing step-by-step (as the model main loop does,
   ! one timestep at a time from the start date) must land on the same date
   ! as one advance of the total. No table needed: the two paths check each
@@ -359,8 +383,6 @@ contains
     integer, intent(in) :: impl, yr, mo, dy
 
     select case (impl)
-    case (IMPL_STRING)
-       doy_impl = day_of_year_offset(yr, mo, dy)
     case (IMPL_COMPONENT)
        doy_impl = day_of_year(yr, mo, dy)
     end select
@@ -403,23 +425,5 @@ contains
        nfail = nfail + 1
     end if
   end subroutine report
-
-  ! ==== string adapters ======================================================
-  ! Wrap the surviving string-based routines so the tables cover them
-  ! alongside the component implementations. An adapter is deleted when the
-  ! routine it wraps is removed from the codebase (advance_date and declin_at
-  ! went with geth_newdate and calc_declin in phase 3c).
-
-  ! Day-of-year offset (days since Jan 1 of the same year; Jan 1 -> 0),
-  ! via geth_idts (still used by the ASCII forcing reader).
-  integer function day_of_year_offset(yr, mo, dy)
-    integer, intent(in) :: yr, mo, dy
-
-    character(len=10) :: date, jan1
-
-    write(date,'(I4.4,"-",I2.2,"-",I2.2)') yr, mo, dy
-    write(jan1,'(I4.4,"-01-01")') yr
-    call geth_idts(date, jan1, day_of_year_offset)
-  end function day_of_year_offset
 
 end program datetime_test
