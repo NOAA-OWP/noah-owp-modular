@@ -62,6 +62,19 @@ program datetime_test
      real    :: tol                       ! tolerance for real comparisons
   end type composed_case
 
+  ! ---- implementations under test -------------------------------------------
+  ! Every table runs against each implementation listed for it. A string
+  ! adapter is removed only when the string routine it wraps is removed
+  ! from the codebase; while both implementations exist, both are covered.
+
+  integer, parameter :: IMPL_STRING = 1, IMPL_COMPONENT = 2
+  character(len=11), parameter :: impl_name(2) = (/ "[string]   ", "[component]" /)
+
+  integer, parameter :: advance_impls(*)  = (/ IMPL_STRING, IMPL_COMPONENT /)
+  integer, parameter :: doy_impls(*)      = (/ IMPL_STRING, IMPL_COMPONENT /)
+  integer, parameter :: declin_impls(*)   = (/ IMPL_STRING, IMPL_COMPONENT /)
+  integer, parameter :: composed_impls(*) = (/ IMPL_STRING, IMPL_COMPONENT /)
+
   ! ---- test tables ---------------------------------------------------------
 
   ! one case per source line (build uses -ffree-line-length-none)
@@ -192,91 +205,103 @@ contains
   subroutine run_advance_cases(nfail)
     integer, intent(inout) :: nfail
     type(advance_case) :: c
-    integer :: i, yr2, mo2, dy2, hr2, mi2
+    integer :: i, j, impl, yr2, mo2, dy2, hr2, mi2
     logical :: ok
 
     write(*,'(A)') "advance_date cases:"
-    do i = 1, size(advance_cases)
-       c = advance_cases(i)
-       call advance_date(c%yr, c%mo, c%dy, c%hr, c%mi, c%dminutes, &
-                         yr2, mo2, dy2, hr2, mi2)
-       ok = (yr2 == c%eyr) .and. (mo2 == c%emo) .and. (dy2 == c%edy) &
-            .and. (hr2 == c%ehr) .and. (mi2 == c%emi)
-       call report(ok, c%epass, c%label, nfail)
-       if (.not. ok) then
-          write(*,'(A,5I5)') "        expected:", c%eyr, c%emo, c%edy, c%ehr, c%emi
-          write(*,'(A,5I5)') "        got:     ", yr2, mo2, dy2, hr2, mi2
-       end if
+    do j = 1, size(advance_impls)
+       impl = advance_impls(j)
+       do i = 1, size(advance_cases)
+          c = advance_cases(i)
+          call advance_impl(impl, c%yr, c%mo, c%dy, c%hr, c%mi, c%dminutes, &
+                            yr2, mo2, dy2, hr2, mi2)
+          ok = (yr2 == c%eyr) .and. (mo2 == c%emo) .and. (dy2 == c%edy) &
+               .and. (hr2 == c%ehr) .and. (mi2 == c%emi)
+          call report(ok, c%epass, trim(c%label)//" "//impl_name(impl), nfail)
+          if (.not. ok) then
+             write(*,'(A,5I5)') "        expected:", c%eyr, c%emo, c%edy, c%ehr, c%emi
+             write(*,'(A,5I5)') "        got:     ", yr2, mo2, dy2, hr2, mi2
+          end if
+       end do
     end do
   end subroutine run_advance_cases
 
   subroutine run_doy_cases(nfail)
     integer, intent(inout) :: nfail
     type(doy_case) :: c
-    integer :: i, offset
+    integer :: i, j, impl, offset
     logical :: ok
 
     write(*,'(A)') "day_of_year_offset cases:"
-    do i = 1, size(doy_cases)
-       c = doy_cases(i)
-       offset = day_of_year_offset(c%yr, c%mo, c%dy)
-       ok = (offset == c%eoffset)
-       call report(ok, c%epass, c%label, nfail)
-       if (.not. ok) then
-          write(*,'(A,I5,A,I5)') "        expected:", c%eoffset, "  got:", offset
-       end if
+    do j = 1, size(doy_impls)
+       impl = doy_impls(j)
+       do i = 1, size(doy_cases)
+          c = doy_cases(i)
+          offset = doy_impl(impl, c%yr, c%mo, c%dy)
+          ok = (offset == c%eoffset)
+          call report(ok, c%epass, trim(c%label)//" "//impl_name(impl), nfail)
+          if (.not. ok) then
+             write(*,'(A,I5,A,I5)') "        expected:", c%eoffset, "  got:", offset
+          end if
+       end do
     end do
   end subroutine run_doy_cases
 
   subroutine run_declin_cases(nfail)
     integer, intent(inout) :: nfail
     type(declin_case) :: c
-    integer :: i, yearlen
+    integer :: i, j, impl, yearlen
     real    :: cosz, cosz_horiz, julian
     logical :: ok
 
     write(*,'(A)') "declin_at cases:"
-    do i = 1, size(declin_cases)
-       c = declin_cases(i)
-       call declin_at(c%yr, c%mo, c%dy, c%hr, c%mi, c%sc, &
-                      c%lat, c%lon, c%slope, c%azimuth, &
-                      cosz, cosz_horiz, yearlen, julian)
-       ok = (abs(cosz - c%ecosz) <= c%tol) &
-            .and. (abs(cosz_horiz - c%ecosz_horiz) <= c%tol) &
-            .and. (yearlen == c%eyearlen) &
-            .and. (abs(julian - c%ejulian) <= c%tol)
-       call report(ok, c%epass, c%label, nfail)
-       if (.not. ok) then
-          write(*,'(A,3F12.6,I5)') "        expected:", c%ecosz, c%ecosz_horiz, c%ejulian, c%eyearlen
-          write(*,'(A,3F12.6,I5)') "        got:     ", cosz, cosz_horiz, julian, yearlen
-       end if
+    do j = 1, size(declin_impls)
+       impl = declin_impls(j)
+       do i = 1, size(declin_cases)
+          c = declin_cases(i)
+          call declin_impl(impl, c%yr, c%mo, c%dy, c%hr, c%mi, c%sc, &
+                           c%lat, c%lon, c%slope, c%azimuth, &
+                           cosz, cosz_horiz, yearlen, julian)
+          ok = (abs(cosz - c%ecosz) <= c%tol) &
+               .and. (abs(cosz_horiz - c%ecosz_horiz) <= c%tol) &
+               .and. (yearlen == c%eyearlen) &
+               .and. (abs(julian - c%ejulian) <= c%tol)
+          call report(ok, c%epass, trim(c%label)//" "//impl_name(impl), nfail)
+          if (.not. ok) then
+             write(*,'(A,3F12.6,I5)') "        expected:", c%ecosz, c%ecosz_horiz, c%ejulian, c%eyearlen
+             write(*,'(A,3F12.6,I5)') "        got:     ", cosz, cosz_horiz, julian, yearlen
+          end if
+       end do
     end do
   end subroutine run_declin_cases
 
   subroutine run_composed_cases(nfail)
     integer, intent(inout) :: nfail
     type(composed_case) :: c
-    integer :: i, yr2, mo2, dy2, hr2, mi2, yearlen
+    integer :: i, j, impl, yr2, mo2, dy2, hr2, mi2, yearlen
     real    :: cosz, cosz_horiz, julian
     logical :: ok
 
     write(*,'(A)') "composed advance_date + declin_at cases:"
-    do i = 1, size(composed_cases)
-       c = composed_cases(i)
-       call advance_date(c%yr, c%mo, c%dy, c%hr, c%mi, c%dminutes, &
-                         yr2, mo2, dy2, hr2, mi2)
-       call declin_at(yr2, mo2, dy2, hr2, mi2, 0, &
-                      c%lat, c%lon, c%slope, c%azimuth, &
-                      cosz, cosz_horiz, yearlen, julian)
-       ok = (abs(cosz - c%ecosz) <= c%tol) &
-            .and. (abs(cosz_horiz - c%ecosz_horiz) <= c%tol) &
-            .and. (yearlen == c%eyearlen) &
-            .and. (abs(julian - c%ejulian) <= c%tol)
-       call report(ok, c%epass, c%label, nfail)
-       if (.not. ok) then
-          write(*,'(A,3F12.6,I5)') "        expected:", c%ecosz, c%ecosz_horiz, c%ejulian, c%eyearlen
-          write(*,'(A,3F12.6,I5)') "        got:     ", cosz, cosz_horiz, julian, yearlen
-       end if
+    do j = 1, size(composed_impls)
+       impl = composed_impls(j)
+       do i = 1, size(composed_cases)
+          c = composed_cases(i)
+          call advance_impl(impl, c%yr, c%mo, c%dy, c%hr, c%mi, c%dminutes, &
+                            yr2, mo2, dy2, hr2, mi2)
+          call declin_impl(impl, yr2, mo2, dy2, hr2, mi2, 0, &
+                           c%lat, c%lon, c%slope, c%azimuth, &
+                           cosz, cosz_horiz, yearlen, julian)
+          ok = (abs(cosz - c%ecosz) <= c%tol) &
+               .and. (abs(cosz_horiz - c%ecosz_horiz) <= c%tol) &
+               .and. (yearlen == c%eyearlen) &
+               .and. (abs(julian - c%ejulian) <= c%tol)
+          call report(ok, c%epass, trim(c%label)//" "//impl_name(impl), nfail)
+          if (.not. ok) then
+             write(*,'(A,3F12.6,I5)') "        expected:", c%ecosz, c%ecosz_horiz, c%ejulian, c%eyearlen
+             write(*,'(A,3F12.6,I5)') "        got:     ", cosz, cosz_horiz, julian, yearlen
+          end if
+       end do
     end do
   end subroutine run_composed_cases
 
@@ -287,26 +312,75 @@ contains
   subroutine run_drift_check(nfail)
     integer, intent(inout) :: nfail
     integer, parameter :: nsteps = 26, step_minutes = 60
-    integer :: k, yr_s, mo_s, dy_s, hr_s, mi_s, yr1, mo1, dy1, hr1, mi1
+    integer :: j, impl, k, yr_s, mo_s, dy_s, hr_s, mi_s, yr1, mo1, dy1, hr1, mi1
     logical :: ok
 
     write(*,'(A)') "step-vs-total drift check:"
-    yr_s = 1998; mo_s = 1; dy_s = 1; hr_s = 0; mi_s = 0
-    do k = 1, nsteps
-       call advance_date(yr_s, mo_s, dy_s, hr_s, mi_s, step_minutes, &
+    do j = 1, size(advance_impls)
+       impl = advance_impls(j)
+       yr_s = 1998; mo_s = 1; dy_s = 1; hr_s = 0; mi_s = 0
+       do k = 1, nsteps
+          call advance_impl(impl, yr_s, mo_s, dy_s, hr_s, mi_s, step_minutes, &
+                            yr1, mo1, dy1, hr1, mi1)
+          yr_s = yr1; mo_s = mo1; dy_s = dy1; hr_s = hr1; mi_s = mi1
+       end do
+       call advance_impl(impl, 1998, 1, 1, 0, 0, nsteps*step_minutes, &
                          yr1, mo1, dy1, hr1, mi1)
-       yr_s = yr1; mo_s = mo1; dy_s = dy1; hr_s = hr1; mi_s = mi1
+       ok = (yr_s == yr1) .and. (mo_s == mo1) .and. (dy_s == dy1) &
+            .and. (hr_s == hr1) .and. (mi_s == mi1)
+       call report(ok, .true., "26 steps of 60 min == one +1560 min advance "//impl_name(impl), nfail)
+       if (.not. ok) then
+          write(*,'(A,5I5)') "        stepwise:", yr_s, mo_s, dy_s, hr_s, mi_s
+          write(*,'(A,5I5)') "        single:  ", yr1, mo1, dy1, hr1, mi1
+       end if
     end do
-    call advance_date(1998, 1, 1, 0, 0, nsteps*step_minutes, &
-                      yr1, mo1, dy1, hr1, mi1)
-    ok = (yr_s == yr1) .and. (mo_s == mo1) .and. (dy_s == dy1) &
-         .and. (hr_s == hr1) .and. (mi_s == mi1)
-    call report(ok, .true., "26 steps of 60 min == one +1560 min advance", nfail)
-    if (.not. ok) then
-       write(*,'(A,5I5)') "        stepwise:", yr_s, mo_s, dy_s, hr_s, mi_s
-       write(*,'(A,5I5)') "        single:  ", yr1, mo1, dy1, hr1, mi1
-    end if
   end subroutine run_drift_check
+
+  ! ==== implementation dispatch ==============================================
+  ! One wrapper per adapter interface; the impl argument selects which
+  ! implementation handles the case.
+
+  subroutine advance_impl(impl, yr, mo, dy, hr, mi, dminutes, &
+                          yr2, mo2, dy2, hr2, mi2)
+    integer, intent(in)  :: impl, yr, mo, dy, hr, mi, dminutes
+    integer, intent(out) :: yr2, mo2, dy2, hr2, mi2
+
+    select case (impl)
+    case (IMPL_STRING)
+       call advance_date(yr, mo, dy, hr, mi, dminutes, yr2, mo2, dy2, hr2, mi2)
+    case (IMPL_COMPONENT)
+       call advance_datetime(yr, mo, dy, hr, mi, dminutes, yr2, mo2, dy2, hr2, mi2)
+    end select
+  end subroutine advance_impl
+
+  integer function doy_impl(impl, yr, mo, dy)
+    integer, intent(in) :: impl, yr, mo, dy
+
+    select case (impl)
+    case (IMPL_STRING)
+       doy_impl = day_of_year_offset(yr, mo, dy)
+    case (IMPL_COMPONENT)
+       doy_impl = day_of_year(yr, mo, dy)
+    end select
+  end function doy_impl
+
+  subroutine declin_impl(impl, yr, mo, dy, hr, mi, sc, lat, lon, slope, azimuth, &
+                         cosz, cosz_horiz, yearlen, julian)
+    integer, intent(in)  :: impl, yr, mo, dy, hr, mi, sc
+    real,    intent(in)  :: lat, lon, slope, azimuth
+    real,    intent(out) :: cosz, cosz_horiz, julian
+    integer, intent(out) :: yearlen
+
+    select case (impl)
+    case (IMPL_STRING)
+       call declin_at(yr, mo, dy, hr, mi, sc, lat, lon, slope, azimuth, &
+                      cosz, cosz_horiz, yearlen, julian)
+    case (IMPL_COMPONENT)
+       call calc_declin_components(yr, day_of_year(yr, mo, dy), hr, mi, sc, &
+                                   lat, lon, slope, azimuth, &
+                                   cosz, cosz_horiz, yearlen, julian)
+    end select
+  end subroutine declin_impl
 
   ! A case counts as a test failure when its outcome differs from epass:
   ! an expected-pass case that fails (FAIL), or a known-failure case that
