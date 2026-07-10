@@ -14,7 +14,6 @@ type, public :: domain_type
   real                :: DT                ! run timestep (s)
   character(len=12)   :: startdate         ! Start date of the model run ( YYYYMMDDHHmm )
   character(len=12)   :: enddate           ! End date of the model run ( YYYYMMDDHHmm )
-  character(len=12)   :: nowdate           ! Current date of the model run ( YYYYMMDDHHmm )
   integer             :: start_year        ! integer components of startdate, parsed once at
   integer             :: start_month       !   init so the main loop needs no string parsing
   integer             :: start_day         !
@@ -82,7 +81,6 @@ contains
     this%dt             = huge(1.0)
     this%startdate      = 'EMPTYDATE999'
     this%enddate        = 'EMPTYDATE999'
-    this%nowdate        = 'EMPTYDATE999'
     this%start_year     = huge(1)
     this%start_month    = huge(1)
     this%start_day      = huge(1)

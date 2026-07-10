@@ -186,7 +186,6 @@ contains
       domain%zsnso(1:namelist%nsoil)    = namelist%zsoil
      
       ! time variables
-      domain%nowdate   = domain%startdate ! start the model with nowdate = startdate
       forcing_timestep = domain%dt        ! integer timestep for some subroutine calls
       domain%itime     = 1                ! initialize the time loop counter at 1
       domain%time_dbl  = 0.d0             ! start model run at t = 0
@@ -259,6 +258,7 @@ contains
     integer            :: forcing_timestep  ! integer time step (set to dt) for some subroutine calls
     integer            :: ierr              ! error code for reading forcing data
     integer            :: curr_yr, curr_mo, curr_dy, curr_hr, curr_min, curr_sec  ! current UNIX timestep details
+    integer            :: read_yr, read_mo, read_dy, read_hr, read_mi ! date components at forcing read time
 
     associate(namelist => model%namelist, &
               levels     => model%levels, &
@@ -282,7 +282,15 @@ contains
     !---------------------------------------------------------------------
     forcing_timestep = domain%dt
 #ifndef NGEN_FORCING_ACTIVE
-    call read_forcing_text(iunit, domain%nowdate, forcing_timestep, &
+    ! Forcing is read at the beginning-of-timestep date: start + (itime-1)*dt.
+    ! (UtilitiesMain below computes the end-of-timestep date, start + itime*dt,
+    ! matching the historical ordering in which the forcing read saw the
+    ! previous timestep's nowdate.)
+    call advance_datetime(domain%start_year, domain%start_month, domain%start_day, &
+                          domain%start_hour, domain%start_minute,                  &
+                          int((domain%itime - 1) * (domain%dt / 60)),              &
+                          read_yr, read_mo, read_dy, read_hr, read_mi)
+    call read_forcing_text(iunit, read_yr, read_mo, read_dy, read_hr, read_mi, forcing_timestep, &
          forcing%UU, forcing%VV, forcing%SFCTMP, forcing%Q2, forcing%SFCPRS, forcing%SOLDN, forcing%LWDN, forcing%PRCP, ierr)
 #endif
    

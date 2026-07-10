@@ -35,10 +35,6 @@ contains
                           domain%start_hour, domain%start_minute, idt,             & ! in
                           now_year, now_month, now_day, now_hour, now_minute)        ! out
 
-    ! keep the string 'nowdate' current for output and other consumers
-    ! (formatted once; never re-parsed here)
-    write(domain%nowdate, '(I4.4,4I2.2)') now_year, now_month, now_day, now_hour, now_minute
-
     ! calculate current declination of direct solar radiation input
     call calc_declin_components(now_year, day_of_year(now_year, now_month, now_day), & ! in
                                 now_hour, now_minute, 0,                             & ! in
