@@ -3,10 +3,10 @@
 ! and a descriptive label; a driver loop per table runs each case through a
 ! thin adapter and reports PASS/FAIL.
 !
-! The adapters (advance_date, day_of_year_offset, declin_at) are the contract:
-! today they wrap the string-based routines in UtilitiesModule; a later
-! integer-component reimplementation only changes the adapter bodies, and the
-! same tables must still pass.
+! Each table runs against every implementation listed for it (see the impl
+! lists below): the component routines (advance_datetime, day_of_year,
+! calc_declin_components) and, where a string routine still exists in the
+! codebase (geth_idts), a string adapter alongside.
 !
 ! Expected values were derived independently of the implementation:
 ! calendar arithmetic with Python datetime (proleptic Gregorian), solar
@@ -70,10 +70,14 @@ program datetime_test
   integer, parameter :: IMPL_STRING = 1, IMPL_COMPONENT = 2
   character(len=11), parameter :: impl_name(2) = (/ "[string]   ", "[component]" /)
 
-  integer, parameter :: advance_impls(*)  = (/ IMPL_STRING, IMPL_COMPONENT /)
+  ! geth_newdate and calc_declin were retired (phase 3c), so only the
+  ! component implementation remains for advance/declin/composed;
+  ! geth_idts still exists (used by the ASCII forcing reader), so the
+  ! day-of-year table covers both implementations.
+  integer, parameter :: advance_impls(*)  = (/ IMPL_COMPONENT /)
   integer, parameter :: doy_impls(*)      = (/ IMPL_STRING, IMPL_COMPONENT /)
-  integer, parameter :: declin_impls(*)   = (/ IMPL_STRING, IMPL_COMPONENT /)
-  integer, parameter :: composed_impls(*) = (/ IMPL_STRING, IMPL_COMPONENT /)
+  integer, parameter :: declin_impls(*)   = (/ IMPL_COMPONENT /)
+  integer, parameter :: composed_impls(*) = (/ IMPL_COMPONENT /)
 
   ! ---- test tables ---------------------------------------------------------
 
@@ -346,8 +350,6 @@ contains
     integer, intent(out) :: yr2, mo2, dy2, hr2, mi2
 
     select case (impl)
-    case (IMPL_STRING)
-       call advance_date(yr, mo, dy, hr, mi, dminutes, yr2, mo2, dy2, hr2, mi2)
     case (IMPL_COMPONENT)
        call advance_datetime(yr, mo, dy, hr, mi, dminutes, yr2, mo2, dy2, hr2, mi2)
     end select
@@ -372,9 +374,6 @@ contains
     integer, intent(out) :: yearlen
 
     select case (impl)
-    case (IMPL_STRING)
-       call declin_at(yr, mo, dy, hr, mi, sc, lat, lon, slope, azimuth, &
-                      cosz, cosz_horiz, yearlen, julian)
     case (IMPL_COMPONENT)
        call calc_declin_components(yr, day_of_year(yr, mo, dy), hr, mi, sc, &
                                    lat, lon, slope, azimuth, &
@@ -405,29 +404,14 @@ contains
     end if
   end subroutine report
 
-  ! ==== adapters =============================================================
-  ! Version 1: wrap the current string-based routines. The reimplementation
-  ! for issue #131 replaces only these bodies with calls to the new
-  ! integer-component routines; the tables above stay unchanged.
-
-  ! Advance a date by a number of minutes.
-  ! Uses a 12-char unpunctuated date (YYYYMMDDHHmm), matching what the main
-  ! loop passes to geth_newdate (domain%startdate/nowdate), which makes
-  ! geth_newdate interpret idt as minutes.
-  subroutine advance_date(yr, mo, dy, hr, mi, dminutes, &
-                          yr2, mo2, dy2, hr2, mi2)
-    integer, intent(in)  :: yr, mo, dy, hr, mi, dminutes
-    integer, intent(out) :: yr2, mo2, dy2, hr2, mi2
-
-    character(len=12) :: odate, ndate
-
-    write(odate,'(I4.4,4I2.2)') yr, mo, dy, hr, mi
-    call geth_newdate(odate, dminutes, ndate)
-    read(ndate,'(I4,4I2)') yr2, mo2, dy2, hr2, mi2
-  end subroutine advance_date
+  ! ==== string adapters ======================================================
+  ! Wrap the surviving string-based routines so the tables cover them
+  ! alongside the component implementations. An adapter is deleted when the
+  ! routine it wraps is removed from the codebase (advance_date and declin_at
+  ! went with geth_newdate and calc_declin in phase 3c).
 
   ! Day-of-year offset (days since Jan 1 of the same year; Jan 1 -> 0),
-  ! matching what calc_declin currently derives via geth_idts.
+  ! via geth_idts (still used by the ASCII forcing reader).
   integer function day_of_year_offset(yr, mo, dy)
     integer, intent(in) :: yr, mo, dy
 
@@ -437,21 +421,5 @@ contains
     write(jan1,'(I4.4,"-01-01")') yr
     call geth_idts(date, jan1, day_of_year_offset)
   end function day_of_year_offset
-
-  ! Solar geometry for a date/time given as components.
-  subroutine declin_at(yr, mo, dy, hr, mi, sc, lat, lon, slope, azimuth, &
-                       cosz, cosz_horiz, yearlen, julian)
-    integer, intent(in)  :: yr, mo, dy, hr, mi, sc
-    real,    intent(in)  :: lat, lon, slope, azimuth
-    real,    intent(out) :: cosz, cosz_horiz, julian
-    integer, intent(out) :: yearlen
-
-    character(len=19) :: nowdate
-
-    write(nowdate,'(I4.4,"-",I2.2,"-",I2.2,"_",I2.2,":",I2.2,":",I2.2)') &
-         yr, mo, dy, hr, mi, sc
-    call calc_declin(nowdate, lat, lon, slope, azimuth, &
-                     cosz, cosz_horiz, yearlen, julian)
-  end subroutine declin_at
 
 end program datetime_test
