@@ -29,7 +29,7 @@ contains
     idt = itime * (domain%dt / 60)
 
     ! calculate current date components from the start date components
-    ! (parsed once at init) plus the integer length of run to current time
+    ! plus the integer length of run to current time
     call advance_datetime(domain%start_year, domain%start_month, domain%start_day, & ! in
                           domain%start_hour, domain%start_minute, idt,             & ! in
                           now_year, now_month, now_day, now_hour, now_minute)        ! out
