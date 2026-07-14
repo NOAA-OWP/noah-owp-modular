@@ -3,7 +3,7 @@
 
 ! Output variables include:
 ! COSZ = cosine of the solar zenith angle
-! JULIAN = day of year from 1 to 365 (or 366 for leap year)
+! JULIAN = day of year from 0 to 364 (or 365 for leap year), 0.0 at 00Z Jan 1
 
 module UtilitiesModule
 
