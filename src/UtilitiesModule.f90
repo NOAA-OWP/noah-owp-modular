@@ -65,28 +65,6 @@ contains
     endif
   end function nfeb
 
-  integer function nmdays(hdate)
-!
-! Compute the number of days in the month of given date hdate.
-!
-    implicit none
-    character(len=*), intent(in) :: hdate
-
-    integer :: year, month
-    integer, dimension(12), parameter :: ndays = (/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
-
-    if (hdate(5:5) == "-") then
-       read(hdate(1:7), '(I4,1x,I2)') year, month
-    else
-       read(hdate(1:6), '(I4,I2)') year, month
-    endif
-
-    if (month == 2) then
-       nmdays = nfeb(year)
-    else
-       nmdays = ndays(month)
-    endif
-  end function nmdays
 
   ! ---------------------------------------------------------------------
   ! Date/time routines carrying dates as integer components
