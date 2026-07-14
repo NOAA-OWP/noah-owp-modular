@@ -282,10 +282,9 @@ contains
     !---------------------------------------------------------------------
     forcing_timestep = domain%dt
 #ifndef NGEN_FORCING_ACTIVE
-    ! Forcing is read at the beginning-of-timestep date: start + (itime-1)*dt.
-    ! (UtilitiesMain below computes the end-of-timestep date, start + itime*dt,
-    ! matching the historical ordering in which the forcing read saw the
-    ! previous timestep's nowdate.)
+    ! Forcing is read at the beginning-of-timestep date, start + (itime-1)*dt,
+    ! while UtilitiesMain below computes solar geometry at the
+    ! end-of-timestep date, start + itime*dt.
     call advance_datetime(domain%start_year, domain%start_month, domain%start_day, &
                           domain%start_hour, domain%start_minute,                  &
                           int((domain%itime - 1) * (domain%dt / 60)),              &

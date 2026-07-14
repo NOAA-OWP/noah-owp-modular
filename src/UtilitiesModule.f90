@@ -28,9 +28,8 @@ contains
     integer  :: now_year, now_month, now_day, now_hour, now_minute ! current date/time components
     idt = itime * (domain%dt / 60)
 
-    ! calculate current date components from start date components (parsed
-    ! once at init) + integer length of run to current time; no string
-    ! parsing on this path (issue #131)
+    ! calculate current date components from the start date components
+    ! (parsed once at init) plus the integer length of run to current time
     call advance_datetime(domain%start_year, domain%start_month, domain%start_day, & ! in
                           domain%start_hour, domain%start_minute, idt,             & ! in
                           now_year, now_month, now_day, now_hour, now_minute)        ! out
@@ -90,9 +89,8 @@ contains
   end function nmdays
 
   ! ---------------------------------------------------------------------
-  ! Integer-component date/time routines (issue #131). These carry dates
-  ! as integer components (year, month, day, hour, minute) so the model
-  ! main loop can avoid per-timestep string parsing and formatting.
+  ! Date/time routines carrying dates as integer components
+  ! (year, month, day, hour, minute).
   ! ---------------------------------------------------------------------
 
   ! The routines below implement the same calendar nfeb() defines: the
@@ -118,9 +116,8 @@ contains
   end function days_from_civil
 
   ! Signed difference newdate - olddate in minutes, for 12-char
-  ! YYYYMMDDHHmm date strings. Each string is parsed once (integer
-  ! components), unlike the retired geth_idts which validated and
-  ! re-parsed both dates on every call.
+  ! YYYYMMDDHHmm date strings: each string is parsed once into integer
+  ! components, then differenced via day-number arithmetic.
   integer function minutes_between(newdate, olddate)
     implicit none
     character(len=12), intent(in) :: newdate, olddate
@@ -165,8 +162,8 @@ contains
     dy = doy + 1
   end subroutine civil_from_days
 
-  ! Advance a date/time by a signed number of minutes. O(1) day-count
-  ! arithmetic, unlike geth_newdate's day-at-a-time loop.
+  ! Advance a date/time by a signed number of minutes, in O(1) day-count
+  ! arithmetic.
   subroutine advance_datetime(yr, mo, dy, hr, mi, dminutes, & ! in
                               yr2, mo2, dy2, hr2, mi2)        ! out
     implicit none
@@ -195,9 +192,9 @@ contains
     if (mo > 2) day_of_year = day_of_year + (nfeb(yr) - 28)
   end function day_of_year
 
-  ! Solar geometry from integer date/time components: the body of
-  ! calc_declin minus all string parsing. iday is the day-of-year offset
-  ! as computed by day_of_year().
+  ! Solar geometry (cosine of the solar zenith angle for the terrain and
+  ! for flat ground, year length, julian day) from integer date/time
+  ! components. iday is the day-of-year offset as computed by day_of_year().
   SUBROUTINE calc_declin_components (iyear, iday, ihour, iminute, isecond, & ! in
                                      latitude, longitude, slope, azimuth,  & ! in
                                      cosz, cosz_horiz, yearlen, julian)      ! out

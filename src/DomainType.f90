@@ -14,8 +14,8 @@ type, public :: domain_type
   real                :: DT                ! run timestep (s)
   character(len=12)   :: startdate         ! Start date of the model run ( YYYYMMDDHHmm )
   character(len=12)   :: enddate           ! End date of the model run ( YYYYMMDDHHmm )
-  integer             :: start_year        ! integer components of startdate, parsed once at
-  integer             :: start_month       !   init so the main loop needs no string parsing
+  integer             :: start_year        ! integer components of startdate,
+  integer             :: start_month       !   parsed once at init
   integer             :: start_day         !
   integer             :: start_hour        !
   integer             :: start_minute      !

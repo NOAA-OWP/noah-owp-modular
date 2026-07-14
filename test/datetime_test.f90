@@ -1,12 +1,11 @@
-! Table-driven unit tests for the date handling used in the main model loop
-! (issue #131). Tests are expressed as tables of inputs, expected outputs,
-! and a descriptive label; a driver loop per table runs each case through a
-! thin adapter and reports PASS/FAIL.
+! Table-driven unit tests for the date handling used in the main model loop.
+! Tests are expressed as tables of inputs, expected outputs, and a
+! descriptive label; a driver loop per table runs each case and reports
+! PASS/FAIL.
 !
 ! Each table runs against every implementation listed for it (see the impl
-! lists below): the component routines (advance_datetime, day_of_year,
-! calc_declin_components) and, where a string routine still exists in the
-! codebase (geth_idts), a string adapter alongside.
+! lists below); the routines under test are UtilitiesModule's
+! advance_datetime, day_of_year, calc_declin_components, and minutes_between.
 !
 ! Expected values were derived independently of the implementation:
 ! calendar arithmetic with Python datetime (proleptic Gregorian), solar
@@ -63,15 +62,14 @@ program datetime_test
   end type composed_case
 
   ! ---- implementations under test -------------------------------------------
-  ! Every table runs against each implementation listed for it. A string
-  ! adapter is removed only when the string routine it wraps is removed
-  ! from the codebase; while both implementations exist, both are covered.
+  ! Every table runs against each implementation listed for it, so an
+  ! alternative implementation of an operation can be covered by the same
+  ! tables: add an IMPL_* constant, a branch in the dispatch wrappers below,
+  ! and an entry in the per-table lists.
 
-  integer, parameter :: IMPL_STRING = 1, IMPL_COMPONENT = 2
-  character(len=11), parameter :: impl_name(2) = (/ "[string]   ", "[component]" /)
+  integer, parameter :: IMPL_COMPONENT = 1
+  character(len=11), parameter :: impl_name(1) = (/ "[component]" /)
 
-  ! All string routines are retired (geth_newdate and calc_declin in phase
-  ! 3c, geth_idts in phase 5), so only the component implementation remains.
   integer, parameter :: advance_impls(*)  = (/ IMPL_COMPONENT /)
   integer, parameter :: doy_impls(*)      = (/ IMPL_COMPONENT /)
   integer, parameter :: declin_impls(*)   = (/ IMPL_COMPONENT /)
