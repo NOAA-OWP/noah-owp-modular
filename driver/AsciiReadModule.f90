@@ -37,14 +37,14 @@ contains
     
   end subroutine open_forcing_file
   
-  subroutine read_forcing_text(iunit, nowdate, forcing_timestep, &
+  subroutine read_forcing_text(iunit, now_year, now_month, now_day, now_hour, now_minute, forcing_timestep, &
     u, v, sfctmp, spechumd, sfcprs, swrad, lwrad, pcprate, ierr)
-    
+
     implicit none
 
     ! Input
     integer,           intent(in)  :: iunit
-    character(len=12), intent(in)  :: nowdate
+    integer,           intent(in)  :: now_year, now_month, now_day, now_hour, now_minute ! current date/time components
     integer,           intent(in)  :: forcing_timestep
 
     ! Output
@@ -59,7 +59,8 @@ contains
     real,              intent(out) :: v
 
     ! Local
-    real              :: wspd 
+    character(len=12) :: nowdate ! current date as YYYYMMDDHHmm, for comparison with file timestamps
+    real              :: wspd
     integer           :: year
     integer           :: month
     integer           :: day
@@ -119,6 +120,10 @@ contains
     character(len=64), parameter :: read_format = "(I4.4, 4(1x,I2.2),8(F17.10))"
 
     real, parameter :: pi = 3.14159265
+
+    ! Format the current date once for comparison with the file's timestamps
+    ! (fixed-width YYYYMMDDHHmm strings compare correctly lexicographically).
+    write(nowdate, '(I4.4,4I2.2)') now_year, now_month, now_day, now_hour, now_minute
 
     ! First time in, skip forward, positioning ourself at the beginning of the data.
     if ( FirstTime ) then
@@ -216,8 +221,8 @@ contains
 
     else if (before%readdate < nowdate .and. nowdate < after%readdate) then
 
-       call geth_idts(nowdate, before%readdate, idts)
-       call geth_idts(after%readdate, before%readdate, idts2)
+       idts  = minutes_between(nowdate, before%readdate)
+       idts2 = minutes_between(after%readdate, before%readdate)
 
        if (idts2*60 /= forcing_timestep) then
           print*, 'forcing_timestep = ', forcing_timestep

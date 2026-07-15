@@ -50,6 +50,29 @@ OBJS = \
 CMD = noahowp_test.exe
 all:	$(CMD)
 
+# Date/time unit test (issue #131): links only the objects UtilitiesModule
+# needs, so it builds without NetCDF.
+DT_OBJS = \
+        ../src/ErrorCheckModule.o \
+        ../src/NamelistRead.o \
+        ../src/LevelsType.o \
+        ../src/DateTimeUtilsModule.o \
+        ../src/DomainType.o \
+        ../src/ForcingType.o \
+        ../src/EnergyType.o \
+        ../src/UtilitiesModule.o \
+        ./datetime_test.o
+
+DT_CMD = noahowp_datetime_test.exe
+
+datetime: $(DT_CMD)
+
+datetime_test.o: datetime_test.f90
+	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) -I../src $(*).f90
+
+$(DT_CMD): $(DT_OBJS)
+	$(COMPILERF90) -o $(@) $(DT_OBJS)
+
 noahowp_driver_test.o: noahowp_driver_test.f90
 	$(COMPILERF90) -c $(F90FLAGS) $(FREESOURCE) $(NETCDFMOD) -I../src -I./ -I../bmi $(*).f90 
 
@@ -58,7 +81,7 @@ noahowp_test.exe: $(OBJS)
 
 # This command cleans up
 clean:
-	rm -f $(CMD)
+	rm -f $(CMD) $(DT_CMD) datetime_test.o
 
 #
 # Dependencies:
