@@ -1,52 +1,83 @@
 # Noah-OWP-Modular Configure, Build, and Run Instructions
 
-This release of Noah-OWP-Modular comes with example forcing data and a namelist file that specifies model options. Following the steps below will let you configure, build, and run the model with the example data. 
-
-## Configure
-
-Noah-OWP-Modular presently requires only one external library: [NetCDF](https://www.unidata.ucar.edu/software/netcdf/). You can install NetCDF using the link or through a package manager such as [Brew](https://brew.sh/). Once NetCDF is installed, you can configure the model. The first step is to set up a configuration file. There are currently 4 build options in the `config` directory:
-
-- `user_build_options.cheyenne`: Cheyenne supercomputer
-- `user_build_options.pgf90.linux`: Linux with pgf90 compiler, NetCDF installed via source (usr/local)
-- `user_build_options.macos.gfortran`: MacOS with gfortran compiler, NetCDF installed via source (opt/local)
-- `user_build_options.bigsur.gfortran`: MacOS Big Sur with gfortran compiler, NetCDF 4.8.0 installed via Brew (** this is the current tesiting environment **)
-- `user_build_options.gfortran.linux`: Linux with gfortran compiler, NetCDF installed via module. The $NETCDF environmental variable is defined, such as NOAA Hera.
-
-If your system does not match one of the above options, you'll need to edit one of the files or create your own. If you do the latter, you'll need to add another option to the `configure` Perl script.
-
-Once you have a `user_build_options` set, go to your terminal and run the following command from the main Noah-OWP-Modular directory:
-
-`./configure` 
-
-Then enter the number matching your `user_build_options`. This copies over the correct set of options to the `user_build_options` file.
+Noah-OWP-Modular uses CMake (>= 3.20). Its only runtime dependency is
+[NetCDF](https://www.unidata.ucar.edu/software/netcdf/) with the Fortran
+interface (`libnetcdff`). Install NetCDF via your package manager
+(`brew install netcdf-fortran`, `apt install libnetcdff-dev`, etc.) or
+point CMake at a custom prefix with `-DNetCDF_ROOT=/path/to/netcdf`.
 
 ## Build
 
-Next, compile and link the model from the main-level directory:
+From the repository root:
 
-`make`
+```
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+```
 
-This produces the Noah-OWP-Modular executable in the `/run` subdirectory.
+The standalone executable lands at `build/noah_owp_modular` and the BMI
+shared library at `build/libnoahowpbmi.*`.
+
+### CMake options
+
+| Option | Default | Meaning |
+|---|---|---|
+| `CMAKE_BUILD_TYPE`         | `Release`                       | `Debug`, `Release`, or `RelWithDebInfo`. |
+| `NOAHOWP_BUILD_EXECUTABLE` | `ON`                            | Build the standalone `noah_owp_modular` driver. |
+| `NOAHOWP_BUILD_SHARED`     | `ON`                            | Build the `noahowpbmi` shared library (requires `iso_c_fortran_bmi`). |
+| `BUILD_TESTING`            | `ON` when top-level, else `OFF` | Build the BMI driver test and register it with CTest. |
+| `ISO_C_FORTRAN_BMI_PATH`   | sibling `../iso_c_fortran_bmi`  | Source checkout of iso_c_fortran_bmi, used when it isn't installed. |
+
+### HPC / non-standard NetCDF
+
+Point the find module at the right prefix:
+
+```
+cmake -S . -B build \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DNetCDF_ROOT=$NETCDF
+```
+
+### Compiler flags
+
+Flags are set per compiler and per config:
+
+| Compiler       | Debug                                                                                     | Release                                               |
+|----------------|-------------------------------------------------------------------------------------------|-------------------------------------------------------|
+| GNU            | `-g -fbacktrace -Wall -fcheck=all -ffree-line-length-none -frounding-math -fno-fast-math -cpp` | `-O2 -ffree-line-length-none -frounding-math -fno-fast-math -cpp` |
+| Intel/IntelLLVM| `-g -traceback -check all -warn all -fp-model=strict -fpp`                                | `-O2 -fp-model=strict -fpp`                           |
+| NVIDIA/NVHPC   | `-g -traceback -Mbounds -Mchkptr -Kieee -Mbackslash -Mpreprocess`                          | `-O2 -Kieee -Mbackslash -Mpreprocess`                 |
 
 ## Run
 
-After the model is finished compiling and linking, you can change into the `/run` subdirectory and run the model:
-
 ```
-cd run/
-./noah_owp_modular.exe namelist.input
+cd run
+../build/noah_owp_modular namelist.input
 ```
 
-The `namelist.input` file in `/run` includes all the setup and options info you need to run Noah-OWP-Modular. This is the file you'll modify when running Noah-OWP-Modular in different locations.
+Output lands at `data/output.nc` (view with Panoply or any NetCDF viewer).
 
-You can examine model output in the `/data/output.nc` file (requires [Panoply](https://www.giss.nasa.gov/tools/panoply/) or other NetCDF viewer).
+## Tests
 
-## BMI unit tests
+```
+ctest --test-dir build --output-on-failure
+```
 
-To run unit tests, first compile and link the test program from the main-level directory:
+## Install
 
-`make testBMI`
+```
+cmake --install build --prefix /your/prefix
+```
 
-This produces the Noah-OWP-Modular unit test executable in the `/test` subdirectory. See the `/test/README.md` for details.
+Downstream projects consume via either:
 
-`make testBMI_clean` removes the test program as well as object files.
+```
+find_package(noahowp CONFIG REQUIRED)
+target_link_libraries(your_target PRIVATE noahowp::noahowpbmi)
+```
+
+or pkg-config:
+
+```
+PKG_CONFIG_PATH=/your/prefix/lib/pkgconfig pkg-config --libs --cflags noahowp
+```

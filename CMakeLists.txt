@@ -1,79 +1,244 @@
-cmake_minimum_required(VERSION 3.12)
-project(noah-owp-modular VERSION 1.0.1 DESCRIPTION "OWP Implementation of the Noah-MP land surface model")
+cmake_minimum_required(VERSION 3.20)
+project(noahowp
+    VERSION 1.1.0
+    DESCRIPTION "OWP Implementation of the Noah-MP land surface model"
+    LANGUAGES Fortran)
 
-enable_language( Fortran )
-include(CMakeDependentOption)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-# Do this so we can default to ../iso_c_fortran_bmi for bindings if that directory exists
-if (IS_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/../iso_c_fortran_bmi)
-    set(DEFAULT_ISO_C_BMI_DIR_VAL ${CMAKE_CURRENT_LIST_DIR}/../iso_c_fortran_bmi)
-else ()
-    set(DEFAULT_ISO_C_BMI_DIR_VAL OFF)
-endif ()
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+include(CompilerFlags)
 
-option(ISO_C_FORTRAN_BMI_PATH  "Path to NextGen middleware for ISO C Fortran BMI bindings" ${DEFAULT_ISO_C_BMI_DIR_VAL})
+# ---- Build-type default ------------------------------------------------------
+get_property(_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(NOT _is_multi_config AND NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING
+        "Build type (Debug, Release, RelWithDebInfo)" FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+        Debug Release RelWithDebInfo)
+endif()
 
-# Syntax: cmake_dependent_option(<option> "<help_text>" <value> <depends> <force>)
-cmake_dependent_option(BMI_SHARED_LIB "Support for building BMI module shared library" ON "ISO_C_FORTRAN_BMI_PATH" OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-if (${BMI_SHARED_LIB} AND NOT IS_DIRECTORY ${ISO_C_FORTRAN_BMI_PATH})
-    message(FATAL_ERROR "Provided CMake option 'ISO_C_FORTRAN_BMI_PATH' is not a valid directory!")
-endif ()
-
-# TODO: (later) need to figure out the proper analogous compiler settings for -Wall in Intel and nv compilers
-if ("${CMAKE_Fortran_COMPILER_ID}" MATCHES "Intel|IntelLLVM")
-    add_compile_options(-cpp -fp-model=strict)
-elseif ("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
-    add_compile_options(-cpp -Wall -fcheck=bounds -ffree-line-length-none -frounding-math -fno-fast-math)
-elseif ("${CMAKE_Fortran_COMPILER_ID}" MATCHES "NVIDIA" OR "${CMAKE_Fortran_COMPILER_ID}" MATCHES "NVHPC")
-        add_compile_options(${SAC_LIB_NAME_CMAKE} -Kieee -Mbackslash -Mpreprocess)
-endif ()
-
-
-#### Add variables for individual libraries that are used within the *.pc.in files
-# NOM = Noah-OWP-Modular
-set(NOM_LIB_NAME_CMAKE noah_owp_modular_bmi)
-set(NOM_STANDALONE_EXE_NAME noah_owp_modular.exe)
-set(NOM_LIB_DESC_CMAKE "External Noah-OWP-Modular Shared Library")
-set(BMI_SOURCES_DIR bmi/)
-set(DRIVER_SOURCE_DIR driver/)
-set(MODEL_SOURCE_DIR src/)
-set(RUN_SOURCE_DIR run/)
-
-# Create variables with the source files needed in different contexts
-set(BMI_SOURCES "bmi/bmi.f90" "bmi/bmi_noahowp.f90")
-set(DRIVER_SOURCES "driver/AsciiReadModule.f90" "driver/NoahModularDriver.f90" "driver/OutputModule.f90")
-set(MODEL_SOURCES "src/AlbedoModule.f90" "src/AtmProcessing.f90" "src/CanopyWaterModule.f90" 
-    "src/DateTimeUtilsModule.f90" "src/DomainType.f90" "src/EnergyModule.f90" 
-    "src/EnergyType.f90" "src/ErrorCheckModule.f90" "src/EtFluxModule.f90"
-    "src/ForcingModule.f90" "src/ForcingType.f90" "src/InterceptionModule.f90"
-    "src/LevelsType.f90" "src/NamelistRead.f90" "src/OptionsType.f90"
-    "src/ParametersRead.f90" "src/ParametersType.f90" "src/PrecipHeatModule.f90"
-    "src/RunModule.f90" "src/ShortwaveRadiationModule.f90" "src/SnowLayerChange.f90"
-    "src/SnowSoilTempModule.f90" "src/SnowWaterModule.f90" "src/SnowWaterRenew.f90"
-    "src/SoilWaterModule.f90" "src/SoilWaterMovement.f90" "src/SoilWaterRetentionCoeff.f90"
-    "src/SubsurfaceRunoffModule.f90" "src/SurfaceRunoffInfiltration.f90"
-    "src/SurfaceRunoffModule.f90" "src/ThermalPropertiesModule.f90" "src/UtilitiesModule.f90"
-    "src/WaterModule.f90" "src/WaterType.f90"
-)
-
-if (BMI_SHARED_LIB)
-    if (WIN32)
-       message(FATAL_ERROR "Currently shared library target is not supported on Windows platforms.")
+# ---- Options -----------------------------------------------------------------
+# PROJECT_IS_TOP_LEVEL is set by CMake >= 3.21; emulate for 3.20.
+if(NOT DEFINED PROJECT_IS_TOP_LEVEL)
+    if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+        set(PROJECT_IS_TOP_LEVEL TRUE)
     else()
-        add_subdirectory(${ISO_C_FORTRAN_BMI_PATH} ${CMAKE_BINARY_DIR}/iso_c_bmi)
-        add_library(${NOM_LIB_NAME_CMAKE} SHARED ${BMI_SOURCES} ${MODEL_SOURCES} ${DRIVER_SOURCES})
-        target_compile_definitions(${NOM_LIB_NAME_CMAKE} PUBLIC BMI_ACTIVE NGEN_FORCING_ACTIVE NGEN_OUTPUT_ACTIVE NGEN_ACTIVE)
-	target_compile_options(${NOM_LIB_NAME_CMAKE} PUBLIC -fPIC)
-        target_link_libraries(${NOM_LIB_NAME_CMAKE} PUBLIC iso_c_bmi)
-        set_target_properties(${NOM_LIB_NAME_CMAKE} PROPERTIES VERSION ${PROJECT_VERSION})
+        set(PROJECT_IS_TOP_LEVEL FALSE)
     endif()
+endif()
+
+option(NOAHOWP_BUILD_EXECUTABLE "Build the standalone noah_owp_modular driver" ON)
+option(NOAHOWP_BUILD_SHARED     "Build the BMI shared library (noahowpbmi)"     ON)
+option(BUILD_TESTING            "Build tests and register with CTest" ${PROJECT_IS_TOP_LEVEL})
+
+# Default iso_c_fortran_bmi sibling-checkout path if present.
+if(IS_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/../iso_c_fortran_bmi")
+    set(_default_iso_c_bmi "${CMAKE_CURRENT_LIST_DIR}/../iso_c_fortran_bmi")
 else()
-    add_executable(${NOM_STANDALONE_EXE_NAME} ${MODEL_SOURCES} ${BMI_SOURCES} ${DRIVER_SOURCES})
-    #find_package(NetCDF COMPONENTS F90)
-    find_library(NETCDF_FORTRAN_LIB netcdff REQUIRED)
-    find_path(NETCDF_MOD_PATH netcdf.mod REQUIRED)
-    target_compile_options(${NOM_STANDALONE_EXE_NAME} PUBLIC -fPIC -I${NETCDF_MOD_PATH})
-    #target_link_options(${NOM_STANDALONE_EXE_NAME} PRIVATE -L${NETCDF_LIB_PATH}} -lnetcdff)
-    target_link_libraries(${NOM_STANDALONE_EXE_NAME} ${NETCDF_FORTRAN_LIB})
+    set(_default_iso_c_bmi "")
+endif()
+set(ISO_C_FORTRAN_BMI_PATH "${_default_iso_c_bmi}" CACHE PATH
+    "Path to iso_c_fortran_bmi source tree (fallback when not installed)")
+
+# ---- Dependencies ------------------------------------------------------------
+find_package(NetCDF REQUIRED COMPONENTS FORTRAN)
+
+# BMI bridge: prefer installed package, else add_subdirectory, else error.
+if(NOAHOWP_BUILD_SHARED OR BUILD_TESTING)
+    if(NOT TARGET iso_c_fortran_bmi::iso_c_bmi)
+        find_package(iso_c_fortran_bmi CONFIG QUIET)
+    endif()
+    if(NOT TARGET iso_c_fortran_bmi::iso_c_bmi)
+        if(ISO_C_FORTRAN_BMI_PATH AND IS_DIRECTORY "${ISO_C_FORTRAN_BMI_PATH}")
+            if(NOT TARGET iso_c_bmi)
+                add_subdirectory("${ISO_C_FORTRAN_BMI_PATH}"
+                                 "${CMAKE_BINARY_DIR}/iso_c_bmi")
+            endif()
+            if(NOT TARGET iso_c_fortran_bmi::iso_c_bmi)
+                add_library(iso_c_fortran_bmi::iso_c_bmi ALIAS iso_c_bmi)
+            endif()
+        else()
+            message(FATAL_ERROR
+                "iso_c_fortran_bmi not found. Install it, or set "
+                "ISO_C_FORTRAN_BMI_PATH to a source checkout.")
+        endif()
+    endif()
+endif()
+
+# ---- Source lists ------------------------------------------------------------
+set(NOAHOWP_MODEL_SOURCES
+    src/AlbedoModule.f90
+    src/AtmProcessing.f90
+    src/CanopyWaterModule.f90
+    src/DateTimeUtilsModule.f90
+    src/DomainType.f90
+    src/EnergyModule.f90
+    src/EnergyType.f90
+    src/ErrorCheckModule.f90
+    src/EtFluxModule.f90
+    src/ForcingModule.f90
+    src/ForcingType.f90
+    src/InterceptionModule.f90
+    src/LevelsType.f90
+    src/NamelistRead.f90
+    src/OptionsType.f90
+    src/ParametersRead.f90
+    src/ParametersType.f90
+    src/PrecipHeatModule.f90
+    src/RunModule.f90
+    src/ShortwaveRadiationModule.f90
+    src/SnowLayerChange.f90
+    src/SnowSoilTempModule.f90
+    src/SnowWaterModule.f90
+    src/SnowWaterRenew.f90
+    src/SoilWaterModule.f90
+    src/SoilWaterMovement.f90
+    src/SoilWaterRetentionCoeff.f90
+    src/SubsurfaceRunoffModule.f90
+    src/SurfaceRunoffInfiltration.f90
+    src/SurfaceRunoffModule.f90
+    src/ThermalPropertiesModule.f90
+    src/UtilitiesModule.f90
+    src/WaterModule.f90
+    src/WaterType.f90)
+
+set(NOAHOWP_BMI_SOURCES
+    bmi/bmi.f90
+    bmi/bmi_noahowp.f90)
+
+set(NOAHOWP_DRIVER_SUPPORT_SOURCES
+    driver/AsciiReadModule.f90
+    driver/OutputModule.f90)
+
+set(NOAHOWP_DRIVER_SOURCES
+    ${NOAHOWP_DRIVER_SUPPORT_SOURCES}
+    driver/NoahModularDriver.f90)
+
+# Each target gets its own module directory because source lists overlap.
+set(_noahowp_modroot "${CMAKE_BINARY_DIR}/modules")
+
+# ---- Targets -----------------------------------------------------------------
+set(_noahowp_install_targets "")
+
+if(NOAHOWP_BUILD_EXECUTABLE)
+    add_executable(noah_owp_modular
+        ${NOAHOWP_MODEL_SOURCES}
+        ${NOAHOWP_BMI_SOURCES}
+        ${NOAHOWP_DRIVER_SOURCES})
+    set_target_properties(noah_owp_modular PROPERTIES
+        Fortran_MODULE_DIRECTORY "${_noahowp_modroot}/noah_owp_modular")
+    noahowp_apply_fortran_flags(noah_owp_modular)
+    target_link_libraries(noah_owp_modular PRIVATE NetCDF::FORTRAN)
+    list(APPEND _noahowp_install_targets noah_owp_modular)
+endif()
+
+if(NOAHOWP_BUILD_SHARED)
+    if(WIN32)
+        message(FATAL_ERROR
+            "NOAHOWP_BUILD_SHARED is not supported on Windows.")
+    endif()
+    add_library(noahowpbmi SHARED
+        ${NOAHOWP_MODEL_SOURCES}
+        ${NOAHOWP_BMI_SOURCES}
+        ${NOAHOWP_DRIVER_SUPPORT_SOURCES})
+    set_target_properties(noahowpbmi PROPERTIES
+        Fortran_MODULE_DIRECTORY "${_noahowp_modroot}/noahowpbmi"
+        VERSION ${PROJECT_VERSION}
+        SOVERSION ${PROJECT_VERSION_MAJOR})
+    target_compile_definitions(noahowpbmi PUBLIC
+        BMI_ACTIVE NGEN_FORCING_ACTIVE NGEN_OUTPUT_ACTIVE NGEN_ACTIVE)
+    noahowp_apply_fortran_flags(noahowpbmi)
+    target_link_libraries(noahowpbmi
+        PUBLIC  iso_c_fortran_bmi::iso_c_bmi
+        PRIVATE NetCDF::FORTRAN)
+    target_include_directories(noahowpbmi
+        INTERFACE
+            $<BUILD_INTERFACE:${_noahowp_modroot}/noahowpbmi>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/noahowp>)
+    list(APPEND _noahowp_install_targets noahowpbmi)
+endif()
+
+# ---- Tests -------------------------------------------------------------------
+if(BUILD_TESTING)
+    enable_testing()
+    add_executable(noahowp_driver_test
+        test/noahowp_driver_test.f90
+        ${NOAHOWP_MODEL_SOURCES}
+        ${NOAHOWP_BMI_SOURCES}
+        ${NOAHOWP_DRIVER_SUPPORT_SOURCES})
+    set_target_properties(noahowp_driver_test PROPERTIES
+        Fortran_MODULE_DIRECTORY "${_noahowp_modroot}/noahowp_driver_test")
+    target_compile_definitions(noahowp_driver_test PRIVATE BMI_ACTIVE)
+    noahowp_apply_fortran_flags(noahowp_driver_test)
+    target_link_libraries(noahowp_driver_test
+        PRIVATE iso_c_fortran_bmi::iso_c_bmi NetCDF::FORTRAN)
+
+    add_test(NAME noahowp_driver_test
+        COMMAND noahowp_driver_test
+                "${CMAKE_SOURCE_DIR}/run/namelist.input"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/run")
+
+    # Compiles only the modules UtilitiesModule needs, so it builds and runs
+    # without NetCDF.
+    add_executable(noahowp_datetime_test
+        test/datetime_test.f90
+        src/DateTimeUtilsModule.f90
+        src/DomainType.f90
+        src/EnergyType.f90
+        src/ErrorCheckModule.f90
+        src/ForcingType.f90
+        src/LevelsType.f90
+        src/NamelistRead.f90
+        src/UtilitiesModule.f90)
+    set_target_properties(noahowp_datetime_test PROPERTIES
+        Fortran_MODULE_DIRECTORY "${_noahowp_modroot}/noahowp_datetime_test")
+    noahowp_apply_fortran_flags(noahowp_datetime_test)
+
+    add_test(NAME noahowp_datetime_test COMMAND noahowp_datetime_test)
+endif()
+
+# ---- Install -----------------------------------------------------------------
+if(_noahowp_install_targets AND PROJECT_IS_TOP_LEVEL)
+    install(TARGETS ${_noahowp_install_targets}
+        EXPORT  noahowpTargets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+    if(NOAHOWP_BUILD_SHARED)
+        install(DIRECTORY "${_noahowp_modroot}/noahowpbmi/"
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/noahowp
+            FILES_MATCHING PATTERN "*.mod")
+    endif()
+
+    install(EXPORT noahowpTargets
+        FILE        noahowpTargets.cmake
+        NAMESPACE   noahowp::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/noahowp)
+
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindNetCDF.cmake"
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/noahowp)
+
+    configure_package_config_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/noahowpConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/noahowpConfig.cmake"
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/noahowp)
+    write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/noahowpConfigVersion.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMajorVersion)
+    install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/noahowpConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/noahowpConfigVersion.cmake"
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/noahowp)
+
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/noahowp.pc.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/noahowp.pc" @ONLY)
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/noahowp.pc"
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 endif()

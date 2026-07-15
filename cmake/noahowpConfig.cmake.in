@@ -1,0 +1,20 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+find_dependency(NetCDF REQUIRED COMPONENTS FORTRAN)
+list(REMOVE_ITEM CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+
+# iso_c_fortran_bmi must already provide the imported target
+# iso_c_fortran_bmi::iso_c_bmi (via its own find_package or a parent
+# add_subdirectory). Consumers using find_package(noahowp) should install
+# iso_c_fortran_bmi as a package; consumers using add_subdirectory get the
+# alias from noah-owp-modular's own CMakeLists.txt.
+if(NOT TARGET iso_c_fortran_bmi::iso_c_bmi)
+    find_dependency(iso_c_fortran_bmi CONFIG)
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/noahowpTargets.cmake")
+
+check_required_components(noahowp)
