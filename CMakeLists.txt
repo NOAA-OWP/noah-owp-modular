@@ -34,6 +34,10 @@ endif()
 option(NOAHOWP_BUILD_EXECUTABLE "Build the standalone noah_owp_modular driver" ON)
 option(NOAHOWP_BUILD_SHARED     "Build the BMI shared library (noahowpbmi)"     ON)
 option(BUILD_TESTING            "Build tests and register with CTest" ${PROJECT_IS_TOP_LEVEL})
+# Turn OFF to build against an iso_c_fortran_bmi that installs iso_c_bmi without
+# exporting it, such as ngen's bundled extern/iso_c_fortran_bmi: exporting
+# noahowpTargets requires every PUBLIC dependency to be in an export set.
+option(NOAHOWP_INSTALL          "Generate install and package-export rules" ${PROJECT_IS_TOP_LEVEL})
 
 # Default iso_c_fortran_bmi sibling-checkout path if present.
 if(IS_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/../iso_c_fortran_bmi")
@@ -202,7 +206,7 @@ if(BUILD_TESTING)
 endif()
 
 # ---- Install -----------------------------------------------------------------
-if(_noahowp_install_targets AND PROJECT_IS_TOP_LEVEL)
+if(_noahowp_install_targets AND NOAHOWP_INSTALL)
     install(TARGETS ${_noahowp_install_targets}
         EXPORT  noahowpTargets
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

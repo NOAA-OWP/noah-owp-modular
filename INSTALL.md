@@ -25,8 +25,23 @@ shared library at `build/libnoahowpbmi.*`.
 | `CMAKE_BUILD_TYPE`         | `Release`                       | `Debug`, `Release`, or `RelWithDebInfo`. |
 | `NOAHOWP_BUILD_EXECUTABLE` | `ON`                            | Build the standalone `noah_owp_modular` driver. |
 | `NOAHOWP_BUILD_SHARED`     | `ON`                            | Build the `noahowpbmi` shared library (requires `iso_c_fortran_bmi`). |
-| `BUILD_TESTING`            | `ON` when top-level, else `OFF` | Build the BMI driver test and register it with CTest. |
+| `BUILD_TESTING`            | `ON` when top-level, else `OFF` | Build the BMI driver and date/time tests and register them with CTest. |
+| `NOAHOWP_INSTALL`          | `ON` when top-level, else `OFF` | Generate install and package-export rules. See below. |
 | `ISO_C_FORTRAN_BMI_PATH`   | sibling `../iso_c_fortran_bmi`  | Source checkout of iso_c_fortran_bmi, used when it isn't installed. |
+
+`NOAHOWP_INSTALL=OFF` is needed to build the shared library against a copy of
+iso_c_fortran_bmi that installs `iso_c_bmi` without exporting it, such as the
+one bundled at ngen's `extern/iso_c_fortran_bmi`. Exporting `noahowpTargets`
+requires every `PUBLIC` dependency to belong to an export set, so the default
+`ON` fails at the generate step with:
+
+```
+install(EXPORT "noahowpTargets" ...) includes target "noahowpbmi" which
+requires target "iso_c_bmi" that is not in any export set.
+```
+
+A standalone checkout of iso_c_fortran_bmi exports its targets, so it needs no
+such workaround.
 
 ### HPC / non-standard NetCDF
 
