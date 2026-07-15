@@ -8,7 +8,7 @@ Noah-OWP-Modular is in active development. Check back often for project updates.
 
 ## Dependencies
 
-Noah-OWP-Modular has been tested on Unix-based systems such as MacOS and Linux. Its only dependency is NetCDF.
+Noah-OWP-Modular has been tested on Unix-based systems such as MacOS and Linux. It is built with CMake (>= 3.20) and depends on NetCDF (with Fortran bindings).
 
 ## Installation and Configuration
 
