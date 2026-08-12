@@ -10,15 +10,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
-#env:
-  # Obtained from https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
-  # TODO: add something later that can check the runners for hyperthreading
-  #LINUX_NUM_PROC_CORES: 2
-  #MACOS_NUM_PROC_CORES: 3
-
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # Run general unit tests in linux environment
+  # Build the standalone driver and run the test suite via CTest
   test_unit:
     # The type of runner that the job will run on
     strategy:
@@ -37,48 +31,77 @@ jobs:
         if [ ${{ runner.os }} == 'Linux' ]
         then
           sudo apt-get update
-          sudo apt-get install -y --fix-missing libnetcdf-dev libnetcdff-dev libnetcdf-c++4-1 libnetcdf-c++4-dev
-          echo "NETCDF=/usr" >> $GITHUB_ENV
+          sudo apt-get install -y --fix-missing libnetcdf-dev libnetcdff-dev
         elif [ ${{ runner.os }} == 'macOS' ]
         then
-          brew install netcdf netcdf-cxx netcdf-fortran
-          echo "LIBRARY_PATH=$(brew --prefix)/lib/:$LIBRARY_PATH" >> $GITHUB_ENV
-          echo "LDFLAGS=-L$(brew --prefix)/lib" >> $GITHUB_ENV
-          echo "INCLUDE=$(brew --prefix)/include" >> $GITHUB_ENV
-          echo "NETCDF=$(brew --prefix)" >> $GITHUB_ENV
+          brew install netcdf netcdf-fortran
+          # CMake does not search the Homebrew prefix by default.
+          echo "CMAKE_PREFIX_PATH=$(brew --prefix)" >> $GITHUB_ENV
+          # Homebrew may only provide a version-suffixed gfortran.
+          if command -v gfortran > /dev/null
+          then
+            echo "FC=gfortran" >> $GITHUB_ENV
+          else
+            echo "FC=$(ls $(brew --prefix)/bin/gfortran-* | sort -V | tail -1)" >> $GITHUB_ENV
+          fi
         fi
-    
-    # Build and run noah executable
-    # noah-owp-modular's configure system has 5 options serving the need for different computer
-    # servers and OS environment. The numbers 5 is for Linux type computing enviroments.
-    # Using the Linux option for macOS as macOS could not find gfortran in /usr/local/bin/.
+
+    # The shared library is covered by test_shared_lib; leaving it off here keeps
+    # this job free of the iso_c_fortran_bmi dependency.
     - name: Configure
-      run: |
-        if [ ${{ runner.os }} == 'Linux' ]
-        then
-          ./configure 5
-        elif [ ${{ runner.os }} == 'macOS' ]
-        then
-          sudo ln -s $(which gfortran-13) /usr/local/bin/gfortran
-          ./configure 5
-        fi
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DNOAHOWP_BUILD_SHARED=OFF
 
-    - name: Build and Run Standalone
-      run: |
-        make clean
-        make
-        cd run
-        ./noah_owp_modular.exe namelist.input
+    - name: Build
+      run: cmake --build build -j
 
-    - name: Build and Run BMI test
-      run: |
-        make clean
-        make testBMI
-        cd test
-        ./noahowp_test.exe ../run/namelist.input
+    - name: Run standalone
+      working-directory: run
+      run: ../build/noah_owp_modular namelist.input
 
-    - name: Build and Run date/time unit test
+    # Runs the BMI driver test and the date/time unit test
+    - name: Run tests
+      run: ctest --test-dir build --output-on-failure
+
+    - name: Check install
+      run: cmake --install build --prefix ${{ runner.temp }}/noahowp-install
+
+  # Build the BMI shared library against iso_c_fortran_bmi
+  test_shared_lib:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout the commit
+      uses: actions/checkout@v4
+      with:
+        path: noah-owp-modular
+
+    - name: Checkout iso_c_fortran_bmi
+      uses: actions/checkout@v4
+      with:
+        repository: NOAA-OWP/iso_c_fortran_bmi
+        path: iso_c_fortran_bmi
+
+    - name: Install NetCDF
       run: |
-        make testDateTime
-        cd test
-        ./noahowp_datetime_test.exe
+        sudo apt-get update
+        sudo apt-get install -y --fix-missing libnetcdf-dev libnetcdff-dev
+
+    # NOAHOWP_INSTALL=OFF because NOAA-OWP/iso_c_fortran_bmi installs iso_c_bmi
+    # without adding it to an export set, which blocks exporting noahowpTargets.
+    - name: Configure and build
+      working-directory: noah-owp-modular
+      run: |
+        cmake -S . -B build \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DNOAHOWP_BUILD_SHARED=ON \
+              -DBUILD_TESTING=OFF \
+              -DNOAHOWP_INSTALL=OFF \
+              -DISO_C_FORTRAN_BMI_PATH=${{ github.workspace }}/iso_c_fortran_bmi
+        cmake --build build -j
+
+    # The registration function ngen resolves with dlsym once it dlopen()s the library
+    - name: Check the library exports register_bmi
+      working-directory: noah-owp-modular
+      run: |
+        test -f build/libnoahowpbmi.so
+        nm -D --defined-only build/libnoahowpbmi.so | grep -w register_bmi

@@ -52,7 +52,9 @@ set(ISO_C_FORTRAN_BMI_PATH "${_default_iso_c_bmi}" CACHE PATH
 find_package(NetCDF REQUIRED COMPONENTS FORTRAN)
 
 # BMI bridge: prefer installed package, else add_subdirectory, else error.
-if(NOAHOWP_BUILD_SHARED OR BUILD_TESTING)
+# Only the shared library needs it: it alone defines NGEN_ACTIVE, which is what
+# guards bmi_noahowp.f90's use of the iso_c bindings.
+if(NOAHOWP_BUILD_SHARED)
     if(NOT TARGET iso_c_fortran_bmi::iso_c_bmi)
         find_package(iso_c_fortran_bmi CONFIG QUIET)
     endif()
@@ -178,13 +180,17 @@ if(BUILD_TESTING)
         Fortran_MODULE_DIRECTORY "${_noahowp_modroot}/noahowp_driver_test")
     target_compile_definitions(noahowp_driver_test PRIVATE BMI_ACTIVE)
     noahowp_apply_fortran_flags(noahowp_driver_test)
-    target_link_libraries(noahowp_driver_test
-        PRIVATE iso_c_fortran_bmi::iso_c_bmi NetCDF::FORTRAN)
+    target_link_libraries(noahowp_driver_test PRIVATE NetCDF::FORTRAN)
 
+    # Pass the namelist relative to the working directory: the test reads the
+    # argument into a character(len=80) buffer that an absolute path can overrun.
     add_test(NAME noahowp_driver_test
-        COMMAND noahowp_driver_test
-                "${CMAKE_SOURCE_DIR}/run/namelist.input"
+        COMMAND noahowp_driver_test namelist.input
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/run")
+    # NamelistRead stops with exit code 0 when it cannot open the namelist, so
+    # without this the test would report success after failing to read it.
+    set_tests_properties(noahowp_driver_test PROPERTIES
+        FAIL_REGULAR_EXPRESSION "ERROR")
 
     # Compiles only the modules UtilitiesModule needs, so it builds and runs
     # without NetCDF.
