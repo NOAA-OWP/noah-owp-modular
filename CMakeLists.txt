@@ -98,6 +98,7 @@ set(NOAHOWP_MODEL_SOURCES
     src/ForcingType.f90
     src/InterceptionModule.f90
     src/LevelsType.f90
+    src/LoggingModule.f90
     src/NamelistRead.f90
     src/OptionsType.f90
     src/ParametersRead.f90
