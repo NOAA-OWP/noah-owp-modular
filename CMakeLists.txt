@@ -208,6 +208,24 @@ if(BUILD_TESTING)
     set_tests_properties(noahowp_driver_test PROPERTIES
         FAIL_REGULAR_EXPRESSION "ERROR")
 
+    add_executable(noahowp_serialization_test
+        test/serialization_test.f90
+        ${NOAHOWP_MODEL_SOURCES}
+        ${NOAHOWP_BMI_SOURCES}
+        ${NOAHOWP_DRIVER_SUPPORT_SOURCES})
+    set_target_properties(noahowp_serialization_test PROPERTIES
+        Fortran_MODULE_DIRECTORY "${_noahowp_modroot}/noahowp_serialization_test")
+    target_compile_definitions(noahowp_serialization_test PRIVATE BMI_ACTIVE)
+    noahowp_apply_fortran_flags(noahowp_serialization_test)
+    target_link_libraries(noahowp_serialization_test PRIVATE NetCDF::FORTRAN)
+
+    add_test(NAME noahowp_serialization_test
+        COMMAND noahowp_serialization_test
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/run")
+    # Shares run/ with the driver test, and both write the same output file.
+    set_tests_properties(noahowp_serialization_test noahowp_driver_test PROPERTIES
+        RESOURCE_LOCK noahowp_run_dir)
+
     # Compiles only the modules UtilitiesModule needs, so it builds and runs
     # without NetCDF.
     add_executable(noahowp_datetime_test
