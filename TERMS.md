@@ -14,6 +14,6 @@ author or the affirmer.
 
 ## Exceptions
 
-_Source code or other assets that are excluded from the TERMS should be listed
-here. These may include dependencies that may be licensed differently or are
-not in the public domain._
+`extern/fortran-messagepack/` is third-party software redistributed here under the MIT license,
+Copyright (c) 2025 Kelly Schultz. See `extern/fortran-messagepack/LICENSE` for the license text and
+`extern/fortran-messagepack/README.md` for provenance.
