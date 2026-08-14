@@ -237,6 +237,9 @@ contains
     ! driven, this needs to become selectable by the caller
     model%restore_mode = NOAHOWP_RESTORE_HOTSTART
 
+    ! No snapshot size known yet; measure_serialization is what establishes it
+    model%serialization_nbytes = 0
+
     call measure_serialization(model)
 
   END SUBROUTINE initialize_from_file
