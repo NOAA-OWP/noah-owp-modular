@@ -226,6 +226,31 @@ if(BUILD_TESTING)
     set_tests_properties(noahowp_serialization_test noahowp_driver_test PROPERTIES
         RESOURCE_LOCK noahowp_run_dir)
 
+    # Drives the protocol through the C entry points, which size transfers
+    # themselves. Needs the bridge, so it builds only alongside the shared library.
+    if(NOAHOWP_BUILD_SHARED AND TARGET iso_c_fortran_bmi::iso_c_bmi)
+        add_executable(noahowp_serialization_iso_c_test
+            test/serialization_iso_c_test.f90
+            ${NOAHOWP_MODEL_SOURCES}
+            ${NOAHOWP_BMI_SOURCES}
+            ${NOAHOWP_DRIVER_SUPPORT_SOURCES})
+        set_target_properties(noahowp_serialization_iso_c_test PROPERTIES
+            Fortran_MODULE_DIRECTORY "${_noahowp_modroot}/noahowp_serialization_iso_c_test")
+        # NGEN_ACTIVE for the iso_c bindings and register_bmi. Forcing and output
+        # stay local so the model can actually advance under test.
+        target_compile_definitions(noahowp_serialization_iso_c_test
+            PRIVATE BMI_ACTIVE NGEN_ACTIVE)
+        noahowp_apply_fortran_flags(noahowp_serialization_iso_c_test)
+        target_link_libraries(noahowp_serialization_iso_c_test
+            PRIVATE iso_c_fortran_bmi::iso_c_bmi NetCDF::FORTRAN)
+
+        add_test(NAME noahowp_serialization_iso_c_test
+            COMMAND noahowp_serialization_iso_c_test
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/run")
+        set_tests_properties(noahowp_serialization_iso_c_test PROPERTIES
+            RESOURCE_LOCK noahowp_run_dir)
+    endif()
+
     # Compiles only the modules UtilitiesModule needs, so it builds and runs
     # without NetCDF.
     add_executable(noahowp_datetime_test
