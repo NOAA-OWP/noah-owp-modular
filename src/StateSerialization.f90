@@ -6,7 +6,8 @@ module StateSerialization
   ! there are no keys, so position N on the way out must be position N on the way
   ! back in. To add a field: append it at the end of the component's array (never
   ! insert), grow the mp_arr_type(N) count, add the matching case to that
-  ! component's deserialization, and bump SERIALIZATION_LAYOUT_VERSION.
+  ! component's deserialization, decide whether it applies under every restore
+  ! mode, and bump SERIALIZATION_LAYOUT_VERSION.
   !
   ! Every value must encode to a fixed width, so that the payload size depends
   ! only on model configuration and can be measured once at initialization. That
@@ -29,7 +30,24 @@ module StateSerialization
   integer, parameter :: SERIALIZATION_MAGIC = 19700101
   integer, parameter :: SERIALIZATION_LAYOUT_VERSION = 1
 
+  ! How much of a snapshot to apply. A snapshot always records everything; these
+  ! say what the run doing the restoring should take from it.
+  !
+  !   HOTSTART - seed a new, separate simulation from a previous run's physical
+  !              state. Values that describe the run that wrote the snapshot,
+  !              rather than the physical system it simulated, do not carry over.
+  !   RESUME   - continue the same simulation. Everything applies.
+  !
+  ! TODO: resume is not driven yet. Before it is, check whether the serialized
+  ! field set is still sufficient -- both for state a resume strictly needs, and
+  ! for config that a resume should validate rather than silently accept.
+  integer, parameter :: NOAHOWP_RESTORE_HOTSTART = 0
+  integer, parameter :: NOAHOWP_RESTORE_RESUME = 1
+
+  ! Elements of the header array, and of the payload array that holds the header
+  ! followed by one array per serialized component
   integer, parameter :: SERIALIZATION_HEADER_ELEMENTS = 3
+  integer, parameter :: SERIALIZATION_PAYLOAD_ELEMENTS = 6
 
 contains
 
@@ -185,13 +203,22 @@ SUBROUTINE domain_serialization (domain, mp_arr)
 
 END SUBROUTINE domain_serialization 
 
-SUBROUTINE domain_deserialization (mp_arr, domain)
+SUBROUTINE domain_deserialization (mp_arr, domain, restore_mode)
     class(mp_arr_type), allocatable, intent(in) :: mp_arr
     type(domain_type), intent(inout) :: domain
+    integer, intent(in) :: restore_mode
     real(kind=real64) :: deserialized_val
     class(mp_arr_type), allocatable :: mp_sub_arr
-    logical :: status
+    logical :: status, resume
     integer(kind=int64) :: index, sub_index
+
+    ! The clock describes the run that wrote the snapshot, so it carries over
+    ! only when this run is continuing that one. Under a hotstart the values are
+    ! still read -- every element is consumed either way, so what is applied
+    ! cannot change how the payload is laid out -- but not applied. itime in
+    ! particular indexes sim_datetimes, which is built for the current run and is
+    ! not in the snapshot, so a saved index can address past its end.
+    resume = restore_mode == NOAHOWP_RESTORE_RESUME
 
     do index=1, mp_arr%numelements()
         if (index .LE. 3) then
@@ -203,11 +230,11 @@ SUBROUTINE domain_deserialization (mp_arr, domain)
         end if
         select case(index)
             case(1)
-                domain%curr_datetime = deserialized_val
+                if (resume) domain%curr_datetime = deserialized_val
             case(2)
-                domain%time_dbl = deserialized_val
+                if (resume) domain%time_dbl = deserialized_val
             case(3)
-                domain%ITIME = nint(deserialized_val)
+                if (resume) domain%ITIME = nint(deserialized_val)
             case(4)
                 domain%DZSNSO = transfer_values_from_mp(mp_sub_arr)
             case(5)
