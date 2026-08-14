@@ -76,7 +76,15 @@ if(NOAHOWP_BUILD_SHARED)
 endif()
 
 # ---- Source lists ------------------------------------------------------------
+# Vendored third-party; listed in dependency order. See extern/fortran-messagepack/README.md.
+set(NOAHOWP_MESSAGEPACK_SOURCES
+    extern/fortran-messagepack/src/byte_utilities.f90
+    extern/fortran-messagepack/src/messagepack_value.f90
+    extern/fortran-messagepack/src/messagepack_user.f90
+    extern/fortran-messagepack/src/messagepack.f90)
+
 set(NOAHOWP_MODEL_SOURCES
+    ${NOAHOWP_MESSAGEPACK_SOURCES}
     src/AlbedoModule.f90
     src/AtmProcessing.f90
     src/CanopyWaterModule.f90
