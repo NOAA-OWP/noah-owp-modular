@@ -83,6 +83,15 @@ set(NOAHOWP_MESSAGEPACK_SOURCES
     extern/fortran-messagepack/src/messagepack_user.f90
     extern/fortran-messagepack/src/messagepack.f90)
 
+# MessagePack recurses through nested arrays when sizing and packing them, and a
+# state payload is always nested: an array of component arrays, several of which
+# hold arrays themselves.
+noahowp_recursion_flag(_noahowp_recursion_flag)
+if(_noahowp_recursion_flag)
+    set_source_files_properties(${NOAHOWP_MESSAGEPACK_SOURCES}
+        PROPERTIES COMPILE_OPTIONS "${_noahowp_recursion_flag}")
+endif()
+
 set(NOAHOWP_MODEL_SOURCES
     ${NOAHOWP_MESSAGEPACK_SOURCES}
     src/AlbedoModule.f90
@@ -113,6 +122,7 @@ set(NOAHOWP_MODEL_SOURCES
     src/SoilWaterModule.f90
     src/SoilWaterMovement.f90
     src/SoilWaterRetentionCoeff.f90
+    src/StateSerialization.f90
     src/SubsurfaceRunoffModule.f90
     src/SurfaceRunoffInfiltration.f90
     src/SurfaceRunoffModule.f90
