@@ -1,24 +1,27 @@
 # Per-compiler, per-config Fortran flag matrix for noah-owp-modular.
 #
-# Applies Debug/Release flags via generator expressions so a single build tree
+# Applies per-config flags via generator expressions so a single build tree
 # can switch configurations and multi-config generators pick the right set.
+# Flags are grouped by purpose so nothing has to be repeated per config;
+# _language covers the preprocessor, line length and floating-point options
+# that every configuration needs.
 
 function(noahowp_apply_fortran_flags target)
     set(_id "${CMAKE_Fortran_COMPILER_ID}")
+    set(_optimize -O2)
 
     if(_id MATCHES "GNU")
-        set(_debug
-            -g -fbacktrace -Wall -fcheck=all
-            -ffree-line-length-none -frounding-math -fno-fast-math -cpp)
-        set(_release
-            -O2 -ffree-line-length-none -frounding-math -fno-fast-math -cpp)
+        set(_language -ffree-line-length-none -frounding-math -fno-fast-math -cpp)
+        set(_debuginfo -g -fbacktrace)
+        set(_checks -Wall -fcheck=all)
     elseif(_id MATCHES "Intel|IntelLLVM")
-        set(_debug  -g -traceback -check all -warn all -fp-model=strict -fpp)
-        set(_release -O2 -fp-model=strict -fpp)
+        set(_language -fp-model=strict -fpp)
+        set(_debuginfo -g -traceback)
+        set(_checks -check all -warn all)
     elseif(_id MATCHES "NVIDIA|NVHPC|PGI")
-        set(_debug
-            -g -traceback -Mbounds -Mchkptr -Kieee -Mbackslash -Mpreprocess)
-        set(_release -O2 -Kieee -Mbackslash -Mpreprocess)
+        set(_language -Kieee -Mbackslash -Mpreprocess)
+        set(_debuginfo -g -traceback)
+        set(_checks -Mbounds -Mchkptr)
     else()
         message(WARNING
             "noahowp: unrecognized Fortran compiler '${_id}'; no flags applied")
@@ -26,7 +29,8 @@ function(noahowp_apply_fortran_flags target)
     endif()
 
     target_compile_options(${target} PRIVATE
-        $<$<CONFIG:Debug>:${_debug}>
-        $<$<CONFIG:Release>:${_release}>
-        $<$<CONFIG:RelWithDebInfo>:${_release}>)
+        ${_language}
+        $<$<CONFIG:Debug>:${_debuginfo};${_checks}>
+        $<$<CONFIG:Release>:${_optimize}>
+        $<$<CONFIG:RelWithDebInfo>:${_optimize};${_debuginfo}>)
 endfunction()

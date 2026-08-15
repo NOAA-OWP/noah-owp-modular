@@ -120,10 +120,6 @@ set(NOAHOWP_DRIVER_SUPPORT_SOURCES
     driver/AsciiReadModule.f90
     driver/OutputModule.f90)
 
-set(NOAHOWP_DRIVER_SOURCES
-    ${NOAHOWP_DRIVER_SUPPORT_SOURCES}
-    driver/NoahModularDriver.f90)
-
 # Each target gets its own module directory because source lists overlap.
 set(_noahowp_modroot "${CMAKE_BINARY_DIR}/modules")
 
@@ -134,7 +130,8 @@ if(NOAHOWP_BUILD_EXECUTABLE)
     add_executable(noah_owp_modular
         ${NOAHOWP_MODEL_SOURCES}
         ${NOAHOWP_BMI_SOURCES}
-        ${NOAHOWP_DRIVER_SOURCES})
+        ${NOAHOWP_DRIVER_SUPPORT_SOURCES}
+        driver/NoahModularDriver.f90)
     set_target_properties(noah_owp_modular PROPERTIES
         Fortran_MODULE_DIRECTORY "${_noahowp_modroot}/noah_owp_modular")
     noahowp_apply_fortran_flags(noah_owp_modular)
