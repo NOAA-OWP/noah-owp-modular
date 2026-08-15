@@ -14,6 +14,7 @@ author or the affirmer.
 
 ## Exceptions
 
-`extern/fortran-messagepack/` is third-party software redistributed here under the MIT license,
+`src/byte_utilities.f90`, `src/messagepack_value.f90`, `src/messagepack_user.f90` and
+`src/messagepack.f90` are third-party software redistributed here under the MIT license,
 Copyright (c) 2025 Kelly Schultz. See `extern/fortran-messagepack/LICENSE` for the license text and
-`extern/fortran-messagepack/README.md` for provenance.
+`extern/fortran-messagepack/README.md` for provenance and why the sources sit in `src/`.

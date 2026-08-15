@@ -76,12 +76,14 @@ if(NOAHOWP_BUILD_SHARED)
 endif()
 
 # ---- Source lists ------------------------------------------------------------
-# Vendored third-party; listed in dependency order. See extern/fortran-messagepack/README.md.
+# Vendored third-party, in their own list so the boundary stays visible even though
+# the sources sit in src/. Listed in dependency order. See
+# extern/fortran-messagepack/README.md for provenance and why they are not in extern/.
 set(NOAHOWP_MESSAGEPACK_SOURCES
-    extern/fortran-messagepack/src/byte_utilities.f90
-    extern/fortran-messagepack/src/messagepack_value.f90
-    extern/fortran-messagepack/src/messagepack_user.f90
-    extern/fortran-messagepack/src/messagepack.f90)
+    src/byte_utilities.f90
+    src/messagepack_value.f90
+    src/messagepack_user.f90
+    src/messagepack.f90)
 
 # MessagePack recurses through nested arrays when sizing and packing them, and a
 # state payload is always nested: an array of component arrays, several of which
