@@ -37,6 +37,7 @@ program serialization_test
 
   call test_payload_round_trip(nfail)
   call test_restore_semantics(nfail)
+  call test_header_gates(nfail)
   call test_bmi_protocol(nfail)
 
   write(*,'(A)') repeat("-", 60)
@@ -163,6 +164,74 @@ contains
 
     call cleanup(model)
   end subroutine test_restore_semantics
+
+  ! The header is what stands between a well-formed payload from somewhere else
+  ! and live state. A payload that fails to unpack never reaches those gates, so
+  ! these unpack cleanly and differ only in what the gates read.
+  subroutine test_header_gates(nfail)
+    integer, intent(inout) :: nfail
+    type(noahowp_type) :: model
+    integer :: st
+
+    call initialize_from_file(model, "namelist.input")
+
+    call restore_serialization(model, gated_payload(0, SERIALIZATION_LAYOUT_VERSION, &
+         SERIALIZATION_PAYLOAD_ELEMENTS, SERIALIZATION_HEADER_ELEMENTS), st)
+    call expect_true(st /= 0, "a foreign magic is refused", nfail)
+
+    call restore_serialization(model, gated_payload(SERIALIZATION_MAGIC, &
+         SERIALIZATION_LAYOUT_VERSION + 1, SERIALIZATION_PAYLOAD_ELEMENTS, &
+         SERIALIZATION_HEADER_ELEMENTS), st)
+    call expect_true(st /= 0, "another layout version is refused", nfail)
+
+    call restore_serialization(model, gated_payload(SERIALIZATION_MAGIC, &
+         SERIALIZATION_LAYOUT_VERSION, SERIALIZATION_PAYLOAD_ELEMENTS - 1, &
+         SERIALIZATION_HEADER_ELEMENTS), st)
+    call expect_true(st /= 0, "a payload missing a component is refused", nfail)
+
+    call restore_serialization(model, gated_payload(SERIALIZATION_MAGIC, &
+         SERIALIZATION_LAYOUT_VERSION, SERIALIZATION_PAYLOAD_ELEMENTS, &
+         SERIALIZATION_HEADER_ELEMENTS - 1), st)
+    call expect_true(st /= 0, "a short header is refused", nfail)
+
+    ! The gates did that, and not the stub construction those four share: the
+    ! same payload carrying our own header values is accepted.
+    call restore_serialization(model, gated_payload(SERIALIZATION_MAGIC, &
+         SERIALIZATION_LAYOUT_VERSION, SERIALIZATION_PAYLOAD_ELEMENTS, &
+         SERIALIZATION_HEADER_ELEMENTS), st)
+    call expect_true(st == 0, "the same payload with our header is accepted", nfail)
+
+    call cleanup(model)
+  end subroutine test_header_gates
+
+  ! A packed and framed payload with the given header values and element counts.
+  ! The components are empty: a restore that reaches them applies nothing.
+  function gated_payload(magic, version, elements, header_elements) result(buffer)
+    integer, intent(in) :: magic, version, elements, header_elements
+    integer, allocatable :: buffer(:)
+    type(mp_arr_type) :: header, top
+    class(msgpack), allocatable :: mp
+    byte, allocatable :: packed(:)
+    integer :: i, packed_bytes
+
+    header = mp_arr_type(header_elements)
+    header%values(1)%obj = mp_int_type(int(magic, kind=int64))
+    if (header_elements >= 2) header%values(2)%obj = mp_int_type(int(version, kind=int64))
+    if (header_elements >= 3) header%values(3)%obj = mp_float_type(1.7d9)
+
+    top = mp_arr_type(elements)
+    allocate(top%values(1)%obj, source = header)
+    do i = 2, elements
+       allocate(top%values(i)%obj, source = mp_arr_type(0))
+    end do
+
+    mp = msgpack()
+    call mp%pack_alloc(top, packed)
+    packed_bytes = size(packed)
+    allocate(buffer((packed_bytes + 3) / 4 + 1))
+    buffer(1) = packed_bytes
+    buffer(2:) = transfer(packed, buffer(2:))
+  end function gated_payload
 
   ! The protocol as a host sees it: the support probe, the metadata its bindings
   ! need, and the save and restore sequences. This is the model that advances.
