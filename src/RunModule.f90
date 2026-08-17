@@ -354,9 +354,9 @@ contains
   SUBROUTINE create_serialization (model, exec_status)
 
     ! Capture current state into the model's snapshot buffer. The buffer is an
-    ! integer array because that is the widest type the Fortran BMI bindings can
-    ! carry: its first element is the MessagePack byte count, and the packed
-    ! bytes follow, padded out to a whole number of integers.
+    ! integer array because that is the only integral type the Fortran BMI
+    ! bindings can carry: its first element is the MessagePack byte count, and
+    ! the packed bytes follow, padded out to a whole number of integers.
 
     type(noahowp_type), intent(inout) :: model
     integer, intent(out) :: exec_status

@@ -17,7 +17,9 @@ module LoggingModule
   integer, parameter :: LOG_LEVEL_SEVERE  = 40
   integer, parameter :: LOG_LEVEL_FATAL   = 50
 
-  integer, parameter :: LOG_LEVEL_THRESHOLD = LOG_LEVEL_INFO
+  ! Not a parameter, so the DEBUG call sites are reachable rather than folded
+  ! away, and a fuller logger dropping in here has a level to set
+  integer :: log_level_threshold = LOG_LEVEL_INFO
 
 contains
 
@@ -32,7 +34,7 @@ contains
 
     integer :: unit
 
-    if(level < LOG_LEVEL_THRESHOLD) return
+    if(level < log_level_threshold) return
 
     if(level >= LOG_LEVEL_WARNING) then
       unit = error_unit

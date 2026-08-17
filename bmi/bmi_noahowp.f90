@@ -107,10 +107,7 @@ module bminoahowp
 
   ! Reserved variables of the ngen BMI serialization protocol. Deliberately not
   ! in the exchange item lists above: a host discovers them by name, and the
-  ! protocol requires they not be enumerable. A host probes for support by
-  ! calling get_var_units on each and comparing the result exactly, so the unit
-  ! strings below are the whole conformance signal -- do not substitute "-" or
-  ! "none" for them.
+  ! protocol requires they not be enumerable.
   character (len=*), parameter :: SERIALIZATION_CREATE = 'ngen::serialization_create'
   character (len=*), parameter :: SERIALIZATION_FREE   = 'ngen::serialization_free'
   character (len=*), parameter :: SERIALIZATION_SIZE   = 'ngen::serialization_size'
@@ -687,6 +684,9 @@ contains
     case("SMCMAX")
        units = 'volumetric'
        bmi_status = BMI_SUCCESS
+    ! A host probes for serialization support by calling get_var_units on each
+    ! reserved name and comparing the result exactly, so these strings are the
+    ! whole conformance signal -- do not substitute "-" or "none" for them.
     case(SERIALIZATION_CREATE, SERIALIZATION_FREE)
        units = 'ngen::trigger'
        bmi_status = BMI_SUCCESS
