@@ -277,6 +277,20 @@ contains
     call expect_true(abs(tg_drifted(1) - tg_saved(1)) > 1.0e-6, &
          "model moved after the snapshot (else the restore proves nothing)", nfail)
 
+    ! The announced size sizes a transfer, so it is bounded where it arrives
+    ! rather than at the metadata call that reads it back
+    announce = transfer(-8_int64, 0, 2)
+    call expect_true(m%set_value('ngen::serialization_size', announce) /= BMI_SUCCESS, &
+         "a negative announced size is refused", nfail)
+    announce = transfer(4294967296_int64, 0, 2)
+    call expect_true(m%set_value('ngen::serialization_size', announce) /= BMI_SUCCESS, &
+         "an announced size past the transfer width is refused", nfail)
+    announce = transfer(reported_bytes + 1, 0, 2)
+    call expect_true(m%set_value('ngen::serialization_size', announce) /= BMI_SUCCESS, &
+         "an announced size that is not whole items is refused", nfail)
+    st = m%get_var_nbytes('ngen::serialization_state', nbytes)
+    call expect_true(nbytes == 0, "a refused announcement is not stored", nfail)
+
     announce = transfer(reported_bytes, 0, 2)
     call expect_true(m%set_value('ngen::serialization_size', announce) == BMI_SUCCESS, &
          "announced size accepted", nfail)

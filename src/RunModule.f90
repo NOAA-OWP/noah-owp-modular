@@ -443,8 +443,10 @@ contains
       call write_log("Serialized state is too short to be a snapshot", LOG_LEVEL_SEVERE)
       return
     end if
+    ! Element 1 is the frame header, so the packed bytes it claims have to fit in
+    ! what follows it, not in the whole buffer
     if (serialized_data(1) < 1 .or. &
-        serialized_data(1) > buffer_nbytes(serialized_data) ) then
+        serialized_data(1) > buffer_nbytes(serialized_data(2:)) ) then
       call write_log("Serialized state has an implausible length header", LOG_LEVEL_SEVERE)
       return
     end if

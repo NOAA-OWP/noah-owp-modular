@@ -883,47 +883,39 @@ contains
     integer :: bmi_status
     integer :: s1, s2, s3, grid, grid_size, item_size
 
-    ! The reserved serialization variables have no grid, so they are answered
-    ! before anything asks for one. These must succeed: the ISO-C binding sizes
-    ! every transfer as nbytes/itemsize before dispatching to the model, so a
-    ! failure here short-circuits the call rather than reporting an error.
+    ! The reserved serialization variables have no grid, so the grid math in the
+    ! default arm does not apply to them. These must succeed: the ISO-C binding
+    ! sizes every transfer as nbytes/itemsize before dispatching to the model, so
+    ! a failure here short-circuits the call rather than reporting an error.
     select case(name)
     case(SERIALIZATION_CREATE, SERIALIZATION_FREE)
        bmi_status = this%get_var_itemsize(name, nbytes)
-       return
     case(SERIALIZATION_SIZE)
        ! Two c_ints, so the binding carries all 8 bytes of the int64 the
        ! protocol specifies; get_int and set_int transfer between the two forms
        bmi_status = this%get_var_itemsize(name, item_size)
        nbytes = 2 * item_size
-       return
     case(SERIALIZATION_STATE)
-       ! Bytes of the snapshot just created, or of the payload a caller
-       ! announced ahead of a restore -- which is not trusted to fit here.
-       if (this%model%serialization_nbytes > huge(nbytes)) then
+       ! Bytes of the snapshot just created, or of the payload a caller announced
+       ! ahead of a restore. Both are bounded where they enter, so this fits.
+       nbytes = int(this%model%serialization_nbytes)
+       bmi_status = BMI_SUCCESS
+    case default
+       s1 = this%get_var_grid(name, grid)
+       s2 = this%get_grid_size(grid, grid_size)
+       s3 = this%get_var_itemsize(name, item_size)
+
+       if (grid .eq. 0) then
+          nbytes = item_size
+          bmi_status = BMI_SUCCESS
+       else if ((s1 == BMI_SUCCESS).and.(s2 == BMI_SUCCESS).and.(s3 == BMI_SUCCESS)) then
+          nbytes = item_size * grid_size
+          bmi_status = BMI_SUCCESS
+       else
           nbytes = -1
           bmi_status = BMI_FAILURE
-       else
-          nbytes = int(this%model%serialization_nbytes)
-          bmi_status = BMI_SUCCESS
        end if
-       return
     end select
-
-    s1 = this%get_var_grid(name, grid)
-    s2 = this%get_grid_size(grid, grid_size)
-    s3 = this%get_var_itemsize(name, item_size)
-
-    if (grid .eq. 0) then
-       nbytes = item_size
-       bmi_status = BMI_SUCCESS
-    else if ((s1 == BMI_SUCCESS).and.(s2 == BMI_SUCCESS).and.(s3 == BMI_SUCCESS)) then
-       nbytes = item_size * grid_size
-       bmi_status = BMI_SUCCESS
-    else
-       nbytes = -1
-       bmi_status = BMI_FAILURE
-    end if
   end function noahowp_var_nbytes
 
   ! The location (node, face, edge) of the given variable.
@@ -1284,6 +1276,7 @@ contains
     integer, intent(in) :: src(:)
     integer :: bmi_status
     integer :: exec_status
+    integer(kind=c_int64_t) :: announced
 
     !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR INTEGER VARS =================
 
@@ -1301,9 +1294,21 @@ contains
        bmi_status = BMI_SUCCESS
     case(SERIALIZATION_SIZE)
        ! Announces the payload a restore is about to deliver, so that
-       ! get_var_nbytes can size the transfer that carries it
-       this%model%serialization_nbytes = transfer(src(1:2), 0_c_int64_t)
-       bmi_status = BMI_SUCCESS
+       ! get_var_nbytes can size the transfer that carries it. Bounded here: an
+       ! announcement longer than the payload would have the binding read past
+       ! the end of the caller's buffer.
+       bmi_status = BMI_FAILURE
+       if (size(src) >= 2) then
+          announced = transfer(src(1:2), 0_c_int64_t)
+          if (announced >= 0 .and. announced <= huge(0_c_int) .and. &
+              mod(announced, int(c_sizeof(0_c_int), c_int64_t)) == 0) then
+             this%model%serialization_nbytes = announced
+             bmi_status = BMI_SUCCESS
+          end if
+       end if
+       if (bmi_status /= BMI_SUCCESS) &
+          call write_log("Announced serialization size is not a possible payload length", &
+                         LOG_LEVEL_SEVERE)
     case(SERIALIZATION_STATE)
        call restore_serialization(this%model, src, exec_status)
        bmi_status = BMI_FAILURE

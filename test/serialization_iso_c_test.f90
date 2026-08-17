@@ -30,8 +30,11 @@ program serialization_iso_c_test
   integer(kind=c_int) :: st, nbytes, itemsize, reported(2), announce(2), trigger(1)
   integer(kind=c_int), allocatable :: snapshot(:)
   integer(kind=c_int64_t) :: reported_bytes
-  ! Past the 32-bit range, with every byte distinct
-  integer(kind=c_int64_t), parameter :: wide_probe = int(z'0123456789ABCDEF', c_int64_t)
+  ! Distinct bytes in every position a reportable size can occupy
+  integer(kind=c_int64_t), parameter :: wide_probe = int(z'7ABCDEF0', c_int64_t)
+  ! Upper half set over a lower half that would be accepted on its own, so this
+  ! is only refused if the upper half arrives
+  integer(kind=c_int64_t), parameter :: too_wide = 4294967300_c_int64_t
   character(kind=c_char, len=1) :: units(2048)
   integer :: nfail, i
 
@@ -111,7 +114,15 @@ program serialization_iso_c_test
   st = set_value_int(handle, as_c_string("ngen::serialization_size"), announce)
   st = get_value_int(handle, as_c_string("ngen::serialization_size"), reported)
   call expect_true(transfer(reported, 0_c_int64_t) == wide_probe, &
-       "a full 64-bit size round-trips", nfail)
+       "a size round-trips through both halves", nfail)
+
+  ! A size past what get_var_nbytes can report is refused. Taking the low half
+  ! alone this is 4, which would be accepted, so it also proves the high half
+  ! crosses the boundary.
+  announce = transfer(too_wide, 0_c_int, 2)
+  st = set_value_int(handle, as_c_string("ngen::serialization_size"), announce)
+  call expect_true(st /= BMI_SUCCESS, &
+       "a size past the transfer width is refused", nfail)
 
   st = finalize(handle)
 
