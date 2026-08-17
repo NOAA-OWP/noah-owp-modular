@@ -263,6 +263,11 @@ contains
     ! stay safe whenever it is issued.
     call expect_true(m%set_value('ngen::serialization_free', trigger) == BMI_SUCCESS, &
          "free is safe to repeat", nfail)
+    ! Freeing clears the metadata too, or a host reading size to decide whether a
+    ! snapshot is available is told one exists after it is gone
+    st = m%get_value('ngen::serialization_size', reported)
+    call expect_true(st == BMI_SUCCESS .and. transfer(reported, 0_int64) == 0, &
+         "size reports 0 after free", nfail)
 
     ! Restore announces the byte count, then delivers the bytes
     do i = 1, 10

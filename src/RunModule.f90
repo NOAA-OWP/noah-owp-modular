@@ -368,6 +368,11 @@ contains
     integer :: packed_bytes, packed_ints
 
     exec_status = 1
+
+    ! Dropped up front: failing below must not leave a snapshot readable from an
+    ! earlier model time
+    call free_serialization(model)
+
     mp = msgpack()
     mp_arr = mp_arr_type(SERIALIZATION_PAYLOAD_ELEMENTS)
 
@@ -395,8 +400,6 @@ contains
       return
     end if
 
-    call free_serialization(model)
-
     packed_bytes = size(packed)
     packed_ints  = CEILING(real(packed_bytes) / (storage_size(packed_ints) / 8))
     allocate(model%serialization_buffer(packed_ints + 1))
@@ -413,6 +416,8 @@ contains
     type(noahowp_type), intent(inout) :: model
 
     if (allocated(model%serialization_buffer)) deallocate(model%serialization_buffer)
+    ! The byte count describes the buffer, so it must not outlive it
+    model%serialization_nbytes = 0
 
   END SUBROUTINE free_serialization
 
