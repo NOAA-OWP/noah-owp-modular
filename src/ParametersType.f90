@@ -324,7 +324,49 @@ contains
     this%LOW_DENSITY_RESIDENTIAL   = LCZ_1_TABLE  ! TO-DO: rename LOW_DENSITY_RESIDENTIAL -> LCZ_1
     this%HIGH_DENSITY_RESIDENTIAL  = LCZ_2_TABLE  ! TO-DO: rename LOW_DENSITY_RESIDENTIAL -> LCZ_2
     this%HIGH_INTENSITY_INDUSTRIAL = LCZ_3_TABLE  ! TO-DO: rename LOW_DENSITY_RESIDENTIAL -> LCZ_3
-
+    !
+    ! Important comment on why in NOM urban_flag should always be .false.
+    ! -----------------------------------------------------------------------
+    ! In NOM urban_flag is intentionally hardcoded to .false. and must remain so.
+    !
+    ! In upstream Noah-MP, urban_flag is set when vegtyp == ISURBAN (USGS
+    ! class 1, "Urban and Built-up Land") and triggers several bypasses that
+    ! approximate a fully impervious surface:
+    !   ThermalPropertiesModule.f90 - soil thermal conductivity DF forced
+    !                                  to a fixed 3.24 (pavement/concrete)
+    !   EnergyModule.f90 (x2)       - roughness/displacement height forced
+    !                                  to canopy-table values; surface
+    !                                  resistance RSURF forced to 1.E6,
+    !                                  effectively eliminating bare-soil
+    !                                  evaporation when snow-free
+    !   SoilWaterModule.f90         - top-layer impervious fraction FCR(1)
+    !                                  forced to 0.95
+    !   InterceptionModule.f90 (x2) - LAI, SAI, and FVEG forced to zero,
+    !                                  i.e. no vegetation contribution at all
+    !   EtFluxModule.f90            - 2m humidity diagnostic forced to QSFC
+    !
+    ! Real urban catchments are not 100% impervious: they contain lawns,
+    ! street trees, parks, and other vegetated fraction that meaningfully
+    ! contributes to ET and bare-soil evaporation. Rather than clamp these
+    ! processes to near-zero via the overrides above, NOM instead represents
+    ! USGS class 1 (vegtyp == ISURBAN) through the ordinary vegetated
+    ! parameter path, using ET- and bare-soil-evaporation-relevant values
+    ! (CH2OP, RSMIN, SHDFAC, RSURF-related parameters, etc.) that have been
+    ! deliberately revised for urban land cover in NOM_MPTABLE.TBL's
+    ! usgs_veg_parameters table.
+    !
+    ! DO NOT restore the vegtyp == ISURBAN check that would set this to
+    ! .true. Doing so will silently re-enable the impervious-surface
+    ! bypasses above and override the NOM_MPTABLE.TBL urban parameter
+    ! revisions, regardless of what values are tabulated there. If a
+    ! different urban parameterization is ever needed, it should be
+    ! implemented as an explicit, separately-documented option rather than
+    ! by reactivating this flag.
+    !
+    ! Note: this comment was added by FLO because no place in the NOM code
+    ! is the reason why this flag should always be .false. explained.  This 
+    ! is a key difference between Noah-MP and NOM.
+    ! -----------------------------------------------------------------------
     this%urban_flag = .false.
     this%timean     = 10.5
     this%fsatmx     = 0.38
