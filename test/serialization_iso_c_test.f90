@@ -27,8 +27,11 @@ program serialization_iso_c_test
   end interface
 
   type(c_ptr) :: handle
-  integer(kind=c_int) :: st, nbytes, itemsize, reported(1), trigger(1)
+  integer(kind=c_int) :: st, nbytes, itemsize, reported(2), announce(2), trigger(1)
   integer(kind=c_int), allocatable :: snapshot(:)
+  integer(kind=c_int64_t) :: reported_bytes
+  ! Past the 32-bit range, with every byte distinct
+  integer(kind=c_int64_t), parameter :: wide_probe = int(z'0123456789ABCDEF', c_int64_t)
   character(kind=c_char, len=1) :: units(2048)
   integer :: nfail, i
 
@@ -46,10 +49,10 @@ program serialization_iso_c_test
   call expect_true(st == BMI_SUCCESS .and. c_string_is(units, "ngen::opaque"), &
        "state units read back as ngen::opaque", nfail)
 
-  ! Sizing must work before a snapshot exists: this is what the shim divides to
-  ! decide how much of a restore payload to marshal.
+  ! Sizing has to resolve even with no snapshot in hand: a failure here returns
+  ! before the model is ever reached.
   st = get_var_nbytes(handle, as_c_string("ngen::serialization_state"), nbytes)
-  call expect_true(st == BMI_SUCCESS .and. nbytes > 0, "state nbytes before create", nfail)
+  call expect_true(st == BMI_SUCCESS, "state nbytes resolves before create", nfail)
   st = get_var_itemsize(handle, as_c_string("ngen::serialization_state"), itemsize)
   call expect_true(st == BMI_SUCCESS .and. itemsize > 0, "state itemsize", nfail)
 
@@ -65,8 +68,12 @@ program serialization_iso_c_test
   st = set_value_int(handle, as_c_string("ngen::serialization_create"), trigger)
   call expect_true(st == BMI_SUCCESS, "create through the C entry point", nfail)
 
+  ! An int64 delivered as two c_ints, so this also proves the halves go back
+  ! together in the right order
   st = get_value_int(handle, as_c_string("ngen::serialization_size"), reported)
-  call expect_true(st == BMI_SUCCESS .and. reported(1) > 0, "size through the C entry point", nfail)
+  reported_bytes = transfer(reported, 0_c_int64_t)
+  call expect_true(st == BMI_SUCCESS .and. reported_bytes > 0, &
+       "size through the C entry point", nfail)
 
   st = get_var_nbytes(handle, as_c_string("ngen::serialization_state"), nbytes)
   st = get_var_itemsize(handle, as_c_string("ngen::serialization_state"), itemsize)
@@ -81,13 +88,30 @@ program serialization_iso_c_test
   st = set_value_int(handle, as_c_string("ngen::serialization_free"), trigger)
   call expect_true(st == BMI_SUCCESS, "free through the C entry point", nfail)
 
-  ! Restore is a single call with no length, so the shim's own sizing is the only
-  ! thing deciding how much of this array reaches the model
+  ! Restore announces the byte count first. The model reports that back from
+  ! get_var_nbytes, and the shim divides it to size the payload it marshals, so
+  ! an announcement that does not stick would silently truncate the restore.
   do i = 1, 5
      st = update(handle)
   end do
+
+  announce = transfer(reported_bytes, 0_c_int, 2)
+  st = set_value_int(handle, as_c_string("ngen::serialization_size"), announce)
+  call expect_true(st == BMI_SUCCESS, "announced size through the C entry point", nfail)
+
+  st = get_var_nbytes(handle, as_c_string("ngen::serialization_state"), nbytes)
+  call expect_true(st == BMI_SUCCESS .and. nbytes == reported_bytes, &
+       "state nbytes follows the announced size", nfail)
+
   st = set_value_int(handle, as_c_string("ngen::serialization_state"), snapshot)
   call expect_true(st == BMI_SUCCESS, "restore through the C entry point", nfail)
+
+  ! Both directions, or the halves are being dropped or swapped in transit
+  announce = transfer(wide_probe, 0_c_int, 2)
+  st = set_value_int(handle, as_c_string("ngen::serialization_size"), announce)
+  st = get_value_int(handle, as_c_string("ngen::serialization_size"), reported)
+  call expect_true(transfer(reported, 0_c_int64_t) == wide_probe, &
+       "a full 64-bit size round-trips", nfail)
 
   st = finalize(handle)
 

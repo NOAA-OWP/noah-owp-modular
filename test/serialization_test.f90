@@ -177,7 +177,8 @@ contains
     character(len=BMI_MAX_VAR_NAME) :: location
     character(len=BMI_MAX_VAR_NAME), pointer :: names(:)
     integer, allocatable :: snapshot(:)
-    integer :: i, st, nbytes, itemsize, grid, reported(1), trigger(1)
+    integer :: i, st, nbytes, itemsize, grid, reported(2), announce(2), trigger(1)
+    integer(kind=int64) :: reported_bytes
     real :: tg_saved(1), tg_drifted(1), tg_restored(1)
     real :: sneqv_saved(1), sneqv_restored(1)
     logical :: found
@@ -203,8 +204,10 @@ contains
        st = m%get_var_itemsize(trim(reserved(i)), itemsize)
        call expect_true(st == BMI_SUCCESS .and. itemsize > 0, &
             "itemsize of "//trim(reserved(i)), nfail)
+       ! The state reports zero until there is a snapshot or an announced
+       ! payload, so resolving at all is what matters here.
        st = m%get_var_nbytes(trim(reserved(i)), nbytes)
-       call expect_true(st == BMI_SUCCESS .and. nbytes > 0, &
+       call expect_true(st == BMI_SUCCESS .and. nbytes >= 0, &
             "nbytes of "//trim(reserved(i)), nfail)
        call expect_true(mod(nbytes, itemsize) == 0, &
             "nbytes divides by itemsize for "//trim(reserved(i)), nfail)
@@ -216,11 +219,10 @@ contains
             "location refused for "//trim(reserved(i)), nfail)
     end do
 
-    ! A restore arrives before anything has been created, and the bindings size
-    ! it from this call, so it has to be right with no snapshot in hand.
-    st = m%get_var_nbytes('ngen::serialization_state', nbytes)
-    call expect_true(st == BMI_SUCCESS .and. nbytes > 0, &
-         "state nbytes valid before any create", nfail)
+    ! The size variable is an int64 the bindings can only carry as two c_ints
+    st = m%get_var_itemsize('ngen::serialization_size', itemsize)
+    st = m%get_var_nbytes('ngen::serialization_size', nbytes)
+    call expect_true(nbytes == 2 * itemsize, "size spans two items", nfail)
 
     ! Hosts discover the reserved names by name; the protocol requires they not
     ! be reachable by enumeration.
@@ -248,11 +250,12 @@ contains
     call expect_true(m%set_value('ngen::serialization_create', trigger) == BMI_SUCCESS, &
          "create succeeds", nfail)
     st = m%get_value('ngen::serialization_size', reported)
-    call expect_true(st == BMI_SUCCESS .and. reported(1) > 0, "size reports bytes", nfail)
+    reported_bytes = transfer(reported, 0_int64)
+    call expect_true(st == BMI_SUCCESS .and. reported_bytes > 0, "size reports bytes", nfail)
 
     st = m%get_var_nbytes('ngen::serialization_state', nbytes)
     st = m%get_var_itemsize('ngen::serialization_state', itemsize)
-    call expect_true(nbytes == reported(1), "reported size agrees with nbytes", nfail)
+    call expect_true(nbytes == reported_bytes, "reported size agrees with nbytes", nfail)
 
     allocate(snapshot(nbytes / itemsize))
     call expect_true(m%get_value('ngen::serialization_state', snapshot) == BMI_SUCCESS, &
@@ -264,13 +267,19 @@ contains
     call expect_true(m%set_value('ngen::serialization_free', trigger) == BMI_SUCCESS, &
          "free is safe to repeat", nfail)
 
-    ! Restore is a single SetValue, with no length passed
+    ! Restore announces the byte count, then delivers the bytes
     do i = 1, 10
        st = m%update()
     end do
     st = m%get_value('TG', tg_drifted)
     call expect_true(abs(tg_drifted(1) - tg_saved(1)) > 1.0e-6, &
          "model moved after the snapshot (else the restore proves nothing)", nfail)
+
+    announce = transfer(reported_bytes, 0, 2)
+    call expect_true(m%set_value('ngen::serialization_size', announce) == BMI_SUCCESS, &
+         "announced size accepted", nfail)
+    st = m%get_var_nbytes('ngen::serialization_state', nbytes)
+    call expect_true(nbytes == reported_bytes, "state nbytes follows the announced size", nfail)
 
     call expect_true(m%set_value('ngen::serialization_state', snapshot) == BMI_SUCCESS, &
          "restore succeeds", nfail)

@@ -33,11 +33,9 @@ module RunModule
     type(water_type)      :: water
     type(forcing_type)    :: forcing
     type(energy_type)     :: energy
-    ! Size in bytes of any state snapshot of this model, measured once at
-    ! initialization. Snapshots are fixed size for a given configuration, so this
-    ! answers "how big is a snapshot" before one has been taken -- which restore
-    ! has to ask, since it happens before any snapshot is created.
-    integer :: serialization_nbytes
+    ! Bytes in the current snapshot: set when one is created, or by a caller
+    ! announcing the payload a restore is about to deliver.
+    integer(kind=int64) :: serialization_nbytes
     integer, dimension(:), allocatable :: serialization_buffer
     ! How much of a snapshot a restore should apply; see StateSerialization
     integer :: restore_mode
@@ -237,10 +235,7 @@ contains
     ! driven, this needs to become selectable by the caller
     model%restore_mode = NOAHOWP_RESTORE_HOTSTART
 
-    ! No snapshot size known yet; measure_serialization is what establishes it
     model%serialization_nbytes = 0
-
-    call measure_serialization(model)
 
   END SUBROUTINE initialize_from_file
 
@@ -356,27 +351,6 @@ contains
 
   !== State serialization ===============================================================================
 
-  SUBROUTINE measure_serialization(model)
-
-    ! Record how large a snapshot of this model is. Called once from
-    ! initialization, before any caller can ask.
-
-    type(noahowp_type), intent(inout) :: model
-    integer :: exec_status
-
-    call create_serialization(model, exec_status)
-
-    if (exec_status == 0) then
-      model%serialization_nbytes = buffer_nbytes(model%serialization_buffer)
-    else
-      model%serialization_nbytes = -1
-      call write_log("Could not determine serialized state size", LOG_LEVEL_SEVERE)
-    end if
-
-    call free_serialization(model)
-
-  END SUBROUTINE measure_serialization
-
   SUBROUTINE create_serialization (model, exec_status)
 
     ! Capture current state into the model's snapshot buffer. The buffer is an
@@ -428,16 +402,7 @@ contains
     allocate(model%serialization_buffer(packed_ints + 1))
     model%serialization_buffer(1)  = packed_bytes
     model%serialization_buffer(2:) = transfer(packed, model%serialization_buffer(2:))
-
-    ! A snapshot that is not the size initialization measured means something in
-    ! StateSerialization stopped encoding to a fixed width, which would silently
-    ! truncate a restore. Refuse rather than hand back a buffer of the wrong size.
-    if (model%serialization_nbytes > 0 .and. &
-        buffer_nbytes(model%serialization_buffer) /= model%serialization_nbytes) then
-      call write_log("Serialized state size is not stable; refusing to serialize", LOG_LEVEL_SEVERE)
-      call free_serialization(model)
-      return
-    end if
+    model%serialization_nbytes = buffer_nbytes(model%serialization_buffer)
 
     exec_status = 0
     call write_log("Serialization using messagepack successful", LOG_LEVEL_DEBUG)

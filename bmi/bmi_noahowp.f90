@@ -10,7 +10,7 @@ module bminoahowp
 
   use RunModule
   use LoggingModule
-  use, intrinsic :: iso_c_binding, only: c_ptr, c_loc, c_f_pointer
+  use, intrinsic :: iso_c_binding, only: c_ptr, c_loc, c_f_pointer, c_int, c_int64_t, c_sizeof
   implicit none
 
   type, extends (bmi) :: bmi_noahowp
@@ -864,7 +864,9 @@ contains
       size = sizeof(parameters%XXAJ)        ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
     case(SERIALIZATION_CREATE, SERIALIZATION_FREE, SERIALIZATION_SIZE, SERIALIZATION_STATE)
-      size = sizeof(this%model%serialization_nbytes)   ! 'sizeof' in gcc & ifort
+      ! All four cross the boundary as c_int, whatever they hold; the nbytes
+      ! cases turn that into a transfer length.
+      size = int(c_sizeof(0_c_int))
       bmi_status = BMI_SUCCESS
     case default
        size = -1
@@ -884,17 +886,27 @@ contains
     ! The reserved serialization variables have no grid, so they are answered
     ! before anything asks for one. These must succeed: the ISO-C binding sizes
     ! every transfer as nbytes/itemsize before dispatching to the model, so a
-    ! failure here short-circuits the call rather than reporting an error. The
-    ! state size in particular has to be right before any snapshot exists,
-    ! because that is when a restore arrives.
+    ! failure here short-circuits the call rather than reporting an error.
     select case(name)
-    case(SERIALIZATION_CREATE, SERIALIZATION_FREE, SERIALIZATION_SIZE)
+    case(SERIALIZATION_CREATE, SERIALIZATION_FREE)
        bmi_status = this%get_var_itemsize(name, nbytes)
        return
+    case(SERIALIZATION_SIZE)
+       ! Two c_ints, so the binding carries all 8 bytes of the int64 the
+       ! protocol specifies; get_int and set_int transfer between the two forms
+       bmi_status = this%get_var_itemsize(name, item_size)
+       nbytes = 2 * item_size
+       return
     case(SERIALIZATION_STATE)
-       nbytes = this%model%serialization_nbytes
-       bmi_status = BMI_SUCCESS
-       if (nbytes <= 0) bmi_status = BMI_FAILURE
+       ! Bytes of the snapshot just created, or of the payload a caller
+       ! announced ahead of a restore -- which is not trusted to fit here.
+       if (this%model%serialization_nbytes > huge(nbytes)) then
+          nbytes = -1
+          bmi_status = BMI_FAILURE
+       else
+          nbytes = int(this%model%serialization_nbytes)
+          bmi_status = BMI_SUCCESS
+       end if
        return
     end select
 
@@ -949,8 +961,9 @@ contains
        dest(:) = this%model%water%ISNOW
        bmi_status = BMI_SUCCESS
     case(SERIALIZATION_SIZE)
-       ! Bytes a subsequent read of the state will deliver
-       dest(:) = this%model%serialization_nbytes
+       ! Bytes a subsequent read of the state will deliver, split into the two
+       ! c_ints the binding can carry and reassembled by the caller
+       dest(1:2) = transfer(this%model%serialization_nbytes, 0, 2)
        bmi_status = BMI_SUCCESS
     case(SERIALIZATION_STATE)
        if (.not. allocated(this%model%serialization_buffer)) then
@@ -1285,6 +1298,11 @@ contains
        if (exec_status == 0) bmi_status = BMI_SUCCESS
     case(SERIALIZATION_FREE)
        call free_serialization(this%model)
+       bmi_status = BMI_SUCCESS
+    case(SERIALIZATION_SIZE)
+       ! Announces the payload a restore is about to deliver, so that
+       ! get_var_nbytes can size the transfer that carries it
+       this%model%serialization_nbytes = transfer(src(1:2), 0_c_int64_t)
        bmi_status = BMI_SUCCESS
     case(SERIALIZATION_STATE)
        call restore_serialization(this%model, src, exec_status)
