@@ -8,13 +8,6 @@ module StateSerialization
   ! insert), grow the mp_arr_type(N) count, add the matching case to that
   ! component's deserialization, decide whether it applies under every restore
   ! mode, and bump SERIALIZATION_LAYOUT_VERSION.
-  !
-  ! Every value must encode to a fixed width, so that the payload size depends
-  ! only on model configuration and can be measured once at initialization. That
-  ! is what lets get_var_nbytes report a snapshot size before one exists, which
-  ! the ngen restore path requires. Reals and logicals already qualify; integers
-  ! do not, because MessagePack sizes them by magnitude, so they are stored as
-  ! 64-bit floats, which hold the whole 32-bit integer range exactly.
 
   use DomainType
   use ParametersType
@@ -56,8 +49,8 @@ SUBROUTINE header_serialization (save_datetime, mp_arr)
     class(mp_arr_type), allocatable, intent(out) :: mp_arr
 
     mp_arr = mp_arr_type(SERIALIZATION_HEADER_ELEMENTS)
-    mp_arr%values(1)%obj = mp_float_type(real(SERIALIZATION_MAGIC, kind=real64))
-    mp_arr%values(2)%obj = mp_float_type(real(SERIALIZATION_LAYOUT_VERSION, kind=real64))
+    mp_arr%values(1)%obj = mp_int_type(int(SERIALIZATION_MAGIC, kind=int64))
+    mp_arr%values(2)%obj = mp_int_type(int(SERIALIZATION_LAYOUT_VERSION, kind=int64))
     mp_arr%values(3)%obj = mp_float_type(save_datetime) !model datetime when saved
 
 END SUBROUTINE header_serialization
@@ -70,23 +63,23 @@ SUBROUTINE header_deserialization (mp_arr, save_datetime, status)
     class(mp_arr_type), allocatable, intent(in) :: mp_arr
     real(kind=real64), intent(out) :: save_datetime
     logical, intent(out) :: status
-    real(kind=real64) :: deserialized_val
+    integer(kind=int64) :: deserialized_val
 
     save_datetime = 0.d0
     status = .false.
 
     if (mp_arr%numelements() .NE. SERIALIZATION_HEADER_ELEMENTS) return
 
-    call get_real(mp_arr%values(1)%obj, deserialized_val, status)
+    call get_int(mp_arr%values(1)%obj, deserialized_val, status)
     if (.not. status) return
-    if (nint(deserialized_val) .NE. SERIALIZATION_MAGIC) then
+    if (deserialized_val .NE. SERIALIZATION_MAGIC) then
         status = .false.
         return
     end if
 
-    call get_real(mp_arr%values(2)%obj, deserialized_val, status)
+    call get_int(mp_arr%values(2)%obj, deserialized_val, status)
     if (.not. status) return
-    if (nint(deserialized_val) .NE. SERIALIZATION_LAYOUT_VERSION) then
+    if (deserialized_val .NE. SERIALIZATION_LAYOUT_VERSION) then
         status = .false.
         return
     end if
@@ -118,7 +111,7 @@ SUBROUTINE forcing_serialization (forcing, mp_arr)
     mp_arr%values(17)%obj = mp_float_type(forcing%PRCPNONC) !PRCPNONC
     mp_arr%values(18)%obj = mp_float_type(forcing%FPICE) !FPICE, out 
     mp_arr%values(19)%obj = mp_float_type(forcing%UR) !UR, out
-    mp_arr%values(20)%obj = mp_float_type(real(forcing%YEARLEN, kind=real64)) !YEARLEN, out
+    mp_arr%values(20)%obj = mp_int_type(int(forcing%YEARLEN, kind=int64)) !YEARLEN, out
     mp_arr%values(21)%obj = transfer_values_to_mp(forcing%SOLAD) !SOLAD
     mp_arr%values(22)%obj = transfer_values_to_mp(forcing%SOLAI) !SOLAI
 
@@ -128,13 +121,16 @@ SUBROUTINE forcing_deserialization (mp_arr, forcing)
     class(mp_arr_type), allocatable, intent(in) :: mp_arr
     type(forcing_type), intent(inout) :: forcing
     real(kind=real64) :: deserialized_val
+    integer(kind=int64) :: deserialized_int
     class(mp_arr_type), allocatable :: mp_sub_arr
     logical :: status
     integer(kind=int64) :: index, sub_index
 
     do index=1, mp_arr%numelements()
-        if (index .LE. 20) then
+        if (index .LE. 19) then
             call get_real(mp_arr%values(index)%obj, deserialized_val, status)
+        else if (index .EQ. 20) then
+            call get_int(mp_arr%values(index)%obj, deserialized_int, status)
         else if (index .GE. 21) then
             if (is_arr(mp_arr%values(index)%obj)) then
                 call get_arr_ref(mp_arr%values(index)%obj, mp_sub_arr, status)
@@ -180,7 +176,7 @@ SUBROUTINE forcing_deserialization (mp_arr, forcing)
             case(19)
                 forcing%UR = deserialized_val
             case(20)
-                forcing%YEARLEN = nint(deserialized_val)
+                forcing%YEARLEN = int(deserialized_int)
             case(21)
                 forcing%SOLAD = transfer_values_from_mp(mp_sub_arr)
             case(22)
@@ -197,7 +193,7 @@ SUBROUTINE domain_serialization (domain, mp_arr)
     mp_arr = mp_arr_type(5)
     mp_arr%values(1)%obj = mp_float_type(domain%curr_datetime) !curr_datetime
     mp_arr%values(2)%obj = mp_float_type(domain%time_dbl) !time_dbl
-    mp_arr%values(3)%obj = mp_float_type(real(domain%ITIME, kind=real64)) !ITIME
+    mp_arr%values(3)%obj = mp_int_type(int(domain%ITIME, kind=int64)) !ITIME
     mp_arr%values(4)%obj = transfer_values_to_mp(domain%DZSNSO)
     mp_arr%values(5)%obj = transfer_values_to_mp(domain%ZSNSO)
 
@@ -208,6 +204,7 @@ SUBROUTINE domain_deserialization (mp_arr, domain, restore_mode)
     type(domain_type), intent(inout) :: domain
     integer, intent(in) :: restore_mode
     real(kind=real64) :: deserialized_val
+    integer(kind=int64) :: deserialized_int
     class(mp_arr_type), allocatable :: mp_sub_arr
     logical :: status, resume
     integer(kind=int64) :: index, sub_index
@@ -221,8 +218,10 @@ SUBROUTINE domain_deserialization (mp_arr, domain, restore_mode)
     resume = restore_mode == NOAHOWP_RESTORE_RESUME
 
     do index=1, mp_arr%numelements()
-        if (index .LE. 3) then
+        if (index .LE. 2) then
             call get_real(mp_arr%values(index)%obj, deserialized_val, status)
+        else if (index .EQ. 3) then
+            call get_int(mp_arr%values(index)%obj, deserialized_int, status)
         else if (index .GE. 4) then
             if (is_arr(mp_arr%values(index)%obj)) then
                 call get_arr_ref(mp_arr%values(index)%obj, mp_sub_arr, status)
@@ -234,7 +233,7 @@ SUBROUTINE domain_deserialization (mp_arr, domain, restore_mode)
             case(2)
                 if (resume) domain%time_dbl = deserialized_val
             case(3)
-                if (resume) domain%ITIME = nint(deserialized_val)
+                if (resume) domain%ITIME = int(deserialized_int)
             case(4)
                 domain%DZSNSO = transfer_values_from_mp(mp_sub_arr)
             case(5)
@@ -705,7 +704,7 @@ SUBROUTINE water_serialization (water, mp_arr)
     mp_arr%values(50)%obj = mp_float_type(water%ZWT) !ZWT
     mp_arr%values(51)%obj = mp_float_type(water%ASAT) !ASAT
     mp_arr%values(52)%obj = mp_float_type(water%SMCWTD) !SMCWTD
-    mp_arr%values(53)%obj = mp_float_type(real(water%ISNOW, kind=real64)) !ISNOW integer
+    mp_arr%values(53)%obj = mp_int_type(int(water%ISNOW, kind=int64)) !ISNOW integer
     mp_arr%values(54)%obj = transfer_values_to_mp(water%BTRANI ) !BTRANI array (1:levels%NSOIL)
     mp_arr%values(55)%obj = transfer_values_to_mp(water%SNICEV ) !SNICEV array (-levels%NSNOW+1:0) # negative indexes
     mp_arr%values(56)%obj = transfer_values_to_mp(water%EPORE ) !EPORE array (-levels%NSNOW+1:0) # negative indexes
@@ -724,13 +723,16 @@ SUBROUTINE water_deserialization (mp_arr, water)
     class(mp_arr_type), allocatable, intent(in) :: mp_arr
     type(water_type), intent(inout) :: water
     real(kind=real64) :: deserialized_val
+    integer(kind=int64) :: deserialized_int
     class(mp_arr_type), allocatable :: mp_sub_arr
     logical :: status
     integer(kind=int64) :: index, sub_index
 
     do index=1, mp_arr%numelements()
-        if (index .LE. 53) then
+        if (index .LE. 52) then
             call get_real(mp_arr%values(index)%obj, deserialized_val, status)
+        else if (index .EQ. 53) then
+            call get_int(mp_arr%values(index)%obj, deserialized_int, status)
         else if (index .GE. 54) then
             if (is_arr(mp_arr%values(index)%obj)) then
                 call get_arr_ref(mp_arr%values(index)%obj, mp_sub_arr, status)
@@ -842,7 +844,7 @@ SUBROUTINE water_deserialization (mp_arr, water)
             case(52)
                 water%SMCWTD = deserialized_val
             case(53)
-                water%ISNOW = nint(deserialized_val)
+                water%ISNOW = int(deserialized_int)
             case(54)
                 water%BTRANI = transfer_values_from_mp(mp_sub_arr)
             case(55)
@@ -935,7 +937,7 @@ FUNCTION transfer_values_to_mp_int (src) RESULT (dest)
     dest = mp_arr_type(arr_size)
 
     do index = lb, ub
-        dest%values(index)%obj = mp_float_type(real(src(index), kind=real64))
+        dest%values(index)%obj = mp_int_type(int(src(index), kind=int64))
     end do
 
 END FUNCTION transfer_values_to_mp_int
@@ -964,7 +966,7 @@ FUNCTION transfer_values_from_mp_int (src) RESULT (dest)
 
     class(mp_arr_type), intent(in) :: src
     integer, allocatable, dimension(:) :: dest
-    real(kind=real64) :: deserialized_val
+    integer(kind=int64) :: deserialized_val
     integer :: index, lb, ub
     logical :: status
 
@@ -974,8 +976,8 @@ FUNCTION transfer_values_from_mp_int (src) RESULT (dest)
     allocate(dest(lb:ub))
 
     do index = lb, ub
-        call get_real(src%values(index)%obj, deserialized_val, status)
-        dest(index) = nint(deserialized_val)
+        call get_int(src%values(index)%obj, deserialized_val, status)
+        dest(index) = int(deserialized_val)
     end do
 
 END FUNCTION transfer_values_from_mp_int

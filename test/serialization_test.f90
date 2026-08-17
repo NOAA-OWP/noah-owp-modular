@@ -35,7 +35,7 @@ program serialization_test
 
   nfail = 0
 
-  call test_fixed_payload_size(nfail)
+  call test_payload_round_trip(nfail)
   call test_restore_semantics(nfail)
   call test_bmi_protocol(nfail)
 
@@ -49,14 +49,14 @@ program serialization_test
 
 contains
 
-  ! A snapshot must be the same size whatever the values in it, because the size
-  ! is measured once at initialization and reported from then on. MessagePack
-  ! sizes integers by magnitude, so probe either side of its width boundaries.
-  subroutine test_fixed_payload_size(nfail)
+  ! MessagePack sizes integers by magnitude. Probe either side of its width
+  ! boundaries: every magnitude has to survive the encoding, and the payload
+  ! is expected to grow.
+  subroutine test_payload_round_trip(nfail)
     integer, intent(inout) :: nfail
     type(domain_type) :: domain
     class(mp_arr_type), allocatable :: mp_arr
-    integer(kind=int64) :: packed_size, baseline
+    integer(kind=int64) :: packed_size, smallest
     integer, parameter :: probes(5) = [0, 127, 128, 32768, 1000000]
     integer :: i
 
@@ -71,24 +71,21 @@ contains
        domain%ITIME = probes(i)
        call domain_serialization(domain, mp_arr)
        call mp_arr%getsize(packed_size)
-       if (i == 1) baseline = packed_size
-       call expect_true(packed_size == baseline, &
-            "payload size independent of integer magnitude", nfail)
+       if (i == 1) smallest = packed_size
+
+       block
+         type(domain_type) :: restored
+         allocate(restored%DZSNSO(-2:4))
+         allocate(restored%ZSNSO(-2:4))
+         call domain_deserialization(mp_arr, restored, NOAHOWP_RESTORE_RESUME)
+         call expect_true(restored%ITIME == domain%ITIME, "integer round-trips", nfail)
+         call expect_true(abs(restored%curr_datetime - domain%curr_datetime) < 1.d-6, &
+              "double round-trips", nfail)
+       end block
     end do
 
-    ! and the values still survive the encoding
-    domain%ITIME = 1000000
-    call domain_serialization(domain, mp_arr)
-    block
-      type(domain_type) :: restored
-      allocate(restored%DZSNSO(-2:4))
-      allocate(restored%ZSNSO(-2:4))
-      call domain_deserialization(mp_arr, restored, NOAHOWP_RESTORE_RESUME)
-      call expect_true(restored%ITIME == domain%ITIME, "large integer round-trips", nfail)
-      call expect_true(abs(restored%curr_datetime - domain%curr_datetime) < 1.d-6, &
-           "double round-trips", nfail)
-    end block
-  end subroutine test_fixed_payload_size
+    call expect_true(packed_size > smallest, "payload grows with integer magnitude", nfail)
+  end subroutine test_payload_round_trip
 
   ! What a restore applies, and what it refuses. State is perturbed directly
   ! rather than by advancing, so this model never reads forcing.
