@@ -44,17 +44,3 @@ done
 To update, repeat against the new commit, copy the four files across, refresh the commit SHA
 above, and re-run the test suite — the state payload layout depends on how this library packs
 values.
-
-## Divergence from NGWPC's copy
-
-NGWPC/noah-owp-modular vendors these same files into `src/` as well, with one undocumented change:
-
-```diff
- ! messagepack_value.f90, mp_float_type
--        logical :: is_64 = .true.
-+        logical :: is_64 = .false.
-```
-
-Not carried here because it is inert. `is_64` is a default initializer reached only by a
-default-constructed `mp_float_type`; construction goes through the `mp_float_type` generic
-interface, whose `new_real32` and `new_real64` specifics both assign it explicitly.
