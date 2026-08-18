@@ -94,7 +94,7 @@ jobs:
         cmake -S . -B build \
               -DCMAKE_BUILD_TYPE=Release \
               -DNOAHOWP_BUILD_SHARED=ON \
-              -DBUILD_TESTING=OFF \
+              -DBUILD_TESTING=ON \
               -DNOAHOWP_INSTALL=OFF \
               -DISO_C_FORTRAN_BMI_PATH=${{ github.workspace }}/iso_c_fortran_bmi
         cmake --build build -j
@@ -105,3 +105,9 @@ jobs:
       run: |
         test -f build/libnoahowpbmi.so
         nm -D --defined-only build/libnoahowpbmi.so | grep -w register_bmi
+
+    # Only this configuration builds the test that drives the protocol through the
+    # iso_c_fortran_bmi entry points, which size transfers themselves.
+    - name: Run tests
+      working-directory: noah-owp-modular
+      run: ctest --test-dir build --output-on-failure

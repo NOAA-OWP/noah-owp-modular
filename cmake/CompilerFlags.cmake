@@ -34,3 +34,20 @@ function(noahowp_apply_fortran_flags target)
         $<$<CONFIG:Release>:${_optimize}>
         $<$<CONFIG:RelWithDebInfo>:${_optimize};${_debuginfo}>)
 endfunction()
+
+# Flag for sources containing procedures that call themselves. Guarantees locals
+# are stack-allocated, and stops the Debug -fcheck=recursion equivalents from
+# rejecting the call outright.
+function(noahowp_recursion_flag out_var)
+    set(_id "${CMAKE_Fortran_COMPILER_ID}")
+
+    if(_id MATCHES "GNU")
+        set(${out_var} -frecursive PARENT_SCOPE)
+    elseif(_id MATCHES "Intel|IntelLLVM")
+        set(${out_var} -recursive PARENT_SCOPE)
+    elseif(_id MATCHES "NVIDIA|NVHPC|PGI")
+        set(${out_var} -Mrecursive PARENT_SCOPE)
+    else()
+        set(${out_var} "" PARENT_SCOPE)
+    endif()
+endfunction()

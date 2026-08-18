@@ -76,7 +76,26 @@ if(NOAHOWP_BUILD_SHARED)
 endif()
 
 # ---- Source lists ------------------------------------------------------------
+# Vendored third-party, in their own list so the boundary stays visible even though
+# the sources sit in src/. Listed in dependency order. See
+# extern/fortran-messagepack/README.md for provenance and why they are not in extern/.
+set(NOAHOWP_MESSAGEPACK_SOURCES
+    src/byte_utilities.f90
+    src/messagepack_value.f90
+    src/messagepack_user.f90
+    src/messagepack.f90)
+
+# MessagePack recurses through nested arrays when sizing and packing them, and a
+# state payload is always nested: an array of component arrays, several of which
+# hold arrays themselves.
+noahowp_recursion_flag(_noahowp_recursion_flag)
+if(_noahowp_recursion_flag)
+    set_source_files_properties(${NOAHOWP_MESSAGEPACK_SOURCES}
+        PROPERTIES COMPILE_OPTIONS "${_noahowp_recursion_flag}")
+endif()
+
 set(NOAHOWP_MODEL_SOURCES
+    ${NOAHOWP_MESSAGEPACK_SOURCES}
     src/AlbedoModule.f90
     src/AtmProcessing.f90
     src/CanopyWaterModule.f90
@@ -90,6 +109,7 @@ set(NOAHOWP_MODEL_SOURCES
     src/ForcingType.f90
     src/InterceptionModule.f90
     src/LevelsType.f90
+    src/LoggingModule.f90
     src/NamelistRead.f90
     src/OptionsType.f90
     src/ParametersRead.f90
@@ -104,6 +124,7 @@ set(NOAHOWP_MODEL_SOURCES
     src/SoilWaterModule.f90
     src/SoilWaterMovement.f90
     src/SoilWaterRetentionCoeff.f90
+    src/StateSerialization.f90
     src/SubsurfaceRunoffModule.f90
     src/SurfaceRunoffInfiltration.f90
     src/SurfaceRunoffModule.f90
@@ -188,6 +209,49 @@ if(BUILD_TESTING)
     # without this the test would report success after failing to read it.
     set_tests_properties(noahowp_driver_test PROPERTIES
         FAIL_REGULAR_EXPRESSION "ERROR")
+
+    add_executable(noahowp_serialization_test
+        test/serialization_test.f90
+        ${NOAHOWP_MODEL_SOURCES}
+        ${NOAHOWP_BMI_SOURCES}
+        ${NOAHOWP_DRIVER_SUPPORT_SOURCES})
+    set_target_properties(noahowp_serialization_test PROPERTIES
+        Fortran_MODULE_DIRECTORY "${_noahowp_modroot}/noahowp_serialization_test")
+    target_compile_definitions(noahowp_serialization_test PRIVATE BMI_ACTIVE)
+    noahowp_apply_fortran_flags(noahowp_serialization_test)
+    target_link_libraries(noahowp_serialization_test PRIVATE NetCDF::FORTRAN)
+
+    add_test(NAME noahowp_serialization_test
+        COMMAND noahowp_serialization_test
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/run")
+    # Shares run/ with the driver test, and both write the same output file.
+    set_tests_properties(noahowp_serialization_test noahowp_driver_test PROPERTIES
+        RESOURCE_LOCK noahowp_run_dir)
+
+    # Drives the protocol through the C entry points, which size transfers
+    # themselves. Needs the bridge, so it builds only alongside the shared library.
+    if(NOAHOWP_BUILD_SHARED AND TARGET iso_c_fortran_bmi::iso_c_bmi)
+        add_executable(noahowp_serialization_iso_c_test
+            test/serialization_iso_c_test.f90
+            ${NOAHOWP_MODEL_SOURCES}
+            ${NOAHOWP_BMI_SOURCES}
+            ${NOAHOWP_DRIVER_SUPPORT_SOURCES})
+        set_target_properties(noahowp_serialization_iso_c_test PROPERTIES
+            Fortran_MODULE_DIRECTORY "${_noahowp_modroot}/noahowp_serialization_iso_c_test")
+        # NGEN_ACTIVE for the iso_c bindings and register_bmi. Forcing and output
+        # stay local so the model can actually advance under test.
+        target_compile_definitions(noahowp_serialization_iso_c_test
+            PRIVATE BMI_ACTIVE NGEN_ACTIVE)
+        noahowp_apply_fortran_flags(noahowp_serialization_iso_c_test)
+        target_link_libraries(noahowp_serialization_iso_c_test
+            PRIVATE iso_c_fortran_bmi::iso_c_bmi NetCDF::FORTRAN)
+
+        add_test(NAME noahowp_serialization_iso_c_test
+            COMMAND noahowp_serialization_iso_c_test
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/run")
+        set_tests_properties(noahowp_serialization_iso_c_test PROPERTIES
+            RESOURCE_LOCK noahowp_run_dir)
+    endif()
 
     # Compiles only the modules UtilitiesModule needs, so it builds and runs
     # without NetCDF.
