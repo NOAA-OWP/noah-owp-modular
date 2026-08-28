@@ -130,7 +130,8 @@ if(NetCDF_FOUND AND NOT TARGET NetCDF::NetCDF)
         set_target_properties(NetCDF_FORTRAN
             PROPERTIES
                 IMPORTED_LOCATION "${NetCDF_FORTRAN_LIBRARY}"
-                INTERFACE_INCLUDE_DIRECTORIES "${NetCDF_FORTRAN_INCLUDE_DIR}")
+                INTERFACE_INCLUDE_DIRECTORIES "${NetCDF_FORTRAN_INCLUDE_DIR}"
+                INTERFACE_LINK_LIBRARIES NetCDF::C)
         target_link_libraries(NetCDF INTERFACE NetCDF::FORTRAN)
     endif()
 endif()

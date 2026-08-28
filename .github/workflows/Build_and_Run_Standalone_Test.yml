@@ -94,7 +94,7 @@ jobs:
         cmake -S . -B build \
               -DCMAKE_BUILD_TYPE=Release \
               -DNOAHOWP_BUILD_SHARED=ON \
-              -DBUILD_TESTING=OFF \
+              -DBUILD_TESTING=ON \
               -DNOAHOWP_INSTALL=OFF \
               -DISO_C_FORTRAN_BMI_PATH=${{ github.workspace }}/iso_c_fortran_bmi
         cmake --build build -j
@@ -105,3 +105,83 @@ jobs:
       run: |
         test -f build/libnoahowpbmi.so
         nm -D --defined-only build/libnoahowpbmi.so | grep -w register_bmi
+
+    # Only this configuration builds the test that drives the protocol through the
+    # iso_c_fortran_bmi entry points, which size transfers themselves.
+    - name: Run tests
+      working-directory: noah-owp-modular
+      run: ctest --test-dir build --output-on-failure
+
+  # Build everything again with Intel. gfortran accepts constructs the standard
+  # does not, so a second front end is what catches them -- deallocating a
+  # SELECT TYPE associate-name, malformed format specifications, and the like.
+  # NetCDF-Fortran is built here rather than installed: .mod files are specific
+  # to the compiler that wrote them, so the apt package cannot be read by Intel.
+  test_intel:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout the commit
+      uses: actions/checkout@v4
+      with:
+        path: noah-owp-modular
+
+    - name: Checkout iso_c_fortran_bmi
+      uses: actions/checkout@v4
+      with:
+        repository: NOAA-OWP/iso_c_fortran_bmi
+        path: iso_c_fortran_bmi
+
+    - name: Set up Intel Fortran
+      uses: fortran-lang/setup-fortran@v1
+      with:
+        compiler: intel
+
+    # The C library is compiler-independent, so the packaged one is fine.
+    - name: Install NetCDF C
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --fix-missing libnetcdf-dev
+
+    - name: Cache NetCDF-Fortran
+      id: cache-netcdff
+      uses: actions/cache@v4
+      with:
+        path: ${{ runner.temp }}/netcdff
+        key: netcdff-4.6.1-intel-${{ runner.os }}
+
+    - name: Build NetCDF-Fortran with Intel
+      if: steps.cache-netcdff.outputs.cache-hit != 'true'
+      run: |
+        curl -sL https://github.com/Unidata/netcdf-fortran/archive/refs/tags/v4.6.1.tar.gz | tar xz
+        cd netcdf-fortran-4.6.1
+        ./configure --prefix=${{ runner.temp }}/netcdff --disable-shared \
+                    CC=icx FC=ifx F77=ifx \
+                    CPPFLAGS="$(nc-config --cflags)" LDFLAGS="$(nc-config --libs)"
+        make -j$(nproc)
+        make install
+
+    # NOAHOWP_INSTALL=OFF for the same reason as test_shared_lib above.
+    - name: Configure and build
+      working-directory: noah-owp-modular
+      run: |
+        cmake -S . -B build \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DNOAHOWP_BUILD_SHARED=ON \
+              -DBUILD_TESTING=ON \
+              -DNOAHOWP_INSTALL=OFF \
+              -DNetCDF_ROOT=${{ runner.temp }}/netcdff \
+              -DISO_C_FORTRAN_BMI_PATH=${{ github.workspace }}/iso_c_fortran_bmi
+        cmake --build build -j
+
+    # Same check as test_shared_lib, and it matters more here: the bind(C) name
+    # is the ABI contract with ngen, and this is a different front end mangling it.
+    - name: Check the library exports register_bmi
+      working-directory: noah-owp-modular
+      run: |
+        test -f build/libnoahowpbmi.so
+        nm -D --defined-only build/libnoahowpbmi.so | grep -w register_bmi
+
+    - name: Run tests
+      working-directory: noah-owp-modular
+      run: ctest --test-dir build --output-on-failure

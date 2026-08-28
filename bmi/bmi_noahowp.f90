@@ -8,8 +8,9 @@ module bminoahowp
    use bmif_2_0
 #endif
 
-  use RunModule 
-  use, intrinsic :: iso_c_binding, only: c_ptr, c_loc, c_f_pointer
+  use RunModule
+  use LoggingModule
+  use, intrinsic :: iso_c_binding, only: c_ptr, c_loc, c_f_pointer, c_int, c_int64_t, c_sizeof
   implicit none
 
   type, extends (bmi) :: bmi_noahowp
@@ -102,7 +103,15 @@ module bminoahowp
   character (len=BMI_MAX_VAR_NAME), target, &
        dimension(input_item_count) :: input_items
   character (len=BMI_MAX_VAR_NAME), target, &
-       dimension(output_item_count) :: output_items 
+       dimension(output_item_count) :: output_items
+
+  ! Reserved variables of the ngen BMI serialization protocol. Deliberately not
+  ! in the exchange item lists above: a host discovers them by name, and the
+  ! protocol requires they not be enumerable.
+  character (len=*), parameter :: SERIALIZATION_CREATE = 'ngen::serialization_create'
+  character (len=*), parameter :: SERIALIZATION_FREE   = 'ngen::serialization_free'
+  character (len=*), parameter :: SERIALIZATION_SIZE   = 'ngen::serialization_size'
+  character (len=*), parameter :: SERIALIZATION_STATE  = 'ngen::serialization_state'
 
 contains
 
@@ -613,6 +622,12 @@ contains
     case('ISNOW')
        type = "integer"
        bmi_status = BMI_SUCCESS
+    case(SERIALIZATION_CREATE, SERIALIZATION_FREE, SERIALIZATION_SIZE, SERIALIZATION_STATE)
+       ! The state buffer is opaque bytes, but the Fortran BMI bindings carry
+       ! only int, real and double, so it travels as int -- as ngen's own Fortran
+       ! reference model does. The support probe checks units, not type.
+       type = "integer"
+       bmi_status = BMI_SUCCESS
     case default
        type = "-"
        bmi_status = BMI_FAILURE
@@ -668,6 +683,18 @@ contains
        bmi_status = BMI_SUCCESS
     case("SMCMAX")
        units = 'volumetric'
+       bmi_status = BMI_SUCCESS
+    ! A host probes for serialization support by calling get_var_units on each
+    ! reserved name and comparing the result exactly, so these strings are the
+    ! whole conformance signal -- do not substitute "-" or "none" for them.
+    case(SERIALIZATION_CREATE, SERIALIZATION_FREE)
+       units = 'ngen::trigger'
+       bmi_status = BMI_SUCCESS
+    case(SERIALIZATION_SIZE)
+       units = 'bytes'
+       bmi_status = BMI_SUCCESS
+    case(SERIALIZATION_STATE)
+       units = 'ngen::opaque'
        bmi_status = BMI_SUCCESS
     case default
        units = "-"
@@ -836,6 +863,11 @@ contains
     case("XXAJ")
       size = sizeof(parameters%XXAJ)        ! 'sizeof' in gcc & ifort
       bmi_status = BMI_SUCCESS
+    case(SERIALIZATION_CREATE, SERIALIZATION_FREE, SERIALIZATION_SIZE, SERIALIZATION_STATE)
+      ! All four cross the boundary as c_int, whatever they hold; the nbytes
+      ! cases turn that into a transfer length.
+      size = int(c_sizeof(0_c_int))
+      bmi_status = BMI_SUCCESS
     case default
        size = -1
        bmi_status = BMI_FAILURE
@@ -851,20 +883,39 @@ contains
     integer :: bmi_status
     integer :: s1, s2, s3, grid, grid_size, item_size
 
-    s1 = this%get_var_grid(name, grid)
-    s2 = this%get_grid_size(grid, grid_size)
-    s3 = this%get_var_itemsize(name, item_size)
+    ! The reserved serialization variables have no grid, so the grid math in the
+    ! default arm does not apply to them. These must succeed: the ISO-C binding
+    ! sizes every transfer as nbytes/itemsize before dispatching to the model, so
+    ! a failure here short-circuits the call rather than reporting an error.
+    select case(name)
+    case(SERIALIZATION_CREATE, SERIALIZATION_FREE)
+       bmi_status = this%get_var_itemsize(name, nbytes)
+    case(SERIALIZATION_SIZE)
+       ! Two c_ints, so the binding carries all 8 bytes of the int64 the
+       ! protocol specifies; get_int and set_int transfer between the two forms
+       bmi_status = this%get_var_itemsize(name, item_size)
+       nbytes = 2 * item_size
+    case(SERIALIZATION_STATE)
+       ! Bytes of the snapshot just created, or of the payload a caller announced
+       ! ahead of a restore. Both are bounded where they enter, so this fits.
+       nbytes = int(this%model%serialization_nbytes)
+       bmi_status = BMI_SUCCESS
+    case default
+       s1 = this%get_var_grid(name, grid)
+       s2 = this%get_grid_size(grid, grid_size)
+       s3 = this%get_var_itemsize(name, item_size)
 
-    if (grid .eq. 0) then
-       nbytes = item_size
-       bmi_status = BMI_SUCCESS
-    else if ((s1 == BMI_SUCCESS).and.(s2 == BMI_SUCCESS).and.(s3 == BMI_SUCCESS)) then
-       nbytes = item_size * grid_size
-       bmi_status = BMI_SUCCESS
-    else
-       nbytes = -1
-       bmi_status = BMI_FAILURE
-    end if
+       if (grid .eq. 0) then
+          nbytes = item_size
+          bmi_status = BMI_SUCCESS
+       else if ((s1 == BMI_SUCCESS).and.(s2 == BMI_SUCCESS).and.(s3 == BMI_SUCCESS)) then
+          nbytes = item_size * grid_size
+          bmi_status = BMI_SUCCESS
+       else
+          nbytes = -1
+          bmi_status = BMI_FAILURE
+       end if
+    end select
   end function noahowp_var_nbytes
 
   ! The location (node, face, edge) of the given variable.
@@ -875,6 +926,11 @@ contains
     integer :: bmi_status
 !==================== UPDATE IMPLEMENTATION IF NECESSARY WHEN RUN ON GRID =================
     select case(name)
+    case(SERIALIZATION_CREATE, SERIALIZATION_FREE, SERIALIZATION_SIZE, SERIALIZATION_STATE)
+       ! No spatial meaning: two are triggers, one a byte count, one opaque bytes.
+       ! The protocol prefers a clean failure to an invented location.
+       location = "-"
+       bmi_status = BMI_FAILURE
     case default
        location = "node"
        bmi_status = BMI_SUCCESS
@@ -896,6 +952,22 @@ contains
     case("ISNOW")
        dest(:) = this%model%water%ISNOW
        bmi_status = BMI_SUCCESS
+    case(SERIALIZATION_SIZE)
+       ! Bytes a subsequent read of the state will deliver, split into the two
+       ! c_ints the binding can carry and reassembled by the caller
+       dest(1:2) = transfer(this%model%serialization_nbytes, 0, 2)
+       bmi_status = BMI_SUCCESS
+    case(SERIALIZATION_STATE)
+       if (.not. allocated(this%model%serialization_buffer)) then
+          call write_log("No serialized state to read; create one first", LOG_LEVEL_SEVERE)
+          bmi_status = BMI_FAILURE
+       else if (size(dest) /= size(this%model%serialization_buffer)) then
+          call write_log("Destination does not match the serialized state size", LOG_LEVEL_SEVERE)
+          bmi_status = BMI_FAILURE
+       else
+          dest(:) = this%model%serialization_buffer(:)
+          bmi_status = BMI_SUCCESS
+       end if
     case default
        dest(:) = -1
        bmi_status = BMI_FAILURE
@@ -1203,6 +1275,8 @@ contains
     character (len=*), intent(in) :: name
     integer, intent(in) :: src(:)
     integer :: bmi_status
+    integer :: exec_status
+    integer(kind=c_int64_t) :: announced
 
     !==================== UPDATE IMPLEMENTATION IF NECESSARY FOR INTEGER VARS =================
 
@@ -1210,6 +1284,35 @@ contains
 !     case("model__identification_number")
 !        this%model%id = src(1)
 !        bmi_status = BMI_SUCCESS
+    case(SERIALIZATION_CREATE)
+       ! The value passed is a signal only, and is ignored
+       call create_serialization(this%model, exec_status)
+       bmi_status = BMI_FAILURE
+       if (exec_status == 0) bmi_status = BMI_SUCCESS
+    case(SERIALIZATION_FREE)
+       call free_serialization(this%model)
+       bmi_status = BMI_SUCCESS
+    case(SERIALIZATION_SIZE)
+       ! Announces the payload a restore is about to deliver, so that
+       ! get_var_nbytes can size the transfer that carries it. Bounded here: an
+       ! announcement longer than the payload would have the binding read past
+       ! the end of the caller's buffer.
+       bmi_status = BMI_FAILURE
+       if (size(src) >= 2) then
+          announced = transfer(src(1:2), 0_c_int64_t)
+          if (announced >= 0 .and. announced <= huge(0_c_int) .and. &
+              mod(announced, int(c_sizeof(0_c_int), c_int64_t)) == 0) then
+             this%model%serialization_nbytes = announced
+             bmi_status = BMI_SUCCESS
+          end if
+       end if
+       if (bmi_status /= BMI_SUCCESS) &
+          call write_log("Announced serialization size is not a possible payload length", &
+                         LOG_LEVEL_SEVERE)
+    case(SERIALIZATION_STATE)
+       call restore_serialization(this%model, src, exec_status)
+       bmi_status = BMI_FAILURE
+       if (exec_status == 0) bmi_status = BMI_SUCCESS
     case default
        bmi_status = BMI_FAILURE
     end select
