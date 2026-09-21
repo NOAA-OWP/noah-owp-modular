@@ -217,6 +217,7 @@ contains
 
     this%TV        = huge(1.0)
     this%TG        = huge(1.0)
+    this%TGV       = huge(1.0)
     this%FCEV      = huge(1.0)
     this%FCTR      = huge(1.0)
     this%IGS       = huge(1.0)
